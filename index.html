@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>異世界万事屋</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1953,6 +1952,21 @@ body.practice #app { display: none; }
 
 .dw-board.pic { width: 92%; padding: 0; background: none; box-shadow: none; border-radius: 0; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .8)) drop-shadow(0 0 16px rgba(255, 80, 40, .45)); }
 .dw-board.pic.lose { filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .9)); }
+/* v54k: スマホで景色をたたんでいても、探索から帰った日は札の絵を出す */
+@media (max-width: 560px) {
+  #app:not(.scene-open) #divewin.back.boardshow .dw-view:has(.dw-board) { display: block; width: 100%; max-height: 132px; margin-bottom: 6px; }
+  #app:not(.scene-open) #divewin.back.boardshow .dw-view:has(.dw-board) canvas { height: 132px; object-fit: cover; }
+  #app:not(.scene-open) #divewin.back .dw-view .dw-board.pic { width: auto; height: 118%; max-width: 92%; }
+}
+
+/* v54q: スキル盤をつかんで動かす */
+.skboard{cursor:grab;user-select:none;-webkit-user-select:none}
+.skboard.grabbing{cursor:grabbing}
+
+/* v54t: 窓の「閉じる」は、透けた丸い枠のボタンに */
+.sheet .x { border: 1px solid rgba(217, 184, 116, .55); background: rgba(255, 255, 255, .06); border-radius: 999px; padding: 6px 14px; color: var(--ink); backdrop-filter: blur(4px); box-shadow: 0 1px 6px rgba(0, 0, 0, .35); }
+.sheet .x:hover { background: rgba(255, 255, 255, .14); border-color: rgba(217, 184, 116, .85); }
+.gedit .btn.ghost[data-act="dvslot"] { border: 1px solid rgba(217, 184, 116, .55); background: rgba(255, 255, 255, .06); border-radius: 999px; padding: 4px 12px; color: var(--ink); }
 
 </style>
 <div id="app">
@@ -6305,11 +6319,10 @@ const CHIEF_LOAN = {
   build: 'ずいぶん返してくれたの。よし、店先を広げてよいぞ。村の寄り合いでも、反対する者はおらんかった。',
   supplier: 'そうじゃ、わしの古い知り合いに隊商を率いておる者がおる。ハルという。この村にも寄るよう、手紙を書いておこう。',
   story: [
-    'ひとつ、昔話をしよう。五十年前、この店の場所には、小さな鍛冶屋があった。',
-    'わしは村を飛び出したばかりの、ひょろひょろの新米冒険者でな。最初の剣を買う金もなかった。',
-    'そこの親父は「出世払いでいい」と言って、一本の剣をくれた。…結局、わしは出世せんかったがの。',
-    'その親父が、あんたのじいさまじゃ。……あの日あんたに渡した剣は、じいさまが打った剣じゃよ。',
-    'だから、あんたが店を開くと聞いたとき、つい金を貸したくなった。五十年かかって、ようやく借りを返せた気がするよ。',
+    'ひとつ、昔話をしよう。五十年前、わしは村を飛び出したばかりの、ひょろひょろの新米冒険者でな。',
+    '最初の剣を買う金もなかった。そしたら、あんたのじいさまが「出世払いでいい」と言うて、一本打ってくれた。',
+    '……あの日、あんたに渡した剣じゃよ。結局、わしは出世せんかったがの。',
+    'じゃから、あんたが店を開くと聞いたとき、つい金を貸したくなった。五十年かかって、ようやく借りを返せた気がするよ。',
   ],
   done: '…これで全部じゃな。見事に返しきったの。この鍵は、昔あの鍛冶屋の親父から預かったものじゃ。今日からは、あんたが持っていておくれ。',
 };
@@ -7098,11 +7111,11 @@ function shelfAuto() {
   shelfClean();
   const res = reservedNeeds(), cand = [];
   for (const id in G.inv) {
-    const it = IT[id]; if (!shelfOk(id) || it.cat === 'mat' || it.mystery || it.broken) continue;
+    const it = IT[id]; if (!shelfOk(id) || it.mystery || it.broken) continue;   // v54r: 棚の品しか売れないので、素材も並べる(作った品が先)
     if (invCount(id) <= 0 || onShelf(id)) continue;
     if (res[id] && invCount(id) <= res[id]) continue;
     let best = 0; for (let q = 0; q < 4; q++) if (G.inv[id][q] > 0) best = Math.max(best, fairPrice(it, q));
-    cand.push({ id, s: best * (trendSell(it) > 1 ? 1.5 : 1) });
+    cand.push({ id, s: best * (trendSell(it) > 1 ? 1.5 : 1) + (it.cat === 'mat' ? 0 : 1e6) });
   }
   cand.sort((a, b) => b.s - a.s);
   let n = 0;
@@ -7174,13 +7187,23 @@ function makeCustomer(allowStory) {
   if (!c.type) makeSeller(c, cls);
   return c;
 }
+// v54s: 倉庫から売れる品(作った品だけ。棚にない物・取っておく分を除く)
+function wareSellable() {
+  const res = reservedNeeds(), out = [];
+  for (const id in G.inv) { const it = IT[id]; if (!it || it.cat === 'mat' || it.raw || it.mystery || it.broken || !shelfOk(id) || onShelf(id)) continue;
+    const n = invCount(id) - (res[id] || 0); if (n > 0) out.push(it); }
+  return out;
+}
 function makeBuyer(c, cls) {
   const ok = it => it && !it.junk && !it.mystery && catWeight(cls, it) > 0;
   const shelf = (G.shelf || []).filter(s => s && invCount(s.id) > 0).map(s => IT[s.id]).concat(hotShelfId() ? [IT[hotShelfId()]] : []).filter(ok);
   let it = null, fromShelf = false;
   if (hotShelfId() && Math.random() < 0.24 && catWeight(cls, IT[G.hot.id]) > 0) it = IT[G.hot.id];
-  if (!it && shelf.length) { it = wpick(shelf, x => catWeight(cls, x) * bandMult(x) * genrePull(x)); fromShelf = !!it && onShelf(it.id); }
-  if (!it) return;   // v53: 棚にも特需の枠にも品がなければ、買い物客にはならない
+  // v54s: 棚の品は売れやすい(4人に3人は棚から)。ほかの客と棚が空の時は、倉庫の作った品から(素材と、建物・注文に取っておく分は売らない)
+  const ware = wareSellable().filter(ok);
+  if (!it && shelf.length && (Math.random() < 0.75 || !ware.length)) { it = wpick(shelf, x => catWeight(cls, x) * bandMult(x) * genrePull(x)); fromShelf = !!it && onShelf(it.id); }
+  if (!it && ware.length) it = wpick(ware, x => catWeight(cls, x) * bandMult(x) * genrePull(x));
+  if (!it) return;
   c.type = 'buy'; c.want = it.id; c.shelf = fromShelf || onShelf(it.id);
   c.qty = it.v < 25 && Math.random() < 0.35 ? 2 : 1;
   const rich = cls.tier >= 3 && Math.random() < 0.5;
@@ -7245,8 +7268,11 @@ function makeMkCust() {
       c.line = custSay(c, 'sell', LINES.sell);
     }
   }
-  if (!c.type && shelf.length) {
-    const it = pick(shelf);
+  // v54s: 朝市の店主は、棚になければ倉庫からも買う。自分の店で扱う素材も買っていく
+  const res = reservedNeeds();
+  const ware = Object.keys(G.inv).map(id => IT[id]).filter(it => it && !onShelf(it.id) && !it.mystery && !it.broken && shelfOk(it.id) && invCount(it.id) - (res[it.id] || 0) > 0 && (it.cat === 'mat' ? m.subs.includes(it.sub) : want(it)));
+  if (!c.type && (shelf.length || ware.length)) {
+    const it = shelf.length && (Math.random() < 0.75 || !ware.length) ? pick(shelf) : pick(ware);
     c.type = 'buy'; c.want = it.id; c.shelf = true; c.qty = 1;
     c.line = custSay(c, 'buy', SHELF_LINES).replace('{item}', it.name);
   }
@@ -7472,7 +7498,7 @@ function deliverOrder(oid, mode) {
   // v52x: 聖剣をルカに渡すのは戴冠(c5_queen)の後。それまでは渡せない(場面 c5_hand が朝に渡す)
   if (o.reg === 'luca' && o.item === 'lg_holy' && typeof storySeen === 'function' && !storyAfter('c5_confess')) { FX.push({ t: 'toast', msg: '聖剣を渡すのは、クララの戴冠を見届けてから' }); return false; }
   const pk = orderPick(o), qm = orderQualMult(o);
-  const late = lateDays(o), pm = o.reg ? REG_PRICE[mode] || REG_PRICE.fair : null;
+  const late = lateDays(o), pm = o.reg ? (mode === 'gift' ? { m: 0, bond: 1 } : REG_PRICE[mode] || REG_PRICE.fair) : null;   // v54o: ルカの最初の剣は、お金を受け取らずに渡す
   const pay = pm ? Math.round(o.reward * pm.m * qm * (1 + perk('regpay'))) : orderReward(o);
   for (const [q, n] of pk) invTake(o.item, n, q);
   if (o.item === 'lg_holy') { G.holyGiven = 1; G.holyQ = pk[0][0]; }   // v44: the hero's sword
@@ -9398,7 +9424,7 @@ function vSkills() {
   let h = `<div class="sec" data-sec="スキル盤"><h2>スキル盤<span class="aside">${got}/${all}節・残り <b class="price">${free}</b> ポイント</span></h2>`;
   if (!skOpen()) return h + `<p class="note">Lv${SK_OPEN_LV}になると、スキル盤が開く。</p></div>`;
   h += `<p class="note" style="font-size:12.5px">真ん中から五つの道がのびている。習得した節のとなりから選べる。◆は鍵の節(探索のレアをひとつ差し出す)、⬢は遊び方が変わる要の節。</p>`;
-  const view = UI.skView || (window.innerWidth >= 960 ? 'board' : 'list');
+  const view = UI.skView || 'board';   // v54q: スマホも盤から
   h += `<div class="chips"><button class="chip${view === 'board' ? ' on' : ''}" data-act="skview" data-v="board">盤で見る</button><button class="chip${view === 'list' ? ' on' : ''}" data-act="skview" data-v="list">道ごとに見る</button><button class="chip" data-act="skpts">ポイントの入り方</button></div>`;
   h += view === 'board' ? skBoard() + `<p class="note" style="font-size:11.5px">節をタップすると説明と「習得」。</p>` : skList();
   h += `<div class="btns" style="margin-top:6px"><button class="btn sm ghost" data-act="skreset"${got ? '' : ' disabled'}>振り直す${skResetCost() ? `(${fmt(skResetCost())}G)` : '(1回目は無料)'}</button></div>`;
@@ -9437,6 +9463,24 @@ function skBoardScroll() {
   el.onscroll = () => { UI.skScroll = [el.scrollLeft, el.scrollTop]; };
 }
 const perk = k => pk(k);   // for functions that have their own local pk
+
+// v54q: 盤はつかんで(押したまま)上下左右に動かせる。指はもともと動くので、マウスの時だけ。少しでも動かしたら、節のタップにはしない
+(function () {
+  let drag = null;
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest && e.target.closest('.skboard'); if (!b || e.pointerType !== 'mouse' || e.button !== 0) return;
+    drag = { b, x: e.clientX, y: e.clientY, sl: b.scrollLeft, st: b.scrollTop, moved: false };
+  });
+  document.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+    drag.moved = true; drag.b.classList.add('grabbing');
+    drag.b.scrollLeft = drag.sl - dx; drag.b.scrollTop = drag.st - dy; e.preventDefault();
+  });
+  const end = () => { if (!drag) return; const d = drag; drag = null; d.b.classList.remove('grabbing'); if (d.moved) { const stop = ev => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', stop, { capture: true }), 50); } };
+  document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+})();
 
 // ---- dungeon.js ----
 // ===== 遠見の水晶: first-person view of the guild party (Wizardry-style corridor) =====
@@ -11242,7 +11286,8 @@ function orderDue(o) {
 }
 const linkIco = (id, q, o = {}) => (G.found[id] !== undefined || invCount(id)) ? `<button class="lnk" data-act="goto" data-id="${id}" aria-label="${IT[id].name}">${ico(id, q, o)}</button>` : ico(id, q, o);
 // products you could put in front of a customer right now
-const sellableStock = () => Object.keys(G.inv).filter(id => IT[id] && IT[id].cat !== 'mat' && !IT[id].junk && !IT[id].keep && !IT[id].broken && !IT[id].mystery).reduce((t, id) => t + invCount(id), 0);
+// v54l: 売れるのは棚と特需の枠の品だけ(v53)なので、売り物の数もそこだけを数える(素材も棚にあれば数える)
+const sellableStock = () => { const ids = new Set((G.shelf || []).filter(s => s && IT[s.id]).map(s => s.id)), h = hotShelfId(); if (h) ids.add(h); for (const it of wareSellable()) ids.add(it.id); let t = 0; for (const id of ids) t += invCount(id); return t; };   // v54s: 棚と、倉庫の売れる品
 
 // ---------- render root ----------
 function render() {
@@ -11814,14 +11859,16 @@ function vHotSlot() {
 }
 function vShelf() {
   fixShelf(); shelfClean();
+  if (G.shelfAutoOn !== false && !UI.shelfTook) shelfAuto();   // v54q: 夜に作った品も、棚を開いた時に並ぶ
+  UI.shelfTook = false;
   const n = G.shelf.filter(Boolean).length, auto = G.shelfAutoOn !== false;
-  const sg = shelfGenre(), res = reservedNeeds(), held = Object.keys(res).filter(id => IT[id] && invCount(id) > 0 && !onShelf(id) && IT[id].cat !== 'mat' && invCount(id) <= res[id]);
+  const sg = shelfGenre(), res = reservedNeeds(), held = Object.keys(res).filter(id => IT[id] && invCount(id) > 0 && !onShelf(id) && invCount(id) <= res[id]);
   const color = sg.top ? `いまは「${GENRE[sg.top]}の店」として見られている。${GENRE[sg.top]}を求める客や、その材料を売りに来る客が少し増える。` : sg.n ? 'いろいろな品が並ぶ店。並べる品をそろえると、それを求める客や、その材料を売りに来る客が少し増える。' : '';
-  return `<div class="sec shelfsec"><h2>陳列棚<span class="aside">${n}/${G.shelf.length}枠・店で売れるのは棚と特需の枠の品だけ</span></h2>` + (color ? `<p class="note" style="font-size:12.5px">${color}</p>` : '') + vHotSlot() +
+  return `<div class="sec shelfsec"><h2>陳列棚<span class="aside">${n}/${G.shelf.length}枠・棚の品は売れやすい。素材は棚に置いた時だけ売れる</span></h2>` + (color ? `<p class="note" style="font-size:12.5px">${color}</p>` : '') + vHotSlot() +
     `<div class="shelf">` + G.shelf.map((s, i) => s
       ? `<button class="slot" data-act="shelfslot" data-i="${i}" title="${IT[s.id].name}">${ico(s.id, bestOwnedQ(s.id), { cnt: invCount(s.id) })}<span class="lb">${IT[s.id].name}</span><span class="qs">${qBreak(s.id)}</span></button>`
       : `<button class="slot empty" data-act="shelfpick" data-i="${i}" aria-label="棚に並べる"><span class="ic empty"><b>+</b></span><span class="lb">空き</span></button>`).join('') + `</div>` +
-    `<div class="row wrap" style="gap:10px"><button class="tog${auto ? ' on' : ''}" data-act="shelftoggle" aria-pressed="${auto}"><i></i>空いたら自動で並べる</button>${auto && held.length ? `<span class="sub" style="flex-basis:100%">建物・注文用に取っておく品は並べない:${held.map(id => IT[id].name + '×' + invCount(id)).join('・')}</span>` : ''}${auto ? '' : `<button class="btn sm" data-act="shelfauto"${G.shelf.some(x => !x) ? '' : ' disabled'}>空きに並べる</button>`}</div></div>`;
+    `<div class="row wrap" style="gap:10px"><button class="tog${auto ? ' on' : ''}" data-act="shelftoggle" aria-pressed="${auto}"><i></i>空いたら自動で並べる</button>${auto && held.length ? `<span class="sub" style="flex-basis:100%">建物・注文用に取っておく品は並べない:${held.map(id => IT[id].name + '×' + invCount(id)).join('・')}</span>` : ''}${(auto ? '' : `<button class="btn sm" data-act="shelfauto"${G.shelf.some(x => !x) ? '' : ' disabled'}>空きに並べる</button>`) + `<button class="btn sm" data-act="shelfclear"${G.shelf.some(Boolean) ? '' : ' disabled'}>棚から全部下ろす</button>`}</div></div>`;
 }
 const onShelfCount = () => G.shelf.filter(Boolean).length;
 function shelfPicker(i) {
@@ -12743,7 +12790,7 @@ function flushFX() {
       const sc = regStory(f.reg + ':' + f.step), told = !!(sc && STORY[sc] && !storyOff());
       const pl = (REG_PRICE_LINES[f.reg] || {})[f.mode] || '';
       const epi = f.last && REG_EPI[f.reg] ? `<p class="epi">${f.warm ? REG_EPI[f.reg].warm : REG_EPI[f.reg].cool}</p>${f.warm ? '<div class="meta">深い絆の証に、お礼がはずんだ(名声+10)</div>' : ''}` : '';
-      queueSheet(celebrate(`常連・${s.title}`, r.n, `<div class="meta">${s.cls}</div>${pl && !told ? `<p>「${pl}」</p>` : ''}${told ? '' : `<p>「${s.thanks}」</p>`}${epi}<div class="meta">お礼 <span class="price">${fmt(f.reward)}G</span>・名声アップ</div>` +
+      queueSheet(celebrate(`常連・${s.title}`, r.n, `<div class="meta">${s.cls}</div>${pl && !told ? `<p>「${pl}」</p>` : ''}${told ? '' : `<p>「${s.thanks}」</p>`}${epi}<div class="meta">${f.reward > 0 ? `お礼 <span class="price">${fmt(f.reward)}G</span>・` : ''}名声アップ</div>` +
         (f.last ? `<div class="row" style="justify-content:center">${ico(r.keep, 0, { size: 'lg' })}<div style="text-align:left"><div class="kicker">記念品を受け取った</div>${IT[r.keep].name}</div></div>` : (r.steps[f.step + 1] ? '<div class="meta">また街が育ったころに来てくれそうだ。夜の酒場で会えるかもしれない。</div>' : '')), '閉じる', portrait({ cls: 'villager', reg: r.k, look: r.look, clsName: s.cls }, '', { cheap: 'surprise', high: 'trouble' }[f.mode] || 'smile')));
     } else if (f.t === 'band') {
       const B = SHOP_BANDS[f.band];
@@ -12776,9 +12823,9 @@ function autoNext(c) {
 function regPriceSheet(oid) {
   const o = G.orders.find(x => x.id === oid); if (!o) return;
   const r = REG[o.reg], s = r.steps[o.step], lines = REG_PRICE_LINES[o.reg];
-  openSheet(`${xBtn}<div class="lead">${portrait({ cls: 'villager', reg: r.k, look: r.look, clsName: s.cls })}<div style="min-width:0"><div class="sub">常連・${s.title}</div><h2>${r.n}に渡す</h2><div class="sub">${IT[o.item].name} ×${o.qty}・お礼の目安 <span class="price">${fmt(o.reward)}G</span></div></div></div>` +
-    `<p class="note">値段の付け方は、${r.n}の物語に影響する。</p><div class="regprice">` +
-    Object.entries(REG_PRICE).map(([k, pm]) => `<button class="btn${k === 'fair' ? ' pri' : ''} stacked" data-act="regpay" data-id="${o.id}" data-m="${k}"><span>${pm.n} <b class="price" style="color:inherit">${fmt(Math.round(o.reward * pm.m))}G</b></span><span class="s2">${k === 'cheap' ? '恩を売る・絆が深まる' : k === 'high' ? 'もうけ優先・少し距離ができる' : 'まっとうな商い'}</span></button>`).join('') + `</div>`);
+  openSheet(`${xBtn}<div class="lead">${portrait({ cls: 'villager', reg: r.k, look: r.look, clsName: s.cls })}<div style="min-width:0"><div class="sub">常連・${s.title}</div><h2>${r.n}に渡す</h2><div class="sub">${IT[o.item].name} ×${o.qty}${o.reg === 'luca' && o.step === 0 ? '' : `・お礼の目安 <span class="price">${fmt(o.reward)}G</span>`}</div></div></div>` +
+    (o.reg === 'luca' && o.step === 0 ? '' : `<p class="note">値段の付け方は、${r.n}の物語に影響する。</p>`) + `<div class="regprice">` +
+    (o.reg === 'luca' && o.step === 0 ? `<button class="btn pri big" data-act="regpay" data-id="${o.id}" data-m="gift">渡す</button>` : Object.entries(REG_PRICE).map(([k, pm]) => `<button class="btn${k === 'fair' ? ' pri' : ''} stacked" data-act="regpay" data-id="${o.id}" data-m="${k}"><span>${pm.n} <b class="price" style="color:inherit">${fmt(Math.round(o.reward * pm.m))}G</b></span><span class="s2">${k === 'cheap' ? '恩を売る・絆が深まる' : k === 'high' ? 'もうけ優先・少し距離ができる' : 'まっとうな商い'}</span></button>`).join('')) + `</div>`);
 }
 function act(a, d) {
   if (d && d.crjump) { UI.treeOpen = false; UI.jumpSec = '*chips'; }
@@ -12900,8 +12947,10 @@ function act0(a, d) {
     case 'shelfpick': closeSheet(true); shelfPicker(+d.i); return;
     case 'shelfslot': shelfSlotSheet(+d.i); return;
     case 'shelfput': if (shelfPut(+d.i, d.id, +d.q)) sfx('buy'); closeSheet(true); break;
-    case 'shelftake': shelfTake(+d.i); closeSheet(true); sfx('tap'); break;
+    case 'shelftake': UI.shelfTook = true; shelfTake(+d.i); closeSheet(true); sfx('tap'); break;
     case 'shelfauto': { const n = shelfAuto(); toast(`<div>${n ? `棚に${n}品を並べた` : '並べられる品がない'}</div>`); if (n) sfx('buy'); break; }
+    // v54t: 棚を一度に空ける。自動で並べるがついていると、すぐ埋め戻されるので切る
+    case 'shelfclear': { const n = G.shelf.filter(Boolean).length; G.shelf = G.shelf.map(() => null); const was = G.shelfAutoOn !== false; G.shelfAutoOn = false; UI.shelfTook = true; toast(`<div>棚から${n}品を下ろした${was ? '。「空いたら自動で並べる」は切った' : ''}</div>`); sfx('tap'); break; }
     case 'shelftoggle': G.shelfAutoOn = G.shelfAutoOn === false; if (G.shelfAutoOn) shelfAuto(); sfx('tap'); break;
     case 'shelfadd': { fixShelf(); const i = G.shelf.findIndex(x => !x); if (i < 0) { toast('<div>棚がいっぱい。営業の画面で、入れ替える枠を選ぼう</div>'); return; } if (shelfPut(i, d.id, +d.q)) { sfx('buy'); toast(`<div>${IT[d.id].name}を棚に並べた</div>`); } closeSheet(true); itemSheet(d.id); render(); save(); return; }
     case 'eat': { const it = IT[d.id], n = eat(d.id); if (n) { sfx('good'); toast(`${ico(d.id, 0, { size: 'sm' })}<div><div class="t1">体力 +${n}</div>${it.name}で元気が出た</div>`, 'lv', 1800); } break; }
@@ -14526,7 +14575,7 @@ function helpScreen() {
   if (UI.tab === 'inv' && UI.invView === 'dex') return { t: '図鑑には見つけた品が載ります。影絵の品は、まだ見つけていない物。タップすると手がかりが分かります。', k: 'collect' };
   return {
     market: { t: '朝市です。素材を仕入れて、準備ができたら店を開けます。建物と注文に要る素材は「まとめて買う」で一度に仕入れられますよ。', k: 'market' },
-    shop: { t: '店先です。お客さんは1人ずつ来ます。売れるのは陳列棚と特需の枠に並べた品だけ。並べた品のジャンルで、来るお客さんも少し変わります。', k: 'shelf' },
+    shop: { t: '店先です。お客さんは1人ずつ来ます。陳列棚と特需の枠に並べた品は売れやすい。並べた品のジャンルで、来るお客さんも少し変わります。', k: 'shelf' },
     work: { t: '夜の工房です。作る時はミニゲーム。一度作ったレシピは「おまかせ」や「まとめて作る」で、ミニゲームなしで作れます(普通の品)。良品以上が欲しい時はミニゲームで。', k: 'auto' },
     adv: { t: '冒険のタブです。冒険者に武具と道具袋を持たせて送り出します。分かれ道とぬしの前では一息ついて、進むか休むか引き返すかを決めます。最後まで行くと封印された箱が手に入りますよ。', k: 'adv' },
     inv: { t: '倉庫です。持ち物と図鑑を切り替えられます。品をタップすると、レア度と使い道、どこで使えるかが分かります。', k: 'collect' },
@@ -14604,7 +14653,7 @@ const DICT = [
   { k: 'day', n: '1日の流れ', t: ['朝市で仕入れ、昼は店を開けて売り、夜は工房で作る。どの時間にも制限はなく、やることが済んだら下のボタンで自分で次へ進む(進む前に確かめが出る)。時間は戻らない。', '「いまやること」の帯は、次にやるとよいことを教えてくれる。タップするとその画面へ行ける。'] },
   { k: 'move', n: '画面の移り方', t: ['スマホは、下のバーで「店・街・冒険・ホーム・エマ」を行き来する(冒険は冒険者ギルドが建ってから)。倉庫・図鑑・店主・灯り亭・設定は、ホームから。', 'PCは、左の並び(店・街・灯り亭・冒険・倉庫・店主)から。', '「店」の中は市場・店先・工房に分かれていて、いまの時間の場所が自動で開く。上の切り替えで、いつでも行き来できる(夜でも店先で棚を整えられる)。'] },
   { k: 'market', n: '朝市と問屋', t: ['朝市には、季節の行商・鉱石・資材(木材・布など)・薬草と魔物素材・食材・宝石と魔石の店が並ぶ。古書商(レシピの本)が来る日もある。', '「建設と注文に足りない素材」の「まとめて買う」で、建物と受けた注文に要る素材を一度に仕入れられる。迷ったらまずこれ。赤い数字の素材は、その日の朝市にない(持ち込みを待つ)。', '値段は相場で動く。流行(1週間ごとに変わる)で上がる品・下がる品があり、灯り亭の噂で来週の流行が分かることもある。', '問屋は、基本の素材だけを夜でも買える(朝市の1.5倍ほど)。'] },
-  { k: 'shelf', n: '陳列棚と店の色', t: ['店で売れるのは、陳列棚と特需の枠に並べた品だけ。倉庫にしまったままの品は、お客さんに見えない。', '「空いたら自動で並べる」をつけると、売れた所に倉庫から補充する。建物や受けた注文に使う分は取っておき、並べない(棚の下に何を取っておいたか出る)。素材は自動では並べないが、手で置けば売れる。', '店の色:棚に並べた品のジャンル(武具・薬・料理・魔法の品・道具)に合わせて、それを求める客や、その材料(武具なら鉱石・木材・皮革・壊れた武具、薬なら薬草・魔物素材、料理なら食材、魔法の品なら宝石・魔石・紙)を売りに来る客が少し増える。棚の半分以上が同じジャンルだと、棚の上に「〇〇の店」と出る。'] },
+  { k: 'shelf', n: '陳列棚と店の色', t: ['陳列棚と特需の枠に並べた品は、お客さんの目に留まって売れやすい(買い物客のおよそ4人に3人は棚から選ぶ)。棚にない作った品も、倉庫から売れることがある。素材は棚に置いた時だけ売れる。', '「空いたら自動で並べる」をつけると、売れた所に倉庫から補充する。建物や受けた注文に使う分は取っておき、並べない(棚の下に何を取っておいたか出る)。素材も並べる(作った品が先)。素材を取っておきたい時は、チェックを外す。', '店の色:棚に並べた品のジャンル(武具・薬・料理・魔法の品・道具)に合わせて、それを求める客や、その材料(武具なら鉱石・木材・皮革・壊れた武具、薬なら薬草・魔物素材、料理なら食材、魔法の品なら宝石・魔石・紙)を売りに来る客が少し増える。棚の半分以上が同じジャンルだと、棚の上に「〇〇の店」と出る。'] },
   { k: 'cust', n: 'お客さん', t: ['お客さんは1人ずつ来る。種類は毎日ランダムで、買い物客(棚の品を買う)・依頼の客(品を注文していく)・持ち込みの客(素材や壊れた武具、謎の品を売りに来る)のほか、たまに小さな物語を持った客も来る。', '時計が進むと客層が変わる(朝=出発前の冒険者/昼=村人や行商人/夕方=帰ってきた冒険者の持ち込み/夜=騎士や貴族)。店先の上に、いまの客層と「いま売れ筋」が出る。', '買い物客の欲しい品が棚になければ、その客は依頼の客になる(依頼が4件で埋まっている時は、持ち込みの客)。'] },
   { k: 'sell', n: '売る・強気', t: ['「売る」の1タップで、相場で売れる。良品以上なら「強気」で高く売る賭けもできる(品質が高いほど通りやすい。断られても相場で売れる)。', '強気が続けて決まると「目利きコンボ」で、名声が多めに入る。'] },
   { k: 'buy', n: '買い取り', t: ['持ち込みの客からは、値付けをして買い取る。提示額(100%)なら必ず成立する。値切るほど安く買えるが、断られると帰ってしまう。', '色をつけて買い取ると名声が上がる(105%で 1+章、110%で 2+章)。'] },
@@ -14754,7 +14803,9 @@ function renderDive() {
   { const v = el.querySelector('.dw-view'), bd = v && v.querySelector('.dw-board');
     if (!d && v && !bd) { const L = last.res !== 'home' ? ['討伐失敗!!', '報告してください。', ' lose'] : last.beat ? [last.area === 'dragon' ? '盟約!!' : '討伐完了!!', '報告してください。', ''] : ['依頼完了!!', '報告してください。', ''];
       const pk2 = last.res !== 'home' ? (last.atBoss && OBJ_FILES.has('obj_board_bossfail') ? 'obj_board_bossfail' : 'obj_board_lose') : last.beat && OBJ_FILES.has('obj_board_boss') ? 'obj_board_boss' : 'obj_board_win', pic = OBJ_FILES.has(pk2) ? pk2 : '';   // v54i: ぬしを倒した時は「討伐完了!!」   // v54h: ユーザーの描いた札(任務完了!!・任務失敗!!)
-      v.insertAdjacentHTML('beforeend', pic ? `<img class="dw-board pic${L[2]}" src="${IMG_BASE}${pic}.webp" alt="${L[0]}">` : `<span class="dw-board${L[2]}" aria-hidden="true"><i>${L[0]}</i><small>${L[1]}</small></span>`); v.classList.add('slam'); setTimeout(() => v.classList.remove('slam'), 700); }
+      v.insertAdjacentHTML('beforeend', pic ? `<img class="dw-board pic${L[2]}" src="${IMG_BASE}${pic}.webp" alt="${L[0]}">` : `<span class="dw-board${L[2]}" aria-hidden="true"><i>${L[0]}</i><small>${L[1]}</small></span>`); v.classList.add('slam'); setTimeout(() => v.classList.remove('slam'), 700);
+      // v54p: スマホで景色をたたんでいる時は、札が下りるところだけ見せて、少ししたらたたむ(一日中出しっぱなしにしない)
+      const bk = G.day + ':' + (last.area || ''); if (UI.boardShown !== bk) { UI.boardShown = bk; el.classList.add('boardshow'); setTimeout(() => el.classList.remove('boardshow'), 3200); } }
     else if (d && bd) bd.remove(); }
   if (diveSettleCheck(d)) return;
   diveNotify(d);
@@ -15203,7 +15254,7 @@ const TUT = [
   { day: 1, at: 'market', sel: '#fab .btn', text: 'いいですね。仕入れが済んだら、いちばん下のボタンで店を開けましょう。',
     done: () => G.act !== 'market' },
   { day: 1, at: 'shop', sel: '[data-act=sell]', ex: 'smile',
-    text: 'お客さんです! お店で売れるのは、陳列棚と特需の枠に並べた品だけ。倉庫にしまったままの品は、お客さんには見えません。並べる品で、来るお客さんも少し変わります。欲しい品が棚にあれば、「売る」の1タップで売れますよ。',
+    text: 'お客さんです! 陳列棚と特需の枠に並べた品は、お客さんの目に留まって売れやすくなります。並べる品で、来るお客さんも少し変わります。欲しい品があれば、「売る」の1タップで売れますよ。',
     done: () => G.stats.sold >= 1 || G.ci >= 1 },
   { day: 1, at: 'shop', sel: () => cc() && cc().done ? '[data-act=nextc]' : '[data-act=accorder]',
     text: () => cc() && cc().done ? 'うまく売れましたね。品には、普通・良品・上質・傑作の品質があって、良い品ほど高く売れます。良品以上なら「強気」で吹っかけることもできますよ。「次のお客さんへ」で進みましょう。' : '剣を欲しがっている若い冒険者さんです。在庫はありませんが、依頼を引き受ければ工房で作って後日渡せます。「引き受ける」を押しましょう。',
@@ -15253,8 +15304,8 @@ const TUT = [
     text: 'ほかにも、ミニゲームや品質の「職人の道」、売り値や常連さんの「商いの道」、仕入れや鑑定の「目利きの道」、探索の「冒険の道」があります。どれを伸ばすかは、お好みでどうぞ。' },
   { day: 1, at: 'work', sel: '#fab .btn', text: '今夜はここまでにしましょう。いちばん下のボタンで眠れば、翌朝です。', ex: 'smile',
     done: () => G.day >= 2 },
-  { day: 2, at: 'market', sel: () => UI.sheet ? '#veil [data-act=regpay][data-m=fair]' : (matchMedia('(min-width: 960px)').matches ? '#side' : '#panel') + ' [data-act=deliver]',
-    text: () => UI.sheet ? '常連さんへの値段の付け方は、物語に影響します。安く譲れば絆が深まり、強気ならもうけは増えます。今回は好きに選んでくださいね。' : '剣を頼んだ冒険者さんの注文です。「納品」して届けましょう。',
+  { day: 2, at: 'market', sel: () => UI.sheet ? '#veil [data-act=regpay]' : (matchMedia('(min-width: 960px)').matches ? '#side' : '#panel') + ' [data-act=deliver]',
+    text: () => UI.sheet ? '剣を、渡してあげてください。' : '剣を頼んだ冒険者さんの注文です。「納品」して届けましょう。',
     skip: () => !UI.sheet && !G.orders.some(o => o.reg === 'luca' && orderHave(o) >= o.qty), done: () => (G.reg.luca || 0) >= 1 },
   // v54b: まとめて買う
   { day: 2, at: 'market', sel: '[data-act=shop]', next: 'なるほど', skip: () => !UI.sheet && !document.querySelector('[data-act=shop]'),
@@ -15436,6 +15487,9 @@ window.addEventListener('resize', () => { try { tutUpdate(); } catch (e) { /* ig
 const view = () => UI.tab === 'main' ? shopView() : UI.tab;
 const ownAny = f => Object.keys(G.inv).some(id => IT[id] && invCount(id) > 0 && f(IT[id]));
 const HINTS = [
+  // v54o: 値段の付け方の説明は、ルカの最初の剣ではなく、次に常連さんへ渡す時に
+  { id: 'regpay', k: 'order', sel: '#veil .regprice', when: () => !!document.querySelector('#veil .regprice [data-m=fair]'),
+    text: '常連さんへの値段の付け方は、物語に影響します。安く譲れば絆が深まり、強気ならもうけは増えます。好きに選んでくださいね。' },
   { id: 'night', k: 'order', sel: '.nightoffers h2', when: () => (G.nightOffers || []).length > 0,
     text: 'お店を閉めた後に、注文が届きました。受けるかどうかは自由で、見送っても何もありません。受けたら期限までに届けてくださいね。届けられないと、名声が下がります。' },
   { id: 'hot', k: 'hot', sel: '.hotline, .hotslot', when: () => !!G.hot,
@@ -15759,32 +15813,38 @@ S('c1_pro', { ch: 0, past: () => true, end: () => introSheet() }, `
 @bg bg_town_0
 (アルヴェーラ王国の、北のはずれ。地図にも小さくしか載らない、辺境の村。)
 (九年前。十六の春。)
-(何もない村だった。畑と、まばらな家と、両親の小さな店。)
-(冒険者になると言った日、父は黙ってうなずいた。)
-(母は弁当を三つも持たせて、「ちゃんと、帰っておいでよ」と笑った。)
+(両親は、物心つく前に亡くなった。引き取ってくれたのは、村で鍛冶屋をしていた祖父だった。)
+(炉の火と、鉄を打つ音のそばで育った。冒険者になると決めたのは、自然なことだった。)
+(旅立ちの朝。腰には、自分で打った不格好な剣を下げていた。)
+chief trouble 「なんじゃ、そのなまくらは。そんなもんじゃ、すぐにくたばるわい」
 @obj obj_sword
 chief smile 「持っていけ。出世払いの剣じゃ」
-chief smile 「……わしは出世せんかったがの。坊は、きっと出世する」
+(祖父が、村長の手の剣を見た。「……お前さん、その剣、渡していいのか」)
+chief smile 「わしが持っとるより、ええじゃろ」
+(「……確かに」)
+chief trouble 「……少しは否定せんか」
+chief smile 「わしは出世せんかったがの。坊は、きっと出世する」
 owner_teen normal 「・・・」(両手で、剣を受け取る)
 @obj -
+(祖父は、それだけ言った。「……ちゃんと、帰ってこい」)
 (村の入口で振り返ると、小さな男の子が、まだ手を振っていた。)
 (一度だけ、手を上げて返した。)
 @bg ev_return
 (それから、九年。)
-(九年ぶりの村。街道の土埃。両親の店の戸は、閉じたままだった。)
+(九年ぶりの村。街道の土埃。祖父の店の戸は、閉じたままだった。)
 @bg bg_shop_old
 (戸を押すと、ほこりが光の筋の中を舞った。)
-(棚も、秤も、母の前掛けも、あの日のままだった。)
+(棚も、秤も、祖父の前掛けも、あの日のままだった。)
 chief normal 「……やはり、戻ってきおったか」
 chief smile 「坊、おかえり」
 owner2 normal 「・・・」
-chief trouble 「親御さんのことは、手紙で知らせたとおりじゃ。……届いておったか」
+chief trouble 「じいさまのことは、手紙で知らせたとおりじゃ。……届いておったか」
 owner2 down 「・・・」(小さくうなずく)
 chief trouble 「店は、あの日のまま閉めてある。誰にも、触らせなんだ」
-chief normal 「あれから、村の皆で頑張ったんじゃ。家も増えた。教会も建てた」
+chief normal 「あれから、村の皆で頑張ったんじゃ。家も増えた。畑も広げた」
 chief trouble 「じゃが、人は来ん。名物も何もない村じゃからの。司祭さまも去って、教会は閉めたままじゃ」
 chief trouble 「……若い者も、皆出ていった」
-chief normal 「それでも、あんたの両親の店はあった。何でも直して、何でも売る店じゃった」
+chief normal 「それでも、あんたのじいさまの店はあった。何でも直して、何でも売る店じゃった」
 chief normal 「鍋の穴も、鋤の刃も、子どもの靴も。村の者は、ずいぶん助けられたもんじゃ」
 owner2 normal 「・・・」
 chief smile 「戸の修繕も、棚の品も、わしが立て替えておいた。しめて3000G、出世払いじゃ。利子も期限もいらん」
@@ -15800,8 +15860,8 @@ owner2 down 「・・・」
 S('c1_open', { ch: 0, past: () => true, end: () => { storyPlay('new_c1_emma_visit'); } }, `
 @bg bg_town_1
 (戸板を外し、窓を開ける。丘の上に、鐘の鳴らない教会が見えた。)
-villager normal 「おや……あの店、開いてるぞ」
-villager normal 「店主、釘は置いてあるか。屋根の雨漏りが、もうずいぶん続いてて困ってたんだ」
+gozu surprise 「おや……あの店、開いてるじゃねえか」
+gozu trouble 「おう、釘は置いてあるか。うちの屋根の雨漏りが、もうずいぶん続いててな。困ってたんだ」
 owner normal 「・・・」(棚の奥から、錆びていない釘の箱を探し出す)
 chief smile 「ほれ、さっそく客じゃ」
 chief smile 「いつか、また鐘が鳴るとよいのう」
@@ -15836,13 +15896,13 @@ S('new_c1_irma_visit', { ch: 0, when: 'open', cond: () => G.day >= 3 && G.stage 
 @bg bg_shop_day
 (杖をついた老婆が、ずかずかと入ってきて、薬草の棚の前で止まった。)
 irma normal 「ふん。帰ってきたとは聞いてたけど、本当に開いてるじゃないか」
-irma normal 「……九年ぶりかい。大きくなったね。顔は、ますます親父に似てきた」
+irma normal 「……九年ぶりかい。大きくなったね。顔は、ますます爺さんに似てきた」
 owner normal 「・・・」(小さく、頭を下げる)
 irma smile 「なんだい、その顔。まさか、あたしを忘れたとは言わせないよ。あんたの熱を、何べん下げてやったか」
 irma trouble 「……診療所はね、三年前に閉めたんだ。薬の材料が手に入らなくなってさ。街道に魔物が出るようになってから、行商も来やしない」
 irma normal 「この薬草、置いとくれ。……あるだけ」
 owner normal 「・・・」(棚の薬草を、黙って包む)
-irma normal 「あんたの親の最期は、あたしが看た。苦しまなかったよ。それだけは言っとく」
+irma normal 「あんたの爺さんの最期は、あたしが看た。苦しまなかったよ。それだけは言っとく」
 owner down 「・・・」
 irma smile 「さ、湿っぽいのはおしまいだ。薬が揃えば、あたしもまだやれるかもしれないね」
 `);
@@ -15979,7 +16039,7 @@ colette smile 「店主さん、今夜は満室なんです! 満室! うちの�
 @bg bg_shop_evening
 (閉店の頃、村長が杖をついてやってきた。)
 chief smile 「この村に、旅人が泊まる日が来るとはのう」
-chief normal 「坊。親御さんの店に、また灯がともったの」
+chief normal 「坊。じいさまの店に、また灯がともったの」
 owner normal 「・・・」
 @bg bg_town_1_night
 owner soft 「…悪くない」(窓の外を見て)
@@ -15988,12 +16048,11 @@ chief smile 「そうか。……そうか」
 // 村長の昔話 (返済が2000Gに届いた時)
 S('loan_story', { past: () => (G.loan || {}).ms >= 3 }, `
 @bg bg_chief
-chief normal 「ひとつ、昔話をしよう。五十年前、この店の場所には、小さな鍛冶屋があった」
-chief smile 「わしは村を飛び出したばかりの、ひょろひょろの新米冒険者でな。最初の剣を買う金もなかった」
-chief smile 「そこの親父は『出世払いでいい』と言って、一本の剣をくれた。…結局、わしは出世せんかったがの」
-chief normal 「その親父が、あんたのじいさまじゃ。……あの日あんたに渡した剣は、じいさまが打った剣じゃよ」
+chief normal 「ひとつ、昔話をしよう。五十年前、わしは村を飛び出したばかりの、ひょろひょろの新米冒険者でな」
+chief smile 「最初の剣を買う金もなかった。そしたら、あんたのじいさまが『出世払いでいい』と言うて、一本打ってくれた」
+chief smile 「……あの日、あんたに渡した剣じゃよ。結局、わしは出世せんかったがの」
 owner normal 「・・・」
-chief smile 「だから、あんたが店を開くと聞いたとき、つい金を貸したくなった。五十年かかって、ようやく借りを返せた気がするよ」
+chief smile 「じゃから、あんたが店を開くと聞いたとき、つい金を貸したくなった。五十年かかって、ようやく借りを返せた気がするよ」
 `);
 
 // ---------------- 第3章 交易の街「覚えていない」 ----------------
@@ -16344,7 +16403,7 @@ owner normal 「・・・」
 S('bld_cathedral', { ch: 3, main: true, after: 'c4_square', need: bldPast('cathedral'), past: bldPast('cathedral') }, `
 @bg bg_cathedral
 priest normal 「ここなら、千人は眠れましょう。……小さな教会から始まったものが、ここまでになるとは」
-chief smile 「わしらが建てた教会は、鐘が鳴らんかった。……今は、町中に聞こえるのう」
+chief smile 「わしらの教会は、長いこと鐘が鳴らんかった。……今は、町中に聞こえるのう」
 clara smile 「鐘の音を聞いて、来てくれた方もいるそうです」
 clara normal 「村長さま。あの小さな教会が開いていなければ、私は、ここへ来られませんでした」
 chief smile 「なに。開けたのは、願い状を読んでくれた教区の偉い方じゃよ」
@@ -16729,7 +16788,7 @@ S('loan_done', { when: 'close', cond: () => (G.loan || {}).ms >= LOAN_MS.length 
 (その夜。店を閉めて工房の戸を開けると、炉も金床も棚も、新しくなっていた。灯りの下で、村長が待っていた。)
 chief smile 「見事に返しきったの。坊は、ちゃんと出世した」
 chief smile 「じゃから今度は、わしらの番じゃ。村の皆で、夜なべして手を入れたんじゃよ」
-chief normal 「この鍵は、昔あの鍛冶屋の親父……あんたのじいさまから預かったものじゃ。今日からは、あんたが持っていておくれ」
+chief normal 「この鍵は、じいさまから預かったものじゃ。今日からは、あんたが持っていておくれ」
 owner normal 「・・・」
 (店主は新しい金床に手を置いた。)
 owner normal 「……ありがとう」
@@ -16901,9 +16960,9 @@ clara smile 「ですから今日は、何も買わずに、見るだけにい�
 // Q7: 鍛冶通りの完成(バルドの最初の依頼の前)
 S('bld_smithy', { ch: 1, main: true, need: bldPast('smithy'), past: bldPast('smithy') }, `
 @bg bg_smithy
-bard normal 「ふん。五十年前、この辺りに腕のいい鍛冶屋がいたと聞いてな。流れてきてみれば、もう跡形もない」
+bard normal 「ふん。昔、この辺りに腕のいい鍛冶屋がいたと聞いてな。流れてきてみれば、炉の火はとうに消えとった」
 chief surprise 「…………」
-bard normal 「その鍛冶屋の跡に建っとる店が、お前のところだそうだな」
+bard normal 「その鍛冶屋の孫が、店をやっとるそうだな」
 owner normal 「・・・」
 bard normal 「その鍛冶屋の剣は、叩くと鈴みたいな音がしたそうだ。一本でいいから、見てみたかった」
 chief normal 「……一本くらいは、どこかに残っとるかもしれんのう」(店主の方を見ずに)
@@ -17383,5 +17442,3 @@ else start((window.claude && window.claude.hot && window.claude.hot.data) || {})
 
 })();
 </script>
-
-</body></html>
