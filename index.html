@@ -12227,6 +12227,12 @@ function sfx(k, opt) {
 }
 document.addEventListener('pointerdown', () => { if (!AU.started && (G || (typeof TITLE !== 'undefined' && TITLE.on))) { AU.started = true; auStart(); } }, { capture: true });
 document.addEventListener('keydown', () => { if (!AU.started && (G || (typeof TITLE !== 'undefined' && TITLE.on))) { AU.started = true; auStart(); } }, { capture: true });
+// 2026-10-23: スマホは、押した瞬間(pointerdown)に作った音の準備が止まったままになることがある。指を離した時・タップの完了時にも、止まっていれば動かす(タイトルからの開始でも鳴るように)
+const auUnlock = () => {
+  if (!AU.started && (G || (typeof TITLE !== 'undefined' && TITLE.on))) { AU.started = true; auStart(); }
+  if (AU.ctx && AU.ctx.state !== 'running') { try { AU.ctx.resume(); } catch (e) { /* ignore */ } }
+};
+['pointerup', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, auUnlock, { capture: true, passive: true }));
 
 // ---- ui.js ----
 // ===== UI =====
