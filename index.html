@@ -12115,7 +12115,7 @@ function musicKey() {
   return G.phase === 'morning' ? 'morning' : G.phase === 'night' ? 'night' : 'day';
 }
 function musicFor(phase) {
-  if (!AU.ctx || !G) return;
+  if (!AU.ctx) return;
   if (AU.track === phase) return;
   const old = AU.trackGain, now = AU.ctx.currentTime;
   if (old) { old.gain.setTargetAtTime(0.0001, now, 0.5); setTimeout(() => { try { old.disconnect(); } catch (e) { /* gone */ } }, 3000); }
@@ -12136,7 +12136,7 @@ function musicTick() {
 function auStart() {
   if (!auInit()) return;
   auVolumes();
-  if (G && AUS.music) musicFor(musicKey());
+  if (AUS.music) musicFor(G ? musicKey() : (typeof TITLE !== 'undefined' && TITLE.on ? TITLE_BGM : 'morning'));
 }
 
 // ---------- sound effects ----------
@@ -12225,8 +12225,8 @@ function sfx(k, opt) {
   };
   try { (S[k] || S.tap)(); } catch (e) { /* audio unavailable */ }
 }
-document.addEventListener('pointerdown', () => { if (!AU.started && G) { AU.started = true; auStart(); } }, { capture: true });
-document.addEventListener('keydown', () => { if (!AU.started && G) { AU.started = true; auStart(); } }, { capture: true });
+document.addEventListener('pointerdown', () => { if (!AU.started && (G || (typeof TITLE !== 'undefined' && TITLE.on))) { AU.started = true; auStart(); } }, { capture: true });
+document.addEventListener('keydown', () => { if (!AU.started && (G || (typeof TITLE !== 'undefined' && TITLE.on))) { AU.started = true; auStart(); } }, { capture: true });
 
 // ---- ui.js ----
 // ===== UI =====
@@ -18999,6 +18999,7 @@ const TITLE_ART={"background": "data:image/webp;base64,UklGRkD3CQBXRUJQVlA4IDT3C
 const TITLE_NAME = 'Re:turn';
 const TITLE_SUB = '辺境の万事屋は、今日も灯りをともす';
 const TITLE_GOLD = [400, 600, 1000];
+const TITLE_BGM = 'night';   // タイトルの曲(2026-10-23: 「工房の灯」を仮に使う。TRACKS のキー)
 const TITLE = { on: false, el: null, cv: null, raf: 0, last: 0, view: 'top', pick: 1, newSlot: 0, G: null, done: null };
 const TITLE_SKIP = (() => { try { return /notitle/.test(location.hash); } catch (e) { return false; } })();
 // セーブの見本(窓の絵を選ぶための最小限)。セーブが無い枠は「始まりの村(春の夕方)」
@@ -19078,6 +19079,7 @@ function titleOpen(done) {
   SCENE.cv = TITLE.cv; SCENE.cx = TITLE.cv.getContext('2d');
   titleShow(titleRaw(TITLE.pick));
   el.addEventListener('click', titleClick);
+  window.__title = { AU, AUS, TITLE };   // 確認用
   TITLE.raf = requestAnimationFrame(titleLoop);
 }
 function titleClick(e) {
@@ -19092,7 +19094,7 @@ function titleClick(e) {
   if (k === 'gold') { const n = TITLE.newSlot; titleClose(); TITLE.done({ slot: n, fresh: true, gold: +b.dataset.g }); return; }
   if (k === 'login') { syncLogin(); return; }
   if (k === 'logout') { syncLogout().then(() => titleRender()); return; }
-  if (k === 'music') { AUS.music = !AUS.music; if (AUS.music) AUS.mute = false; ausSave(); auVolumes(); titleRender(); return; }
+  if (k === 'music') { AUS.music = !AUS.music; if (AUS.music) AUS.mute = false; ausSave(); if (!AU.ctx) { AU.started = true; auStart(); } auVolumes(); if (AUS.music) musicFor(TITLE_BGM); titleRender(); return; }
   if (k === 'sound') { AUS.sound = !AUS.sound; if (AUS.sound) AUS.mute = false; ausSave(); auVolumes(); titleRender(); return; }
   if (k === 'syncdel1') { UI.syncDel = true; titleRender(); return; }
   if (k === 'syncdel0') { UI.syncDel = false; titleRender(); return; }
