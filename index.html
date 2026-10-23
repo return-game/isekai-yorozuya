@@ -13154,6 +13154,7 @@ function buySlider(c) {
     `<div class="ps-row"><span class="ps-end">値切る</span><input type="range" class="pslider" min="${Math.round(BUY_MIN * 100)}" max="${Math.round(BUY_MAX * 100)}" step="5" value="${Math.round(f * 100)}" aria-label="買取額"><span class="ps-end">色をつける</span></div>` +
     `<div class="ps-read"><span class="ps-m">提示額の${Math.round(f * 100)}%</span>${psOddsBar(p)}</div>` +
     `<button class="btn pri big ps-go" data-act="buyat"${G.gold < price ? ' disabled' : ''} data-focus><span>この値で買い取る</span><b class="price">${fmt(price)}G</b></button>` +
+    `<p class="warn ps-short"${G.gold < price ? '' : ' hidden'}>所持金が足りない(あと${fmt(Math.max(0, price - G.gold))}G)。値切るか、断ろう。</p>` +
     `<p class="ps-note">提示額(100%)なら必ず成立。値切るほど安く買えるが、断られると帰ってしまう。色をつけると名声が上がる(105%で少し、110%でもっと)。</p></div>`;
 }
 function psUpdate(el) {
@@ -13162,7 +13163,7 @@ function psUpdate(el) {
   const go = box.querySelector('.ps-go') || box.closest('.offer').querySelector('.ps-go');
   let price, p;
   if (hot) { const q = +box.dataset.q, n = +box.dataset.n || 1; c.pm = v; price = hotPrice(c, q, v) * n; p = hotOdds(c, q, v); box.querySelector('.ps-m').textContent = '×' + v.toFixed(2); }
-  else { c.pf = v; price = buyPrice(c, v); p = buyOdds(c, v); box.querySelector('.ps-m').textContent = `提示額の${Math.round(v * 100)}%`; if (go) go.disabled = G.gold < price; }
+  else { c.pf = v; price = buyPrice(c, v); p = buyOdds(c, v); box.querySelector('.ps-m').textContent = `提示額の${Math.round(v * 100)}%`; if (go) go.disabled = G.gold < price; const sh = box.querySelector('.ps-short'); if (sh) { sh.hidden = G.gold >= price; sh.textContent = `所持金が足りない(あと${fmt(Math.max(0, price - G.gold))}G)。値切るか、断ろう。`; } }
   box.querySelector('.ps-odds').outerHTML = psOddsBar(p);
   go.querySelector('.price').textContent = fmt(price) + 'G';
   box.classList.toggle('risky', p < 0.5);
@@ -17287,7 +17288,7 @@ const TUT = [
   // v53c: 吹き出しのたたみ方・ずらし方を伝える
   { day: 1, at: 'market', sel: '#stage', next: 'わかった', ex: 'smile',
     text: 'わたしの吹き出しは、「たたむ」で小さくしたり、掴んでずらしたりできます。じゃまな時は動かしてくださいね。' },
-  { day: 1, at: 'market', sel: '#fab .btn', text: 'いいですね。ほかにも仕入れたい物があれば見てみましょう。買いすぎには気をつけて。なければ、いちばん下のボタンで店を開けましょう。',
+  { day: 1, at: 'market', sel: '#fab [data-act=open]', text: 'いいですね。ほかにも仕入れたい物があれば見てみましょう。買いすぎには気をつけて。なければ、いちばん下のボタンで店を開けましょう。',
     done: () => G.act !== 'market' },
   { day: 1, at: 'shop', sel: '[data-act=sell]', ex: 'smile',
     text: 'お客さんです! 陳列棚と特需の枠に並べた品は、お客さんの目に留まって売れやすくなります。欲しい品があれば、「売る」の1タップで売れますよ。',
@@ -17354,7 +17355,7 @@ const TUT = [
   { day: 2, any: true, sel: () => G.built.guild ? '.bld' : '.bld[data-bld=guild]', next: 'がんばる', ex: 'smile',
     text: '村の人たちが建物を建てようとしています。最初の目標は「冒険者ギルド」! 必要な品を「納品」すると建ちます。ギルドが建ったら、冒険者さんを探索に送り出せるようになりますよ。この章の建物3つがそろって、ゴブリンの巣の「ゴブリンの頭」を冒険者さんが倒すと、村は町へ育ちます。' },
   { day: 2, any: true, sel: '.loan', next: 'わかった',
-    text: '村長さんへの返済は、街の「村長の家」からできます。返すたびに、店の増築や新しい仕入れ先など、ごほうびを用意してくださっているそうです。' },
+    text: () => (innerWidth <= 560 ? '村長さんへの返済は、ホームの「店主」からできます。' : '村長さんへの返済は、街の「村長の家」からできます。') + '返すたびに、店の増築や新しい仕入れ先など、ごほうびを用意してくださっているそうです。' },
   // v54b: 最後はエマに聞くを教える
   { day: 2, any: true, sel: () => isPhone() ? '.mnav [data-act=help]' : '.helpbtn', next: '店を続ける', ex: 'smile',
     text: '迷ったら、上の「いまやること」を見るか、いつでもわたしに聞いてくださいね。いまできることと、この画面のこと、それに仕組みの辞典もありますよ。では、ギルドが建つのを楽しみにしていますね!' },
