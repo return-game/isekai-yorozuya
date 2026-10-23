@@ -2562,6 +2562,13 @@ body.practice #app { display: none; }
 /* No.116c 所持数: 朝市の棚・工房のレシピ絵の右下に */
 .shelf-item .ic .cnt, .rec .ic .cnt { right: 2px; bottom: 2px; min-width: 18px; padding: 1px 5px; border-radius: 7px; background: rgba(8, 10, 16, .86); border: 1px solid rgba(255, 255, 255, .22); color: #fff; font-size: 12px; line-height: 1.15; text-align: center; text-shadow: none; }
 
+/* No.118 スマホの店先: お客さんを大きく(腰から上) */
+@media (max-width:560px){
+  .stack.shop-p .cbox.adv > .ss { height: clamp(150px, 23vh, 196px); }
+  .stack.shop-p .cbox.adv .ss .ss-cust.ch { top: 8px; bottom: auto; height: 138%; }
+  .stack.shop-p .cbox.adv .ss .ss-cust.ch img { height: 100%; }
+}
+
 </style>
 <div id="app">
   <div class="side-col">
