@@ -2565,7 +2565,7 @@ body.practice #app { display: none; }
 /* No.118 スマホの店先: お客さんを大きく(腰から上) */
 @media (max-width:560px){
   .stack.shop-p .cbox.adv > .ss { height: clamp(150px, 23vh, 196px); }
-  .stack.shop-p .cbox.adv .ss .ss-cust.ch { top: 8px; bottom: auto; height: 138%; }
+  .stack.shop-p .cbox.adv .ss .ss-cust.ch { top: 6px; bottom: auto; height: 88%; }
   .stack.shop-p .cbox.adv .ss .ss-cust.ch img { height: 100%; }
 }
 
@@ -14973,7 +14973,19 @@ const MG2 = (() => {
     if(kind==='hammer'){p.beginPath();p.moveTo(-90,-8);p.lineTo(-90,8);p.stroke();}
     return MOTION_ART[kind]=cv;
   }
+  // The knife is drawn straight onto the stage every frame (no cached sprite): on some phones the cached sprite never showed (2026-10-23).
+  function drawKnife(x,y,angle,alpha,flip){
+    cx.save();cx.translate(x,y);cx.scale(flip,1);cx.rotate(angle);cx.scale(1,-1);cx.globalAlpha*=alpha;
+    cx.lineJoin='round';cx.lineCap='round';
+    const blade=()=>{cx.beginPath();cx.moveTo(-4,-5);cx.lineTo(-29,-5);cx.lineTo(-29,-24);cx.bezierCurveTo(-51,-24,-77,-21,-102,-13);cx.quadraticCurveTo(-109,-7,-108,0);cx.lineTo(-29,0);cx.lineTo(-29,5);cx.lineTo(-4,5);cx.quadraticCurveTo(2,0,-4,-5);};
+    blade();cx.fillStyle='rgba(12,14,20,.55)';cx.fill();
+    cx.strokeStyle='rgba(0,0,0,.5)';cx.lineWidth=5.6;cx.stroke();
+    cx.shadowColor='rgba(255,255,255,.5)';cx.shadowBlur=4;cx.strokeStyle='rgba(255,255,255,.92)';cx.lineWidth=2.6;blade();cx.stroke();
+    cx.shadowBlur=0;cx.lineWidth=1.1;cx.strokeStyle='rgba(255,255,255,.5)';cx.beginPath();cx.moveTo(-34,-20);cx.lineTo(-34,-4);cx.stroke();
+    cx.restore();
+  }
   function motionTool(kind,x,y,angle,alpha=1,flip=1){
+    if(kind==='knife'){drawKnife(x,y,angle,alpha,flip);return;}
     cx.save();cx.translate(x,y);cx.scale(flip,1);cx.rotate(angle);cx.globalAlpha*=alpha;cx.drawImage(motionSprite(kind),-150,-60,200,120);cx.restore();
   }
   function motionRebound(t,hitT,contact,raised){
