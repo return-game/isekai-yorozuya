@@ -1019,18 +1019,18 @@ details[open] summary::after { content: '閉じる'; }
 .durbar { display: block; width: 22px; height: 3px; margin-top: 2px; border-radius: 2px; background: rgba(255, 255, 255, .12); overflow: hidden; }
 .durbar i { display: block; height: 100%; background: #5fd29a; } .durbar i.mid { background: #e8c06a; } .durbar i.low { background: #e0604e; }
 .roster { display: grid; gap: 6px; }
-.advr { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); }
-.advr.sel { border-color: var(--brass-hi); background: rgba(232, 192, 106, .08); }
-.advr.off { opacity: .72; }
-.advr-b { display: grid; gap: 4px; min-width: 0; }
-.advr-a { display: flex; gap: 6px; }
-.advr .tag { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: var(--ink-2); }
-.advr .tag.ok { background: rgba(95, 210, 154, .15); color: #9fe0cf; } .advr .tag.hurt { background: rgba(224, 96, 78, .18); color: #ffaaa0; } .advr .tag.out { background: rgba(157, 140, 255, .18); color: #c8bdff; }
+.gmem { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); }
+.gmem.sel { border-color: var(--brass-hi); background: rgba(232, 192, 106, .08); }
+.gmem.off { opacity: .72; }
+.gmem-b { display: grid; gap: 4px; min-width: 0; }
+.gmem-a { display: flex; gap: 6px; }
+.gmem .tag { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: var(--ink-2); }
+.gmem .tag.ok { background: rgba(95, 210, 154, .15); color: #9fe0cf; } .gmem .tag.hurt { background: rgba(224, 96, 78, .18); color: #ffaaa0; } .gmem .tag.out { background: rgba(157, 140, 255, .18); color: #c8bdff; }
 .gslot { appearance: none; display: grid; justify-items: center; align-content: center; min-width: 36px; height: 36px; padding: 2px 4px; border-radius: 9px; border: 1px solid var(--line); background: rgba(0, 0, 0, .25); color: var(--mute); font: 600 10.5px var(--f-ui); cursor: pointer; }
 .gslot.empty { border-style: dashed; }
 .gslot.on { border-color: var(--brass-hi); box-shadow: 0 0 0 1px var(--brass-hi); }
 .gslot .ic.xs { width: 22px; height: 22px; }
-.advr .gedit { grid-column: 1 / -1; }
+.gmem .gedit { grid-column: 1 / -1; }
 .gedit { margin-top: 4px; padding: 10px; border-radius: 12px; background: rgba(0, 0, 0, .22); border: 1px solid rgba(232, 192, 106, .3); display: grid; gap: 6px; }
 .rumortag { font-size: 11px; font-weight: 700; color: #c8bdff; }
 .dvauto { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--ink-2); text-align: left; margin-top: 8px; cursor: pointer; }
@@ -1280,24 +1280,24 @@ button.fxrow:not(:disabled):active { border-color: var(--brass); }
 .dvwait b { grid-column: 1; font-family: var(--f-display); font-size: 18px; }
 .dvwait .sub { grid-column: 1; }
 .dvwait .btn { grid-column: 2; grid-row: 1 / span 3; pointer-events: none; }
-.advview { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; align-items: start; }
-.advview .dw-view.big { width: 100%; }
-.advside { min-width: 0; display: grid; gap: 2px; }
-.advside .dw-hp.big { margin: 0 0 2px; }
-@media (max-width: 560px) { .advview { grid-template-columns: 1fr; } }
+.gxview { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.gxview .dw-view.big { width: 100%; }
+.gxside { min-width: 0; display: grid; gap: 2px; }
+.gxside .dw-hp.big { margin: 0 0 2px; }
+@media (max-width: 560px) { .gxview { grid-template-columns: 1fr; } }
 .dvlog.short { max-height: 190px; overflow-y: auto; margin-top: 8px; }
-.advli { grid-template-columns: auto minmax(0, 1fr); }
-.advarea { appearance: none; background: none; border: 0; border-bottom: 1px solid var(--line); width: 100%; text-align: left; color: inherit; grid-template-columns: minmax(0, 1fr) auto; cursor: pointer; }
-.advarea:hover:not(:disabled) .t { color: var(--brass-hi); }
-.advarea:disabled { cursor: default; opacity: .75; }
-.advarea.off { grid-template-columns: auto minmax(0, 1fr); opacity: .6; }
+.gxli { grid-template-columns: auto minmax(0, 1fr); }
+.gxarea { appearance: none; background: none; border: 0; border-bottom: 1px solid var(--line); width: 100%; text-align: left; color: inherit; grid-template-columns: minmax(0, 1fr) auto; cursor: pointer; }
+.gxarea:hover:not(:disabled) .t { color: var(--brass-hi); }
+.gxarea:disabled { cursor: default; opacity: .75; }
+.gxarea.off { grid-template-columns: auto minmax(0, 1fr); opacity: .6; }
 .coach-bubble .whosub { font: 500 10.5px var(--f-ui); color: var(--mute); margin-right: auto; margin-left: 6px; }
 .subtabs + .phead { min-height: 60px; }
 @media (min-width: 960px) { .subtabs + .phead { min-height: 96px; } }
 /* the 冒険 tab keeps its own layout even while the top band is folded on phones */
-#app .advview .dw-view { display: block !important; }
-#app .advside > * { grid-column: 1 !important; grid-row: auto !important; }
-#app .advside .dw-hp .hpbar { width: 140px !important; }
+#app .gxview .dw-view { display: block !important; }
+#app .gxside > * { grid-column: 1 !important; grid-row: auto !important; }
+#app .gxside .dw-hp .hpbar { width: 140px !important; }
 #veil .loan .row > .pt { display: none; }
 
 /* ===== v32: レア度・使い道・探索のレア・道のり・一息 ===== */
@@ -14866,7 +14866,7 @@ function mealSheet() {
     const ml = mealOf(m.id), out = advOut(m), hurt = advHurt(m);
     const st = ml ? `<div class="meal-got">${pubIcon(PUB_BY[ml.dish])}<span><b>${PUB_BY[ml.dish].n}</b>を食べた<br><span class="sub">${mealLine(ml)}</span></span></div>` : out ? '<span class="sub">探索中</span>' : hurt ? `<span class="sub">療養中(あと${hurt}日)</span>` : '<span class="sub">おなかがすいている</span>';
     const can = !ml && !out && !hurt;
-    return `<div class="ri advli">${advFace(m, 'sm')}<div style="min-width:0;flex:1"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}</div>${st}</div>${can ? `<button class="btn sm gold" data-act="mealpick" data-v="${m.id}">釣って食べさせる</button>` : ''}</div>`;
+    return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0;flex:1"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}</div>${st}</div>${can ? `<button class="btn sm gold" data-act="mealpick" data-v="${m.id}">釣って食べさせる</button>` : ''}</div>`;
   }).join('');
   const h = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">冒険者ギルド</div><h2>食事</h2></div></div>` +
     `<p class="note">川で宝箱を釣り上げると、中からゴズの料理が出ます。何が出るかは開けるまで分かりません。食べた冒険者は、次に出発する冒険の間だけ料理のバフがつきます(毎回食べさせます)。</p>` +
@@ -17069,7 +17069,7 @@ function advRow(m, gq, a) {
   const treat = hurt && !out ? `<button class="btn sm heal" data-act="dvtreat" data-v="${m.id}">手当て</button>` : '';
   const bag = a && sel ? bagSlotsHtml(m, gq) : '';
   const xp = m.rk < rankMax() ? `<span class="sub" style="font-size:11px">次のランクまで ${Math.max(0, 3 + 2 * m.rk - (m.xp || 0))}</span>` : '';
-  return `<div class="advr${sel ? ' sel' : ''}${out || hurt ? ' off' : ''}">${advFace(m, 'sm')}<div class="advr-b"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}</div><div class="row" style="gap:6px">${gear}${a ? `<span class="sub" style="font-size:11px">${fmt(questFee(a, m.rk))}G</span>` : xp}</div>${bag}</div><div class="advr-a">${pick}${treat}</div>${gq.edit && gq.edit.id === m.id ? gearEditor(gq, a) : ''}</div>`;
+  return `<div class="gmem${sel ? ' sel' : ''}${out || hurt ? ' off' : ''}">${advFace(m, 'sm')}<div class="gmem-b"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}</div><div class="row" style="gap:6px">${gear}${a ? `<span class="sub" style="font-size:11px">${fmt(questFee(a, m.rk))}G</span>` : xp}</div>${bag}</div><div class="gmem-a">${pick}${treat}</div>${gq.edit && gq.edit.id === m.id ? gearEditor(gq, a) : ''}</div>`;
 }
 function bagSlotsHtml(m, gq) {
   const b = (gq.bags || {})[m.id] || {}, ids = Object.keys(b), n = bagSlots(m), on = gq.edit && gq.edit.id === m.id && gq.edit.slot === 'bag';
@@ -17143,6 +17143,7 @@ function diveSheet() {
   h += aimPicker(gq, a);
   h += rosterSec(gq, a);
   if (ps.length) h += `<div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-act="dvautoeq">おまかせで武具を渡す</button><span class="sub" style="font-size:11.5px">倉庫のいちばん良い武具を、同行する冒険者に渡す</span></div>`;
+  if (typeof mealSheet === 'function') h += `<div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-act="mealsheet">食事をとる</button><span class="sub" style="font-size:11.5px">釣った料理で、同行する冒険者にバフ${Object.keys(G.meals || {}).length ? `・食べた人 ${Object.keys(G.meals).length}人` : ''}</span></div>`;
   if (ps.length) {
     const all = [...new Set(Object.values(gq.bags).flatMap(Object.keys))], have = bagScenes(all);
     const want = ['戦闘', '危ない時', '罠', '宝箱', '分かれ道', '隠し部屋', '野営', '帰り道'];
@@ -17236,8 +17237,8 @@ function vAdv() {
   if (d) {
     const a = AR[d.area], dg = DG[a.id];
     const bag = d.bag.filter(b => b.qs.length).map(b => `<span class="in">${ico(b.id, b.qs[0], { size: 'xs' })}${IT[b.id].name}×${b.qs.length}</span>`).join('') || '<span class="sub">空っぽ</span>';
-    h += `<div class="sec advnow" data-sec="探索の様子"><h2>${a.n}<span class="aside">${diveStatus(d)}</span></h2><div class="advview"><button class="dw-view big" data-act="${d.pending ? 'dvask' : 'dvview'}" aria-label="探索を大きく見る"><canvas class="dvbig" width="384" height="216"></canvas><span class="dw-zoom" aria-hidden="true">⤢</span></button>` +
-      `<div class="advside"><div class="dw-hp big">${partyFaces(d)}${hpBar(d.hp)}<span>${HP_WORD(d.hp)}</span></div><div class="sub">今日 ${d.day === G.day ? d.today : 0}/${diveCap()}ターン・最奥に${MON[dg.boss].n}</div>` +
+    h += `<div class="sec gxnow" data-sec="探索の様子"><h2>${a.n}<span class="aside">${diveStatus(d)}</span></h2><div class="gxview"><button class="dw-view big" data-act="${d.pending ? 'dvask' : 'dvview'}" aria-label="探索を大きく見る"><canvas class="dvbig" width="384" height="216"></canvas><span class="dw-zoom" aria-hidden="true">⤢</span></button>` +
+      `<div class="gxside"><div class="dw-hp big">${partyFaces(d)}${hpBar(d.hp)}<span>${HP_WORD(d.hp)}</span></div><div class="sub">今日 ${d.day === G.day ? d.today : 0}/${diveCap()}ターン・最奥に${MON[dg.boss].n}</div>` +
       `<div class="sub" style="margin-top:6px">道具袋</div><div class="ins">${bag}</div><div class="sub" style="margin-top:6px">収穫</div><div class="ins">${haulIcons(d.haul, 12)}${d.gold ? `<span class="in price">${d.gold}G</span>` : ''}</div></div></div>` +
       routeBar(d) + (d.aim ? `<div class="sub" style="margin-top:4px">狙い: ${ico(d.aim, null, { size: 'xs', sil: G.found[d.aim] === undefined })} ${G.found[d.aim] !== undefined ? IT[d.aim].name : '？？？'}(ぬしの奥の封印された箱)</div>` : '') +
       `<label class="dvauto"><input type="checkbox" data-act="dvauto"${G.diveMinorAuto ? ' checked' : ''}><span>${AUTO_TXT}</span></label>` +
@@ -17256,14 +17257,14 @@ function vAdv() {
     const out = advOut(m), hurt = advHurt(m);
     const st = out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
     const gear = [m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">武具なし</span>';
-    return `<div class="ri advli">${advFace(m, 'sm')}<div style="min-width:0"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}${mealOf(m.id) ? `<span class="tag ok">${MEAL_B[mealOf(m.id).buff].n}</span>` : ''}</div><div class="ins">${gear}</div></div></div>`;
+    return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}${mealOf(m.id) ? `<span class="tag ok">${MEAL_B[mealOf(m.id).buff].n}</span>` : ''}</div><div class="ins">${gear}</div></div></div>`;
   }).join('') + `</div><button class="btn sm" data-act="guild" style="margin-top:8px">ギルドで武具を整える・手当て</button></div>`;
   // places and records
   const opened = AREAS.filter(areaOpen);
   h += `<div class="sec" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所</span></h2><div class="rows">` + AREAS.map(a => {
     const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id];
-    if (!open) return `<div class="ri advarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${STAGES[a.st].short}になると行ける</span></div>`;
-    return `<button class="ri advarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="sub" style="font-weight:500;margin-left:6px">推奨${RANKS[a.rk].n}・${daysWord(a)}</span></div><div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div></div><span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
+    if (!open) return `<div class="ri gxarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${STAGES[a.st].short}になると行ける</span></div>`;
+    return `<button class="ri gxarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="sub" style="font-weight:500;margin-left:6px">推奨${RANKS[a.rk].n}・${daysWord(a)}</span></div><div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div></div><span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
   }).join('') + `</div></div>`;
   h += vGuildReport();
   return h + `</div>`;
