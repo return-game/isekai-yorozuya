@@ -1023,6 +1023,7 @@ details[open] summary::after { content: '閉じる'; }
 .gmem.sel { border-color: var(--brass-hi); background: rgba(232, 192, 106, .08); }
 .gmem.off { opacity: .72; }
 .gmem-b { display: grid; gap: 4px; min-width: 0; }
+.gjob { font-size: 11.5px; color: var(--ink-2); line-height: 1.3; } .gjob span { color: var(--ink-3, #9a9fab); }
 .gmem-a { display: flex; gap: 6px; }
 .gmem .tag { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: var(--ink-2); }
 .gmem .tag.ok { background: rgba(95, 210, 154, .15); color: #9fe0cf; } .gmem .tag.hurt { background: rgba(224, 96, 78, .18); color: #ffaaa0; } .gmem .tag.out { background: rgba(157, 140, 255, .18); color: #c8bdff; }
@@ -2004,7 +2005,7 @@ body.practice #app { display: none; }
   #panel.fit { overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
   #panel.fit > .stack { flex: 1; min-height: 0; grid-template-rows: repeat(var(--hdr, 1), auto) minmax(0, 1fr); }
   #panel.fit .wcols { min-height: 0; align-items: stretch; }
-  #panel.fit .wcols > .wa, #panel.fit .wcols > .wb { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(217, 184, 116, .35) transparent; padding-right: 4px; }
+  #panel.fit .wcols > .wa, #panel.fit .wcols > .wb { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(217, 184, 116, .35) transparent; padding-right: 4px; padding-top: 6px; }
   .wcols[data-v=main-market] > .wb > .sec .cbox.market { max-height: 100%; overflow-y: auto; }
   /* the left column: keep the party card, tabs and goals on one screen */
   .divewin { grid-template-columns: 150px minmax(0, 1fr); gap: 10px; }
@@ -2307,7 +2308,7 @@ body.practice #app { display: none; }
  #panel[data-v="main-market"] .shops{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:0 0 5px}
  #panel[data-v="main-market"] .shop{min-height:68px;padding:5px 3px 4px;gap:3px;border-radius:8px;align-content:start}
  #panel[data-v="main-market"] .shop .pt{width:36px;height:36px;border-radius:7px}
- #panel[data-v="main-market"] .shop .sn{font-family:var(--f-ui);font-size:10px;line-height:1.25;font-weight:600;min-height:2.5em;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
+ #panel[data-v="main-market"] .shop .sn{font-family:var(--f-display);font-size:10px;line-height:1.25;font-weight:800;min-height:2.5em;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
  #panel[data-v="main-market"] .sec > h2{font-size:14px;margin-bottom:6px}
  #panel[data-v="main-market"] .sec > h2 .aside{font-size:11px}
  .cbox.adv.market .ss .ss-cust,.cbox.adv.market .ss .ss-cust.ch{border-radius:10px;width:70px;height:70px}
@@ -2372,7 +2373,7 @@ body.practice #app { display: none; }
  #crumbs.shop-fixed .cr-sec{flex:0 1 auto;min-width:0;max-width:46%}
  #crumbs.shop-fixed>.subtabs.mini{margin:0 0 0 auto;flex:none;display:flex;gap:1px;padding:2px;border-radius:10px;width:auto;grid-template-columns:none}
  .subtabs.mini .stab{display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:0 9px;border-radius:8px;line-height:1.2}
- .subtabs.mini .stab b{font-family:var(--f-ui);font-size:12.5px;font-weight:700;letter-spacing:0}
+ .subtabs.mini .stab b{font-family:var(--f-display);font-size:12.5px;font-weight:800;letter-spacing:0}
  .subtabs.mini .stab.off{opacity:.42}
  .subtabs.mini .stab.on{opacity:1}
  .subtabs.mini .nowdot{width:5px;height:5px;flex:none}
@@ -2381,7 +2382,7 @@ body.practice #app { display: none; }
  #panel[data-v="main-market"] .shops{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:0 0 2px}
  #panel[data-v="main-market"] .shop{position:relative;height:auto;min-height:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 3px 4px;overflow:hidden;border-radius:12px;border:1px solid var(--hair);background:rgba(15,19,27,.55)}
  #panel[data-v="main-market"] .shop .pt{position:relative;top:auto;left:auto;flex:none;width:50px;height:50px;border-radius:11px;overflow:hidden}
- #panel[data-v="main-market"] .shop .sn{position:static;min-height:2.45em;padding:0 1px;background:none;text-shadow:none;color:var(--ink-2);font:600 10.5px/1.2 var(--f-ui);display:flex;align-items:flex-start;justify-content:center;text-align:center;overflow-wrap:anywhere}
+ #panel[data-v="main-market"] .shop .sn{position:static;min-height:2.45em;padding:0 1px;background:none;text-shadow:none;color:var(--ink-2);font:800 10.5px/1.2 var(--f-display);display:flex;align-items:flex-start;justify-content:center;text-align:center;overflow-wrap:anywhere}
  #panel[data-v="main-market"] .shop.on{border-color:rgba(232,192,106,.5);background:rgba(217,184,116,.10);box-shadow:none}
  #panel[data-v="main-market"] .shop.on .sn{color:var(--brass-hi)}
 
@@ -2391,7 +2392,7 @@ body.practice #app { display: none; }
  .shelf-gap{min-height:4px}
  .shelf-item{position:relative;min-width:0;appearance:none;background:none;color:var(--ink);padding:9px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
  .shelf-item .ic{--s:46px;transition:transform .12s ease,box-shadow .12s ease}
- .shelf-item b{max-width:100%;font:600 11px/1.25 var(--f-ui);color:#e7dcc3;overflow-wrap:anywhere}
+ .shelf-item b{max-width:100%;font:800 11px/1.25 var(--f-display);color:#e7dcc3;overflow-wrap:anywhere}
  .shelf-item small{display:inline-flex;align-items:center;gap:4px;font:500 10.5px/1.2 var(--f-ui);color:#d9bd86}
  .shelf-item small .need{display:inline-block;width:auto;flex:none;margin:0;font-style:normal;font-weight:700;font-size:9px;line-height:1.3;padding:0 4px;border-radius:4px;background:#79c6b4;color:#16352c}
  .shelf-item.selected .ic{transform:translateY(-3px);box-shadow:0 0 0 1.5px rgba(245,215,142,.8),0 8px 10px -4px rgba(0,0,0,.8)}
@@ -2568,6 +2569,26 @@ body.practice #app { display: none; }
   .stack.shop-p .cbox.adv .ss .ss-cust.ch { top: 6px; bottom: auto; height: 88%; }
   .stack.shop-p .cbox.adv .ss .ss-cust.ch img { height: 100%; }
 }
+
+/* v54u: アイコンの見え方をそろえる(倉庫・図鑑・工房・市場の棚で同じ部品)
+   右下の数は、背景なし・小さめの文字・縁取りだけ(絵を隠さない)。0 は少し薄く。 */
+.ic .cnt, .grid .cell .ic .cnt, .shelf-item .ic .cnt, .rec .ic .cnt {
+  right: 3px; bottom: 1px; min-width: 0; padding: 0; border: 0; border-radius: 0; background: none;
+  color: #fff; font: 800 11px/1.2 var(--f-display); text-align: right;
+  text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 4px #000, 0 0 6px rgba(0, 0, 0, .8);
+}
+.ic.xs .cnt, .ic.sm .cnt { font-size: 9.5px; right: 1px; bottom: 0; }
+.ic .cnt.z { color: #b9b3a6; }
+/* 工房のレシピのアイコンは、PCでは倉庫・図鑑と同じ大きさ */
+@media (min-width: 561px) { .rec > .ic { --s: 58px; border-radius: 12px; } }
+/* v54u: ホームの「いま」の枠を外したので、エマの一言が景色のすぐ下に来る */
+.hm-emma { margin-top: 92px; }
+/* v54u: PCの下のタブで、名前(店主・倉庫など)が縦に折れないように */
+#tabs .tab .tn { white-space: nowrap; min-width: 0; }
+#tabs .tab .tst { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+/* v54u: PCの下のタブは名前だけ。知らせはアイコンの右下の小さな点(急ぎは !) */
+#tabs .tab .dot { position: absolute; top: auto; bottom: 7px; left: 27px; right: auto; width: 9px; min-width: 0; height: 9px; padding: 0; border-radius: 50%; font-size: 0; line-height: 0; box-shadow: 0 0 0 2px rgba(13, 16, 23, .95); }
+#tabs .tab .dot.alert { width: 15px; height: 15px; left: 24px; bottom: 4px; font: 800 10px/15px var(--f-ui); text-align: center; }
 
 </style>
 <div id="app">
@@ -12537,7 +12558,7 @@ function ico(id, q, o = {}) {
   const it = IT[id]; if (!it) return '';
   const sil = !!o.sil;
   const cls = 'ic ' + (o.size || '') + (sil ? ' sil' : '') + (q != null && q >= 0 && !sil ? ' q' + q : '');
-  return `<span class="${cls}"><img data-item-icon="${esc(id)}" data-item-sil="${sil ? 1 : 0}" src="${itemIconURL(id, sil)}" style="image-rendering:${itemIconRendering(id)}" alt="${sil ? '未発見' : it.name}">${o.cnt != null ? `<b class="cnt">${o.cnt}</b>` : ''}${o.isNew ? '<b class="new">NEW</b>' : ''}${o.grade ? `<b class="grd g${o.grade}" aria-label="レア度${o.grade}">${o.grade}</b>` : ''}</span>`;
+  return `<span class="${cls}"><img data-item-icon="${esc(id)}" data-item-sil="${sil ? 1 : 0}" src="${itemIconURL(id, sil)}" style="image-rendering:${itemIconRendering(id)}" alt="${sil ? '未発見' : it.name}">${o.cnt != null ? `<b class="cnt${o.cnt === 0 ? ' z' : ''}">${o.cnt}</b>` : ''}${o.isNew ? '<b class="new">NEW</b>' : ''}${o.grade ? `<b class="grd g${o.grade}" aria-label="レア度${o.grade}">${o.grade}</b>` : ''}</span>`;
 }
 // small round portrait: a standing picture is zoomed onto the face
 function portrait(c, size, ex) {
@@ -12906,6 +12927,7 @@ function renderTabs() {
     ['main', '店', deliverable],
     ['town', '街', bldReadyN()],
     ['pub', '灯り亭', 0],
+    ['meal', '食事', 0],
     ...(guildOpen() ? [['adv', '冒険', wait ? '!' : 0]] : []),
     ['inv', '倉庫', (G.dexNew || []).length],
     ['owner', '店主', G.sp],
@@ -12913,8 +12935,9 @@ function renderTabs() {
   const el = $('#tabs');
   el.style.setProperty('--ntabs', tabs.length);
   el.innerHTML = tabs.map(([k, n, dot]) =>
-    k === 'pub' ? `<button class="tab" data-act="pub">${lineIcon(SKI.cutlery)}<span class="tn">${n}<small class="tst">${G.act === 'work' ? '夕食と噂' : '夜に夕食'}</small></span></button>`
-    : `<button class="tab${UI.tab === k ? ' on' : ''}${k === 'adv' && wait ? ' wait' : ''}" data-act="tab" data-v="${k}" title="${tabDotWhy(k, dot)}">${tabIcon(k, G.phase)}<span class="tn">${n}<small class="tst">${esc(tabStatus(k))}</small></span>${dot ? `<span class="dot${dot === '!' ? ' alert' : ''}">${dot === '!' ? '!' : ({ main: '納品', town: '納品', inv: '新', owner: 'ポイント' }[k] || '') + dot}</span>` : ''}</button>`).join('') +
+    k === 'meal' ? `<button class="tab" data-act="ownmeal" title="持ち物を食べて体力を戻す">${lineIcon(SKI.bowl)}<span class="tn">${n}</span></button>`
+    : k === 'pub' ? `<button class="tab" data-act="pub" title="${G.act === 'work' ? '夕食と噂' : '夜に夕食'}">${lineIcon(SKI.cutlery)}<span class="tn">${n}</span></button>`
+    : `<button class="tab${UI.tab === k ? ' on' : ''}${k === 'adv' && wait ? ' wait' : ''}" data-act="tab" data-v="${k}" title="${esc(tabStatus(k))}${dot ? '・' + tabDotWhy(k, dot) : ''}">${tabIcon(k, G.phase)}<span class="tn">${n}</span>${dot ? `<span class="dot${dot === '!' ? ' alert' : ''}">${dot === '!' ? '!' : ''}</span>` : ''}</button>`).join('') +   // v54u: 説明の行と数のバッジは外し、小さな点(急ぎは!)だけ
     // v54: スマホの下のバーは 店・街・冒険・ホーム・エマ(倉庫・図鑑・店主・灯り亭・設定はホームから)
     `<div class="mnav" style="--nmn:${guildOpen() ? 6 : 5}">` + navBackButton() +
     `<button class="mn${UI.tab === 'main' ? ' on' : ''}" data-act="tab" data-v="main">${tabIcon('main', G.phase)}<span>店</span>${deliverable ? '<b class="alert"></b>' : ''}</button>` +
@@ -12932,7 +12955,7 @@ function renderFab() {
       ? `<button class="btn gold" data-act="book"${M.ok ? '' : ' disabled'}>${fmt(M.v)}Gで買う</button>`
       : [1, 5, 10].map(n => { const need = n === 1 ? 1 : n === 5 ? 2 : 6; return `<button class="btn gold" data-act="sbuy" data-id="${M.id}" data-i="${M.i}" data-n="${n}"${M.stock < need || G.gold < M.price * need ? ' disabled' : ''}>${n === 1 ? '買う' : '×' + n}</button>`; }).join('');
     const info = M.book ? `<button class="lnk fi-name" disabled><b>${esc(M.name)}</b></button><span>${esc(M.info)}</span>`
-      : `<button class="lnk fi-name" data-act="goto" data-id="${M.id}" aria-label="${esc(M.name)}の詳しい情報"><b>${esc(M.name)}</b></button><span><strong>${M.price}G</strong>／個　残り${M.stock}　所持${M.have}${M.tags}${M.mk || ''}</span>`;
+      : `<button class="lnk fi-name" data-act="goto" data-id="${M.id}" aria-label="${esc(M.name)}の詳しい情報"><b>${esc(M.name)}</b></button><span><strong>${M.price}G</strong>／個　在庫:${M.stock}${M.tags}${M.mk || ''}</span>`;
     h = `<div class="fab-info">${info}</div><div class="fab-row"><div class="fab-buy">${buy}</div><button class="btn fab-open" data-act="open"><span>店を開ける</span></button></div>`;
     cls += ' mkt';
   } else if (G.act === 'market') h = `<button class="btn pri stacked" data-act="open"><span>店を開ける</span><span class="s2">朝は${SHOP_BANDS.morning.who}</span></button>`;
@@ -12966,7 +12989,7 @@ function homeHero() {
   return { k: 'work', n: '工房', ic: SKI.anvil, st: `体力 ${G.work}/${workMax()}`, sub: G.work ? '作業できる' : '今夜の作業はおしまい', go: '作業する' };
 }
 function vHome() {
-  const hr = homeHero(), q = UI.quest || questLine();
+  const q = UI.quest || questLine();
   const ready = G.orders.filter(o => orderHave(o) >= o.qty).length, wait = G.dive && G.dive.pending && !G.dive.done;
   // [label, icon, data attributes, off (out of its hours), badge ('' / number / '!' urgent, '•' a quiet dot), colour]
   const apps = [
@@ -12977,6 +13000,7 @@ function vHome() {
     ['注文', SKI.scroll, `data-act="hgo" data-tab="main" data-sec="受けている注文"`, '', ready || '', '#b08a3e'],
     ['街', TAB_SVG.town(), 'data-act="hgo" data-tab="town"', '', bldReadyN() ? '•' : '', '#5f7f4a'],
     ['灯り亭', SKI.cutlery, 'data-act="pub"', G.act !== 'work' ? '夜に夕食' : '', '', '#a0583f'],
+    ['食事', SKI.bowl, 'data-act="ownmeal"', G.act === 'work' ? '体力を戻す' : '夜に食べる', '', '#b07a3a'],
     ...(guildOpen() ? [['冒険', TAB_SVG.adv(), 'data-act="hgo" data-tab="adv"', '', wait ? '!' : '', '#3f7d6e']] : []),
     ['倉庫', TAB_SVG.inv(), 'data-act="hgo" data-tab="inv" data-inv="items"', '', '', '#6b6f8a'],
     ['図鑑', HOME_SVG.book, 'data-act="hgo" data-tab="inv" data-inv="dex"', (G.dexNew || []).length ? `新しい品 ${G.dexNew.length}` : '', (G.dexNew || []).length ? '•' : '', '#4f7a8a'],
@@ -12987,12 +13011,12 @@ function vHome() {
     ['店主', TAB_SVG.owner(), 'data-act="hgo" data-tab="owner" data-own="shop"', '設備・売上・借金', '', '#6a5a7a'],
     ['遊び方', SKI.bubble, 'data-act="howto"', false, '', '#6a7380'],
     ['設定', HOME_SVG.gear, 'data-act="settings"', false, '', '#5d6470'],
-  ].filter(a => a[0] !== hr.n);
+  ];
   const se = SEASONS[season()];
   return `<div class="home" data-sec="ホーム">` +
     `<div class="hm-top"><b class="hm-nm">${esc(G.name || '万事屋')}</b><span class="hm-day">${se.n} ${G.day}日目・${PH[G.phase].n} ${G.act === 'shop' ? clockText() : ''}</span><span class="hm-g">${fmt(G.gold)} G</span></div>` +
     `<div class="hm-chap">第${G.stage + 1}章 ${STAGES[G.stage].n}</div>` +
-    `<button class="hm-hero" data-act="hgo" data-tab="main" data-view="${hr.k}"><span class="hm-ai" data-k="${hr.k}">${lineIcon(hr.ic)}</span><span class="hm-ht"><small>いま</small><b>${hr.n}</b><span>${hr.st}</span><span>${hr.sub}</span></span><span class="hm-go">${hr.go}${lineIcon(HOME_SVG.go, 'hgo')}</span></button>` +
+    // v54u: 「いま」の大きな枠は外した(その場所もボタンの並びに入れて、スクロールなしで全部見える)
     `<button class="hm-emma" data-act="quest"><img src="${chibiURL(GUIDE, 'smile')}" alt="エマ"><span><small>エマ</small>${q.t}</span>${lineIcon(HOME_SVG.go, 'hgo')}</button>` +
     `<div class="hm-grid">` + apps.map(([n, ic, at, off, bd, col]) =>
       `<button class="hm-app" ${at} style="--c:${col}"><span class="hm-ai">${lineIcon(ic)}${bd ? `<b class="${bd === '•' ? 'dot' : ''}">${bd === '•' ? '' : bd}</b>` : ''}</span><span class="hm-al">${n}${off ? `<small class="hm-as">${off}</small>` : ''}</span></button>`).join('') +
@@ -13103,11 +13127,11 @@ function vMarket() {
   if (innerWidth <= 560) return h + vMarketShelf(cur, need) + `</div></div></div></div>`;
   if (m.k === 'book') {
     const b = BK[G.stallBook], n = RECIPES.filter(r => r.book === b.id).length;
-    h += `<div class="ri"><span class="ic lg"><img src="${recipeBookURL(b.id)}" alt=""></span><div style="min-width:0"><div class="t">${b.n}</div><div class="m"><span>${b.d}</span><span>${n}種のレシピ</span></div></div><button class="btn gold" data-act="book"${G.gold < b.v ? ' disabled' : ''}>${fmt(b.v)}G</button></div>`;
+    h += `<div class="ri"><span class="ic"><img src="${recipeBookURL(b.id)}" alt=""></span><div style="min-width:0"><div class="t">${b.n}</div><div class="m"><span>${b.d}</span><span>${n}種のレシピ</span></div></div><button class="btn gold" data-act="book"${G.gold < b.v ? ' disabled' : ''}>${fmt(b.v)}G</button></div>`;
   }
   for (const { s, i } of cur.rows) {
     const it = IT[s.id];
-    h += `<div class="ri"><button class="lnk" data-act="goto" data-id="${s.id}" aria-label="${it.name}の詳しい情報">${ico(s.id, null)}</button><div style="min-width:0"><div class="t">${it.name}${need.has(s.id) ? '<span class="qtag need">必要</span>' : ''}${it.season !== undefined ? `<span class="qtag reg">${SEASONS[it.season].n}限定</span>` : ''}${it.st > G.stage ? '<span class="qtag ord">珍品</span>' : ''}</div><div class="m"><span class="price">${s.price}G</span>${mkTag(it)}<span>残り${s.stock}</span><span>所持 ${invCount(s.id)}</span></div></div>` +
+    h += `<div class="ri"><button class="lnk" data-act="goto" data-id="${s.id}" aria-label="${it.name}の詳しい情報">${ico(s.id, null, { cnt: invCount(s.id) })}</button><div style="min-width:0"><div class="t">${it.name}${need.has(s.id) ? '<span class="qtag need">必要</span>' : ''}${it.season !== undefined ? `<span class="qtag reg">${SEASONS[it.season].n}限定</span>` : ''}${it.st > G.stage ? '<span class="qtag ord">珍品</span>' : ''}</div><div class="m"><span class="price">${s.price}G</span>${mkTag(it)}<span>在庫:${s.stock}</span></div></div>` +
       `<div class="acts"><button class="btn sm" data-act="sbuy" data-id="${s.id}" data-i="${i}" data-n="1"${s.stock < 1 || G.gold < s.price ? ' disabled' : ''}>買う</button><button class="btn sm" data-act="sbuy" data-id="${s.id}" data-i="${i}" data-n="5"${s.stock < 2 || G.gold < s.price * 2 ? ' disabled' : ''}>×5</button><button class="btn sm" data-act="sbuy" data-id="${s.id}" data-i="${i}" data-n="10"${s.stock < 6 || G.gold < s.price * 6 ? ' disabled' : ''}>×10</button></div></div>`;
   }
   return h + `</div></div></div></div>`;
@@ -13130,7 +13154,7 @@ function vMarketShelf(cur, need) {
   UI.mktSel = { id: s.id, i, name: it.name, price: s.price, stock: s.stock, have: invCount(s.id), tags: `${it.season !== undefined ? '・' + SEASONS[it.season].n + '限定' : ''}${it.st > G.stage ? '・珍品' : ''}`, mk: mkTag(it), need: need.has(s.id) };
   return `<div class="market-shelf" role="group" aria-label="商品棚">` + cur.rows.map(x => {
     const a = IT[x.s.id], on = x === selected, nd = need.has(x.s.id);
-    return `<button class="shelf-item${on ? ' selected' : ''}${x.s.stock < 1 ? ' sold' : ''}" data-act="marketpick" data-v="${key(x)}" aria-pressed="${on}" aria-label="${esc(a.name)}を選ぶ">${ico(x.s.id,null,{cnt:invCount(x.s.id)||null})}<b>${a.name}</b><small>${x.s.price}G${nd ? '<em class="need">必要</em>' : ''}</small></button>`;
+    return `<button class="shelf-item${on ? ' selected' : ''}${x.s.stock < 1 ? ' sold' : ''}" data-act="marketpick" data-v="${key(x)}" aria-pressed="${on}" aria-label="${esc(a.name)}を選ぶ">${ico(x.s.id,null,{cnt:invCount(x.s.id)})}<b>${a.name}</b><small>${x.s.price}G${nd ? '<em class="need">必要</em>' : ''}</small></button>`;
   }).join('') + shelfPad(cur.rows.length) + `</div>`;
 }
 function vShop() {
@@ -13366,7 +13390,7 @@ function recName(r) { return r.appraise ? (IT[r.appraise].seal ? `封印され�
 function recIcon(r) {
   if (r.appraise) return ico(r.appraise, null);
   const f = G.found[r.out];
-  return ico(r.out, f === undefined ? null : f, { sil: f === undefined && !r.repair, cnt: f === undefined ? null : (invCount(r.out) || null) });
+  return ico(r.out, f === undefined ? null : f, { sil: f === undefined && !r.repair, cnt: f === undefined ? null : invCount(r.out) });   // v54u: 持っていなくても 0 を出す
 }
 // cloud: what a recipe is worth — how many you hold, what one sells for (普通), and the gain over the materials
 // v48: the sort of the recipe list (おすすめ / もうけ / 値段 / 作業の少ない)
@@ -13482,13 +13506,26 @@ function phoneWork() {
 function vStamina() {
   const wm = workMax(), full = G.work >= wm, ed = edibles().sort((a, b) => staminaOf(a) - staminaOf(b));
   let h = `<div class="sec eat"><h2>体力の回復<span class="aside">作った料理や薬で、もう少し作業できる。1日3種類まで・同じ品は1日1回(灯り亭の夕食は別)</span></h2>`;
-  h += `<div class="eats">` + (ed.length ? ed.map(it => { const q = [0, 1, 2, 3].find(k => G.inv[it.id][k] > 0); const keep = spareCount(it.id) <= 0, ate = ateToday(it.id); return `<button class="eatbtn${ate ? ' ate' : ''}" data-act="eat" data-id="${it.id}"${full || keep || ate ? ' disabled' : ''} title="${it.name}">${ico(it.id, q, { cnt: invCount(it.id), size: 'sm' })}<span class="lb">${it.name}</span>${keep ? '<b class="keep">建設・注文用</b>' : ate ? `<b class="keep">${(G.ate || []).includes(it.id) ? '今日は食べた' : '今日は満腹'}</b>` : `<b>+${eatGain(it, q) >= 99 ? '全快' : eatGain(it, q)}</b>`}</button>`; }).join('') : '<p class="note" style="font-size:12.5px">食べられる物がない。料理(調理)や回復薬(錬金)を作っておくと、ここで使える。</p>') + `</div>`;
+  h += eatsHtml();
   const dined = G.dined === G.day;
   // クラウド: the row is the way into 灯り亭 (tonight's menu, Goz's request) instead of a fixed 20G button
   { const tn = pubToday(), rq = G.pubReq && !G.pubReq.done && G.pubReq.due >= G.day ? G.pubReq : (G.act === 'work' ? pubReq() : null), rqOk = rq && invCount(rq.id) >= rq.qty;
     h += pubRow(); }
 
   return h + `</div>`;
+}
+// v54u: 店主が持ち物の料理・薬を食べる一覧(工房と「食事」の枠で同じ物を使う)
+function eatsHtml() {
+  const wm = workMax(), full = G.work >= wm, ed = edibles().sort((a, b) => staminaOf(a) - staminaOf(b));
+  return `<div class="eats">` + (ed.length ? ed.map(it => { const q = [0, 1, 2, 3].find(k => G.inv[it.id][k] > 0); const keep = spareCount(it.id) <= 0, ate = ateToday(it.id); return `<button class="eatbtn${ate ? ' ate' : ''}" data-act="eat" data-id="${it.id}"${full || keep || ate ? ' disabled' : ''} title="${it.name}">${ico(it.id, q, { cnt: invCount(it.id), size: 'sm' })}<span class="lb">${it.name}</span>${keep ? '<b class="keep">建設・注文用</b>' : ate ? `<b class="keep">${(G.ate || []).includes(it.id) ? '今日は食べた' : '今日は満腹'}</b>` : `<b>+${eatGain(it, q) >= 99 ? '全快' : eatGain(it, q)}</b>`}</button>`; }).join('') : '<p class="note" style="font-size:12.5px">食べられる物がない。料理(調理)や回復薬(錬金)を作っておくと、ここで使える。</p>') + `</div>`;
+}
+// v54u: 「食事」の枠。店主が自分の持ち物を食べて、夜の工房の体力を戻す
+function ownMealSheet() {
+  const night = G.act === 'work', wm = workMax();
+  let h = `${xBtn}<div class="sec eat" style="margin-top:0"><h2>食事<span class="aside">${night ? `今夜の体力 ${G.work}/${wm}` : '夜の工房で食べると、体力が戻る'}</span></h2>` +
+    `<p class="note" style="margin-top:0">持っている料理や薬を食べて、夜の工房の体力を戻す。1日3種類まで・同じ品は1日1回。灯り亭の夕食は別。</p>`;
+  h += night ? eatsHtml() : `<p class="note">食べられるのは夜(工房の時間)だけ。いまの持ち物:</p><div class="eats">${edibles().sort((a, b) => staminaOf(a) - staminaOf(b)).map(it => `<button class="eatbtn" disabled title="${it.name}">${ico(it.id, null, { cnt: invCount(it.id), size: 'sm' })}<span class="lb">${it.name}</span><b>+${eatGain(it, 0) >= 99 ? '全快' : eatGain(it, 0)}</b></button>`).join('') || '<p class="note" style="font-size:12.5px">食べられる物がない。料理(調理)や回復薬(錬金)を作っておこう。</p>'}</div>`;
+  openSheet(h + `</div>`, { nav: false, crumb: ['食事'], ownmeal: true });
 }
 function vSideOrders() {
   if (!G.orders.length) return '';
@@ -13965,12 +14002,15 @@ function where(id) {
   const it = IT[id];
   if (!it.raw) return '';
   const i = G.stall.findIndex(s => s.id === id), m = MERCHANTS.find(x => x.k === MERCH_OF(it));
+  // v54u: 問屋の入口は、市場に並んでいる日でも出す(問屋の品揃え tonyaList と同じ判定)
+  const inTonya = tonyaList().some(x => x.id === id);
+  const tonyaBtn = inTonya ? `<button class="btn sm" data-act="hgo" data-tab="inv" data-inv="tonya" data-close="1">問屋で買う</button>` : '';
   if (i >= 0 && G.stall[i].stock > 0) {
     const s = G.stall[i];
-    return `<div class="callout" style="margin-top:12px"><div style="min-width:0"><div class="t">今日の市場にある</div><div class="sub">${m.n}・<span class="price">${s.price}G</span>・残り${s.stock}</div></div>${inMarket() ? `<div class="btns"><button class="btn sm gold" data-act="sbuy" data-i="${i}" data-id="${id}" data-n="1" data-stay="1"${G.gold < s.price ? ' disabled' : ''}>買う</button><button class="btn sm" data-act="sbuy" data-i="${i}" data-id="${id}" data-n="5" data-stay="1"${G.gold < s.price * 2 ? ' disabled' : ''}>×5</button></div>` : '<span class="sub">朝か昼の仕入れで買える</span>'}</div>`;
+    return `<div class="callout" style="margin-top:12px"><div style="min-width:0"><div class="t">今日の市場にある</div><div class="sub">${m.n}・<span class="price">${s.price}G</span>・残り${s.stock}</div></div>${inMarket() ? `<div class="btns"><button class="btn sm gold" data-act="sbuy" data-i="${i}" data-id="${id}" data-n="1" data-stay="1"${G.gold < s.price ? ' disabled' : ''}>買う</button><button class="btn sm" data-act="sbuy" data-i="${i}" data-id="${id}" data-n="5" data-stay="1"${G.gold < s.price * 2 ? ' disabled' : ''}>×5</button></div>` : '<span class="sub">朝か昼の仕入れで買える</span>'}</div>` + (tonyaBtn ? `<div class="btns" style="margin-top:8px"><span class="sub" style="align-self:center">入手先</span>${tonyaBtn}</div>` : '');
   }
   // v54b: 入手先へ飛ぶボタン(朝市のその店・問屋)
-  const go = (m && it.st <= G.stage && inMarket() ? `<button class="btn sm" data-act="gomerch" data-v="${m.k}">朝市「${m.n}」へ</button>` : '') + (TONYA_IDS.includes(id) ? `<button class="btn sm" data-act="hgo" data-tab="inv" data-inv="tonya" data-close="1">問屋で買う</button>` : '');
+  const go = (m && it.st <= G.stage && inMarket() ? `<button class="btn sm" data-act="gomerch" data-v="${m.k}">朝市「${m.n}」へ</button>` : '') + tonyaBtn;
   const goRow = go ? `<div class="btns" style="margin-top:8px"><span class="sub" style="align-self:center">入手先</span>${go}</div>` : '';
   const ga = guildOpen() ? AREAS.filter(a => areaOpen(a) && (a.main.includes(id) || areaBonus(a).includes(id))) : [];
   const gnote = ga.length ? `<p class="note" style="margin-top:6px">ギルドの依頼:${ga.map(a => `「${a.n}」${a.main.includes(id) ? '' : '(ついで)'}`).join('・')}で取れる。</p>` : '';
@@ -14440,7 +14480,8 @@ function act0(a, d) {
     case 'shelfclear': { const n = G.shelf.filter(Boolean).length; G.shelf = G.shelf.map(() => null); const was = G.shelfAutoOn !== false; G.shelfAutoOn = false; UI.shelfTook = true; toast(`<div>棚から${n}品を下ろした${was ? '。「空いたら自動で並べる」は切った' : ''}</div>`); sfx('tap'); break; }
     case 'shelftoggle': G.shelfAutoOn = G.shelfAutoOn === false; if (G.shelfAutoOn) shelfAuto(); sfx('tap'); break;
     case 'shelfadd': { fixShelf(); const i = G.shelf.findIndex(x => !x); if (i < 0) { toast('<div>棚がいっぱい。営業の画面で、入れ替える枠を選ぼう</div>'); return; } if (shelfPut(i, d.id, +d.q)) { sfx('buy'); toast(`<div>${IT[d.id].name}を棚に並べた</div>`); } closeSheet(true); itemSheet(d.id); render(); save(); return; }
-    case 'eat': { const it = IT[d.id], n = eat(d.id); if (n) { sfx('good'); toast(`${ico(d.id, 0, { size: 'sm' })}<div><div class="t1">体力 +${n}</div>${it.name}で元気が出た</div>`, 'lv', 1800); } break; }
+    case 'eat': { const it = IT[d.id], n = eat(d.id); if (n) { sfx('good'); toast(`${ico(d.id, 0, { size: 'sm' })}<div><div class="t1">体力 +${n}</div>${it.name}で元気が出た</div>`, 'lv', 1800); } if (UI.sheet && UI.sheet.ownmeal) { render(); ownMealSheet(); return; } break; }
+    case 'ownmeal': ownMealSheet(); sfx('tap'); return;
     case 'dine': { if (UI.sheet && UI.sheet.pub) closeSheet(true); const r = dine(); if (r) { sfx('door'); queueSheet(`<div class="celebrate"><div class="pop">${portrait({ cls: 'villager', ch: PUB.master.ch, img: PUB.master.img })}</div><div class="kicker">灯り亭で夕食 体力+${r.gain}</div><h2>${PUB.master.n}</h2><p style="text-align:left">「${r.tip}」</p>${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}${(r.lines || []).some(l => l.k === 'dg') ? '<p class="note" style="font-size:11.5px;margin:0">ダンジョンの噂は3日ほど続く。その場所に探索を出すと、噂の魔物や品に出会いやすい。</p>' : ''}<button class="btn pri big" data-act="sclose" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); } break; }
     case 'pubeat': { const r = pubOrder(d.id); if (!r) return; closeSheet(true); sfx(r.item.k === 'food' ? 'door' : 'coin');
       queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
@@ -17061,6 +17102,12 @@ function diveEstimateCached(gq) {
   UI.dvEst = { key, e }; return e;
 }
 // one adventurer: face, rank, state, gear with wear
+// v54u: 職業と、持てる武器の種類(武器を押さなくても分かるように)
+function advJob(m) {
+  const c = (CLASSES.find(x => x.k === m.cls) || {}).n;
+  if (!c) return '';
+  return `<div class="gjob">${c}${WPN_OF[m.cls] ? `<span>・${wpnListOf(m.cls)}</span>` : ''}</div>`;
+}
 function advRow(m, gq, a) {
   const out = advOut(m), hurt = advHurt(m), sel = (gq.party || []).includes(m.id);
   const st = out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
@@ -17069,7 +17116,7 @@ function advRow(m, gq, a) {
   const treat = hurt && !out ? `<button class="btn sm heal" data-act="dvtreat" data-v="${m.id}">手当て</button>` : '';
   const bag = a && sel ? bagSlotsHtml(m, gq) : '';
   const xp = m.rk < rankMax() ? `<span class="sub" style="font-size:11px">次のランクまで ${Math.max(0, 3 + 2 * m.rk - (m.xp || 0))}</span>` : '';
-  return `<div class="gmem${sel ? ' sel' : ''}${out || hurt ? ' off' : ''}">${advFace(m, 'sm')}<div class="gmem-b"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}</div><div class="row" style="gap:6px">${gear}${a ? `<span class="sub" style="font-size:11px">${fmt(questFee(a, m.rk))}G</span>` : xp}</div>${bag}</div><div class="gmem-a">${pick}${treat}</div>${gq.edit && gq.edit.id === m.id ? gearEditor(gq, a) : ''}</div>`;
+  return `<div class="gmem${sel ? ' sel' : ''}${out || hurt ? ' off' : ''}">${advFace(m, 'sm')}<div class="gmem-b"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}</div>${advJob(m)}<div class="row" style="gap:6px">${gear}${a ? `<span class="sub" style="font-size:11px">${fmt(questFee(a, m.rk))}G</span>` : xp}</div>${bag}</div><div class="gmem-a">${pick}${treat}</div>${gq.edit && gq.edit.id === m.id ? gearEditor(gq, a) : ''}</div>`;
 }
 function bagSlotsHtml(m, gq) {
   const b = (gq.bags || {})[m.id] || {}, ids = Object.keys(b), n = bagSlots(m), on = gq.edit && gq.edit.id === m.id && gq.edit.slot === 'bag';
@@ -17125,7 +17172,7 @@ function diveSheet() {
         (open ? `<span class="sub" style="font-size:12px">${daysWord(a)}・${dg.rooms}部屋・最奥に${MON[dg.boss].n}・武具は${TIER_N[reqTier(a)]}以上${best ? `・最高 ${best >= dg.rooms ? '踏破' : best + '部屋'}` : ''}</span>${rm && rm.area === a.id ? `<span class="rumortag">噂: ${rumorShort(rm)}</span>` : ''}<span class="row wrap" style="gap:4px 10px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}<span class="sub" style="font-size:11px">道中</span><span class="ins">${areaIcons(a.main)}</span></span>`
           : `<span class="sub" style="font-size:12px">${a.st <= G.stage ? '勇者が聖剣を手にすると行けるようになる' : STAGES[a.st].short + 'になると行けるようになる'}</span>`) + `</button>`;
     }
-    h += `</div>` + rosterSec(gq, null);
+    h += `</div>`;   // v54u: 行き先を選ぶ前の名簿は外した(冒険者は行き先を選んだ後に選ぶ・装備する)
     const k = keepScroll(); openSheet(h, { nav: false, crumb: ['冒険者ギルド'], bg: guildBg() }); k(); return;
   }
   const a = AR[gq.area], dg = DG[a.id];
