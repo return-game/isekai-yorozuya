@@ -7287,7 +7287,7 @@ function vFishMain() {
   const hutBg = fishPic('bg_fish_hut_' + f.spot), hasBg = BG_FILES.has(hutBg);
   const subs = `<button class="btn gold fsh-go" data-act="fshwater" data-focus>水辺へ出る</button>`;
   const bagSum = f.bag.reduce((a, c) => a + fishPrice(c.id, c.q), 0), bagPts = f.bag.reduce((a, c) => a + fishPtsFor(c.id, c.q), 0);
-  const bag = f.bag.map((c, i) => `<div class="ri"><span>${ico(c.id, c.q, { size: 'sm' })}</span><div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${c.cm}cm・${QUAL[c.q].n}</span></div><span class="price">${fmt(fishPrice(c.id, c.q))}G</span><button class="btn sm" data-act="fshsell" data-i="${i}">売る</button></div>`).join('');
+  const bag = f.bag.map((c, i) => `<div class="ri"><span>${ico(c.id, c.q, { size: 'sm' })}</span><div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${c.cm}cm・${QUAL[c.q].n}</span></div><span class="price">${fmt(fishPrice(c.id, c.q))}G</span><button class="btn sm" data-act="fshsell" data-i="${i}">売る</button><button class="btn sm ghost" data-act="fshpts" data-i="${i}" title="ポイントに替える(+${fmt(fishPtsFor(c.id, c.q))}pt)">${fmt(fishPtsFor(c.id, c.q))}pt</button></div>`).join('');
   const shadows = pool.map(x => `<span class="fsh-sh${s.dex[x.id] ? ' got' : ''}">${s.dex[x.id] ? ico(x.id, 0, { size: 'xs' }) : '<i></i>'}<small>${s.dex[x.id] ? x.n : '影' + SHADOW_N[x.shadow]}</small>${fishLast(x.id) ? FISH_LAST_TAG : ''}</span>`).join('');
   const nb = fishState(), canBait = f.buys < BAIT_MAX && nb.pts >= BAIT_PTS;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
@@ -7367,7 +7367,7 @@ const FISH_ACTS = {
   fshback: () => { closeGauge(); return false; },
   fshbait: () => { if (fishBuyBait()) sfx('buy'); },
   fshsell: d => { const n = fishSell('g', d.i); if (n) { sfx('coin'); flyCoins(1); } },
-  fshpts: () => { const n = fishSell('pts'); if (n) { sfx('level'); toast(`<div>釣りポイント +${n}</div>`); } },
+  fshpts: d => { const n = fishSell('pts', d.i); if (n) { sfx('level'); toast(`<div>釣りポイント +${n}</div>`); } },
   fshgear: d => { if (fishGear(d.v)) { sfx('level'); fishMenu(); } return false; },
 };
 
@@ -20496,7 +20496,7 @@ if (PRACTICE) window.__prEnd = hit => { const g = UI.gauge; if (!g) return; if (
 // ↓ Firebase コンソールの「プロジェクトの設定 > マイアプリ(Web)」に出る値を入れる。空のあいだは同期の画面を出さない。
 const FBCFG = { apiKey: 'AIzaSyDftgpHfSgHsMueZkiRCunC-Avp1ULHCkE', authDomain: 'isekai-yorozuya.firebaseapp.com', projectId: 'isekai-yorozuya', appId: '1:784403836498:web:3b2db41a22af8fd1d9398b' };
 const FB_VER = '10.14.1';
-const SYNC = { on: false, ready: false, user: null, st: 'off', fb: null, auth: null, db: null, busy: false, lastPushDay: {}, at: 0, err: '' };
+const SYNC = { on: false, ready: false, user: null, st: 'off', fb: null, auth: null, db: null, busy: false, lastPushDay: {}, lastBody: {}, at: 0, err: '' };
 // st: off(未設定) / out(ログインなし) / ok(同期済み) / wait(同期中) / unsynced(未同期・通信待ち) / err
 SYNC.on = !!(FBCFG.apiKey && FBCFG.projectId) && !PRACTICE;
 const SYNC_MAX = 900000;   // Firestore の1文書は約1MB。超える時は送らない
@@ -20546,8 +20546,10 @@ async function syncPushSlot(n, raw) {
   // 上書きする前に、いまのクラウドの中身を「ひとつ前」として残す
   try { const old = await fs.getDoc(syncRef(n)); if (old.exists() && old.data().save && old.data().save !== raw) await fs.setDoc(syncRef(n, '_prev'), old.data()); } catch (e) { /* 取れなければ続ける */ }
   await fs.setDoc(syncRef(n), { save: raw, at: m.at, day: m.day, ver: 1 });
-  SYNC.lastPushDay[n] = m.day;
+  SYNC.lastPushDay[n] = m.day; SYNC.lastBody[n] = syncBody(raw);
 }
+// 中身の比べ用(保存した時刻だけ違うのは同じとみなす)。No.175
+const syncBody = raw => (raw || '').replace(/"lastSaved":\d+/, '');
 function applyCloudSave(n, raw) {
   try { localStorage.setItem(syncSlotKey(n) + '_bak', localRaw(n) || ''); } catch (e) { /* ignore */ }
   try { localStorage.setItem(syncSlotKey(n), raw); } catch (e) { /* ignore */ }
@@ -20598,8 +20600,10 @@ async function syncAll() {
 async function syncPush(force) {
   if (!SYNC.on || !SYNC.user || SYNC.busy || !G) return;
   const n = SAVE.slot;
-  if (!force && SYNC.lastPushDay[n] === G.day) return;
-  SYNC.busy = true; if (force) syncSet('wait');
+  // No.175: 閉じる時・裏に回る時('leave')は、日付が同じでも、前に送った後に進んでいれば送る(前は日付が変わった時だけ送っていた)
+  if (force === 'leave') { saveNow(); if (SYNC.busy || SYNC.lastBody[n] === syncBody(localRaw(n))) return; }
+  else if (!force && SYNC.lastPushDay[n] === G.day) return;
+  SYNC.busy = true; if (force === true) syncSet('wait');
   try { saveNow(); await syncPushSlot(n); syncSet('ok'); SYNC.at = Date.now(); }
   catch (e) { syncSet(navigator.onLine === false ? 'unsynced' : 'err', 'push'); }
   SYNC.busy = false;
@@ -20615,7 +20619,7 @@ function syncBoot() {
   SYNC.booted = true;
   syncInit();
   window.addEventListener('online', () => { if (SYNC.st === 'unsynced' || SYNC.st === 'err') syncPush(true); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) syncPush(false); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) syncPush('leave'); });   // No.175
 }
 function settingsSync() {
   if (!SYNC.on) return '';
@@ -20788,7 +20792,7 @@ function migrate(s) {
     if (a === 'shop') { s.cust = []; s.ci = 0; s.clock = 9 * 60; }
     s.v = 3; if (!s._old) s._v2 = true;
   }
-  if (!FLOW.includes(s.act)) { s.act = 'market'; s.slot = 0; }
+  if (!FLOW.includes(s.act) && !(s.act === 'fish' && s.fishing)) { s.act = 'market'; s.slot = 0; }   // No.175: 釣りの途中のセーブは釣りのまま読む
   // v31: new tabs (店・冒険・倉庫・街・店主); tell an old save once
   if (!s.ui31) { s.ui31 = 1; s._ui31 = true; }
   // v32: the far ends hold rares; tell an old save once
