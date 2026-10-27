@@ -14841,6 +14841,7 @@ function act(a, d) {
   try { return act0(a, d); } finally { if (a !== 'nback' && !sameSpot(spot0, navSpot())) { UI.navHist = (UI.navHist || []).concat([spot0]).slice(-30); } updateNavBack(); }
 }
 function act0(a, d) {
+  if (a === 'synckeep') { syncKeep(d.v); return; } // タイトル画面(店がまだ無い)でも押せるように、店のデータを見る前に処理する(No.174)
   if (DIVE_ACTS[a]) { DIVE_ACTS[a](d || {}); render(); save(); return; }
   if (FISH_ACTS[a]) { const r = FISH_ACTS[a](d || {}); save(); if (r !== false) render(); return; }
   const c = curCust();
