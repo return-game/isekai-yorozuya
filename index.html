@@ -13502,7 +13502,7 @@ function vHome() {
     ['注文', SKI.scroll, `data-act="hgo" data-tab="main" data-sec="受けている注文"`, '', ready || '', '#b08a3e'],
     ['街', TAB_SVG.town(), 'data-act="hgo" data-tab="town"', '', bldReadyN() ? '•' : '', '#5f7f4a'],
     ['灯り亭', SKI.cutlery, 'data-act="pub"', G.act !== 'work' ? '夜に夕食' : '', '', '#a0583f'],
-    ...(fishOn() ? [['釣り', SKI.hook || SKI.bowl, 'data-act="fshmenu"', G.act === 'fish' ? '釣りをしている' : '時間帯を使う', '', '#3f6f8a']] : []),
+    ...(fishOn() ? [['釣り', SKI.hook || SKI.bowl, 'data-act="fshmenu"', G.act === 'fish' ? '釣りをしている' : '時間帯を使う', ['river', 'lake', 'sea'].some(id => storySeen('fish_inv_' + id) && !(fishState().met || {})[id]) ? '•' : '', '#3f6f8a']] : []),   // No.180: 誘われてまだ行っていない釣り場があれば、釣りに点
     ['食事', SKI.bowl, 'data-act="ownmeal"', G.act === 'work' ? '体力を戻す' : '夜に食べる', '', '#b07a3a'],
     ...(guildOpen() ? [['冒険', TAB_SVG.adv(), 'data-act="hgo" data-tab="adv"', '', wait ? '!' : '', '#3f7d6e']] : []),
     ['倉庫', TAB_SVG.inv(), 'data-act="hgo" data-tab="inv" data-inv="items"', '', '', '#6b6f8a'],
@@ -20351,7 +20351,10 @@ zen smile 「どれ、投げ方を見せてやろう。ついて来い」
 S('fish_meet_lake', { when: 'never', end: o => fishGuideStart('lake') }, `
 @bg bg_fish_hut_lake
 (峠を越えた先に、鏡のような湖があった。桟橋で、娘が小舟の縄を結び直している。)
-mina surprise 「あっ、お客さん! 宿場町の方ですか?」
+mina surprise 「あっ、お客さん! ……その竿、もしかして、じいちゃんの言ってた鍛冶屋さん?」
+owner normal 「・・・」
+(店主は、ゼンじいの伝言をそのまま伝えた。)
+mina trouble 「『たまには川に顔を出せ』? もー! じいちゃんこそ峠を越えてきなよって、言っといてください!」
 owner normal 「・・・」
 (ミナの目が、店主の背の竿に留まった。それから、店主の顔に。)
 mina surprise 「……あ。」
@@ -20363,12 +20366,50 @@ mina smile 「わたし、釣りの上手な人が好きで……あっ、ち、
 S('fish_meet_sea', { when: 'never', end: o => fishGuideStart('sea') }, `
 @bg bg_fish_hut_sea
 (新しい港の外れ、防波堤の根もとに、潮で白くなった小屋が建っていた。)
-borg surprise 「お? 見ねえ顔だな。……ああ、港を建てたっていう万事屋か!」
+borg surprise 「お? ……ああ、港を建てた万事屋か! 親父とミナから聞いてるぜ」
+(店主は、預かった包みを差し出した。)
+borg surprise 「……干し鱒か。この塩のきつさ、ミナだな」
+borg smile 「あいつ、親父の真似して、まだこんなに塩を利かせてやがる。……まったく」
 borg smile 「礼を言わなきゃな。港ができて、この浜にも人が戻ってきた」
 borg normal 「俺はボルグ。昔は沖で網を引いてたが、膝をやっちまってな。今は釣り具と魚の買い取りだ」
 owner normal 「・・・」
 (店主の歩き方に、ボルグはちらりと目をやった。何も言わなかった。)
 borg smile 「よし、海の釣りを見せてやる。来な!」
+`);
+// No.180: 釣り場へ誘う朝の場面(村長→ゼンじい→ミナ)。その釣り場が開いた次の朝、主にまだ会っていなければ流す。
+// 「過ぎた」の印(past)を付けないので、アップデート前から遊んでいる人にも、まだ会っていなければ最初の朝に流れる。
+const fishMet = id => !!(fishState().met || {})[id];
+S('fish_inv_river', { when: 'morning', cond: () => G.tut < 0 && SPOT.river.open() && !fishMet('river') }, `
+@bg bg_shop_day
+(朝。店の戸を開けると、村長が杖をついて立っていた。)
+chief smile 「おう、坊。朝から精が出るのう」
+owner normal 「・・・」
+chief normal 「店も、だいぶ落ち着いたようじゃのう。たまには、肩の力を抜け」
+chief smile 「川のゼンがな、おまえの顔を見たがっとった。じいさまと、よう竿を並べとった男じゃ」
+chief normal 「暇な時に、寄ってやれ。……わしからも、帰ってきたとは言うてある」
+owner normal 「……ああ」
+(村はずれの川へ行けるようになった。ホームの「釣り」から行ける。)
+`);
+S('fish_inv_lake', { when: 'morning', cond: () => G.tut < 0 && SPOT.lake.open() && fishMet('river') && !fishMet('lake') }, `
+@bg bg_shop_day
+(朝。店の前に、魚籠を提げたゼンじいがいた。)
+zen smile 「おう、坊。今朝は早うに揚がってな。お裾分けじゃ」
+owner normal 「・・・」
+zen normal 「町になって、峠の道もようなった。山の湖まで、半日で行けるそうじゃ」
+zen trouble 「あそこの小舟屋に、わしの孫娘がおる。もし会うたら、言うといてくれ。たまには川に顔を出せ、とな」
+zen smile 「……わしが仕込んだ釣りを、もうわしより上手う使いよる。生意気な孫じゃ」
+owner normal 「……ああ」
+(山あいの湖へ行けるようになった。)
+`);
+S('fish_inv_sea', { when: 'morning', cond: () => G.tut < 0 && SPOT.sea.open() && fishMet('lake') && !fishMet('sea') }, `
+@bg bg_shop_day
+(朝。店の前で、ミナが包みを抱えて待っていた。)
+mina smile 「あっ、店主さん! おはようございます!」
+mina trouble 「港の外れに、海の釣り場ができたって聞きました? 父さん、もうそこに住みついちゃって。手紙ひとつよこさないんですよ!」
+mina normal 「これ、干した鱒です。父さんの好物なので……渡してもらえますか」
+mina surprise 「あっ、わたしからって言わなくていいですから! 置いてくるだけで!」
+owner normal 「……ああ」
+(港の外れの釣り場へ行けるようになった。)
 `);
 // ぬし: 初めて釣って、小屋に戻った時(fish.js fshup)
 S('fish_lord_river', { when: 'never' }, `
