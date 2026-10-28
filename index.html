@@ -17589,7 +17589,7 @@ function fsHook() {
   f.casts = Math.max(0, f.casts - 1); save();
   const t = o.f.tier, rl = REELS[fishState().reel].bar;
   const X = fishX(o.f), hd = X.hard || 0;
-  FS.fg = { slow: !!X.slow, F: 0.5, P: 0.5, v: 0, tgt: 0.5, nt: 0, pr: 0.3, w: fsClamp(0.34 - t * 0.02 - hd / 500 + rl / 250, 0.15, 0.48), outT: 0, sp: 0.35 + (FISH_D[t] + hd) / 100, perfect: true, n: 0.5, ph: Math.random() * 6.28, rT: 0, inZ: true };
+  FS.fg = { slow: !!X.slow, F: 0.5, P: 0.5, v: 0, tgt: 0.5, nt: 0, pr: 0.2, w: fsClamp(0.34 - t * 0.02 - hd / 500 + rl / 250, 0.15, 0.48), outT: 0, sp: 0.35 + (FISH_D[t] + hd) / 100, perfect: true, n: 0.5, ph: Math.random() * 6.28, rT: 0, inZ: true, run: 1.0 };
   FS.st = 'fight'; o.st = 'hooked'; sfx('mg_thunk'); fsSplash(FS.bob.x, FS.bob.y, 18); fsHint(); fsStat();
 }
 function fsFight(dt) {
@@ -17609,8 +17609,16 @@ function fsFight(dt) {
   if (g.P < 0) { g.P = 0; g.v = Math.max(0, g.v); } if (g.P > 1) { g.P = 1; g.v = Math.min(0, g.v); }
   const n = 0.5 + (g.P - g.F), inZ = Math.abs(n - 0.5) < g.w / 2;
   g.n = n; g.inZ = inZ;
+  // No.189: 掛かった直後、魚は1秒ほど沖へ走って離れる(この間ゲージは進まない)。そこから巻き上げ
+  if (g.run > 0) { const b0 = FS.bob; if (g.rx == null) { g.rx = o.x; g.ry = o.y; g.ex = fsClamp(o.x + (o.x - FS.W / 2) * 0.3 + fsRnd(-40, 40), FS.W * 0.08, FS.W * 0.92); g.ey = Math.max(FS.y0 + 30, o.y - (FS.H - FS.y0) * 0.28); }
+    g.run -= dt; const k = 1 - Math.max(0, g.run) / 1.0, e = 1 - Math.pow(1 - k, 2);
+    o.x = g.rx + (g.ex - g.rx) * e + Math.sin(FS.t / 70) * 6; o.y = g.ry + (g.ey - g.ry) * e + Math.cos(FS.t / 80) * 4;
+    o.a = Math.atan2(g.ey - g.ry, g.ex - g.rx); b0.x = o.x; b0.y = o.y; if (Math.random() < dt * 8) fsSplash(o.x, o.y, 6);
+    FS.rodA += (fsAim(o.x, o.y) - FS.rodA) * Math.min(1, 4 * dt); FS.bend = 0.95;
+    if (g.run <= 0) { b0.hx = o.x; b0.hy = o.y; }
+    return; }
   // out of the green: a short grace before the fish starts to get away, and it gets away slowly
-  if (inZ) { g.pr += 0.28 * dt * (1 - o.f.tier * 0.05) * (g.slow ? 0.55 : 1); g.outT = 0; } else { g.outT += dt; g.perfect = false; if (g.outT > 0.25) g.pr -= 0.21 * dt; }
+  if (inZ) { g.pr += 0.17 * dt * (1 - o.f.tier * 0.05) * (g.slow ? 0.55 : 1); g.outT = 0; } else { g.outT += dt; g.perfect = false; if (g.outT > 0.25) g.pr -= 0.13 * dt; }   // No.189: 進みも減りも約6割=難しさは同じで、時間だけ長く
   if (FS.hold && FS.t > g.rT) { g.rT = FS.t + 80; sfx('mg_reel', { f: 1 + (inZ ? 0 : 0.3) }); }
   // the fish comes toward the bank as the gauge fills; it thrashes while the needle is out of the green
   const b = FS.bob, k = fsClamp(g.pr, 0, 1), hx = b.hx != null ? b.hx : (b.hx = b.x), hy = b.hy != null ? b.hy : (b.hy = b.y);
@@ -17673,7 +17681,7 @@ function fsStep(dt) {
     const o = FS.cur; if (!o) { FS.st = 'wait'; return; }
     const ax = b.x - Math.cos(o.a) * 14 * fsScale(b.y), ay = b.y - Math.sin(o.a) * 8 * fsScale(b.y);
     fsSteer(o, b.x, b.y, 26, dt);
-    if (Math.hypot(o.x - ax, o.y - ay) < 16) { const nb = fishX(o.f).nib; FS.st = 'nib'; o.nibN = nb ? Math.floor(fsRnd(nb[0], nb[1] + 1)) : Math.floor(fsRnd(0, 4)); FS.nibT = FS.t + fsRnd(700, 1600); fsHint(); }
+    if (Math.hypot(o.x - ax, o.y - ay) < 16) { const nb = fishX(o.f).nib; FS.st = 'nib'; o.nibN = nb ? Math.floor(fsRnd(nb[0], nb[1] + 1)) : Math.floor(fsRnd(1, 5)); FS.nibT = FS.t + fsRnd(700, 1600); fsHint(); }   // No.189: 最低1回は焦らす
   } else if (FS.st === 'nib') {
     if (FS.t > FS.nibT) {
       const o = FS.cur;
@@ -17689,7 +17697,7 @@ function fsStep(dt) {
 // a shadow near the float notices it (far: also ones further away)
 function fsLook(far) {
   const b = FS.bob; if (!b) return false;
-  const R = Math.min(FS.W, FS.H) * (far ? 0.6 : 0.3);
+  const R = Math.min(FS.W, FS.H) * (far ? 0.4 : 0.18);   // No.189: 浮きのそばまで来た魚だけ気づく
   const near = FS.fish.filter(o => o.st === 'swim' && Math.hypot(o.x - b.x, (o.y - b.y) * 1.4) < R).sort((p, q) => Math.hypot(p.x - b.x, p.y - b.y) - Math.hypot(q.x - b.x, q.y - b.y));
   if (!near.length || (far && Math.random() < 0.4)) return false;
   const o = near[0]; o.st = 'come'; FS.cur = o; FS.st = 'come'; fsHint(); return true;
@@ -17755,11 +17763,20 @@ function fsDraw() {
 function fsShadow(o) {
   const c = FS.cx, sz = o.f.shadow, base = Math.min(FS.W, FS.H) * [0.045, 0.07, 0.1, 0.14][sz], s = base * fsScale(o.y);
   const w = s, h = s * 0.38;
+  // No.188: 底の石に溶けないように、泳ぐ後ろに小さなさざ波、影のふちに明るい縁取り(川は強め)
+  const pop = FS.sp.id === 'river' ? 1 : 0.55, mv = o.st === 'swim' || o.st === 'hooked' || o.st === 'flee';
+  if (mv) { c.save(); c.globalAlpha = o.alpha * 0.55 * pop; c.strokeStyle = 'rgba(225,242,255,.9)'; c.lineWidth = Math.max(1, s * 0.03);
+    for (let i = 0; i < 2; i++) { const k = ((FS.t / 900 + i * 0.5 + o.x * 0.001) % 1), r = s * (0.25 + 0.45 * k);
+      c.globalAlpha = o.alpha * 0.5 * pop * (1 - k); c.beginPath(); c.ellipse(o.x - Math.cos(o.a) * s * 0.55, o.y - Math.sin(o.a) * s * 0.55, r, r * 0.38, 0, 0, 6.3); c.stroke(); }
+    c.restore(); }
   c.save(); c.translate(o.x, o.y); c.rotate(o.a); c.globalAlpha = o.alpha * (o.st === 'hooked' ? 1.3 : 1);
+  if (pop >= 1) { c.save(); c.globalAlpha = o.alpha * 0.32; c.fillStyle = 'rgba(200,232,255,1)'; c.shadowColor = 'rgba(200,232,255,1)'; c.shadowBlur = s * 0.35; c.beginPath(); c.ellipse(0, 0, w * 0.62, h * 0.8, 0, 0, 6.3); c.fill(); c.restore(); }   // 川: 体のまわりのうすい明かり
   c.fillStyle = 'rgba(6,16,26,.85)';
   c.beginPath(); c.ellipse(0, 0, w / 2, h / 2, 0, 0, 6.3); c.fill();
+  c.save(); c.globalAlpha = o.alpha * (pop >= 1 ? 0.9 : 0.5); c.strokeStyle = 'rgba(215,238,255,1)'; c.lineWidth = Math.max(1.4, s * (pop >= 1 ? 0.04 : 0.025)); c.shadowColor = 'rgba(190,225,255,.9)'; c.shadowBlur = 8 * pop; c.stroke(); c.restore();
   const wag = Math.sin(FS.t / (o.st === 'hooked' ? 60 : 180)) * h * 0.4;
   c.beginPath(); c.moveTo(-w / 2 + 2, 0); c.lineTo(-w / 2 - w * 0.24, -h * 0.55 + wag); c.lineTo(-w / 2 - w * 0.24, h * 0.55 + wag); c.closePath(); c.fill();
+  c.save(); c.globalAlpha = o.alpha * (pop >= 1 ? 0.9 : 0.5); c.strokeStyle = 'rgba(215,238,255,1)'; c.lineWidth = Math.max(1.4, s * (pop >= 1 ? 0.04 : 0.025)); c.lineJoin = 'round'; c.shadowColor = 'rgba(190,225,255,.9)'; c.shadowBlur = 8 * pop; c.stroke(); c.restore();   // No.189: 尾びれにも縁取り
   const gl = fishX(o.f).glow;
   if (gl === 'eye') { c.fillStyle = `rgba(255,40,40,${0.6 + 0.4 * Math.sin(FS.t / 300)})`; c.shadowColor = '#ff3030'; c.shadowBlur = 8; c.beginPath(); c.arc(w * 0.3, -h * 0.12, Math.max(1.6, h * 0.13), 0, 6.3); c.arc(w * 0.3, h * 0.12, Math.max(1.6, h * 0.13), 0, 6.3); c.fill(); c.shadowBlur = 0; c.fillStyle = 'rgba(6,16,26,.85)'; }
   else if (gl === 'gold') { const k = 0.35 + 0.35 * Math.sin(FS.t / 260 + o.x); c.fillStyle = `rgba(255,210,90,${k})`; c.beginPath(); c.ellipse(0, 0, w / 2, h / 2, 0, 0, 6.3); c.fill(); if (Math.sin(FS.t / 140 + o.y) > 0.92) { c.fillStyle = '#fff6c8'; c.beginPath(); c.arc(w * 0.1, -h * 0.2, 2.2, 0, 6.3); c.fill(); } c.fillStyle = 'rgba(6,16,26,.85)'; }
@@ -21243,7 +21260,7 @@ function boot(local, fresh) {
     save, invAdd, invTake, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, bagAdd, bagsClean, autoBags, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
     shelfAuto, shelfPut, shelfClean, makeCustomer, shelfGenre, counterCraft, counterCraftWhy, nightLeft, hotShelfId, onShelf, repay, loanLeft, storyChoose, shoppingList, buyList, reservedNeeds, migrate, fixLoaded, TREND, LOAN_MS,
     CH_BOSS, bossCleared, chBoss, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
-    FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
+    FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
     shopView, openDecision, settingsSheet, pubSheet, TUT, tutUpdate, questLine, guildOpen,
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
     cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
