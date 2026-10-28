@@ -6978,7 +6978,7 @@ const BUILDINGS = [
 ];
 const BLD = {}; BUILDINGS.forEach(b => BLD[b.id] = b);
 const SHOP_LV = [
-  { n: '両親の古い店', cost: 0, st: 0 }, { n: '小さな商店', cost: 300, st: 0 }, { n: '工房付きの店', cost: 1200, st: 1 },
+  { n: '祖父が残した店', cost: 0, st: 0 }, { n: '小さな商店', cost: 300, st: 0 }, { n: '工房付きの店', cost: 1200, st: 1 },
   { n: '大商店', cost: 3600, st: 2 }, { n: '万事屋商会', cost: 9000, st: 3 },
 ];
 
@@ -7078,10 +7078,13 @@ Object.assign(RAMP, {
 });
 // the spots. open(): when the spot can be visited
 const FISH_SPOTS = [
-  { id: 'river', n: '川', place: '村はずれの川', bg: 'bg_fish_river', bg0: 'bg_town_0', who: 'ゼンじい', ch: 'zen', subs: [['shallow', '浅瀬'], ['pool', '淵']], open: () => guildOpen(), lock: '冒険者ギルドが建つと行ける' },
+  { id: 'river', n: '川', place: '村はずれの川', bg: 'bg_fish_river', bg0: 'bg_town_0', who: 'ゼンじい', ch: 'zen', subs: [['shallow', '浅瀬'], ['pool', '淵']], open: () => guildOpen() && fishRiverReady(), lock: '冒険者ギルドが建った後、村長から話がある' },
   { id: 'lake', n: '湖', place: '山あいの湖', bg: 'bg_fish_lake', bg0: 'bg_town_1', who: 'ミナ', ch: 'mina', subs: [['shore', '岸'], ['off', '沖']], open: () => G.stage >= 1 && guildOpen(), lock: '宿場町になると行ける' },
   { id: 'sea', n: '海', place: '港の外れ', bg: 'bg_fish_sea', bg0: 'bg_town_2', who: 'ボルグ', ch: 'borg', subs: [['beach', '浜'], ['pier', '防波堤の先']], open: () => !!(G.built && G.built.port), lock: '港が建つと行ける' },
 ];
+// 2026-10-29 作者: 川は、ギルドの場面と村長の誘い(fish_inv_river)の後に開く。先に釣りへ行けて誘いが流れなかったため。
+// もう川で遊んだ人(会った・釣った・いま川にいる)は、今まで通り開いたまま(閉じない)。
+const fishRiverReady = () => { const s = G.fsh || {}; return !!((s.met || {}).river || Object.keys(s.dex || {}).length || (G.fishing && G.fishing.spot === 'river') || storySeen('fish_inv_river') || storyOff()); };
 const SPOT = Object.fromEntries(FISH_SPOTS.map(s => [s.id, s]));
 // [id, name, spot, sub, season (-1 = all year), times (slots 0 朝 1 昼 2 夜; null = any), shadow 0..3 (小 中 大 特大), move, tier 0..5, price, [min cm, max cm]]
 const FISH_TABLE = [
@@ -7291,6 +7294,32 @@ function fishGo(spot) {
   fishState();
   return true;
 }
+// 2026-10-29 作者: 釣りから釣りへ。今の時間帯を終えて、次の時間帯をまるごと釣り場で過ごす(決定_釣りの土台 3「続けて何回選んでもよい」)。
+// 今までは「帰る」で次の時間のいつもの場所に入り、そこで釣りを選ぶと、その時間も飛ばしてしまっていた。
+// びくの魚は持ち帰り、餌は新しい釣行として10投から。夜からなら眠って翌朝の釣り場
+function fishGoNext(spot) {
+  if (!SPOT[spot] || G.act !== 'fish' || G.tut >= 0) return false;
+  const f = G.fishing; if (f) for (const c of f.bag) invAdd(c.id, c.q, 1, true);
+  G.fishing = null;
+  const s = G.slot;
+  if (s === 2) { G.act = 'work'; sleep(); }
+  G.report = null;
+  const slot = s === 2 ? 0 : s + 1;
+  G.act = 'fish'; G.slot = slot; G.phase = TOD[slot]; G.cust = []; G.ci = 0;
+  const st = fishState(); st.met = st.met || {};
+  G.fishing = { spot, sub: SPOT[spot].subs[0][0], casts: FISH_CASTS, buys: 0, bag: [], streak: 0, n: 0, intro: !st.met[spot], hello: Math.floor(Math.random() * 3) };
+  st.met[spot] = 1;
+  return true;
+}
+function fishNextSheet() {
+  const f = G.fishing; if (!f) return;
+  const s = G.slot, ns = s === 2 ? 0 : s + 1, give = s === 0 ? '昼の店には行かずに' : s === 1 ? '夜の工房には行かずに' : '眠って、明日の朝市には行かずに';
+  const spots = FISH_SPOTS.filter(x => x.open()).sort((a, b) => (b.id === f.spot) - (a.id === f.spot));
+  openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(s)}</div><h2>${give}、${fishSlotP(ns)}も釣りますか？</h2>` +
+    `${f.bag.length ? `<p>びくの魚${f.bag.length}匹は、倉庫に持ち帰ります。</p>` : ''}<p class="sub">餌は新しく${FISH_CASTS}投から。</p><div class="btns" style="flex-direction:column;align-items:stretch">` +
+    spots.map((x, i) => `<button class="btn${i ? '' : ' pri'} big" data-act="fshnextgo" data-v="${x.id}"${i ? '' : ' data-focus'}>${fishSlotP(ns)}の${x.n}で釣る${x.id === f.spot ? '(このまま)' : ''}</button>`).join('') +
+    `<button class="btn ghost big" data-act="sleepno">やめておく</button></div></div>`, { crumb: [SPOT[f.spot].n + 'の釣り場', '次の時間'] });
+}
 // leaving the water: what is still in the creel goes home; the day moves on as usual
 function fishLeave() {
   const f = G.fishing;
@@ -7371,7 +7400,7 @@ function fishDexHtml() {
   const places = FISH_SPOTS.flatMap(sp => sp.subs.map(([id, n]) => ({ k: sp.id + '/' + id, n: sp.n + '・' + n, sp })));
   const list = FISH.filter(f => k === 'all' || f.spot + '/' + f.sub === k).sort((a, b) => b.tier - a.tier || a.v - b.v);
   const cnt = fs => `${fs.filter(f => s.dex[f.id]).length}/${fs.length}`;
-  const chips = `<div class="chips"><button class="chip${k === 'all' ? ' on' : ''}" data-act="fshdex" data-v="all">すべて <span class="n">${cnt(FISH)}</span></button>` +
+  const chips = `<div class="chips wrap"><button class="chip${k === 'all' ? ' on' : ''}" data-act="fshdex" data-v="all">すべて <span class="n">${cnt(FISH)}</span></button>` +
     places.map(p => `<button class="chip${k === p.k ? ' on' : ''}" data-act="fshdex" data-v="${p.k}">${p.n} <span class="n">${cnt(FISH.filter(f => f.spot + '/' + f.sub === p.k))}</span></button>`).join('') + `</div>`;
   const ranks = ['S', 'A', 'B', 'C', 'D'].map(R => { const fs = list.filter(f => FISH_RANK(f.tier) === R); return fs.length ? `<span><span class="fsh-rank r${R}">${R}</span>${cnt(fs)}</span>` : ''; }).join('');
   const cells = list.map(f => { const d = s.dex[f.id], open = SPOT[f.spot].open();
@@ -7404,7 +7433,7 @@ function vFishMain() {
   const nb = fishState(), canBait = f.buys < BAIT_MAX && nb.pts >= BAIT_PTS;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
     `<div class="fsh-hut${hasBg ? '' : ' nobg'}"${hasBg ? ` style="background-image:url('${IMG_BASE}${hutBg}.webp')"` : ''}>${CH_FILES.has(`ch_${sp.ch}_normal`) ? `<img class="fsh-keeper" src="${chURL(sp.ch, f.intro ? 'smile' : 'normal')}" alt="${sp.who}">` : ''}<div class="fsh-bub"><b>${sp.who}</b>${f.intro ? FISH_HELLO[f.spot].intro : FISH_HELLO[f.spot].hi[f.hello || 0]}</div></div>` +
-    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span><span class="fsh-st">釣りポイント <b>${fmt(s.pts)}</b></span>${f.streak >= 3 ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm" data-act="fshbait"${canBait ? '' : ' disabled'}>餌を買い足す<small>(+${BAIT_N}投・${BAIT_PTS}pt・あと${BAIT_MAX - f.buys}回)</small></button><button class="btn sm ghost" data-act="fshmenu">図鑑と道具</button>${subs}</div></div>` +
+    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span><span class="fsh-st">釣りポイント <b>${fmt(s.pts)}</b></span>${f.streak >= 3 ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm" data-act="fshbait"${canBait ? '' : ' disabled'}>餌を買い足す<small>(+${BAIT_N}投・${BAIT_PTS}pt・あと${BAIT_MAX - f.buys}回)</small></button><button class="btn sm ghost" data-act="fshmenu">図鑑と道具</button>${subs}<button class="btn sm ghost" data-act="fshnext">次の時間も釣る<small>(時間が進む)</small></button></div></div>` +
     `<div class="fsh-lower"><div class="card"><h3>びく(${f.bag.length}匹)</h3>${f.bag.length ? `<div class="rows">${bag}</div><div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn pri" data-act="fshsell">${sp.who}に全部売る(+${fmt(bagSum)}G)</button><button class="btn" data-act="fshpts">全部ポイントに替える(+${fmt(bagPts)}pt)</button></div><p class="note">売らずに帰ると、倉庫に持ち帰る(冒険者の食事に使える)。同じ魚は売るほど少し安くなる(翌日に戻る)。</p>` : '<p class="note">まだ何も釣れていない。</p>'}</div>` +
     `<div class="card"><h3>いま釣れる魚</h3><div class="fsh-shs">${shadows}</div></div></div></div>`;
 }
@@ -7473,6 +7502,14 @@ const FISH_ACTS = {
     if (r === 'sleep') phaseCard(`${G.day}日目の朝`, `${SEASONS[season()].n}・${STAGES[G.stage].n}`, 'morning');
     else if (G.act === 'shop') { UI.custAnim = true; phaseCard('開店', `${G.day}日目・${clockText()}`, 'day'); }
     else phaseCard('夜の工房', G.today ? `今日の売上 ${fmt(G.today.earned)}G` : '', 'night');
+  },
+  fshnext: () => { fishNextSheet(); return false; },
+  fshnextgo: d => { if (UI.sheet) closeSheet(true); fishSceneClose(); clearTimeout(UI.autoT);
+    const wasNight = G.slot === 2;
+    if (!fishGoNext(d.v)) return false;
+    UI.tab = 'main'; UI.shopView = null; sceneWalkers(); sfx('door');
+    phaseCard(`${wasNight ? G.day + '日目の朝・' : ''}${fishSlotP(G.slot)}の${SPOT[d.v].n}`, `${SEASONS[season()].n}・${SPOT[d.v].place}`, TOD[G.slot]);
+    if (G.fishing.intro && STORY['fish_meet_' + d.v]) storyPlay('fish_meet_' + d.v, { spot: d.v });
   },
   fshcast: d => { fishCast(d.v); return false; },
   fshwater: d => { if (G.fishing && d.v && SPOT[G.fishing.spot].subs.some(x => x[0] === d.v)) G.fishing.sub = d.v; fishSceneOpen(); return false; },
@@ -14329,7 +14366,7 @@ function plaza() {
   if (guildOpen() && innerWidth > 560) pins += pin(P('guild'), '冒険者ギルド', G.dive ? (G.dive.pending ? '判断待ち' : '探索中') : '依頼', `data-act="tab" data-v="adv"`, G.dive && G.dive.pending ? 'hot' : '');
   if (innerWidth > 560) pins += pin(P('chief'), '村長の家', loanLeft() > 0 ? '返済' : '完済', `data-act="chief"`);
   { const nf = FACS.filter(f => facOpen(f.id)).length; if (nf) pins += pin(P('fac'), '施設', `買い取り ${nf}か所`, `data-act="igo" data-tab="town" data-sec="施設"`); }
-  pins += pin(P('shop'), 'わが店', SHOP_LV[G.shop].n, `data-act="myshop"`);
+  pins += pin(P('shop'), esc(G.name || '万事屋'), SHOP_LV[G.shop].n, `data-act="myshop"`);
   return `<div class="plaza${has ? '' : ' noimg'}" data-sec="広場">${has ? `<div class="pz-img" style="background-image:url('${IMG_BASE}${bg}.webp')">` : '<div class="pz-img">'}${pins}</div></div>`;
 }
 // ---------- v50: 施設での売り買い ----------
@@ -14397,8 +14434,8 @@ function vUpgrade() {
 }
 function myShopSheet() {
   const n = G.shelf.filter(Boolean).length;
-  openSheet(`${xBtn}<div class="lead">${portrait({ cls: 'villager', reg: 'owner', look: {} }, 'lg')}<div style="min-width:0"><div class="sub">${esc(G.name || '万事屋')}</div><h2>わが店</h2><div class="sub">${SHOP_LV[G.shop].n}・陳列棚 ${n}/${G.shelf.length}枠・作業力${workMax()}</div></div></div>` +
-    vUpgrade() + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="sview" data-v="shop" data-close="1">店先の棚を見る</button></div>`, { crumb: ['わが店'], myshop: true });
+  openSheet(`${xBtn}<div class="lead">${portrait({ cls: 'villager', reg: 'owner', look: {} }, 'lg')}<div style="min-width:0"><div class="sub">${SHOP_LV[G.shop].n}</div><h2>${esc(G.name || '万事屋')}</h2><div class="sub">陳列棚 ${n}/${G.shelf.length}枠・作業力${workMax()}</div></div></div>` +
+    vUpgrade() + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="sview" data-v="shop" data-close="1">店先の棚を見る</button></div>`, { crumb: [esc(G.name || '万事屋')], myshop: true });
 }
 function vTown() {
   const sp = stageProgress(), S = STAGES[G.stage], PH = innerWidth <= 560;
@@ -14523,7 +14560,6 @@ function settingsSheet(howto) {
     `<p class="note" style="font-size:12px;margin:6px 0 0">朝市・店・工房で曲が変わる。画面上の♪ボタンでいつでも消音できる。</p></div>` +
     `<div class="restart"><div class="rs-t">タイトルに戻る</div><p>いまの店を保存して、タイトル画面に戻る。セーブの切り替えと、はじめからはタイトルでできる。</p><div class="btns"><button class="btn" data-act="totitle">タイトルに戻る</button></div></div>` +
     `<p class="note" style="font-size:12px">${SAVE.db ? '進行はアカウントに自動保存される。' : '進行はこのブラウザに自動保存される。ログインすると、別の端末でも続きから遊べる(タイトルの設定)。'}</p><p class="note" style="font-size:12px">公開版では、ゲームのページが開かれた回数だけを数えている(GoatCounter)。セーブ・ログイン・端末を見分ける情報は送らず、Cookie も使わない。</p></div>`;
-  h += settingsDebug();
   h += `<div class="sec"><div class="btns"><button class="btn" data-act="dict">仕組みの辞典(遊び方)を開く</button></div></div>`;
   openSheet(h, { crumb: ['設定と遊び方'], settings: true });
 }
@@ -14711,7 +14747,7 @@ function recipeSheet(rid, nav) {
   const f = G.found[r.out];
   const ok = hasInputs(r) && G.work >= craftTime(r);
   const made = G.made[r.id] || 0, ms = mastery(r), mx = maxCraftable(r);
-  const n = Math.max(1, Math.min(UI.batchN[rid] || mx, mx)); UI.batchN[rid] = n;
+  const n = Math.max(1, Math.min(UI.batchN[rid] || 1, mx)); UI.batchN[rid] = n;   // 2026-10-29 作者: おまかせは1個から(全部作ってしまわないように)
   let h = `${xBtn}<div class="lead">${r.appraise ? ico(r.appraise, null, { size: 'lg' }) : ico(r.out, f === undefined ? null : f, { size: 'lg', sil: f === undefined && !r.repair })}` +
     `<div style="min-width:0"><div class="sub">${CRAFTS[r.craft].n}・作業${craftTime(r)}${r.n > 1 ? `・${r.n}個できる` : ''}</div><h2>${recName(r)}</h2>` +
     (r.appraise ? '' : `<div class="sub">相場 <span class="price">${fmt(IT[r.out].v)}G</span>・${f !== undefined ? '最高 ' + qtag(f) : '<b style="color:var(--brass-hi)">未発見</b>'}</div>`) + `</div></div>`;
@@ -14924,7 +14960,7 @@ function flushFX() {
       queueSheet(celebrate(`返済 ${fmt(m.at)}G 達成`, m.n, body + `<div class="meta">${m.d}</div>` + (m.k === 'done' ? `<div class="row" style="justify-content:center"><span class="ic lg q3"><img src="${iconURL({ sh: 'key', m: 'silver', a: 'gold', fx: ['spark'] })}" alt=""></span><div style="text-align:left"><div class="kicker">記念品</div>村長の銀の鍵</div></div>` : ''), m.k === 'story' ? 'しみじみ' : 'ありがとう', portrait(CHIEF_P, '', m.k === 'done' ? 'surprise' : m.k === 'story' ? 'normal' : 'smile')));
     } else if (f.t === 'ending') {
       const cp = completion();
-      queueSheet(celebrate('勇者の凱旋門が完成した', '伝説の万事屋', `<p>辺境の村の両親の古い店から始まった「${esc(G.name || '万事屋')}」は、いまや大陸中にその名を知られる伝説となった。聖剣を打った店として、吟遊詩人はこの店の歌を歌う。</p><div class="meta">${G.day}日目・図鑑 ${cp.found}/${cp.total}<br>図鑑のコンプリートを目指して、商売はまだまだ続く。</div>`, '商いを続ける'));
+      queueSheet(celebrate('勇者の凱旋門が完成した', '伝説の万事屋', `<p>辺境の村の、祖父が残した店から始まった「${esc(G.name || '万事屋')}」は、いまや大陸中にその名を知られる伝説となった。聖剣を打った店として、吟遊詩人はこの店の歌を歌う。</p><div class="meta">${G.day}日目・図鑑 ${cp.found}/${cp.total}<br>図鑑のコンプリートを目指して、商売はまだまだ続く。</div>`, '商いを続ける'));
     }
   }
 }
@@ -15489,15 +15525,18 @@ const jobDone = k => !!(G.jobs && G.jobs.day === G.day && G.jobs.ks.includes(k))
 const jobOk = j => G.act === 'work' && G.work >= 1 && !jobDone(j.k) && jobsToday().includes(j);
 // called by the game when the shift ends: 体力 −1, the pay, and sometimes a まかない
 function jobResolve(j, hit) {
-  if (!G.jobs || G.jobs.day !== G.day) G.jobs = { day: G.day, ks: [] };
-  G.jobs.ks.push(j.k); G.work = Math.max(0, G.work - 1);
+  if (!G.jobs || G.jobs.day !== G.day) G.jobs = { day: G.day, ks: [], hs: [] };
+  G.jobs.ks.push(j.k); if (G.jobs.hs) G.jobs.hs.push(hit); G.work = Math.max(0, G.work - 1);
   const pay = Math.max(1, Math.round(jobBase() * JOB_MULT[hit]));
   G.gold += pay; G.jobPaid = (G.jobPaid || 0) + pay;
   let meal = null;
-  if (hit === 'crit' || hit === 'ok') { meal = pick(['bread', 'grilled_fish', 'grilled_meat', 'mush_soup', 'stew', 'apple_pie'].filter(id => IT[id])); if (meal) invAdd(meal, 0, 1); }
+  // 2026-10-29 作者: まかないは完璧の時だけ。完璧が1つもなくても、その夜の3つを失敗なしでやり通したら最後に1品
+  // (= 完璧の数と「3つとも失敗なしなら1」の多い方)。hs の無い古いデータの夜は、やり通しの1品は出さない
+  const hs = G.jobs.hs, all = !!hs && hs.length >= 3 && !hs.includes('fail') && !hs.includes('crit');
+  if (hit === 'crit' || all) { meal = pick(['bread', 'grilled_fish', 'grilled_meat', 'mush_soup', 'stew', 'apple_pie'].filter(id => IT[id])); if (meal) invAdd(meal, 0, 1); }
   playerTurn();
   save();
-  return { pay, meal, hit };
+  return { pay, meal, hit, all };
 }
 
 // ---- meal.js ----
@@ -16977,7 +17016,7 @@ function jobEnd(g, hit) {
   const res = jobResolve(g.job, hit), foot = $('#gfoot'); if (!foot) return;
   const left = jobsToday().filter(jobOk).length;
   foot.innerHTML = `<div class="gres"><div class="qbig ${hit === 'fail' ? 'fail' : hit === 'crit' ? 'q3' : 'q1'}">${hit === 'crit' ? '大好評!' : hit === 'ok' ? 'おつかれさん' : 'まあ、こんな日もある'}</div>` +
-    `<div>お礼 <b class="price">+${fmt(res.pay)}G</b></div>${res.meal ? `<div class="okc">まかないに${IT[res.meal].name}をもらった ${ico(res.meal, 0, { size: 'xs' })}</div>` : ''}<div class="sub">残りの体力 ${G.work}${left ? `・今夜のバイトはあと${left}つ` : ''}</div>` +
+    `<div>お礼 <b class="price">+${fmt(res.pay)}G</b></div>${res.meal ? `<div class="okc">${res.all ? '3つやり通した。' : ''}まかないに${IT[res.meal].name}をもらった ${ico(res.meal, 0, { size: 'xs' })}</div>` : ''}<div class="sub">残りの体力 ${G.work}${left ? `・今夜のバイトはあと${left}つ` : ''}</div>` +
     `<div class="btns" style="justify-content:center;margin-top:6px"><button class="btn pri" data-act="jobback" data-focus>灯り亭に戻る</button><button class="btn" data-act="gclose">閉じる</button></div></div>`;
   if (g.job.long && hit !== 'fail') { mealReveal({ dish: res.meal || g.job.dish }, hit); }   // 川釣り: 釣れた料理を浮かび上がらせる
   g.doneAt = performance.now();
@@ -17556,7 +17595,7 @@ function fsDown(e) {
   if (!$('#fscard').hidden) { fsCardClose(); return; }
   const f = G.fishing; if (!f) return;
   if (FS.st === 'idle') {
-    if (f.casts <= 0) { fsSay('餌がない。小屋で買い足すか、竿をしまう'); return; }
+    if (f.casts <= 0) { fsSay(FS_NOBAIT, 3200); fsHint(); sfx('mg_tap'); return; }   // 2026-10-29 作者: 餌切れが不具合に見えた。少し長く出し、下の案内も替える
     // 2026-10-26 作者: not a pinpoint drop. Aim the rod left/right, hold to build power, let go to cast; the power decides how far
     FS.aimX = x; FS.st = 'charge'; FS.chT = FS.t; fsHint(); sfx('mg_tap'); return;
   }
@@ -17842,10 +17881,12 @@ function fsMeter() {
   c.restore();
 }
 // ---------- the words on the screen ----------
-function fsSay(s) { FS.msg = s; FS.msgT = FS.t + 1800; }
+const FS_NOBAIT = '……餌がない。小屋で買い足すか、今日は帰るか';
+function fsSay(s, ms) { FS.msg = s; FS.msgT = FS.t + (ms || 1800); }
 function fsHint() {
   if (FS.guide) fsGuide({ wait: 'wait', nib: 'nib', bite: 'bite', fight: 'fight' }[FS.st]);
   const h = $('#fshint'); if (!h) return;
+  if (FS.st === 'idle' && G.fishing && G.fishing.casts <= 0) { h.textContent = FS_NOBAIT; return; }
   h.textContent = { idle: '向きを決めて長押し(離すと投げる)', charge: 'ためて…離すと投げる', fly: '', wait: 'じっと待つ…(押すと竿を上げて投げ直す)', come: '影が寄ってきた…', nib: 'つついている…まだ、まだ', bite: '今だ!', fight: '押すと巻く・離すと緩む。針を緑の中に', card: '' }[FS.st] || '';
 }
 function fsStat() {
@@ -18484,7 +18525,13 @@ function diveSheet() {
   gq.party = (gq.party || []).filter(id => { const m = advById(id); return m && advReady(m); });
   if (a.id === 'dragon' && !bossCleared(4) && advById('luca') && advReady(advById('luca')) && !gq.party.includes('luca')) gq.party = ['luca'].concat(gq.party).slice(0, 3);   // v44: the hero goes
   if (!gq.party.length && !gq.partyTouched) { const r = ensureRoster().filter(advReady).sort((x, y) => Math.abs(x.rk - a.rk) - Math.abs(y.rk - a.rk) || y.rk - x.rk); gq.party = r.slice(0, 1).map(m => m.id); }
+  // 2026-10-29 作者: 選ぶのをやめた・食事をした・ギルドを開き直した時に、道具袋が空になって何度も入れ直していた。
+  // 冒険者ごとの袋の中身を UI.bagKeep に覚えておき、また同行させた時に戻す(倉庫に無くなった分は bagsClean が減らす)
+  const keep = UI.bagKeep || (UI.bagKeep = {}), cp = b => JSON.parse(JSON.stringify(b || {}));
+  for (const mid in gq.bags) if (!gq.party.includes(mid)) keep[mid] = cp(gq.bags[mid]);
+  for (const mid of gq.party) if (!gq.bags[mid] && keep[mid]) gq.bags[mid] = cp(keep[mid]);
   bagsClean(gq.bags, gq.party);
+  for (const mid of gq.party) keep[mid] = cp(gq.bags[mid]);
   // an item handed over from its own page goes into the first bag with room
   if (gq.carry) { const id = gq.carry; delete gq.carry; const mid = gq.party.find(x => bagAdd(gq.bags, x, id, 1)); if (mid) { gq.edit = { id: mid, slot: 'bag' }; } else if (gq.party.length) toast(`<div>${IT[id].name}を入れられる袋がない</div>`); }
   const ps = gqParty(gq), fee = partyFee(a, ps);
@@ -18571,6 +18618,7 @@ const DIVE_ACTS = {
   dvsend() {
     const g = UI.gq, dv = sendDive(g.area, g.target, g.party || [], { bags: g.bags || {} });
     if (!dv) return;
+    if (UI.bagKeep) for (const m of dv.party) delete UI.bagKeep[m.id];   // the bags went with them
     closeSheet(); sfx('door'); flyCoins(-1); UI.gq = {};
     setTimeout(() => toast(`<div><b>${dv.party.map(m => m.n).join('・')}</b>が${AR[dv.area].n}へ出発した。店の仕事をするたびに、冒険者も先へ進む。</div>`), 60);
   },
@@ -20539,7 +20587,7 @@ borg smile 「よし、海の釣りを見せてやる。来な!」
 // No.180: 釣り場へ誘う朝の場面(村長→ゼンじい→ミナ)。その釣り場が開いた次の朝、主にまだ会っていなければ流す。
 // 「過ぎた」の印(past)を付けないので、アップデート前から遊んでいる人にも、まだ会っていなければ最初の朝に流れる。
 const fishMet = id => !!(fishState().met || {})[id];
-S('fish_inv_river', { when: 'morning', cond: () => G.tut < 0 && SPOT.river.open() && !fishMet('river') }, `
+S('fish_inv_river', { when: 'morning', cond: () => G.tut < 0 && guildOpen() && storySeen('bld_guild') && G.day > storyDay('bld_guild') && !fishMet('river') }, `
 @bg bg_shop_day
 (朝。店の戸を開けると、村長が杖をついて立っていた。)
 chief smile 「おう、坊。朝から精が出るのう」
@@ -21253,7 +21301,8 @@ function boot(local, fresh) {
   window.addEventListener('pagehide', saveNow);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveNow(); });
   window.__game = {
-    get G() { return G; }, SYNC, syncAll, act, render, sceneDraw, sceneWalkers, SCENE, IT, RC, RC_BY_OUT, RECIPES, ITEMS, BUILDINGS, STAGES, METALS, SHOP_LV, FX, UI,
+    get G() { return G; },
+    jobResolve, fishRiverReady, SYNC, syncAll, act, render, sceneDraw, sceneWalkers, SCENE, IT, RC, RC_BY_OUT, RECIPES, ITEMS, BUILDINGS, STAGES, METALS, SHOP_LV, FX, UI,
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
     recCenter, zones, startGauge, centerTag, recWidth, buyStall, buyBook, autoNeeds, paperCheck, paperState, grantPaper, paperRandom, papersOwned, PAPERS, PAPER, paperSrcMet, paperSrcSt, isWeapon, isArmor, isRing, SKN, SKM, SK_TOTAL, pk, shelfSize, skLearn, skWhy, skReset, skResetCost, skSync, skMigrate, skAutoLearn, spSources, spTotal, spFree, spSpent, graceUse, graceLeft, diveCap, skHas, sellTo, buyFrom, acceptOrder, convertToOrder, openShop, closeShop, sleep, nextCust, upgradeShop, learnSkill, craftTime, completion, xpNeed, autoQuality,
     hotNow, pickHot, ateToday, FACS, FAC, facGoods, facSell, facPrice, facOpen, WORK_BASE, eatGain, EAT_MULT, askCall, diveNotify, closeSheet, failCraft, rollQuality, qualOdds, gaugeHit, orderPick, orderQualMult, orderReward, returnQuests, AREAS, AR, rankMax, guildOpen, questFee, questOdds, expectQty, areaOpen, areaBonus, beginAct, endAct, workMax, custCount, sellBold, boldOdds, haggle, sellHot, hotOdds, hotPrice, HOT_MAX, buyAt, buyOdds, buyPrice, BUY_MIN, BUY_MAX, sellBase, sellQty, sellPrice, fairPrice, mktMult, eat, edibles, staminaOf, dine, buyTonya, tonyaList, shopBand, shopClosed, CLOSE_AT,
