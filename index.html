@@ -14430,7 +14430,7 @@ function settingsSheet(howto) {
     `<div class="as-row"><button class="tog${AUS.sound ? ' on' : ''}" data-act="sound" aria-pressed="${AUS.sound}"><i></i>効果音</button><input type="range" min="0" max="100" step="5" value="${Math.round(vol.s * 100)}" data-vol="s" aria-label="効果音の音量"></div>` +
     `<p class="note" style="font-size:12px;margin:6px 0 0">朝市・店・工房で曲が変わる。画面上の♪ボタンでいつでも消音できる。</p></div>` +
     `<div class="restart"><div class="rs-t">タイトルに戻る</div><p>いまの店を保存して、タイトル画面に戻る。セーブの切り替えと、はじめからはタイトルでできる。</p><div class="btns"><button class="btn" data-act="totitle">タイトルに戻る</button></div></div>` +
-    `<p class="note" style="font-size:12px">${SAVE.db ? '進行はアカウントに自動保存される。' : '進行はこのブラウザに自動保存される。ログインすると、別の端末でも続きから遊べる(タイトルの設定)。'}</p></div>`;
+    `<p class="note" style="font-size:12px">${SAVE.db ? '進行はアカウントに自動保存される。' : '進行はこのブラウザに自動保存される。ログインすると、別の端末でも続きから遊べる(タイトルの設定)。'}</p><p class="note" style="font-size:12px">公開版では、ゲームのページが開かれた回数だけを数えている(GoatCounter)。セーブ・ログイン・端末を見分ける情報は送らず、Cookie も使わない。</p></div>`;
   h += settingsDebug();
   h += `<div class="sec"><div class="btns"><button class="btn" data-act="dict">仕組みの辞典(遊び方)を開く</button></div></div>`;
   openSheet(h, { crumb: ['設定と遊び方'], settings: true });
@@ -21063,6 +21063,18 @@ function boot(local, fresh) {
 }
 if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
 else start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+
+// No.179: アクセス計測(GoatCounter)。公開ページ(return-game.github.io)を開いた時に1回だけ「開いた」を送る。
+// 送るのはパス「/」だけ(クエリ・ハッシュ・リファラー・画面の大きさ・セーブ・ログイン情報は送らない)。Cookie や端末の識別は使わない。
+// 待たない・送り直さない・失敗しても何もしない。画面の切り替え・セーブ・同期では送らない。
+(function pageCount() {
+  try {
+    if (window.__practice || location.hostname !== 'return-game.github.io') return;
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    img.src = 'https://return-game.goatcounter.com/count?p=%2F&rnd=' + Math.random().toString(36).slice(2, 10);
+  } catch (e) { /* 計測できなくてもゲームは続ける */ }
+})();
 
 })();
 </script>
