@@ -30,6 +30,7 @@
   color-scheme: dark;
 }
 html, body { height: 100%; }
+body { margin: 0; }   /* No.176: GitHub・ホーム画面の版で、ブラウザの余白8pxが四方に付いて画面からはみ出していた */
 body {
   background: radial-gradient(120% 70% at 30% -10%, #1c2331 0%, rgba(17, 21, 29, 0) 60%), var(--night);
   color: var(--ink); font-family: var(--f-ui); font-size: 14px; line-height: 1.6;
@@ -1726,7 +1727,7 @@ html[data-theme=night] .hm-ai { background: linear-gradient(160deg, color-mix(in
 @media (max-width: 560px) {
   #tabs { display: block; }
   #tabs .tab { display: none; }
-  .mnav { display: grid; grid-template-columns: repeat(var(--nmn, 5), 1fr); padding: 2px 6px 0; }
+  .mnav { display: grid; grid-template-columns: repeat(var(--nmn, 5), minmax(0, 1fr)); padding: 2px 6px 0; }   /* No.176: minmax で狭い画面でもはみ出さない */
   .mn .tic { width: 25px; height: 25px; }
   .helpbtn { display: none !important; }   /* v54: スマホは下のバーの「エマ」から */
   .mn { appearance: none; position: relative; background: none; border: 0; display: grid; justify-items: center; gap: 2px; padding: 6px 0 2px; color: var(--mute); font: 700 10.5px var(--f-ui); cursor: pointer; }
@@ -2668,6 +2669,12 @@ body.practice #app { display: none; }
 .fs-guide b{display:block;font-size:12px;color:#e9c46a}
 .fs-guide p{margin:0}
 .fsh-scene.guided #fshint{visibility:hidden}
+/* No.176: 背の低い画面(Safari でアドレスバーが出ている iPhone など)では、ホームの間を詰めて4×4がスクロールなしで収まるようにする */
+@media (max-width: 560px) and (max-height: 760px) {
+  .hm-emma { margin-top: 40px; }
+  .hm-grid { margin-top: 12px; row-gap: 10px; }
+}
+@media (max-width: 959px) { #app { grid-template-columns: minmax(0, 1fr); } }   /* No.176: 狭い画面(iPhone SE など)で中身に押されて横にはみ出さない */
 
 </style>
 <div id="app">
@@ -13479,7 +13486,7 @@ function vHome() {
     ['注文', SKI.scroll, `data-act="hgo" data-tab="main" data-sec="受けている注文"`, '', ready || '', '#b08a3e'],
     ['街', TAB_SVG.town(), 'data-act="hgo" data-tab="town"', '', bldReadyN() ? '•' : '', '#5f7f4a'],
     ['灯り亭', SKI.cutlery, 'data-act="pub"', G.act !== 'work' ? '夜に夕食' : '', '', '#a0583f'],
-    ...(fishOn() ? [['釣り', SKI.hook || SKI.bowl, 'data-act="fshmenu"', G.act === 'fish' ? '釣りをしている' : '次の時間帯を釣りで', '', '#3f6f8a']] : []),
+    ...(fishOn() ? [['釣り', SKI.hook || SKI.bowl, 'data-act="fshmenu"', G.act === 'fish' ? '釣りをしている' : '時間帯を使う', '', '#3f6f8a']] : []),
     ['食事', SKI.bowl, 'data-act="ownmeal"', G.act === 'work' ? '体力を戻す' : '夜に食べる', '', '#b07a3a'],
     ...(guildOpen() ? [['冒険', TAB_SVG.adv(), 'data-act="hgo" data-tab="adv"', '', wait ? '!' : '', '#3f7d6e']] : []),
     ['倉庫', TAB_SVG.inv(), 'data-act="hgo" data-tab="inv" data-inv="items"', '', '', '#6b6f8a'],
@@ -13489,8 +13496,7 @@ function vHome() {
     ['施設', TAB_SVG.town(), 'data-act="hgo" data-tab="town" data-sec="施設"', '買い取り', '', '#5a7a8a'],
     ['スキル', SKI.flask, 'data-act="hgo" data-tab="owner" data-own="skill"', G.sp ? `ポイント ${G.sp}` : '', G.sp ? '•' : '', '#7a5a8a'],
     ['店主', TAB_SVG.owner(), 'data-act="hgo" data-tab="owner" data-own="shop"', '設備・売上・借金', '', '#6a5a7a'],
-    ['遊び方', SKI.bubble, 'data-act="howto"', false, '', '#6a7380'],
-    ['設定', HOME_SVG.gear, 'data-act="settings"', false, '', '#5d6470'],
+    ['設定', HOME_SVG.gear, 'data-act="settings"', '遊び方も', '', '#5d6470'],   // No.176: 遊び方は設定の中へ(釣りが入って5段になったため、4×4に戻す)
   ];
   const se = SEASONS[season()];
   return `<div class="home" data-sec="ホーム">` +
@@ -14397,7 +14403,7 @@ function settingsSheet(howto) {
   let h = xBtn;
   if (howto) { dictSheet(); return; }
   const vol = AUS.vol, trk = TRACK_NAME[musicKey()];
-  h += `<div class="sec"><h2>設定</h2><div class="as-row"><button class="setrow" data-act="theme"><span>画面の色</span><b>${THEMES.find(t => t[0] === (G.theme || 'auto'))[1]} ›</b></button></div>` +
+  h += `<div class="sec"><h2>設定</h2><div class="as-row"><button class="setrow" data-act="howto"><span>遊び方(言葉の辞書)</span><b>開く ›</b></button></div><div class="as-row"><button class="setrow" data-act="theme"><span>画面の色</span><b>${THEMES.find(t => t[0] === (G.theme || 'auto'))[1]} ›</b></button></div>` +
     `<p class="note" style="font-size:12px;margin:2px 0 8px">「時間で変わる」は、朝と昼は明るい色、夜の工房は夜の色になる。</p><div class="as-row"><button class="setrow" data-act="craftmode"><span>製作</span><b>${G.craftEasy ? 'かんたん(ゲージ)' : 'ミニゲーム'} ›</b></button></div><div class="as-row"><button class="setrow" data-act="gspeed"><span>ミニゲームの速さ</span><b>${G.gspeed === 'normal' ? 'ふつう' : 'ゆっくり'} ›</b></button></div><div class="as-row"><button class="setrow" data-act="mgmode"><span>ミニゲームの種類</span><b>${G.mgMode === 'craft' ? '製作ごと(前の形)' : 'ランダム'} ›</b></button></div>` +
     `<p class="note" style="font-size:12px;margin:2px 0 8px">ミニゲームは、作るたびに13種類のどれかがランダムに出る。「製作ごと(前の形)」にすると、製作ごとに決まったゲームになる(鍛冶=槌で打つ・錬金=沸かして止める・調理=火加減・筆写=魔法陣)。鑑定はいつも影合わせ。「かんたん」にすると、全部が前のゲージになる(鑑定はボタンで開く)。判定と会心の決まりは同じ。</p>` +
     `<div class="as-row"><button class="tog${G.helpGlow !== false ? ' on' : ''}" data-act="helpglow" aria-pressed="${G.helpGlow !== false}"><i></i>はじめの7日、手が止まったら「?」を光らせる</button></div>` +
