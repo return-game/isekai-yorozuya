@@ -2675,6 +2675,15 @@ body.practice #app { display: none; }
   .hm-grid { margin-top: 12px; row-gap: 10px; }
 }
 @media (max-width: 959px) { #app { grid-template-columns: minmax(0, 1fr); } }   /* No.176: 狭い画面(iPhone SE など)で中身に押されて横にはみ出さない */
+/* No.177: fitHome() が付ける段階(1→4 の順に小さく)。押しやすさのため 44px より小さくはしない */
+.home.fit1 .hm-emma, .home.fit2 .hm-emma { margin-top: 20px; }
+.home.fit3 .hm-emma, .home.fit4 .hm-emma { margin-top: 6px; }
+.home[class*=fit] .hm-grid { margin-top: 10px; row-gap: 8px; }
+.home.fit2 .hm-ai { width: 52px; height: 52px; border-radius: 16px; }
+.home.fit3 .hm-ai, .home.fit4 .hm-ai { width: 46px; height: 46px; border-radius: 14px; }
+.home.fit4 .hm-ai { width: 44px; height: 44px; }
+.home.fit4 .hm-grid { row-gap: 4px; }
+.home.fit4 .hm-app { gap: 3px; }
 
 </style>
 <div id="app">
@@ -13085,6 +13094,7 @@ function render() {
   { const t = p.querySelector('.wk-todo'), r = p.querySelector('.wk-recs'); render._wkc = UI.craftCat + (UI.onlyOk ? '1' : '0') + (UI.recSort || '');
     if (render._k === key && wkS.length) { if (t && wkS.length > 1) t.scrollTop = wkS[0]; if (r && wkCat === render._wkc) r.scrollTop = wkS[wkS.length - 1]; } }
   skBoardScroll();
+  fitHome();
   if (innerWidth <= 560 && UI.tab === 'town') UI.jumpSec = null;   // phone: each town page starts at its top
   if (UI.jumpSec) { const want = UI.jumpSec; UI.jumpSec = null; const sec = (UI.secs || []).find(x => want === '*chips' ? x.el.dataset.chips : x.lb.startsWith(want)); if (sec) scrollToSec(sec.el, true); }
   if (UI.scrollFit) {   // phone market: after choosing a merchant, scroll only as far as needed to see the whole counter
@@ -15129,6 +15139,15 @@ function vSideGuild() {
 }
 
 window.matchMedia('(max-width:560px)').addEventListener('change',()=>{if(G){render._k='';render();}});
+
+// No.177: ホームのアイコンが画面の高さに収まらない時(冒険・釣りなどで段が増えた・表示が大きい機種)、間とアイコンを段階的に小さくして収める
+function fitHome() {
+  const p = $('#panel'), h = p && p.querySelector('.home'); if (!h) return;
+  h.classList.remove('fit1', 'fit2', 'fit3', 'fit4');
+  if (innerWidth > 560) return;
+  for (let i = 1; i <= 4 && p.scrollHeight > p.clientHeight + 1; i++) { if (i > 1) h.classList.remove('fit' + (i - 1)); h.classList.add('fit' + i); }
+}
+window.addEventListener('resize', () => { try { if (typeof UI !== 'undefined' && UI.tab === 'home') fitHome(); } catch (e) { /* ignore */ } });
 
 // ---- pub.js ----
 // ===== クラウド(2026-10-10): 灯り亭 — 日替わりのメニューとゴズの頼みごと =====
