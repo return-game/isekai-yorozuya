@@ -2703,6 +2703,12 @@ body.practice #app { display: none; }
 .fsh-dc small { font-size: 10.5px; line-height: 1.3; color: var(--ink-2); overflow-wrap: anywhere; }
 .fsh-dc:not(.got) { opacity: .75; }
 .fs-name .fsh-rank { vertical-align: 3px; }
+/* No.187: びくの行 — 右に【売る】G と【P交換】pt を2段で */
+.ri.fsh-bagrow { grid-template-columns: auto minmax(0, 1fr) auto; }
+.fsh-sell { display: grid; grid-template-columns: auto minmax(3.6em, auto); gap: 4px 8px; align-items: center; justify-items: start; }
+.fsh-sell .btn { width: 100%; justify-content: center; }
+.fsh-sell .price { justify-self: end; }
+.fsh-sell .price.fsh-ptv { color: var(--patina); }
 
 </style>
 <div id="app">
@@ -7393,7 +7399,7 @@ function vFishMain() {
   const hutBg = fishPic('bg_fish_hut_' + f.spot), hasBg = BG_FILES.has(hutBg);
   const subs = sp.subs.map(([k, n], i) => `<button class="btn${i ? '' : ' gold'} fsh-go" data-act="fshwater" data-v="${k}"${i ? '' : ' data-focus'}>${n}へ出る</button>`).join('');   // No.185: 場所ごとに出る
   const bagSum = f.bag.reduce((a, c) => a + fishPrice(c.id, c.q), 0), bagPts = f.bag.reduce((a, c) => a + fishPtsFor(c.id, c.q), 0);
-  const bag = f.bag.map((c, i) => `<div class="ri"><span>${ico(c.id, c.q, { size: 'sm' })}</span><div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${c.cm}cm・${QUAL[c.q].n}</span></div><span class="price">${fmt(fishPrice(c.id, c.q))}G</span><button class="btn sm" data-act="fshsell" data-i="${i}">売る</button><button class="btn sm ghost" data-act="fshpts" data-i="${i}" title="ポイントに替える(+${fmt(fishPtsFor(c.id, c.q))}pt)">${fmt(fishPtsFor(c.id, c.q))}pt</button></div>`).join('');
+  const bag = f.bag.map((c, i) => `<div class="ri fsh-bagrow"><span>${ico(c.id, c.q, { size: 'sm' })}</span><div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${c.cm}cm・${QUAL[c.q].n}</span></div><div class="fsh-sell"><button class="btn sm" data-act="fshsell" data-i="${i}">売る</button><span class="price">${fmt(fishPrice(c.id, c.q))}G</span><button class="btn sm" data-act="fshpts" data-i="${i}">P交換</button><span class="price fsh-ptv">${fmt(fishPtsFor(c.id, c.q))}pt</span></div></div>`).join('');
   const shadows = pool.map(x => `<span class="fsh-sh${s.dex[x.id] ? ' got' : ''}">${s.dex[x.id] ? ico(x.id, 0, { size: 'xs' }) : '<i></i>'}<small>${s.dex[x.id] ? x.n : '影' + SHADOW_N[x.shadow]}</small>${fishLast(x.id) ? FISH_LAST_TAG : ''}</span>`).join('');
   const nb = fishState(), canBait = f.buys < BAIT_MAX && nb.pts >= BAIT_PTS;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
@@ -14502,7 +14508,7 @@ function settingsDebug() {
   return h + `</div>`;
 }
 function settingsSheet(howto) {
-  let h = xBtn;
+  let h = xBtn + (DEV.on ? `<div class="btns" style="margin:0 0 10px"><button class="btn gold" data-act="devmenu">作者用メニュー(練習用の店)</button></div>` : '');   // No.186
   if (howto) { dictSheet(); return; }
   const vol = AUS.vol, trk = TRACK_NAME[musicKey()];
   h += `<div class="sec"><h2>設定</h2><div class="as-row"><button class="setrow" data-act="howto"><span>遊び方(言葉の辞書)</span><b>開く ›</b></button></div><div class="as-row"><button class="setrow" data-act="theme"><span>画面の色</span><b>${THEMES.find(t => t[0] === (G.theme || 'auto'))[1]} ›</b></button></div>` +
@@ -14951,6 +14957,7 @@ function act(a, d) {
 function act0(a, d) {
   if (a === 'synckeep') { syncKeep(d.v); return; } // タイトル画面(店がまだ無い)でも押せるように、店のデータを見る前に処理する(No.174)
   if (DIVE_ACTS[a]) { DIVE_ACTS[a](d || {}); render(); save(); return; }
+  if (DEV_ACTS[a]) { if (!DEV.on) return; const r = DEV_ACTS[a](d || {}); if (r !== false) render(); return; }
   if (FISH_ACTS[a]) { const r = FISH_ACTS[a](d || {}); save(); if (r !== false) render(); return; }
   const c = curCust();
   switch (a) {
@@ -15240,6 +15247,48 @@ function fitHome() {
   for (let i = 1; i <= 4 && p.scrollHeight > p.clientHeight + 1; i++) { if (i > 1) h.classList.remove('fit' + (i - 1)); h.classList.add('fit' + i); }
 }
 window.addEventListener('resize', () => { try { if (typeof UI !== 'undefined' && UI.tab === 'home') fitHome(); } catch (e) { /* ignore */ } });
+
+// ---------- No.186: 作者用メニュー ----------
+function devSheet() {
+  if (!DEV.on) return;
+  const k = UI.devView || 'top', st = G.stage, se = season();
+  let h = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">練習用の店(保存しない)</div><h2>作者用メニュー</h2></div></div>` +
+    `<div class="chips"><button class="chip${k === 'top' ? ' on' : ''}" data-act="devv" data-v="top">始める時点</button><button class="chip${k === 'scene' ? ' on' : ''}" data-act="devv" data-v="scene">場面を見る</button></div>`;
+  if (k === 'top') {
+    h += `<div class="sec"><h2>釣りの練習</h2><p class="note">釣り場6か所が全部開き、主にも会い、竜骨の竿を持った状態で釣り場へ。</p><div class="btns">` +
+      FISH_SPOTS.map(sp => `<button class="btn" data-act="devfish" data-v="${sp.id}">${sp.n}へ</button>`).join('') + `</div></div>` +
+      `<div class="sec"><h2>章</h2><div class="btns">` + STAGES.map((s, i) => `<button class="btn${i === st ? ' pri' : ''}" data-act="devst" data-v="${i}">${i + 1} ${s.short}</button>`).join('') +
+      `</div><p class="note">選んだ章の前までの建物は建った状態・それまでの物語は見たことになる。</p></div>` +
+      `<div class="sec"><h2>季節</h2><div class="btns">` + SEASONS.map((s, i) => `<button class="btn${i === se ? ' pri' : ''}" data-act="devse" data-v="${i}">${s.n}</button>`).join('') + `</div></div>` +
+      `<div class="sec"><h2>そのほか</h2><div class="btns"><button class="btn" data-act="devbuild">今の章の建物も全部建てる</button><button class="btn" data-act="devgold">お金 +10000G</button></div></div>` +
+      `<p class="note">閉じた後も、⚙(設定)のいちばん上から、このメニューを開ける。タイトルに戻ると、この店は消えて本当のセーブはそのまま。</p>`;
+  } else {
+    const chN = ['第1章', '第2章', '第3章', '第4章', '第5章'];
+    const groups = {};
+    for (const id in STORY) { const d = STORY[id], g = d.ch != null ? chN[d.ch] || 'そのほか' : /^fish_/.test(id) ? '釣り' : /^reg_|^new_/.test(id) ? '住人・サブ' : 'そのほか'; (groups[g] = groups[g] || []).push(id); }
+    h += Object.keys(groups).map(g => `<div class="sec"><h2>${g} <span class="aside">${groups[g].length}場面</span></h2><div class="rows">` + groups[g].map(id => {
+      const l = (STORY[id].lines || [])[0]; return `<button class="ri lnkrow" data-act="devscene" data-v="${id}"><span class="sub" style="min-width:7em">${esc(id)}</span><span class="grow" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l ? l.t || '' : '')}</span><span class="chev">›</span></button>`; }).join('') + `</div></div>`).join('');
+  }
+  openSheet(h, { cur: 'dev', crumb: ['作者用メニュー'] });
+}
+function devStage(n) {
+  G.tut = -1; G.stage = n; G.built = G.built || {};
+  for (const b of BUILDINGS) if (b.st < n) G.built[b.id] = 1;
+  const stv = storyState(); for (const id in STORY) { const d = STORY[id]; let p = false; try { p = !!(d.past && d.past()) || (d.ch != null && d.ch < n); } catch (e) { p = false; } if (p) stv.seen[id] = 0; }
+  stv.q = [];
+}
+const DEV_ACTS = {
+  devmenu: () => { devSheet(); return false; },
+  devv: d => { UI.devView = d.v; devSheet(); return false; },
+  devst: d => { devStage(+d.v); toast(`<div>${STAGES[+d.v].n}にした</div>`); devSheet(); return false; },
+  devse: d => { G.day = 1 + 7 * (+d.v) + 28 * Math.floor((G.day - 1) / 28); toast(`<div>${SEASONS[+d.v].n}にした</div>`); devSheet(); return false; },
+  devbuild: () => { for (const b of BUILDINGS) if (b.st <= G.stage) G.built[b.id] = 1; toast('<div>建物を建てた</div>'); devSheet(); return false; },
+  devgold: () => { G.gold += 10000; devSheet(); return false; },
+  devscene: d => { closeSheet(true); storyView(d.v); return false; },
+  devfish: d => { G.tut = -1; if (G.stage < 2) devStage(2); G.built.guild = 1; G.built.port = 1; const s = fishState(); s.met = { river: 1, lake: 1, sea: 1 }; s.rod = RODS.length - 1;
+    for (const id of ['river', 'lake', 'sea']) storyState().seen['fish_inv_' + id] = 0;
+    closeSheet(true); if (G.act === 'fish') { fishSceneClose(); fishLeave(); } if (G.act === 'work') beginAct('shop'); fishGo(d.v); UI.tab = 'main'; UI.shopView = null; },
+};
 
 // ---- pub.js ----
 // ===== クラウド(2026-10-10): 灯り亭 — 日替わりのメニューとゴズの頼みごと =====
@@ -20542,6 +20591,8 @@ owner normal 「・・・」
 // dist/minigames.html(window.__practice = 1)か、#mgplay で開くと、店を作らずにミニゲームの一覧が出る。
 // 体力・素材・お金は使わず、保存もしない。結果は「会心/成功/失敗」と、その場の回数だけ。
 // ゲーム本体と同じミニゲームのコードを使うので、本体を直せばここにも入る。
+const DEV = { on: false };
+const DEV_OK = (() => { try { return !window.__practice && !/mgplay/.test(location.hash) && location.hostname !== 'return-game.github.io'; } catch (e) { return false; } })();
 const PRACTICE = (() => { try { return !!window.__practice || /mgplay/.test(location.hash); } catch (e) { return false; } })();
 const PR = { diff: 'normal', game: null, cur: null, stats: {} };
 const PR_DIFF = { easy: { n: 'やさしい', f: 1.4, sp: 0.85 }, normal: { n: 'ふつう', f: 1, sp: 1 }, hard: { n: 'むずかしい', f: 0.72, sp: 1.2 } };
@@ -20844,7 +20895,8 @@ function titleHtml() {
   if (TITLE.view === 'top') {
     menu = `<button class="btn pri big" data-tt="new">はじめから</button>` +
       `<button class="btn big" data-tt="cont"${any ? '' : ' disabled'}>つづきから</button>` +
-      `<button class="btn big" data-tt="set">設定</button>`;
+      `<button class="btn big" data-tt="set">設定</button>` +
+      (DEV_OK ? `<button class="btn ghost" data-tt="dev">作者用メニュー</button>` : '');   // No.186: 公開アドレスでは出ない
   } else if (TITLE.view === 'cont') {
     menu = `<div class="tt-h">つづきから</div><div class="tt-slots">` + [1, 2, 3].map(n => `<button class="btn tt-slot${TITLE.pick === n ? ' on' : ''}" data-tt="pick" data-n="${n}"${has[n - 1] ? '' : ' disabled'}><b>セーブ${n}</b><span>${has[n - 1] ? esc(titleLabel(has[n - 1])) : 'なし'}</span></button>`).join('') + `</div>` +
       `<button class="btn pri big" data-tt="go"${has[TITLE.pick - 1] ? '' : ' disabled'}>この店で遊ぶ</button><button class="btn ghost" data-tt="top">もどる</button>`;
@@ -20897,6 +20949,7 @@ function titleClick(e) {
   try { AU && AU.click && AU.click(); } catch (er) { /* ignore */ }
   if (k === 'top' || k === 'cont' || k === 'set') { TITLE.view = k; if (k === 'new') TITLE.newSlot = 0; titleRender(); return; }
   if (k === 'new') { TITLE.view = 'new'; TITLE.newSlot = 0; titleRender(); return; }
+  if (k === 'dev' && DEV_OK) { titleClose(); TITLE.done({ dev: true }); return; }
   if (k === 'pick') { TITLE.pick = +b.dataset.n; titleRender(); return; }
   if (k === 'go') { titleClose(); TITLE.done({ slot: TITLE.pick }); return; }
   if (k === 'nslot') { TITLE.newSlot = +b.dataset.n; titleRender(); return; }
@@ -21017,7 +21070,7 @@ function fixLoaded() {
 }
 function save() { if (PRACTICE) return; clearTimeout(SAVE.timer); SAVE.timer = setTimeout(saveNow, 700); }
 function saveNow() {
-  if (PRACTICE) return;
+  if (PRACTICE || DEV.on) return;   // No.186: 作者用メニューの店は保存しない
   if (!G) return;
   G.lastSaved = Date.now();
   const s = JSON.stringify(G);
@@ -21145,6 +21198,7 @@ function start(hot) {
   if ((fromHot && !forceTitle) || TITLE_SKIP) return boot(fromHot || loadLocal());
   syncBoot();
   titleOpen(r => {
+    if (r.dev) { DEV.on = true; newGame(); G.tut = -1; G.name = '作者用の店'; const g = G; boot(g); devSheet(); return; }   // No.186: 練習用の店(保存も同期もしない)
     try { localStorage.setItem('manbanya_slot', String(r.slot)); } catch (e) { /* storage unavailable */ }
     SAVE.slot = r.slot; SAVE.key = slotKey(r.slot); SAVE.ref = null;
     if (r.fresh) { newGame(); G.gold = r.gold; saveNow(); if (SYNC.user) syncPush(true); boot(null, true); }
@@ -21210,6 +21264,9 @@ else start((window.claude && window.claude.hot && window.claude.hot.data) || {})
     img.src = 'https://return-game.goatcounter.com/count?p=%2F&rnd=' + Math.random().toString(36).slice(2, 10);
   } catch (e) { /* 計測できなくてもゲームは続ける */ }
 })();
+
+// No.186: 作者用メニュー(デバッグモード)。公開アドレス(return-game.github.io)では出さない・動かない。
+// 練習用の店で動く: 保存も同期もしない(本当のセーブには触らない)。閉じるかタイトルに戻ると消える。
 
 })();
 </script>
