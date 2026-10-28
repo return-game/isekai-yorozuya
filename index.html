@@ -2684,6 +2684,12 @@ body.practice #app { display: none; }
 .home.fit4 .hm-ai { width: 44px; height: 44px; }
 .home.fit4 .hm-grid { row-gap: 4px; }
 .home.fit4 .hm-app { gap: 3px; }
+/* No.178: ホームの4列は画面の幅でいつも等分する。小さい字(設備・売上・借金 など)が長くても列が広がらず、2行まで折り返す(実機の字体で4列目が右にはみ出していた) */
+.hm-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.hm-app { min-width: 0; }
+.hm-al { min-width: 0; max-width: 100%; text-align: center; overflow-wrap: anywhere; }
+.hm-al .hm-as { white-space: normal; overflow-wrap: anywhere; letter-spacing: 0; }
+.home, .hm-emma { min-width: 0; max-width: 100%; }
 
 </style>
 <div id="app">
