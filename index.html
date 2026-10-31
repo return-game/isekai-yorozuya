@@ -2709,6 +2709,10 @@ body.practice #app { display: none; }
 .fsh-sell .btn { width: 100%; justify-content: center; }
 .fsh-sell .price { justify-self: end; }
 .fsh-sell .price.fsh-ptv { color: var(--patina); }
+/* No.193: 工房の並べ替えを札で選ぶ・修理の札 */
+.qtag.rep { color: #e08a6a; }
+.cfold-bar .recsorts { display: flex; gap: 4px; flex-wrap: wrap; margin: 0; }
+.cfold-bar .recsorts .chip { height: 26px; padding: 0 9px; font-size: 12px; }
 
 </style>
 <div id="app">
@@ -14026,7 +14030,10 @@ function recIcon(r) {
 }
 // cloud: what a recipe is worth — how many you hold, what one sells for (普通), and the gain over the materials
 // v48: the sort of the recipe list (おすすめ / もうけ / 値段 / 作業の少ない)
-const REC_SORT = [['rec', 'おすすめ順'], ['kind', '種類順'], ['series', '分類順'], ['gain', '利益順'], ['price', '価格順'], ['time', '作業順']];
+// No.193 (2026-10-31 作者): 4つにした。やること(注文→修理→建設→特需→そのほか)・種類・分類・価格。作れるかどうかでは並びを動かさない
+const REC_SORT = [['todo', 'やること'], ['kind', '種類'], ['series', '分類'], ['price', '価格']];
+const recSortKey = () => REC_SORT.some(x => x[0] === UI.recSort) ? UI.recSort : 'todo';
+const isMend = r => !!r.repair && r.id !== 'r_recycle';
 const recShape = r => r.appraise ? 'appraise' : (IT[r.out] && IT[r.out].icon && IT[r.out].icon.sh) || '';
 const ELEM_M = ['fire', 'water', 'wind', 'earth', 'light', 'dark'];
 // v48: 分類順 — metals and woods by series; the rest in a few broad groups
@@ -14051,10 +14058,9 @@ function recGroups(recs, k, nrank) {
     return [...m.entries()].sort((a, b) => orderF(a[0]) - orderF(b[0])).map(([g, rs]) => [nameF(g, rs), rs.sort((a, b) => a.lv - b.lv || recGain(b) - recGain(a))]); };
   if (k === 'kind') { const KO = ['~料理', '~スープ', '~パン', '~お菓子・飲み物', '~携帯食・弁当', '~薬', '~道具']; return by(recKind, (g, rs) => g === '~repair' ? '修理' : g === 'appraise' ? '鑑定' : g[0] === '~' ? g.slice(1) : kindName(g, rs), g => g === '~repair' ? 2e9 : g === '~道具' ? 1.5e9 : KO.includes(g) ? -100 + KO.indexOf(g) : firstIdx('sh', g)); }
   if (k === 'series') return by(r => recSeries(r), g => SERIES_N[g] ? SERIES_N[g] + 'シリーズ' : g, g => { const i = Object.keys(RAMP).indexOf(g); return i >= 0 ? i : 1000 + GROUP_ORDER.indexOf(g); });
-  if (k === 'time') { const grp = r => nrank(r) === 2 ? 0 : nrank(r) === 1 && !r.repair ? 1 : r.repair ? 2 : 3;
-    return by(grp, g => ['建設に要る品', '注文・特需の品', '修理', 'そのほか'][g], g => g).map(([n, rs]) => [n, rs.sort((a, b) => craftTime(a) - craftTime(b) || recGain(b) - recGain(a))]); }
-  if (k === 'gain') recs.sort((a, b) => recGain(b) - recGain(a));
-  else if (k === 'price') recs.sort((a, b) => recPrice(b) - recPrice(a));
+  if (k === 'todo') { const grp = r => nrank(r) === 1 ? 0 : isMend(r) ? 1 : nrank(r) === 2 ? 2 : nrank(r) === 1.5 ? 3 : 4;
+    return by(grp, g => ['注文の品', '修理', '建設に要る品', '明日の特需', 'そのほか'][g], g => g).map(([n, rs]) => [n, rs.sort((a, b) => a.lv - b.lv || (a.id < b.id ? -1 : 1))]); }
+  if (k === 'price') recs.sort((a, b) => recPrice(b) - recPrice(a));
   return [['', recs]];
 }
 function recGain(r) { if (r.repair || r.appraise || !IT[r.out]) return -1e9; return Math.round(fairPrice(IT[r.out], 0)) * (r.n || 1) - Math.round(r.ins.reduce((s, [id, q]) => s + fairPrice(IT[id], 0) * q, 0)); }
@@ -14096,15 +14102,15 @@ function vWork(off) {
   const nd = neededOutputs();
   const hotId = G.hot && G.hot.day === G.day + 1 ? G.hot.id : null;
   const nrank = r => r.repair || r.appraise ? 0 : nd[r.out] === 'bld' ? 2 : nd[r.out] === 'ord' ? 1 : r.out === hotId ? 1.5 : 0;
-  recs.sort((a, b) => (hasInputs(b) - hasInputs(a)) || (nrank(b) - nrank(a)) || (b.repair ? 1 : 0) - (a.repair ? 1 : 0) || a.lv - b.lv);
-  const groups = recGroups(recs, UI.recSort || 'rec', nrank);
-  { const k = UI.recSort || 'rec';
-    const nm = (REC_SORT.find(x => x[0] === k) || REC_SORT[0])[1];
-    h += `<div class="cfold-bar">${innerWidth <= 560 ? '' : '<p class="note cfold">上の鍛冶・錬金などを押すと、レシピの一覧が閉じる。</p>'}${innerWidth <= 560 ? `<button class="btn sm ghost${UI.onlyOk ? ' on' : ''}" data-act="onlyok" aria-pressed="${!!UI.onlyOk}">作れるだけ</button>` : ''}<button class="btn sm ghost" data-act="recsort">並び替え: ${nm}</button></div>`; }
+  recs.sort((a, b) => (nrank(b) - nrank(a)) || (isMend(b) ? 1 : 0) - (isMend(a) ? 1 : 0) || a.lv - b.lv || (a.id < b.id ? -1 : 1));
+  const groups = recGroups(recs, recSortKey(), nrank);
+  { const k = recSortKey();
+    const sortChips = `<span class="chips recsorts" role="group" aria-label="並び替え">${REC_SORT.map(([v, n]) => `<button class="chip${v === k ? ' on' : ''}" data-act="recsort" data-v="${v}" aria-pressed="${v === k}">${n}</button>`).join('')}</span>`;
+    h += `<div class="cfold-bar">${innerWidth <= 560 ? '' : '<p class="note cfold">上の鍛冶・錬金などを押すと、レシピの一覧が閉じる。</p>'}${innerWidth <= 560 ? `<button class="btn sm ghost${UI.onlyOk ? ' on' : ''}" data-act="onlyok" aria-pressed="${!!UI.onlyOk}">作れるだけ</button>` : ''}${sortChips}</div>`; }
   if (!recs.length) h += `<p class="note">${UI.craftCat === 'appraise' ? '鑑定できる品がない。お客さんが「謎の品」を持ち込むことがある。探索でぬしの奥まで行くと「封印された箱」が手に入り、ここで開けられる。' : UI.onlyOk ? '今ある素材で作れるものはない。' : 'まだ覚えたレシピがない。'}</p>`;
   const card = r => {
     const ok = hasInputs(r) && G.work >= craftTime(r), ms = mastery(r), nr = nrank(r);
-    return `<button class="rec${ok ? '' : ' no'}" data-act="rec" data-id="${r.id}">${recIcon(r)}<span style="min-width:0"><span class="t">${recName(r)}${r.n > 1 ? `<span class="sub">×${r.n}</span>` : ''}${nr === 2 ? '<span class="qtag need">建設</span>' : nr === 1 ? '<span class="qtag ord">注文</span>' : ''}${r.out === hotId ? '<span class="qtag hot">特需</span>' : ''}</span><span class="ins">` +
+    return `<button class="rec${ok ? '' : ' no'}" data-act="rec" data-id="${r.id}">${recIcon(r)}<span style="min-width:0"><span class="t">${recName(r)}${r.n > 1 ? `<span class="sub">×${r.n}</span>` : ''}${nr === 2 ? '<span class="qtag need">建設</span>' : nr === 1 ? '<span class="qtag ord">注文</span>' : ''}${r.out === hotId ? '<span class="qtag hot">特需</span>' : ''}${isMend(r) ? '<span class="qtag rep">修理</span>' : ''}</span><span class="ins">` +
       r.ins.map(([id, q]) => `<span class="in${invCount(id) < q ? ' lack' : ''}">${ico(id, null, { size: 'xs', sil: G.found[id] === undefined })}${invCount(id)}/${q}</span>`).join('') + `</span>${recMoney(r)}</span>` +
       `<span class="tb">作業${craftTime(r)}${ms ? `<br><span class="stars">${'★'.repeat(ms)}</span>` : ''}</span></button>`;
   };
@@ -15121,7 +15127,7 @@ function act0(a, d) {
     case 'pubeat': { const r = pubOrder(d.id); if (!r) return; closeSheet(true); sfx(r.item.k === 'food' ? 'door' : 'coin');
       queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
     case 'sleepno': closeSheet(); return;
-    case 'recsort': { const i = REC_SORT.findIndex(x => x[0] === (UI.recSort || 'rec')); UI.recSort = REC_SORT[(i + 1) % REC_SORT.length][0]; sfx('tap'); break; }
+    case 'recsort': { UI.recSort = REC_SORT.some(x => x[0] === d.v) ? d.v : 'todo'; sfx('tap'); break; }
     case 'slot': slotSwitch(+d.v); return;
     case 'totitle': toTitle(); return;
     case 'synclogin': syncLogin(); return;
@@ -15839,6 +15845,7 @@ const MG2 = (() => {
 
   // ---------- shared rules ----------
   // Stop the light on a lit arc three times. Each round reverses and speeds up. One hit succeeds; all gold is critical.
+  const FURN_GLOW = .015, FURN_NEEDLE = .008;   // No.193: 炉の温度計(半円)の当たりの余白
   const TURN = {
     init(g) { g.ang = rnd(0, 360); g.dir = 1; g.w = 170 * D.sp; g.arc = (g.ang + rnd(130, 230)) % 360; g.marks = []; g.trav = 0; g.trail = []; },
     okH: () => D.ok * 250, crH: () => D.crit * 250,
@@ -16249,10 +16256,11 @@ const MG2 = (() => {
         L(3.2, '#fff'); glow('#fff', 10); cx.beginPath(); cx.moveTo(x - Math.cos(rad(g.ang)) * 14, y - Math.sin(rad(g.ang)) * 14); cx.lineTo(x + Math.cos(rad(g.ang)) * (R - 8), y + Math.sin(rad(g.ang)) * (R - 8)); cx.stroke(); noGlow(); circle(x, y, 5, '#fff');
         dots([0, 1, 2], 418, i => g.marks[i] && g.marks[i].m);
         pops(g, t); } },
+    // No.193: 半円の温度計の当たりの余白(針の位置 0..1 で。半径124pxの半円で約6px=金色のにじみ、約3px=針の太さ)
     { id: 'A1', sk: '炉の温度計', place: '鍛冶場', bg: 'bg_smithy', amb: 'ember', cmd: '止めろ!', name: '炉の温度を見極める', hint: '半円の温度計を針が往復する。金色の目盛りで止める。2回(2回目は速い)。1回入れば成功、2回とも金色で会心。',
       init(g) { g.x = 0; g.v = .95 * .98 * D.sp; g.dir = 1; g.tgt = rnd(.25, .8); g.marks = []; g.trav = 0; g.rT = 0; },
       tip: g => {const a=Math.PI+g.x*Math.PI;return[180+Math.cos(a)*124,246+Math.sin(a)*124];},
-      down(g, x, y, t) { const d = Math.abs(g.x - g.tgt), m = d <= D.crit * .7 ? 'p' : d <= D.ok * .7 ? 'g' : 'm'; g.marks.push({ m, x: g.x }); feel(m); const h=this.tip(g);pop(g,m,180,80,t,h[0],h[1]); this.next(g); },
+      down(g, x, y, t) { const d = Math.abs(g.x - g.tgt), m = d <= D.crit * .7 + FURN_GLOW ? 'p' : d <= D.ok * .7 + FURN_NEEDLE ? 'g' : 'm'; g.marks.push({ m, x: g.x }); feel(m); const h=this.tip(g);pop(g,m,180,80,t,h[0],h[1]); this.next(g); },
       next(g) { const ms = g.marks.map(x => x.m); if (ms.length === 2) return g.end(ms.every(x => x === 'p') ? 'crit' : ms.some(x => x !== 'm') ? 'ok' : 'fail', ms.every(x => x === 'm') ? '2回とも外れた' : '');
         g.v *= 1.3; let n; do { n = rnd(.15, .85); } while (Math.abs(n - g.x) < .25); g.tgt = n; g.trav = 0; },
       step(g, t, dt) { if (!g.over && t >= g.rT) { g.rT = t + 150; SFX.roar(Math.min(1, g.marks.filter(m => m.m !== 'm').length * .4 + g.x * .3)); }   // the furnace roars under the game
