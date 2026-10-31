@@ -9514,6 +9514,19 @@ const BUFF = {
 };
 const isHeal = it => it && HEAL_IDS.includes(it.id);
 const isSnack = it => it && it.cat === 'food' && staminaOf(it) > 0;
+// No.195 (2026-10-31 作者): 指輪・首飾りは格で効き目が上がる。今より弱くなる物はない(鉄・銅は前のまま)。
+// 何個持っても、罠と中身は一番良いものが効き、首飾りの「まだ見つけていない品」はそれに足して効く
+// trap: 罠つきの確率(指輪なし 0.35) / extra: 中身のくじ +n / more: さらに+1の確率 / unseen: まだ見つけていない品の出やすさ(ふだん1.5)
+const RING_FX = { ring_iron: { trap: 0.18, extra: 1 }, ring_copper: { trap: 0.18, extra: 1 }, ring_silver: { trap: 0.12, extra: 1, more: 0.3 }, ring_gold: { trap: 0.12, extra: 1, more: 0.3 },
+  ring_mithril: { trap: 0.08, extra: 2 }, ring_adamant: { trap: 0.08, extra: 2 }, rx_coinneck: { trap: 0.18, extra: 1, unseen: 3 }, h_sunmoon: { trap: 0, extra: 2 } };
+const ringOf = id => RING_FX[id] || { trap: 0.18, extra: 1 };
+function ringText(id) { const r = ringOf(id); return `宝箱の罠が${r.trap ? `減り(${Math.round(r.trap * 100)}%)` : 'なくなり'}、中身が${r.extra}つ増える${r.more ? `(${Math.round(r.more * 100)}%でさらに1つ)` : ''}${r.unseen ? '。まだ見つけていない品がとても出やすい' : ''}。何個持っても一番良いものが効く`; }
+// the party's rings, put together: the best trap and contents, plus the necklace's luck
+function ringFx(d) {
+  const ids = d.bag.filter(b => b.qs.length && isRing(IT[b.id])).map(b => b.id); if (!ids.length) return null;
+  const rs = ids.map(id => ({ id, ...ringOf(id) })), best = rs.slice().sort((a, b) => (b.extra + (b.more || 0)) - (a.extra + (a.more || 0)) || a.trap - b.trap)[0];
+  return { id: best.id, trap: Math.min(...rs.map(r => r.trap)), extra: best.extra, more: best.more || 0, unseen: Math.max(1.5, ...rs.map(r => r.unseen || 0)), ids };
+}
 const isRing = it => it && it.cat === 'equip' && (it.sub === '装飾' || it.gslot === 'r');
 const HEAL_FIX = { r_honeyball: 30 };
 function healOf(id, q) { const it = IT[id]; const s = staminaOf(it); if (HEAL_FIX[id]) return HEAL_FIX[id]; return Math.min(DIVE_HP, s >= 99 ? DIVE_HP : Math.round(s * 8 + 4 * (q || 0))); }
@@ -9566,7 +9579,7 @@ function diveFx(id, q) {
   if (TOOL_FX[id]) return TOOL_FX[id];
   if (isHeal(it)) return { sc: ['危ない時', '戦闘'], t: `危ない場面で「飲む」が選べる。元気 +${healOf(id, q || 0)}`, did: '' };
   if (isSnack(it)) return { sc: ['休憩', '野営'], t: `元気が減ったら自動で食べる。元気 +${snackOf(id, q || 0)}`, did: '' };
-  if (isRing(it)) return { sc: ['宝箱'], t: '宝箱の罠が減り、中身が1つ増える', keep: 1, did: '' };
+  if (isRing(it)) return { sc: ['宝箱'], t: ringText(id), keep: 1, did: '' };
   return null;
 }
 const packable = it => !!(it && diveFx(it.id));
@@ -9857,7 +9870,7 @@ function enterRoom(d) {
     trapRoom(d, false); afterRoom(d); return;
   }
   if (k === 'chest') {
-    const ring = bagHas(d, isRing), trapped = Math.random() < (ring ? 0.18 : 0.35) + (d.lure ? 0.15 : 0);
+    const rf = ringFx(d), trapped = Math.random() < (rf ? rf.trap : 0.35) + (d.lure ? 0.15 : 0);
     d.lure = false;
     // a hunch: usually right, not always
     const hunch = trapped ? Math.random() < 0.7 : Math.random() < 0.15;
@@ -10050,11 +10063,12 @@ function resolveChest(d, mode) {
 function openChest(d, trapped, extra = 0) {
   const a = AR[d.area], val = roomVal(d) * 1.6;
   if (trapped && Math.random() < 0.7) trapRoom(d, true);
-  const ring = bagHas(d, isRing), rmi = d.rumor && d.rumor.item;
+  const rf = ringFx(d), ring = rf && IT[rf.id], rmi = d.rumor && d.rumor.item;
   const pool = areaBonus(a).concat(a.main);
   const got = [];
-  for (let k = 0; k < (ring ? 2 : 1) + extra + (Math.random() < 0.3 + mfx(d, 'chest') ? 1 : 0); k++) {
-    const id = rmi && k === 0 && Math.random() < 0.4 ? rmi : wpick(pool, x => (G.found[x] === undefined ? 1.5 : 1) / (1 + IT[x].v / 40)); const n = lootQty(id, val / 1.5) || 1;
+  const draws = 1 + (rf ? rf.extra + (Math.random() < rf.more ? 1 : 0) : 0) + extra + (Math.random() < 0.3 + mfx(d, 'chest') ? 1 : 0);   // No.195: くじの回数は最初に一度だけ決める
+  for (let k = 0; k < draws; k++) {
+    const id = rmi && k === 0 && Math.random() < 0.4 ? rmi : wpick(pool, x => (G.found[x] === undefined ? (rf ? rf.unseen : 1.5) : 1) / (1 + IT[x].v / 40)); const n = lootQty(id, val / 1.5) || 1;
     addHaul(d, id, n); got.push([id, n]);
   }
   const gold = Math.random() < 0.4 ? Math.round(val * rnd(0.3, 0.6)) : 0;
@@ -13378,18 +13392,20 @@ function render() {
   if (fishOn()) { const op = fishOpenSpots().map(s => s.id), seen = G.fshOpen || []; const nw = op.filter(id => !seen.includes(id)); if (nw.length) { G.fshOpen = op; const first = !seen.length;
     setTimeout(() => toast(first ? `<div><div class="t1">「釣り」のタブが増えた</div>${nw.map(id => SPOT[id].place).join('・')}で釣りができる。次の時間帯を、店のかわりに釣り場で過ごせる</div>` : `<div><div class="t1">新しい釣り場</div>${nw.map(id => SPOT[id].place + '(' + SPOT[id].n + ')').join('・')}に行けるようになった</div>`, 'lv', 5200), G.advSeen ? 600 : 5000); } }
   if (guildOpen() && !G.advSeen) { G.advSeen = 1; if (G.tut < 0) setTimeout(() => toast('<div><div class="t1">「冒険」のタブが増えた</div>冒険者ギルドで、ダンジョンへの探索を依頼できる</div>', 'lv', 4200), 400); }
-  const p = $('#panel'); const st = p.scrollTop; const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : '');
+  const p = $('#panel'); const st = p.scrollTop, colS = [...p.querySelectorAll('.wcols > *')].map(e => e.scrollTop); const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : '');
   if (UI.tab === 'inv' && UI.invView === 'dex' && G.dexNew && G.dexNew.length) { UI.dexNewShown = G.dexNew.slice(); G.dexNew = []; }
   if (UI.tab === 'owner' && UI.jumpSec && innerWidth <= 560) UI.ownView = /スキル|肩書/.test(UI.jumpSec) ? 'skill' : 'shop';
   if (UI.tab === 'town' && UI.jumpSec) UI.townView = ['施設', '灯り亭'].includes(UI.jumpSec) ? 'fac' : /常連/.test(UI.jumpSec) ? 'reg' : 'build';
   p.innerHTML = UI.tab === 'home' ? vHome() : UI.tab === 'main' ? vMain() : UI.tab === 'adv' ? vAdv() : UI.tab === 'inv' ? (UI.invView === 'dex' ? vDex() : UI.invView === 'tonya' ? vTonya() : vInv()) : UI.tab === 'town' ? vTown() : vOwner();
-  if (render._k === key) p.scrollTop = st; else p.scrollTop = 0;
+  const sameK = render._k === key;
+  if (sameK) p.scrollTop = st; else p.scrollTop = 0;
   render._k = key;
   tagSections();
   p.dataset.v = UI.tab === 'main' ? 'main-' + shopView() : UI.tab === 'inv' ? 'inv-' + (UI.invView || 'inv') : UI.tab === 'town' ? 'town-' + (UI.townView || (innerWidth <= 560 ? 'map' : 'build')) : UI.tab === 'owner' && innerWidth <= 560 && G.tut < 0 ? 'owner-' + (UI.ownView || 'skill') : UI.tab;
   { const landing = innerWidth <= 560 && UI.tab === 'town' && (UI.townView || 'map') === 'map';   // phone: the 街 landing shows the live town window
     $('#app').classList.toggle('scene-open', !!G.sceneOpen || landing); $('#app').classList.toggle('town-win', landing); }
   wideLayout();
+  if (sameK && colS.some(x => x > 0)) p.querySelectorAll('.wcols > *').forEach((e, i) => { if (colS[i]) e.scrollTop = colS[i]; });   // No.195: 品を開いて閉じても、PCの列は同じ位置のまま
   phoneWork();
   { const t = p.querySelector('.wk-todo'), r = p.querySelector('.wk-recs'); render._wkc = UI.craftCat + (UI.onlyOk ? '1' : '0') + (UI.recSort || '');
     if (render._k === key && wkS.length) { if (t && wkS.length > 1) t.scrollTop = wkS[0]; if (r && wkCat === render._wkc) r.scrollTop = wkS[wkS.length - 1]; } }
@@ -18637,16 +18653,24 @@ function bagSlotsHtml(m, gq) {
   for (let i = 0; i < n; i++) { const id = ids[i]; h += `<button class="gslot bslot${id ? '' : ' empty'}${on ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="bag" aria-label="道具袋">${id ? ico(id, bestOwnedQ(id), { size: 'xs', cnt: b[id] > 1 ? b[id] : 0 }) : '<span>袋</span>'}</button>`; }
   return `<div class="row bagslots" style="gap:6px"><span class="sub" style="font-size:11px">道具袋</span>${h}</div>`;
 }
+const BAG_TABS = [['tool', '道具'], ['heal', '薬'], ['food', '食べ物']];
+const bagKind = it => isHeal(it) ? 'heal' : isSnack(it) && !TOOL_FX[it.id] ? 'food' : 'tool';
 function bagEditor(gq, a, m) {
   const b = (gq.bags || {})[m.id] || {}, ids = Object.keys(b), full = ids.length >= bagSlots(m);
-  const cand = packList('bag', a).filter(it => !b[it.id]).sort((x, y) => (TOOL_FX[x.id] ? 1 : 0) - (TOOL_FX[y.id] ? 1 : 0) || (isHeal(y) - isHeal(x)) || x.v - y.v);
+  // No.195 (2026-10-31 作者): 道具が24個の上限の後ろに埋もれて出なかった → 道具・薬・食べ物の札で分け、上限をなくす
+  const tab = BAG_TABS.some(x => x[0] === UI.bagTab) ? UI.bagTab : 'tool';
+  const cand = packList('bag', a).filter(it => !b[it.id] && bagKind(it) === tab).sort((x, y) => x.v - y.v);
   const left = id => spareCount(id) - bagsHold(gq.bags, id);
+  const holder = id => { for (const mid in (gq.bags || {})) if (mid !== m.id && gq.bags[mid][id]) { const o = advById(mid); if (o) return o.n; } return ''; };
+  const cnt = k => packList('bag', a).filter(it => !b[it.id] && bagKind(it) === k).length;
   let h = `<div class="gedit"><div class="row between"><span class="sub">${m.n}の道具袋(${ids.length}/${bagSlots(m)}枠)・薬や料理は1枠2個、道具は1個</span><button class="btn ghost sm" data-act="dvslot" data-id="${m.id}" data-v="bag">閉じる</button></div>`;
   if (ids.length) h += `<div class="fxlist">` + ids.map(id => `<div class="fxrow in-bag">${ico(id, bestOwnedQ(id), { size: 'sm', cnt: b[id] })}<div class="fxb">${fxLine(id, null, IT[id].name)}</div><span class="fxa">${b[id] < bagStack(id) && left(id) > 0 ? `<button class="btn sm" data-act="dvbag" data-m="${m.id}" data-v="${id}" data-n="1" aria-label="${IT[id].name}をもう1つ">+</button>` : ''}<button class="btn ghost sm" data-act="dvbag" data-m="${m.id}" data-v="${id}" data-n="-1" aria-label="${IT[id].name}を1つ減らす">−</button></span></div>`).join('') + `</div>`;
-  if (cand.length) h += `<div class="sub" style="margin:8px 0 4px;font-size:11.5px">${full ? '袋がいっぱい。入れ替えるなら、先に − で出す' : 'タップで袋に入れる'}</div><div class="fxlist">` + cand.slice(0, 24).map(it => `<button class="fxrow pick" data-act="dvbag" data-m="${m.id}" data-v="${it.id}" data-n="1"${full || left(it.id) <= 0 ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: Math.max(0, left(it.id)) })}<div class="fxb">${fxLine(it.id, null, it.name)}</div></button>`).join('') + `</div>`;
+  h += `<div class="chips bagtabs" role="group" aria-label="品の種類" style="margin:8px 0 2px">${BAG_TABS.map(([k, n]) => `<button class="chip${k === tab ? ' on' : ''}" data-act="dvbagtab" data-v="${k}" aria-pressed="${k === tab}">${n}<span class="n">${cnt(k)}</span></button>`).join('')}</div>`;
+  if (cand.length) h += `<div class="sub" style="margin:6px 0 4px;font-size:11.5px">${full ? '袋がいっぱい。入れ替えるなら、先に − で出す' : 'タップで袋に入れる'}</div><div class="fxlist">` + cand.map(it => { const lf = left(it.id), who = lf <= 0 ? holder(it.id) : '';
+    return `<button class="fxrow pick" data-act="dvbag" data-m="${m.id}" data-v="${it.id}" data-n="1"${full || lf <= 0 ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: Math.max(0, lf) })}<div class="fxb">${fxLine(it.id, null, it.name)}${lf <= 0 ? `<span class="sub bagwhy">${who ? who + 'の袋に入っている' : 'ほかの冒険者の袋に入っている'}</span>` : ''}</div></button>`; }).join('') + `</div>`;
+  else h += `<p class="note" style="margin:6px 0 0;font-size:12px">この種類で持たせられる品は、今は倉庫にない。</p>`;
   // クラウド: items kept back for a building or an order do not show up above; say so, instead of hiding them
-  const kept = Object.keys(G.inv).map(id => IT[id]).filter(it => packable(it) && invCount(it.id) > 0 && spareCount(it.id) <= 0 && !b[it.id]);
-  if (!cand.length) h += `<p class="note" style="margin:6px 0 0;font-size:12px">${kept.length ? '持たせられる余りの品がない。' : '持たせられる品が倉庫にない。'}回復薬・携帯食のほか、ランタン・ロープ・鍵・地図なども探索で役に立つ。</p>`;
+  const kept = Object.keys(G.inv).map(id => IT[id]).filter(it => packable(it) && invCount(it.id) > 0 && spareCount(it.id) <= 0 && !b[it.id] && bagKind(it) === tab);
   if (kept.length) h += `<div class="sub" style="margin:8px 0 4px;font-size:11.5px">建設や注文に使う分として取ってある品(取ってある数より多く作ると、余りを持たせられる)</div><div class="fxlist">` + kept.slice(0, 12).map(it => `<div class="fxrow kept">${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: invCount(it.id) })}<div class="fxb"><b>${it.name}</b><span class="sub">所持 ${invCount(it.id)}・取ってある ${reservedNeeds()[it.id] || 0}</span></div></div>`).join('') + `</div>`;
   return h + `</div>`;
 }
@@ -18693,7 +18717,8 @@ function diveSheet() {
   gq.bags = gq.bags || {};
   gq.party = (gq.party || []).filter(id => { const m = advById(id); return m && advReady(m); });
   if (a.id === 'dragon' && !bossCleared(4) && advById('luca') && advReady(advById('luca')) && !gq.party.includes('luca')) gq.party = ['luca'].concat(gq.party).slice(0, 3);   // v44: the hero goes
-  if (!gq.party.length && !gq.partyTouched) { const r = ensureRoster().filter(advReady).sort((x, y) => Math.abs(x.rk - a.rk) - Math.abs(y.rk - a.rk) || y.rk - x.rk); gq.party = r.slice(0, 1).map(m => m.id); }
+  // No.195 (2026-10-31 作者): 勝手に一人を同行にしない。最後に選んだ同行者(G.guildParty)を覚えて、待機中の人だけ戻す
+  if (!gq.party.length && !gq.partyTouched) gq.party = (G.guildParty || []).filter(id => { const m = advById(id); return m && advReady(m); }).slice(0, 3);
   // 2026-10-29 作者: 選ぶのをやめた・食事をした・ギルドを開き直した時に、道具袋が空になって何度も入れ直していた。
   // 冒険者ごとの袋の中身を UI.bagKeep に覚えておき、また同行させた時に戻す(倉庫に無くなった分は bagsClean が減らす)
   const keep = UI.bagKeep || (UI.bagKeep = {}), cp = b => JSON.parse(JSON.stringify(b || {}));
@@ -18713,7 +18738,7 @@ function diveSheet() {
   if (ps.length) {
     const all = [...new Set(Object.values(gq.bags).flatMap(Object.keys))], have = bagScenes(all);
     const want = ['戦闘', '危ない時', '罠', '宝箱', '分かれ道', '隠し部屋', '野営', '帰り道'];
-    h += `<div class="gsum bagsum"><div class="row between"><span>道具袋(探索中はパーティーで共有)</span><button class="btn sm" data-act="dvautobag">おまかせで持たせる</button></div>` +
+    h += `<div class="gsum bagsum"><div class="row between"><span>道具袋(探索中はパーティーで共有)</span><span class="row" style="gap:6px"><button class="btn sm ghost" data-act="dvbagclear"${all.length ? '' : ' disabled'}>全部外す</button><button class="btn sm" data-act="dvautobag">おまかせで持たせる</button></span></div>` +
       `<div class="ins" style="margin-top:4px">${all.length ? all.map(id => `<span class="in">${ico(id, bestOwnedQ(id), { size: 'xs', cnt: bagsHold(gq.bags, id) })}</span>`).join('') : '<span class="sub">まだ何も入っていない。冒険者の「袋」をタップして入れる</span>'}</div>` +
       `<div class="row" style="gap:6px;margin-top:6px;align-items:center"><span class="sub" style="font-size:11px">備え</span>${fxChips(want, have)}</div></div>`;
   }
@@ -18765,6 +18790,7 @@ const DIVE_ACTS = {
   dvmem(d) {
     const g = UI.gq; g.party = g.party || []; g.partyTouched = true;
     if (g.party.includes(d.v)) g.party = g.party.filter(x => x !== d.v); else if (g.party.length < 3) g.party.push(d.v);
+    G.guildParty = g.party.slice();   // No.195: 次に開いた時も同じ人を同行に
     UI.gqKeep = true; diveSheet(); sfx('tap'); return true;
   },
   dvslot(d) { const g = UI.gq; g.edit = g.edit && g.edit.id === d.id && g.edit.slot === d.v ? null : { id: d.id, slot: d.v }; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
@@ -18772,12 +18798,15 @@ const DIVE_ACTS = {
   dvunq(d) { if (unequipAdv(d.id, d.v)) sfx('tap'); UI.gqKeep = true; diveSheet(); save(); return true; },
   dvautoeq() { const g = UI.gq, n = autoEquip(g.party || [], AR[g.area]); sfx(n ? 'buy' : 'tap'); if (!n) toast('<div>渡せる、より良い武具が倉庫にない</div>'); UI.gqKeep = true; diveSheet(); save(); return true; },
   dvtreat(d) { const id = treatAdv(d.v); if (id) { sfx('good'); toast(`<div>${IT[id].name}で手当てした。療養が1日短くなった</div>`); } else toast('<div>手当てに使える薬や料理がない</div>'); UI.gqKeep = true; diveSheet(); save(); return true; },
+  dvbagtab(d) { UI.bagTab = d.v; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
   dvbag(d) {
     const g = UI.gq; g.bags = g.bags || {};
     const ok = bagAdd(g.bags, d.m, d.v, +d.n);
     if (!ok && +d.n > 0) toast('<div>この袋にはもう入らない</div>');
     UI.gqKeep = true; diveSheet(); sfx(ok ? 'tap' : 'fail'); return true;
   },
+  // No.195 (2026-10-31 作者): 同行する人の道具袋を空にする(品は倉庫のまま。武器・防具は外さない)
+  dvbagclear() { const g = UI.gq; g.bags = g.bags || {}; const keep = UI.bagKeep || (UI.bagKeep = {}); for (const mid of g.party || []) { g.bags[mid] = {}; keep[mid] = {}; } g.edit = null; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
   dvautobag() {
     const g = UI.gq; g.bags = g.bags || {};
     const n = autoBags(g.bags, g.party || [], AR[g.area]);
@@ -21481,7 +21510,7 @@ function boot(local, fresh) {
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
     shopView, openDecision, settingsSheet, pubSheet, TUT, tutUpdate, questLine, guildOpen,
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
-    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
+    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, ringFx, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
     RARE, RARES_OF, RARE_T, rareW, rareEV, rareOdds, drawRare, appraiseDraw, itemGrade, itemUses, breathInfo, haulK, isBreath, sealP2, divePlanMigrate, itemSheet, RARE_LIST, lastStand, trapRoom, goHome, sealsAdd, healOf,
   };
 }
