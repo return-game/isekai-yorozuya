@@ -12768,6 +12768,14 @@ function auInit() {
   if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return true; }
   try {
     const ctx = AU.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    auBuild(ctx);
+    document.addEventListener('visibilitychange', () => { if (!AU.ctx) return; if (document.hidden) AU.ctx.suspend(); else AU.ctx.resume(); });
+    return true;
+  } catch (e) { AU.ctx = null; return false; }
+}
+// the graph (also used by the listening test, which renders into an OfflineAudioContext)
+function auBuild(ctx) {
+  {
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3;
     AU.master = ctx.createGain(); AU.master.gain.value = 0.9; AU.master.connect(comp); comp.connect(ctx.destination);
     AU.music = ctx.createGain(); AU.music.connect(AU.master);
@@ -12778,10 +12786,19 @@ function auInit() {
     AU.rev = ctx.createConvolver(); AU.rev.buffer = ir;
     const wet = ctx.createGain(); wet.gain.value = 0.32; AU.rev.connect(wet); wet.connect(AU.master);
     AU.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const nd = AU.noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    // No.194: 広がる音 — a long, wide space (4.5s, the two sides decorrelated) and a ping-pong echo, both on the music bus
+    const sl = Math.round(ctx.sampleRate * 4.5), sir = ctx.createBuffer(2, sl, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = sir.getChannelData(ch); let lp = 0; for (let i = 0; i < sl; i++) { lp = lp * 0.55 + (Math.random() * 2 - 1) * 0.45; d[i] = lp * Math.pow(1 - i / sl, 3.2) * (i < ctx.sampleRate * 0.02 ? i / (ctx.sampleRate * 0.02) : 1); } }
+    AU.space = ctx.createConvolver(); AU.space.buffer = sir;
+    const sw = ctx.createGain(); sw.gain.value = 0.42; AU.space.connect(sw); sw.connect(AU.music);
+    const dl = AU.dL = ctx.createDelay(2), dr = AU.dR = ctx.createDelay(2), fl = ctx.createGain(), fr = ctx.createGain(), dlp = ctx.createBiquadFilter();
+    const pl = ctx.createStereoPanner(), pr = ctx.createStereoPanner(), dw = ctx.createGain();
+    dl.delayTime.value = 0.36; dr.delayTime.value = 0.36; fl.gain.value = 0.42; fr.gain.value = 0.42; dlp.type = 'lowpass'; dlp.frequency.value = 3200;
+    pl.pan.value = -0.85; pr.pan.value = 0.85; dw.gain.value = 0.55;
+    AU.dly = ctx.createGain(); AU.dly.connect(dlp); dlp.connect(dl); dl.connect(pl); dl.connect(fl); fl.connect(dr); dr.connect(pr); dr.connect(fr); fr.connect(dl);
+    pl.connect(dw); pr.connect(dw); dw.connect(AU.music); const ds = ctx.createGain(); ds.gain.value = 0.25; dw.connect(ds); ds.connect(AU.space);
     auVolumes();
-    document.addEventListener('visibilitychange', () => { if (!AU.ctx) return; if (document.hidden) AU.ctx.suspend(); else AU.ctx.resume(); });
-    return true;
-  } catch (e) { AU.ctx = null; return false; }
+  }
 }
 // 2026-10-23: 音のオンオフ・音量は、セーブではなく「この端末の設定」(タイトルの設定とゲーム内の⚙で共通)
 const AUS = (() => { let s = null; try { s = JSON.parse(localStorage.getItem('manbanya_audio_v1') || 'null'); } catch (e) { /* storage unavailable */ } const o = s || {};
@@ -12800,7 +12817,7 @@ function auVolumes() {
   AU.music.gain.setTargetAtTime(AUS.mute || !AUS.music ? 0 : v.m * 0.55, AU.ctx.currentTime, 0.2);
   AU.sfx.gain.setTargetAtTime(AUS.mute || !AUS.sound ? 0 : v.s, AU.ctx.currentTime, 0.05);
 }
-const TRACK_NAME = { morning: '朝もやの市場', day: 'にぎわいの広場', night: '工房の灯', distant: '遠い日', warm: '灯をともす', valley: '谷の記憶', prayer: '祈り', pact: '盟約', triumph: '凱旋' };
+const TRACK_NAME = { songA: '風の通り道', title: '灯のともる場所', songB: '夜更けの鍵盤', songC: 'まだ見ぬ街へ', waterside: '水辺のまどろみ', morning: '朝もやの市場', day: 'にぎわいの広場', night: '工房の灯', distant: '遠い日', warm: '灯をともす', valley: '谷の記憶', prayer: '祈り', pact: '盟約', triumph: '凱旋' };
 document.addEventListener('input', e => {
   const k = e.target && e.target.dataset && e.target.dataset.vol; if (!k) return;
   AUS.vol[k] = (+e.target.value) / 100;
@@ -12857,6 +12874,64 @@ function vNoise(dest, t, vol, dec, type, freq, q = 1, send = 0.15) {
   n.buffer = AU.noise; n.playbackRate.value = 0.8 + Math.random() * 0.4; f.type = type; f.frequency.value = freq; f.Q.value = q;
   n.connect(f); f.connect(g); env(g, t, 0.002, vol, dec); out(g, dest, send); n.start(t, Math.random() * 0.5); n.stop(t + dec + 0.05);
 }
+// ---------- No.194 voices: placed left/right, sent into the space and the echo ----------
+function outX(node, dest, o = {}) {
+  const c = AU.ctx; let n = node;
+  if (o.pan) { const p = c.createStereoPanner(); p.pan.value = o.pan; node.connect(p); n = p; }
+  n.connect(dest);
+  if (o.rev && AU.space) { const g = c.createGain(); g.gain.value = o.rev; n.connect(g); g.connect(AU.space); }
+  if (o.dly && AU.dly) { const g = c.createGain(); g.gain.value = o.dly; n.connect(g); g.connect(AU.dly); }
+}
+// the melody: a soft electric bell (FM, ratio 1 with a glassy 3.5 partial) — every note a clear grain
+function vBell(dest, f, t, dur, vol = 0.1, o = {}) {
+  const c = AU.ctx, car = c.createOscillator(), mod = c.createOscillator(), mg = c.createGain(), g = c.createGain(), hi = c.createOscillator(), hg = c.createGain();
+  car.type = 'sine'; car.frequency.value = f; mod.type = 'sine'; mod.frequency.value = f; mg.gain.setValueAtTime(f * 1.1, t); mg.gain.exponentialRampToValueAtTime(f * 0.08, t + 0.6);
+  mod.connect(mg); mg.connect(car.frequency); car.connect(g);
+  hi.type = 'sine'; hi.frequency.value = f * 3.5; hi.connect(hg); env(hg, t, 0.002, vol * 0.18, 0.25); hg.connect(g);
+  const len = Math.max(0.5, dur + 0.9);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.006); g.gain.exponentialRampToValueAtTime(vol * 0.35, t + 0.35); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  outX(g, dest, { pan: o.pan || 0, rev: o.rev ?? 0.32, dly: o.dly ?? 0.22 });
+  [car, mod, hi].forEach(x => { x.start(t); x.stop(t + len + 0.05); });
+}
+// small glassy grains for the arpeggios (the echo carries them across)
+function vGlass(dest, f, t, vol = 0.05, o = {}) {
+  const c = AU.ctx, a = c.createOscillator(), b = c.createOscillator(), g = c.createGain(), bg = c.createGain();
+  a.type = 'triangle'; a.frequency.value = f; b.type = 'sine'; b.frequency.value = f * 2.01; b.connect(bg); bg.gain.value = 0.35; bg.connect(g); a.connect(g);
+  env(g, t, 0.003, vol, o.dec || 0.5); outX(g, dest, { pan: o.pan || 0, rev: o.rev ?? 0.4, dly: o.dly ?? 0.45 });
+  a.start(t); b.start(t); a.stop(t + (o.dec || 0.5) + 0.1); b.stop(t + (o.dec || 0.5) + 0.1);
+}
+// a wide pad: three slightly different saws a note, spread across, the filter slowly opening; pump = breathe with the beat
+function vWide(dest, freqs, t, dur, vol = 0.03, o = {}) {
+  const c = AU.ctx, lp = c.createBiquadFilter(), g = c.createGain(), lo = o.lo || 500, top = o.top || 1800;
+  lp.type = 'lowpass'; lp.Q.value = 0.6; lp.frequency.setValueAtTime(lo, t); lp.frequency.linearRampToValueAtTime(top, t + dur * 0.6); lp.frequency.linearRampToValueAtTime(lo * 1.3, t + dur + 1);
+  freqs.forEach((f, i) => [[-9, -0.75], [0, 0], [9, 0.75]].forEach(([dt, pn]) => {
+    const os = c.createOscillator(), p = c.createStereoPanner(); os.type = 'sawtooth'; os.frequency.value = f; os.detune.value = dt + (i % 2 ? 3 : -3); p.pan.value = pn; os.connect(p); p.connect(lp); os.start(t); os.stop(t + dur + 2); }));
+  lp.connect(g); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + Math.min(o.att || 0.8, dur * 0.5));
+  if (o.pump) for (let k = 1; t + k * o.pump < t + dur; k++) { const b = t + k * o.pump; g.gain.setValueAtTime(vol * 0.35, b); g.gain.linearRampToValueAtTime(vol, b + o.pump * 0.75); }
+  g.gain.setValueAtTime(vol, t + dur); g.gain.linearRampToValueAtTime(0.0001, t + dur + 1.6);
+  outX(g, dest, { rev: o.rev ?? 0.55 });
+}
+// a round low bass (sine with a little edge)
+function vSub(dest, f, t, dur, vol = 0.14) {
+  const c = AU.ctx, a = c.createOscillator(), b = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain(), bg = c.createGain();
+  a.type = 'sine'; a.frequency.value = f; b.type = 'square'; b.frequency.value = f; bg.gain.value = 0.18; lp.type = 'lowpass'; lp.frequency.value = 380;
+  a.connect(g); b.connect(bg); bg.connect(lp); lp.connect(g);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.setValueAtTime(vol * 0.85, t + Math.max(0.02, dur - 0.04)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
+  g.connect(dest); a.start(t); b.start(t); a.stop(t + dur + 0.1); b.stop(t + dur + 0.1);
+}
+// soft electronic drums: a round kick, a snap/clap, a ticking hat (placed a little to the side)
+function vKick(dest, t, vol = 0.3) {
+  const c = AU.ctx, o = c.createOscillator(), g = c.createGain(); o.type = 'sine';
+  o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.14); o.connect(g); env(g, t, 0.002, vol, 0.32); g.connect(dest); o.start(t); o.stop(t + 0.4);
+}
+function vSnap(dest, t, vol = 0.08) {
+  [0, 0.011, 0.023].forEach((s, i) => { const c = AU.ctx, n = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); n.buffer = AU.noise; f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 1.4;
+    n.connect(f); f.connect(g); env(g, t + s, 0.001, vol * (i === 2 ? 1 : 0.6), i === 2 ? 0.16 : 0.02); outX(g, dest, { rev: 0.35 }); n.start(t + s, Math.random() * 0.5); n.stop(t + s + 0.2); });
+}
+function vHat(dest, t, vol = 0.03, pan = 0.3, open) {
+  const c = AU.ctx, n = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); n.buffer = AU.noise; f.type = 'highpass'; f.frequency.value = 8000;
+  n.connect(f); f.connect(g); env(g, t, 0.001, vol, open ? 0.18 : 0.04); outX(g, dest, { pan, rev: 0.08 }); n.start(t, Math.random() * 0.5); n.stop(t + 0.25);
+}
 function vDrone(dest, freqs, t, dur, vol = 0.022) {
   const c = AU.ctx, lp = c.createBiquadFilter(), g = c.createGain(); lp.type = 'lowpass'; lp.frequency.value = 700;
   freqs.forEach(f => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.connect(lp); o.start(t); o.stop(t + dur + 0.5); });
@@ -12866,55 +12941,140 @@ function vDrone(dest, freqs, t, dur, vol = 0.022) {
 // ---------- tracks (original compositions) ----------
 const ch = s => s.split(' ').map(N);
 const TRACKS = {
-  // 朝「朝もやの市場」 F Lydian, harp arpeggios + flute
+  // ===== No.194 (2026-10-31 作者「広がる感じ。ちゃんとメロディーの粒がある方がいい」): 新しい音の曲。使うのは day(店)・night(工房)。
+  // morning(新しい朝もやの市場)は今は使っていない(朝の市場は songA)。釣りと物語の曲は前のまま =====
+  // 深い残響・左右に跳ねるこだま・広いパッド・電子の柔らかい低音と小さなリズムの上に、エレクトリックな鈴の旋律をはっきり置く。
+  // 16小節で一周: 前半8小節は旋律を1オクターブ下で静かに、後半8小節は元の高さで、粒(アルペジオ)と拍を足して広げる。
+  // 朝「朝もやの市場」 F major, 92. 霧の中から少しずつ音が重なる。拍はやわらかいキックと刻みだけ
   morning: {
-    bpm: 84, steps: 8, bars: 16,
-    chords: ['F3 A3 C4 E4', 'F3 G3 B3 D4', 'A2 C4 E4 G4', 'G2 B3 D4 G4', 'C3 E3 G3 C4', 'D3 F3 A3 D4', 'G2 B3 D4 F4', 'F3 A3 C4 E4'].map(ch),
-    melody: [['A4', 2, 'C5', 2, 'E5', 3, 'D5', 1], ['B4', 2, 'D5', 2, 'G5', 4], ['E5', 2, 'D5', 1, 'C5', 1, 'A4', 4], ['B4', 3, 'A4', 1, 'G4', 4],
-      ['G4', 2, 'C5', 2, 'E5', 2, 'G5', 2], ['F5', 3, 'E5', 1, 'D5', 4], ['B4', 2, 'D5', 2, 'B4', 2, 'G4', 2], ['A4', 8]],
+    bpm: 92, steps: 8, bars: 16, vol: 0.8,  echo: 60 / 92 * 0.75,
+    chords: ['F2 A3 C4 E4', 'A2 C4 E4 G4', 'D2 F3 A3 C4', 'A#1 D3 F3 A3', 'F2 A3 C4 E4', 'C2 E3 G3 A#3', 'A#1 D3 F3 A3', 'C2 E3 G3 C4'].map(ch),
+    melody: [['C5', 2, 'A4', 1, 'C5', 1, 'F5', 2, 'E5', 2], ['E5', 2, 'C5', 2, 'A4', 3, 'G4', 1], ['F4', 2, 'A4', 2, 'D5', 2, 'C5', 2], ['D5', 3, 'C5', 1, 'A4', 4],
+      ['C5', 2, 'F5', 2, 'A5', 2, 'G5', 1, 'F5', 1], ['E5', 2, 'G5', 2, 'C6', 2, 'G5', 2], ['F5', 2, 'D5', 2, 'A#4', 2, 'D5', 1, 'F5', 1], ['E5', 4, 'C5', 4]],
     play(dest, bar, step, t, sd) {
-      const c = this.chords[bar % 8];
-      const arp = [0, 1, 2, 3, 2, 1, 2, 3];
-      vPluck(dest, hz(c[arp[step]] + 12), t, step === 0 ? 0.16 : 0.11, 1.8, 2600);
-      if (step === 0) { vBass(dest, hz(c[0] - 12), t, sd * 7, 0.12); vPad(dest, c.slice(1).map(hz), t, sd * 8, 0.022); }
-      if (bar >= 8) melodyAt(this.melody[bar % 8], step, (n, len) => vFlute(dest, hz(N(n)), t, len * sd * 0.95, 0.075));
-      else if (step % 4 === 2 && bar % 2 === 1) vBox(dest, hz(c[3] + 24), t, 0.05);
+      const c = this.chords[bar % 8], hi = bar >= 8;
+      if (step === 0) { vWide(dest, c.slice(1).map(hz), t, sd * 8, hi ? 0.026 : 0.02, { lo: 420, top: hi ? 2200 : 1500 }); vSub(dest, hz(c[0]), t, sd * 3, 0.13); }
+      if (step === 4) vSub(dest, hz(c[0]), t, sd * 1.5, 0.08);
+      if (step === 6) vSub(dest, hz(c[0] + 12), t, sd * 1.5, 0.06);
+      const arp = [1, 2, 3, 2, 3, 1, 2, 3], an = c[arp[step]] + 12;
+      if (hi || step % 2 === 0) vGlass(dest, hz(an), t, hi ? 0.04 : 0.03, { pan: step % 2 ? 0.55 : -0.55 });
+      if (bar >= 2 && (step === 0 || step === 4)) vKick(dest, t, step ? 0.13 : 0.18);
+      if (bar >= 4 && step % 2 === 1) vHat(dest, t, 0.022, step % 4 === 1 ? -0.35 : 0.35);
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t, len * sd, hi ? 0.1 : 0.085, { pan: hi ? 0.12 : -0.1 }));
     },
   },
-  // 昼「にぎわいの広場」 D Mixolydian jig in 6/8, lute + flute + frame drum + tambourine + drone
+  // 昼「にぎわいの広場」 D major, 118. 四つ打ちに近い、いちばんノれる曲。パッドが拍で息をする
   day: {
-    bpm: 330, unit: 'eighth', steps: 6, bars: 16,
-    chords: ['D3 F#3 A3', 'C3 E3 G3', 'G2 B2 D3', 'D3 F#3 A3', 'D3 F#3 A3', 'C3 E3 G3', 'E3 G3 B3', 'A2 C#3 E3'].map(ch),
-    melody: [['D5', 2, 'F#5', 1, 'A5', 2, 'F#5', 1], ['G5', 2, 'E5', 1, 'C5', 2, 'E5', 1], ['D5', 2, 'B4', 1, 'G4', 2, 'B4', 1], ['A4', 3, 'D5', 3],
-      ['F#5', 1, 'G5', 1, 'A5', 1, 'B5', 2, 'A5', 1], ['G5', 2, 'E5', 1, 'C6', 2, 'B5', 1], ['B5', 2, 'G5', 1, 'E5', 2, 'G5', 1], ['A5', 2, 'E5', 1, 'A4', 3]],
+    bpm: 118, steps: 8, bars: 16, vol: 0.65,  echo: 60 / 118 * 0.75,
+    chords: ['D2 F#3 A3 C#4', 'B1 D3 F#3 A3', 'G1 B2 D3 F#3', 'A1 C#3 E3 G3', 'D2 F#3 A3 D4', 'F#1 A2 C#3 E3', 'G1 B2 D3 F#3', 'A1 C#3 E3 A3'].map(ch),
+    melody: [['F#5', 1, 'A5', 1, 'F#5', 1, 'E5', 1, 'D5', 2, 'A4', 2], ['B4', 2, 'D5', 1, 'F#5', 1, 'E5', 2, 'D5', 2], ['B4', 1, 'D5', 1, 'G5', 2, 'F#5', 1, 'E5', 1, 'D5', 2], ['C#5', 2, 'E5', 2, 'A5', 3, 'G5', 1],
+      ['F#5', 2, 'A5', 1, 'B5', 1, 'A5', 2, 'F#5', 2], ['A5', 2, 'C#6', 2, 'A5', 1, 'F#5', 1, 'E5', 2], ['D5', 1, 'E5', 1, 'G5', 2, 'B5', 2, 'A5', 2], ['A5', 3, 'G5', 1, 'E5', 2, 'C#5', 2]],
     play(dest, bar, step, t, sd) {
-      const c = this.chords[bar % 8];
-      if (step === 0 || step === 3) vPluck(dest, hz(c[0] - (step ? 0 : 12)), t, 0.16, 0.7, 1400, 0.15);
-      else vPluck(dest, hz(c[step % 2 ? 1 : 2] + 12), t, 0.06, 0.35, 3000, 0.15);
-      if (step === 0) vDrum(dest, t, 0.2); if (step === 3) vDrum(dest, t, 0.1, true);
-      if (step === 2 || step === 5) vNoise(dest, t, 0.035, 0.08, 'highpass', 7000, 0.7, 0.05);
-      if (step === 0 && bar % 4 === 0) vDrone(dest, [hz(N('D3')), hz(N('A3'))], t, sd * 24, 0.016);
-      if (bar >= 4) melodyAt(this.melody[bar % 8], step, (n, len) => vFlute(dest, hz(N(n)), t, len * sd * 0.9, 0.07, 0.3));
+      const c = this.chords[bar % 8], hi = bar >= 8;
+      if (step === 0) vWide(dest, c.slice(1).map(x => hz(x + 12)), t, sd * 8, hi ? 0.03 : 0.024, { lo: 600, top: hi ? 3000 : 2000, pump: sd * 2, att: 0.05 });
+      if (step % 2 === 0) vKick(dest, t, step === 0 ? 0.26 : 0.2);
+      if (step === 2 || step === 6) vSnap(dest, t, hi ? 0.09 : 0.07);
+      if (step % 2 === 1) vHat(dest, t, 0.03, 0.3, step === 7 && bar % 2 === 1);
+      if (hi && step % 2 === 0) vHat(dest, t + sd * 0.5, 0.012, -0.4);
+      vSub(dest, hz(c[0] + (step % 2 ? 12 : 0)), t, sd * 0.8, step % 2 ? 0.07 : 0.11);
+      if (hi) vGlass(dest, hz(c[[1, 2, 3, 2][step % 4]] + 24), t, 0.026, { pan: [-0.6, 0.2, 0.6, -0.2][step % 4], dec: 0.3 });
+      else if (step % 2 === 0) vPluck(dest, hz(c[step % 4 ? 2 : 1] + 12), t, 0.05, 0.35, 2600, 0.2);
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t, len * sd, hi ? 0.1 : 0.09, { pan: 0.08 }));
     },
   },
-  // 夜「工房の灯」 A minor / harmonic minor. クラウド(2026-10-10, 案A): the old tune was a lullaby (66, music box only),
-  // so the same chords and melody now ride on a harp ostinato, a small frame drum, a shaker and a tongs click; the melody is on the flute
+  // 夜「工房の灯」 A minor, 72. バラード。ゆっくり息をするパッドと、遠くで鳴る拍。旋律の粒がこだまの中に残る
   night: {
-    bpm: 82, steps: 8, bars: 16,
-    chords: ['A2 C4 E4', 'F2 A3 C4', 'C3 E3 G3', 'G2 B3 D4', 'A2 C4 E4', 'D3 F3 A3', 'E2 G#3 B3', 'E2 G#3 B3'].map(ch),
-    melody: [['E5', 2, 'A5', 2, 'C6', 2, 'B5', 2], ['A5', 4, 'F5', 4], ['G5', 2, 'E5', 2, 'C5', 4], ['D5', 2, 'G5', 2, 'B5', 4],
-      ['C6', 2, 'B5', 2, 'A5', 2, 'E5', 2], ['F5', 3, 'A5', 1, 'D6', 4], ['B5', 2, 'G#5', 2, 'E5', 2, 'B4', 2], ['G#5', 4, 'E5', 4]],
+    bpm: 72, steps: 8, bars: 16, vol: 0.5,  echo: 60 / 72 * 0.75,
+    chords: ['A1 C4 E4 G4', 'F1 A3 C4 E4', 'C2 E3 G3 B3', 'G1 B3 D4 E4', 'D2 F3 A3 C4', 'A1 C4 E4 G4', 'F1 A3 C4 E4', 'E1 G#3 B3 D4'].map(ch),
+    melody: [['E5', 2, 'A5', 2, 'B5', 1, 'C6', 1, 'B5', 2], ['A5', 4, 'C5', 2, 'F5', 2], ['G5', 2, 'E5', 1, 'G5', 1, 'C6', 3, 'B5', 1], ['B5', 2, 'A5', 1, 'G5', 1, 'D5', 4],
+      ['F5', 2, 'A5', 2, 'D6', 2, 'C6', 2], ['C6', 2, 'B5', 1, 'A5', 1, 'E5', 4], ['F5', 2, 'A5', 2, 'C6', 2, 'B5', 2], ['G#5', 3, 'B5', 1, 'E5', 4]],
     play(dest, bar, step, t, sd) {
-      const c = this.chords[bar % 8];
-      if (step === 0) { vPad(dest, c.slice(1).map(hz), t, sd * 8, 0.02); vBass(dest, hz(c[0]), t, sd * 3, 0.12); }
-      if (step === 4) vBass(dest, hz(c[0] + 7), t, sd * 2, 0.08);
-      vPluck(dest, hz(c[step % 2 ? 2 : 1] + 12), t, step % 4 === 0 ? 0.09 : 0.055, 0.6, 2000, 0.25);
-      if (step === 0) vDrum(dest, t, 0.13); if (step === 4) vDrum(dest, t, 0.06, true);
-      if (step % 2 === 1) vNoise(dest, t, 0.018, 0.05, 'highpass', 6500, 0.7, 0.05);
-      if (step === 6 && bar % 2 === 0) vNoise(dest, t, 0.05, 0.03, 'bandpass', 1800, 4, 0.1);
-      if (bar >= 8) melodyAt(this.melody[bar % 8], step, (n, len) => vFlute(dest, hz(N(n)), t, len * sd * 0.92, 0.065, 0.4));
-      else if (bar >= 4 && step === 2) vBox(dest, hz(c[2] + 24), t, 0.04);
-      if (Math.random() < 0.15) vNoise(dest, t + Math.random() * sd, 0.012 + Math.random() * 0.02, 0.03, 'bandpass', 2500 + Math.random() * 3000, 3, 0.05);
+      const c = this.chords[bar % 8], hi = bar >= 8;
+      if (step === 0) { vWide(dest, c.slice(1).map(hz), t, sd * 8, 0.022, { lo: 380, top: hi ? 1700 : 1200, att: 1.2 }); vSub(dest, hz(c[0] + 12), t, sd * 5, 0.13); }
+      if (step === 6) vSub(dest, hz(c[0] + 19), t, sd * 2, 0.06);
+      if (step === 0 || step === 3) vBell(dest, hz(c[step ? 2 : 1]), t, sd * 2, 0.035, { pan: step ? 0.45 : -0.45, rev: 0.45, dly: 0.1 });
+      if (hi && step % 2 === 1) vGlass(dest, hz(c[[3, 2, 3, 1][(step >> 1) % 4]] + 12), t, 0.028, { pan: step % 4 === 1 ? -0.6 : 0.6, dec: 0.7 });
+      if (bar >= 4) { if (step === 0) vKick(dest, t, 0.16); if (step === 5 && bar % 2) vKick(dest, t, 0.09); if (step === 4) vSnap(dest, t, 0.05); }
+      if (bar >= 4 && step % 2 === 1) vHat(dest, t, 0.014, step % 4 === 1 ? -0.4 : 0.4);
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t, len * sd * 1.2, hi ? 0.1 : 0.09, { pan: 0.1, dly: 0.28 }));
+    },
+  },
+
+  // No.194 タイトル「灯のともる場所」(作者「マイナーにせず、派手にせず」) D major, 80。前半8小節で主題を静かに、
+  // 後半8小節で高く開いて、下に三度の合いの手。拍は後半だけ遠くに。Re:turn = 帰ってくる場所の、あたたかい灯
+  title: {
+    bpm: 80, steps: 8, bars: 16, echo: 60 / 80 * 0.75, vol: 0.6,
+    chords: ['D2 A3 E4 F#4', 'C#2 A3 C#4 E4', 'B1 F#3 B3 D4', 'G1 B3 D4 F#4', 'F#2 A3 D4 F#4', 'G2 B3 D4 E4', 'E2 G3 B3 D4', 'A1 D4 E4 G4',
+      'G1 D4 F#4 A4', 'A1 C#4 E4 A4', 'F#1 A3 C#4 E4', 'B1 D4 F#4 A4', 'G1 B3 D4 F#4', 'A1 C#4 E4 G4', 'D2 F#3 A3 D4', 'D2 A3 D4 E4'].map(ch),
+    melody: [['F#5', 3, 'E5', 1, 'D5', 2, 'E5', 2], ['E5', 3, 'C#5', 1, 'A4', 4], ['D5', 2, 'F#5', 2, 'B5', 3, 'A5', 1], ['A5', 2, 'G5', 2, 'D5', 4],
+      ['F#5', 3, 'E5', 1, 'D5', 2, 'A5', 2], ['B5', 3, 'A5', 1, 'G5', 2, 'E5', 2], ['G5', 2, 'F#5', 2, 'E5', 2, 'D5', 2], ['E5', 4, 'D5', 2, 'C#5', 2],
+      ['D6', 3, 'B5', 1, 'A5', 2, 'G5', 2], ['A5', 2, 'C#6', 2, 'E6', 3, 'D6', 1], ['C#6', 3, 'A5', 1, 'F#5', 2, 'A5', 2], ['B5', 2, 'D6', 2, 'F#6', 2, 'E6', 2],
+      ['D6', 3, 'B5', 1, 'G5', 2, 'B5', 2], ['A5', 2, 'G5', 2, 'E5', 2, 'C#5', 2], ['D5', 2, 'F#5', 2, 'A5', 4], ['E5', 2, 'D5', 2, 'A4', 4]],
+    play(dest, bar, step, t, sd) {
+      const c = this.chords[bar], hi = bar >= 8;
+      if (step === 0) { vWide(dest, c.slice(1).map(hz), t, sd * 8, hi ? 0.024 : 0.019, { lo: 420, top: hi ? 2300 : 1500, att: 1 }); vSub(dest, hz(c[0] < 40 ? c[0] + 12 : c[0]), t, sd * 6, 0.12); }
+      if (step === 6) vSub(dest, hz((c[0] < 40 ? c[0] + 12 : c[0]) + 7), t, sd * 1.6, 0.05);
+      if (step % 2 === 0 || hi) vGlass(dest, hz(c[[1, 2, 3, 2, 3, 1, 2, 3][step]] + 12), t, hi ? 0.028 : 0.022, { pan: [-0.6, 0.3, 0.6, -0.3, 0.5, -0.5, 0.2, -0.2][step], dec: 0.7 });
+      if (step === 0 && bar % 4 === 0) vGlass(dest, hz(c[3] + 24), t, 0.02, { pan: 0, dec: 1.4, rev: 0.7, dly: 0.5 });   // the candle catches
+      if (hi) { if (step === 0) vKick(dest, t, 0.12); if (step === 4) vKick(dest, t, 0.07); if (step % 2 === 1) vHat(dest, t, 0.01, step % 4 === 1 ? -0.4 : 0.4); }
+      melodyAt(this.melody[bar], step, (n, len) => {
+        vBell(dest, hz(N(n)), t, len * sd, hi ? 0.1 : 0.09, { pan: 0.08, dly: 0.25 });
+        if (len >= 3) vFlute(dest, hz(N(n)), t + 0.02, len * sd * 0.95, 0.022, 0.5);   // a breath under the long notes, so they sing on
+        if (hi) vBell(dest, hz(N(n) - (/^(F#|B|C#)/.test(n) ? 4 : 3)), t + 0.01, len * sd, 0.035, { pan: -0.35, dly: 0.15 });   // a third below
+      });
+    },
+  },
+  // No.194 試聴2の3曲。作者の振り分け(2026-10-31): 曲A「風の通り道」=朝の市場。曲B・曲Cは今は使っていない(取っておく)
+  // 曲A G major 6/8(付点四分=68)。風が抜けるような三拍子の揺れ、粒が左右に流れる
+  songA: {
+    bpm: 204, unit: 'eighth', steps: 6, bars: 16, echo: 60 / 204 * 3, vol: 0.7,
+    chords: ['G2 B3 D4 F#4', 'E2 G3 B3 D4', 'C2 E3 G3 B3', 'D2 F#3 A3 C4', 'G2 B3 D4 G4', 'B1 D3 F#3 A3', 'C2 E3 G3 B3', 'D2 F#3 A3 D4'].map(ch),
+    melody: [['D5', 2, 'G5', 1, 'B5', 2, 'A5', 1], ['G5', 2, 'E5', 1, 'B4', 3], ['C5', 1, 'E5', 1, 'G5', 1, 'C6', 2, 'B5', 1], ['A5', 3, 'F#5', 2, 'D5', 1],
+      ['B5', 2, 'D6', 1, 'B5', 2, 'G5', 1], ['F#5', 2, 'A5', 1, 'D6', 3], ['E6', 2, 'D6', 1, 'C6', 1, 'B5', 1, 'G5', 1], ['A5', 4, 'F#5', 2]],
+    play(dest, bar, step, t, sd) {
+      const c = this.chords[bar % 8], hi = bar >= 8;
+      if (step === 0) { vWide(dest, c.slice(1).map(hz), t, sd * 6, hi ? 0.026 : 0.02, { lo: 450, top: hi ? 2400 : 1600 }); vSub(dest, hz(c[0]), t, sd * 2.5, 0.13); }
+      if (step === 3) vSub(dest, hz(c[0] + 7), t, sd * 2, 0.08);
+      vGlass(dest, hz(c[[1, 2, 3, 2, 3, 2][step]] + 12), t, hi ? 0.035 : 0.026, { pan: [-0.6, 0, 0.6, 0.3, -0.3, 0][step], dec: 0.45 });
+      if (bar >= 2 && step === 0) vKick(dest, t, 0.17); if (bar >= 2 && step === 3) vKick(dest, t, 0.08);
+      if (bar >= 4 && step !== 0 && step !== 3) vHat(dest, t, 0.014, step < 3 ? -0.35 : 0.35);
+      if (hi && step === 3) vSnap(dest, t, 0.05);
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t, len * sd, hi ? 0.1 : 0.088, { pan: 0.1 }));
+    },
+  },
+  // 曲B G minor, 80。夜更けのような、少し跳ねる遅いビート。鍵盤の和音がぽつぽつ鳴る
+  songB: {
+    bpm: 80, steps: 8, bars: 16, echo: 60 / 80 * 0.75, vol: 0.6,
+    chords: ['G1 A#3 D4 F4', 'D#2 G3 A#3 D4', 'C2 D#3 G3 A#3', 'D2 F#3 A3 C4', 'G1 A#3 D4 G4', 'A#1 D3 F3 A3', 'D#2 G3 A#3 D4', 'D2 F#3 A3 D4'].map(ch),
+    melody: [['D5', 1, 'F5', 2, 'G5', 1, 'A#5', 2, 'A5', 2], ['G5', 3, 'F5', 1, 'D#5', 2, 'D5', 2], ['C5', 1, 'D#5', 1, 'G5', 2, 'F5', 1, 'D#5', 1, 'D5', 2], ['F#5', 3, 'A5', 1, 'D5', 4],
+      ['G5', 1, 'A#5', 1, 'D6', 2, 'C6', 1, 'A#5', 1, 'A5', 2], ['F5', 2, 'D5', 1, 'F5', 1, 'A#5', 4], ['G5', 2, 'A#5', 1, 'D6', 1, 'D#6', 2, 'D6', 2], ['C6', 3, 'A5', 1, 'F#5', 4]],
+    play(dest, bar, step, t, sd) {
+      const c = this.chords[bar % 8], hi = bar >= 8, sw = step % 2 ? sd * 0.14 : 0;   // a little swing on the off-beats
+      if (step === 0) { vWide(dest, c.slice(1).map(hz), t, sd * 8, 0.018, { lo: 350, top: 1300, att: 1 }); vSub(dest, hz(c[0] + 12), t, sd * 2.5, 0.13); }
+      if (step === 3) vSub(dest, hz(c[0] + 12), t + sw, sd * 1.5, 0.09); if (step === 6) vSub(dest, hz(c[0] + 19), t, sd * 1.5, 0.07);
+      if (step === 2 || step === 6) c.slice(1).forEach((x, i) => vBell(dest, hz(x), t + i * 0.012, sd * 1.5, 0.022, { pan: (i - 1) * 0.4, rev: 0.4, dly: 0.05 }));
+      if (step === 0) vKick(dest, t, 0.2); if (step === 5) vKick(dest, t + sw, 0.12); if (step === 4) vSnap(dest, t, 0.07);
+      if (step % 2 === 1 || hi) vHat(dest, t + sw, step % 2 ? 0.02 : 0.01, step % 4 === 1 ? -0.3 : 0.3);
+      if (hi && (step === 1 || step === 7)) vGlass(dest, hz(c[3] + 12), t + sw, 0.026, { pan: step === 1 ? -0.6 : 0.6, dec: 0.6 });
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t + sw, len * sd, hi ? 0.1 : 0.09, { pan: 0.1, dly: 0.25 }));
+    },
+  },
+  // 曲C E minor, 124。まっすぐ前へ進む、旅立ちの曲。裏で跳ねる低音と、細かく降る粒
+  songC: {
+    bpm: 124, steps: 8, bars: 16, echo: 60 / 124 * 0.75, vol: 0.6,
+    chords: ['E2 G3 B3 D4', 'C2 E3 G3 B3', 'G2 B3 D4 F#4', 'D2 F#3 A3 C#4', 'E2 G3 B3 E4', 'C2 E3 G3 B3', 'G2 B3 D4 G4', 'D2 G3 A3 D4'].map(ch),
+    melody: [['B4', 2, 'E5', 2, 'G5', 2, 'F#5', 1, 'E5', 1], ['E5', 2, 'G5', 1, 'B5', 3, 'A5', 2], ['B5', 2, 'D6', 1, 'B5', 1, 'G5', 2, 'F#5', 2], ['F#5', 2, 'A5', 2, 'D6', 3, 'C#6', 1],
+      ['E6', 2, 'D6', 1, 'B5', 1, 'G5', 2, 'B5', 2], ['C6', 2, 'B5', 1, 'G5', 1, 'E5', 4], ['D5', 1, 'G5', 1, 'B5', 2, 'D6', 2, 'C6', 2], ['A5', 3, 'B5', 1, 'F#5', 4]],
+    play(dest, bar, step, t, sd) {
+      const c = this.chords[bar % 8], hi = bar >= 8;
+      if (step === 0) vWide(dest, c.slice(1).map(x => hz(x + 12)), t, sd * 8, hi ? 0.028 : 0.022, { lo: 600, top: hi ? 3200 : 2000, pump: sd * 2, att: 0.05 });
+      if (step % 2 === 1) vSub(dest, hz(c[0] + 12), t, sd * 0.8, 0.11);
+      if (bar >= 2 && step % 2 === 0) vKick(dest, t, step === 0 ? 0.24 : 0.19);
+      if (bar >= 4 && (step === 2 || step === 6)) vSnap(dest, t, 0.08);
+      if (step === 3 || step === 7) vHat(dest, t, 0.024, 0.3, true); else vHat(dest, t, 0.012, -0.3);
+      const ar = c[[1, 2, 3, 2][step % 4]] + 24; vGlass(dest, hz(ar), t, 0.026, { pan: step % 2 ? 0.55 : -0.55, dec: 0.3 });
+      if (hi) vGlass(dest, hz(ar + 7), t + sd / 2, 0.016, { pan: step % 2 ? -0.4 : 0.4, dec: 0.25 });
+      melodyAt(this.melody[bar % 8], step, (n, len) => vBell(dest, hz(N(n) - (hi ? 0 : 12)), t, len * sd, hi ? 0.1 : 0.09, { pan: 0.08 }));
     },
   },
 
@@ -13026,13 +13186,13 @@ function melodyAt(bar, step, fn) { let pos = 0; for (let i = 0; i < bar.length; 
 
 // which tune fits where we are: the market, the shop floor or the workshop (the tavern borrows the jig)
 function musicKey() {
-  if (!G) return 'morning';
+  if (!G) return 'songA';
   if (typeof UI !== 'undefined' && UI.story && UI.story.bgm && TRACKS[UI.story.bgm]) return UI.story.bgm;   // v52y: 物語の場面の曲
   if (G.act === 'fish') return 'waterside';
-  if (G.act === 'market') return 'morning';
+  if (G.act === 'market') return 'songA';   // No.194: 朝の市場は「風の通り道」
   if (G.act === 'shop') return 'day';
   if (G.act === 'work') return 'night';
-  return G.phase === 'morning' ? 'morning' : G.phase === 'night' ? 'night' : 'day';
+  return G.phase === 'morning' ? 'songA' : G.phase === 'night' ? 'night' : 'day';
 }
 function musicFor(phase) {
   if (!AU.ctx) return;
@@ -13040,7 +13200,8 @@ function musicFor(phase) {
   const old = AU.trackGain, now = AU.ctx.currentTime;
   if (old) { old.gain.setTargetAtTime(0.0001, now, 0.5); setTimeout(() => { try { old.disconnect(); } catch (e) { /* gone */ } }, 3000); }
   AU.track = phase;
-  const g = AU.trackGain = AU.ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime(1, now + 1.5); g.connect(AU.music);
+  { const tr = TRACKS[phase]; if (AU.dL && tr && tr.echo) { AU.dL.delayTime.setTargetAtTime(tr.echo, now, 0.05); AU.dR.delayTime.setTargetAtTime(tr.echo, now, 0.05); } }   // No.194: こだまを曲の速さに
+  const g = AU.trackGain = AU.ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime((TRACKS[phase] && TRACKS[phase].vol) || 1, now + 1.5); g.connect(AU.music);   // No.194: vol = 曲ごとの音の大きさ(前の曲とそろえる)
   AU.step = 0; AU.next = now + 0.25;
   if (!AU.timer) AU.timer = setInterval(musicTick, 40);
 }
@@ -13056,7 +13217,7 @@ function musicTick() {
 function auStart() {
   if (!auInit()) return;
   auVolumes();
-  if (AUS.music) musicFor(G ? musicKey() : (typeof TITLE !== 'undefined' && TITLE.on ? TITLE_BGM : 'morning'));
+  if (AUS.music) musicFor(G ? musicKey() : (typeof TITLE !== 'undefined' && TITLE.on ? TITLE_BGM : 'songA'));
 }
 
 // ---------- sound effects ----------
@@ -20932,7 +21093,7 @@ const TITLE_ART={"background": "data:image/webp;base64,UklGRkD3CQBXRUJQVlA4IDT3C
 const TITLE_NAME = 'Re:turn';
 const TITLE_SUB = '辺境の万事屋は、今日も灯りをともす';
 const TITLE_GOLD = [400, 600, 1000];
-const TITLE_BGM = 'night';   // タイトルの曲(2026-10-23: 「工房の灯」を仮に使う。TRACKS のキー)
+const TITLE_BGM = 'title';   // タイトルの曲「灯のともる場所」(No.194 2026-10-31。TRACKS のキー)
 const TITLE = { on: false, el: null, cv: null, raf: 0, last: 0, view: 'top', pick: 1, newSlot: 0, G: null, done: null };
 const TITLE_SKIP = (() => { try { return /notitle/.test(location.hash); } catch (e) { return false; } })();
 // セーブの見本(窓の絵を選ぶための最小限)。セーブが無い枠は「始まりの村(春の夕方)」
@@ -21320,7 +21481,7 @@ function boot(local, fresh) {
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
     shopView, openDecision, settingsSheet, pubSheet, TUT, tutUpdate, questLine, guildOpen,
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
-    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
+    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
     RARE, RARES_OF, RARE_T, rareW, rareEV, rareOdds, drawRare, appraiseDraw, itemGrade, itemUses, breathInfo, haulK, isBreath, sealP2, divePlanMigrate, itemSheet, RARE_LIST, lastStand, trapRoom, goHome, sealsAdd, healOf,
   };
 }
