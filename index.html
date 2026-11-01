@@ -8186,7 +8186,9 @@ function pickHot() {
   const pool = makeablePool().filter(it => it.v >= 6 && !it.junk && RC_BY_OUT[it.id] && (G.made[RC_BY_OUT[it.id].id] || 0) > 0);
   if (!pool.length) return null;
   const prev = G.hot && G.hot.id;
-  const it = wpick(pool, x => (x.id === prev ? 0.2 : 1) * (1 + Math.min(3, (G.made[RC_BY_OUT[x.id].id] || 0) / 3)));
+  // No.197: 値段の高い品ほど選ばれやすく(安いロープ・携帯食ばかりにならない)。今の章の品はさらに少し選ばれやすい
+  const top = Math.max(...pool.map(x => x.v));
+  const it = wpick(pool, x => (x.id === prev ? 0.2 : 1) * (1 + Math.min(3, (G.made[RC_BY_OUT[x.id].id] || 0) / 3)) * Math.pow(Math.max(0.03, x.v / top), 1.2) * (x.st === G.stage ? 1.5 : 1));
   if (!it) return null;
   const why = pick(HOT_WHY[it.cat] || HOT_WHY.food).replace('{item}', it.name);
   G.hot = { id: it.id, day: G.day + 1, until: G.day + 1, why };
@@ -8535,7 +8537,18 @@ function applyPersona(c) {
   if (G.event && G.event.k === 'parade') { c.tol += 0.2; if (!c.tag) c.tag = '気前がいい'; }
   return c;
 }
+// No.197: 特需の日は、特需の品を目当てに来る客が2〜3人増える(職業に関係なく買いに来る・店にいる時間は短い)
+function makeHotCust() {
+  const id = hotShelfId(); if (!id || !G.hotx || G.hotx.day !== G.day || G.hotx.left <= 0) return null;
+  G.hotx.left--;
+  const it = IT[id], classes = CLASSES.filter(c => c.st <= G.stage && c.k !== 'villager'), cls = pick(classes.length ? classes : CLASSES);
+  const sex = mobSex(cls.k), look = { m: pick(HAIRS), s: pick(CLOTHES), a: pick(['gold', 'ruby', 'sapphire', 'emerald']), k: pick(SKINS) };
+  const c = applyPersona({ cls: cls.k, sex, name: pick(sex === 'f' ? NAMES_F : NAMES_M), look, done: false });
+  c.type = 'buy'; c.want = id; c.shelf = true; c.hot = true; c.hotx = true; c.line = pick(HOT_LINES).replace('{item}', it.name);
+  return c;
+}
 function makeCustomer(allowStory) {
+  if (allowStory && G.hotx && G.hotx.day === G.day && G.hotx.left > 0 && Math.random() < 0.35) { const h = makeHotCust(); if (h) return h; }
   if (allowStory && G.tut < 0 && G.day >= 3 && Math.random() < 0.075) { const v = makeVignette(); if (v) return v; }
   if (allowStory && G.tut < 0 && G.day >= 2 && G.mkDay !== G.day && Math.random() < 0.07) { const m = makeMkCust(); if (m) return m; }
   const classes = CLASSES.filter(c => c.st <= G.stage);
@@ -8553,9 +8566,9 @@ function makeCustomer(allowStory) {
   const ordP = stock < 4 ? 0.26 : 0.14;   // v53g: 元の割合に戻した(棚の空きで依頼を増やすのはやめた)
   const roll = Math.random();
   if (roll < sellP) makeSeller(c, cls);
-  else if (roll < sellP + ordP && normalOrders() < 4) makeOrderCust(c, cls);
+  else if (roll < sellP + ordP && normalOrders() < orderCap()) makeOrderCust(c, cls);
   else makeBuyer(c, cls);
-  if (!c.type && normalOrders() < 4) makeOrderCust(c, cls);
+  if (!c.type && normalOrders() < orderCap()) makeOrderCust(c, cls);
   if (!c.type) makeSeller(c, cls);
   return c;
 }
@@ -8648,7 +8661,7 @@ function makeMkCust() {
     c.type = 'buy'; c.want = it.id; c.shelf = true; c.qty = 1;
     c.line = custSay(c, 'buy', SHELF_LINES).replace('{item}', it.name);
   }
-  if (!c.type && normalOrders() < 4) {
+  if (!c.type && normalOrders() < orderCap()) {
     const it = pick(makeablePool().filter(want));
     if (it) {
       c.type = 'order'; c.want = it.id;
@@ -8713,6 +8726,8 @@ function regularToday() {
 }
 function curCust() { return G.cust[G.ci] || null; }
 const normalOrders = () => G.orders.filter(o => !o.reg && !o.night).length;
+// No.197 (2026-11-01 作者): 普通の注文の上限を章で増やす(前はずっと4件)
+const orderCap = () => [4, 6, 8, 10, 10][Math.min(4, G.stage || 0)];
 const nightOrders = () => G.orders.filter(o => o.night).length;
 // v53: 閉店後の注文(来店客とは別枠)。最初2件、名声200で3件、700で4件。期限2〜3日・果たせないと名声が下がる
 const nightCap = () => 2 + (G.fame >= 200 ? 1 : 0) + (G.fame >= 700 ? 1 : 0);
@@ -8729,7 +8744,7 @@ function nextCust() {
   const c = G.cust[G.ci];
   if (c) {
     const r = c.result || {};
-    G.clock = (G.clock || OPEN_AT) + (r.kind === 'sold' ? 55 : r.kind === 'bought' ? 60 : r.kind === 'order' ? 60 : r.kind === 'story' ? 65 : 40) + ri(0, 10) - pk('clock');
+    G.clock = (G.clock || OPEN_AT) + (c.hotx ? 20 : r.kind === 'sold' ? 55 : r.kind === 'bought' ? 60 : r.kind === 'order' ? 60 : r.kind === 'story' ? 65 : 40) + ri(0, 10) - pk('clock');
     const was = G.phase; G.phase = G.clock >= 18 * 60 ? 'night' : G.clock >= 15 * 60 ? 'evening' : 'day';
     if (was !== G.phase) FX.push({ t: 'band', band: shopBand() });
     playerTurn();
@@ -9024,7 +9039,7 @@ function genStall() {
   };
   G.stall = [...ids].map(id => {
     const it = IT[id];
-    const base = it.v > 40 ? ri(1, 3) : it.v > 15 ? ri(3, 6) : ri(8, 16);
+    const base = id === 'ore_' + top.k ? ri(8, 12) : it.v > 40 ? ri(1, 3) : it.v > 15 ? ri(3, 6) : ri(8, 16);   // No.197: 今の章の一番上の鉱石は多めに(前は3〜6個)
     return { id, price: price(it), stock: Math.max(base, minStock[id] || 0), min: minStock[id] || 0 };
   });
   const order = ['鉱石', '木材', '皮革', '布', '宝石', '魔石', '薬草', '食材', '魔物素材', '燃料', '紙'];
@@ -9192,6 +9207,7 @@ function openShop() {
   shelfClean();
   if (G.shelfAutoOn !== false) shelfAuto();
   G.clock = OPEN_AT; G.phase = 'day';
+  if (hotNow() && (!G.hotx || G.hotx.day !== G.day)) G.hotx = { day: G.day, left: ri(2, 3) };   // No.197: 特需の日に足す客
   topUpCust();
   if (G.regDay !== G.day) {
     G.regDay = G.day;
@@ -14041,7 +14057,7 @@ function vOrdersList() {
         (G.tut >= 0 ? '' : `<details class="ocx"${UI.ocxOpen ? ' open' : ''}><summary data-act="ocxopen">注文を取り消す</summary><div class="rows">` + rest.map(o => `<div class="ri">${ico(o.item, o.minQ || null, { size: 'sm', sil: G.found[o.item] === undefined })}<div style="min-width:0"><div class="t">${G.found[o.item] === undefined ? '？？？' : IT[o.item].name} ×${o.qty}${o.reg ? '<span class="qtag reg">常連</span>' : ''}</div><div class="m"><span>${o.name}</span><span>${orderDue(o)}</span>${offSeasonTag(o)}</div></div>${cancelBtn(o)}</div>`).join('') +
         `<p class="note" style="font-size:12px;margin:6px 0 0">普通の注文を取り消すと名声が1下がる(閉店後の注文は3)。常連さんの依頼は、日をおいてまた頼みに来る。</p></div></details>`) : '') + `</div>`;
   }
-  const head = `受けている注文<span class="aside">${normalOrders()}/4${nightOrders() ? ` ・閉店後 ${nightOrders()}/${nightCap()}` : ''}${G.orders.length - normalOrders() - nightOrders() ? ` ・常連さんの依頼 ${G.orders.length - normalOrders() - nightOrders()}` : ''}</span>`;
+  const head = `受けている注文<span class="aside">${normalOrders()}/${orderCap()}${nightOrders() ? ` ・閉店後 ${nightOrders()}/${nightCap()}` : ''}${G.orders.length - normalOrders() - nightOrders() ? ` ・常連さんの依頼 ${G.orders.length - normalOrders() - nightOrders()}` : ''}</span>`;
   return `<div class="sec orders-sec"><h2>${head}</h2><div class="rows">` + G.orders.map(o => {
     const it = IT[o.item], have = orderHave(o), ok = have >= o.qty;
     return `<div class="ri">${linkIco(o.item, o.minQ || null, { size: 'sm' })}<div style="min-width:0"><div class="t">${it.name} ×${o.qty}${o.minQ ? '<span class="qtag q1">良品以上</span>' : ''}${o.reg ? '<span class="qtag reg">常連</span>' : ''}${o.night ? '<span class="qtag ord">閉店後</span>' : ''}</div><div class="m"><span>${o.name}</span><span>${orderDue(o)}</span><span class="price">${fmt(orderReward(o))}G</span><span>所持 ${have}</span>${ok ? '' : offSeasonTag(o)}</div></div>` +
@@ -14100,7 +14116,7 @@ function custCard(c) {
       h += `<div class="row between wrap"><span class="sub">${it.name}・相場 ${fmt(fairPrice(it, 0))}G(普通)${mkTag(it)}${hotNow(c.want) ? '・<b style="color:var(--brass-hi)">特需で4割高</b>' : ''}</span><button class="btn ghost sm" data-act="decline">お断りする</button></div>`;
     } else {
       const r = RC_BY_OUT[c.want];
-      const can = r && recUnlocked(r) && normalOrders() < 4;
+      const can = r && recUnlocked(r) && normalOrders() < orderCap();
       h += `<div class="want">${linkIco(c.want, null)}<div style="min-width:0"><div class="t">${it.name}${c.qty > 1 ? ' ×' + c.qty : ''}</div><div class="sub">${catName(it.cat)}${it.sub ? '・' + it.sub : ''} / 相場 ${fmt(fairPrice(it, 0))}G</div></div></div>`;
       const cr = G.tut < 0 ? counterRecipe(c) : null, why = cr ? counterCraftWhy(c) : 'norec';
       let quick = '';
@@ -14126,9 +14142,9 @@ function custCard(c) {
     const it = IT[c.want], have = invCount(c.want), r = RC_BY_OUT[c.want];
     h += `<div class="want">${linkIco(c.want, c.minQ || null, { cnt: c.qty, sil: G.found[c.want] === undefined })}<div style="min-width:0"><div class="t">${it.name} ×${c.qty}${c.minQ ? ' ' + qtag(1) + '以上' : ''}</div><div class="sub">${c.days}日以内 / ${reg ? 'お礼' : '報酬'} <span class="price">${fmt(c.reward)}G</span>${reg ? '+名声' : ''} / 所持 ${have}</div>` +
       (r ? `<div class="ins" style="margin-top:6px">${r.ins.map(([id, q]) => `<span class="in${invCount(id) < q * c.qty ? ' lack' : ''}">${ico(id, null, { size: 'xs', sil: G.found[id] === undefined })}×${q}</span>`).join('')}</div>` : '') + `</div></div>`;
-    const full = !reg && normalOrders() >= 4;
+    const full = !reg && normalOrders() >= orderCap();
     h += `<div class="btns">${reg && have >= c.qty ? `<button class="btn gold" data-act="regnow">今すぐ渡す</button>` : ''}<button class="btn${reg && have >= c.qty ? '' : ' pri'}" data-act="accorder"${full ? ' disabled' : ''}>引き受ける</button><button class="btn ghost" data-act="decline">${reg ? 'また今度' : '断る'}</button></div>` +
-      (full ? `<p class="note">注文は4件まで。常連さんの依頼は別枠で受けられる。</p>` : '');
+      (full ? `<p class="note">注文は${orderCap()}件まで(章が進むと増える)。常連さんの依頼は別枠で受けられる。</p>` : '');
   }
   return h + `</div></div>`;
 }
@@ -18264,7 +18280,7 @@ const DICT = [
   { k: 'cust', n: 'お客さん', t: ['お客さんは1人ずつ来る。種類は毎日ランダムで、買い物客(棚の品を買う)・依頼の客(品を注文していく)・持ち込みの客(素材や壊れた武具、謎の品を売りに来る)のほか、たまに小さな物語を持った客も来る。', '時計が進むと客層が変わる(朝=出発前の冒険者/昼=村人や行商人/夕方=帰ってきた冒険者の持ち込み/夜=騎士や貴族)。店先の上に、いまの客層と「いま売れ筋」が出る。', '買い物客の欲しい品が棚になければ、その客は依頼の客になる(依頼が4件で埋まっている時は、持ち込みの客)。'] },
   { k: 'sell', n: '売る・強気', t: ['「売る」の1タップで、相場で売れる。良品以上なら「強気」で高く売る賭けもできる(品質が高いほど通りやすい。断られても相場で売れる)。', '強気が続けて決まると「目利きコンボ」で、名声が多めに入る。'] },
   { k: 'buy', n: '買い取り', t: ['持ち込みの客からは、値付けをして買い取る。提示額(100%)なら必ず成立する。値切るほど安く買えるが、断られると帰ってしまう。', '色をつけて買い取ると名声が上がる(105%で 1+章、110%で 2+章)。'] },
-  { k: 'order', n: '注文と依頼', t: ['来店の依頼は、引き受けると工房で作って後日渡す。報酬は高め。受けている依頼は4件まで。', '期限を過ぎても5日までは届けられる(お礼と名声は少し減る)。それ以上待たせると取り消され、名声が下がる。自分で取り消すこともできる(名声が少し下がる)。', '閉店後の注文:2日目から、閉店すると1〜2件届く。受けるかどうかは自由で、見送っても何もない。期限は2〜3日で報酬は高めだが、果たせないと名声が下がる(遅れての納品はない)。同時に受けられるのは2件で、名声200で3件・700で4件。', '常連さん:名前のあるお客さん。依頼を重ねると、その人の物語が進む。届ける時の値段の付け方で、絆が変わる(安く譲れば絆が深まり、強気ならもうけが増える)。'] },
+  { k: 'order', n: '注文と依頼', t: ['来店の依頼は、引き受けると工房で作って後日渡す。報酬は高め。受けている依頼は、はじめ4件まで(章が進むと6・8・10件に増える)。', '期限を過ぎても5日までは届けられる(お礼と名声は少し減る)。それ以上待たせると取り消され、名声が下がる。自分で取り消すこともできる(名声が少し下がる)。', '閉店後の注文:2日目から、閉店すると1〜2件届く。受けるかどうかは自由で、見送っても何もない。期限は2〜3日で報酬は高めだが、果たせないと名声が下がる(遅れての納品はない)。同時に受けられるのは2件で、名声200で3件・700で4件。', '常連さん:名前のあるお客さん。依頼を重ねると、その人の物語が進む。届ける時の値段の付け方で、絆が変わる(安く譲れば絆が深まり、強気ならもうけが増える)。'] },
   { k: 'hot', n: '特需', t: ['夜の工房で「明日の特需」が分かる(朝市にも出る)。その日は、その品を求めるお客さんが増える(約4人に1人)。', '特需の枠に置いた品は相場の1.4倍で売れ、さらに値付けで最大1.8倍まで吹っかけられる(1.0倍なら必ず売れる)。夜のうちに作っておこう。'] },
   { k: 'fame', n: '名声と肩書', t: ['名声は店の評判。売る・依頼や注文に応える・色をつけて買い取る・建物を建てる・探索で成果を上げると上がる。教会と大聖堂が建つと上がりやすくなる。', '名声がたまると肩書が変わり、そのたびにスキルポイントが1つ入る。名声は使っても減らない(受けた注文を果たせない時だけ下がる)。'] },
   { k: 'craft', n: '作る(ミニゲーム)', t: ['作るたびに、短いミニゲームがどれかひとつ出る(13種類)。最初に大きく出る一言(「叩け!」「注げ!」など)が合図。結果は失敗・成功・会心の3つ。成功なら完成、失敗は体力-1(素材は残るが、まれにだめになる)。会心なら良品以上が確定する。', '難しい品ほど判定が狭く速い。会心を3回ためると「集中」で体力が1戻る。', '設定で「製作ごと(前の形)」や「かんたん(前のゲージ)」にもできる。'] },
@@ -21070,7 +21086,7 @@ async function syncKeep(v) {
   if (SYNC.st === 'wait') syncSet('ok');
 }
 async function syncAll() {
-  if (!SYNC.on || !SYNC.user || SYNC.busy) return;
+  if (!SYNC.on || !SYNC.user || SYNC.busy || DEV.on) return;   // No.196: 練習用の店ではクラウドから読まない
   SYNC.busy = true; syncSet('wait');
   try { saveNow(); for (const n of [SAVE.slot, ...[1, 2, 3].filter(x => x !== SAVE.slot)]) await syncSlot(n); syncSet('ok'); SYNC.at = Date.now(); }
   catch (e) { syncSet(navigator.onLine === false ? 'unsynced' : 'err', 'all'); }
@@ -21363,6 +21379,7 @@ function slotSwitch(n) {
 }
 function loadLocal() { try { const s = localStorage.getItem(SAVE.key); return s ? migrate(JSON.parse(s)) : null; } catch (e) { return null; } }
 async function connectCloud() {
+  if (DEV.on) return;   // No.196: 作者用メニューの練習用の店は、claude.ai のセーブを読まない(読むと本当のセーブに置き換わり、メニューが閉じていた)
   try {
     if (!window.claude || !window.claude.use) return;
     const db = await window.claude.use('db'); if (!db) return;
@@ -21510,7 +21527,7 @@ function boot(local, fresh) {
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
     shopView, openDecision, settingsSheet, pubSheet, TUT, tutUpdate, questLine, guildOpen,
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
-    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, ringFx, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
+    cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, ringFx, orderCap, genStall, makeHotCust, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
     RARE, RARES_OF, RARE_T, rareW, rareEV, rareOdds, drawRare, appraiseDraw, itemGrade, itemUses, breathInfo, haulK, isBreath, sealP2, divePlanMigrate, itemSheet, RARE_LIST, lastStand, trapRoom, goHome, sealsAdd, healOf,
   };
 }
