@@ -19496,7 +19496,7 @@ const SPK = {
   luca: { n: 'ルカ', ch: 'luca' }, mira: { n: 'ミラ', ch: 'mira' }, bard: { n: 'バルド', ch: 'bard' }, colette: { n: 'コレット', ch: 'colette' },
   irma: { n: 'イルマ', ch: 'irma' }, clara: { n: 'クララ', ch: 'clara' }, queen: { n: '女王', ch: 'queen' },
   priest: { n: 'トラン司祭', ch: 'priest' }, bertrand: { n: 'ベルトラン', ch: 'chancellor' },
-  gozu: { n: 'ゴズ', ch: 'gozu' }, hal: { n: 'ハル', ch: 'hal' }, noel: { n: 'ノエル', ch: 'noel' },
+  gozu: { n: 'ゴズ', ch: 'gozu' }, dahlia: { n: 'ダリア', ch: 'dahlia' }, victor: { n: 'ヴィクトル', ch: 'victor' }, eir: { n: 'エイル', ch: 'eir' },   /* No.211 */ hal: { n: 'ハル', ch: 'hal' }, noel: { n: 'ノエル', ch: 'noel' },
   peddler: { n: '行商人', ch: 'mob_peddler_m' }, knight: { n: '騎士', ch: 'victor' }   /* 2026-11-02 No.206: 騎士団の副長ヴィクトルの絵(名札は「騎士」のまま) */, villager: { n: '村人', ch: 'mob_villager_m' },
   zen: { n: 'ゼンじい', ch: 'zen' }, mina: { n: 'ミナ', ch: 'mina' }, borg: { n: 'ボルグ', ch: 'borg' },   // 2026-10-27: 釣り場の主
   dragoon: { n: '竜騎士', ch: 'eir' }   /* No.206: 竜騎士エイルの絵(名札は「竜騎士」のまま) */, adv: { n: '冒険者' }, orm: { n: 'オルム' },
@@ -21189,6 +21189,13 @@ PGdef('lute', { n: 'リュート', sp: 'lute', sub: '旅の吟遊詩人', drink:
 PGdef('jin', { n: 'ジン', sp: 'jin', sub: '傷だらけの冒険者', drink: 'd_knightale', fav: 'p_wolfjerky', gift: ['魔物素材', '鉱石'], w: 0.7, sit: () => !!((G.vigLast || {}).wounded),
   teach: '傷の男は、狼肉の香草焼きだ。……傷にしみねえ程度に、辛くしてある', thx: 'jin smile 「ごちそうさん。……借りが増えちまったな」' });
 // ギルドの冒険者(その日に探索から帰った人。席の一つ。夜の話はない)
+// No.211 (作者承認): 施設の人。施設ができたら座る
+PGdef('dahlia', { n: 'ダリア', sp: 'dahlia', sub: '闘技場の興行主', drink: 'd_dragonblood', fav: 'p_firelizard', gift: ['魔物素材', '宝石'], sit: () => !!G.built.arena,
+  teach: '興行主は、火トカゲの串焼きだ。辛いほど、賭けが当たるんだとさ', thx: 'dahlia smile 「ごちそうさん。……いい客には、いい席を取っとくよ」' });
+PGdef('victor', { n: 'ヴィクトル', sp: 'victor', sub: '騎士団の副長', drink: 'd_knightale', fav: 'p_kingbento', gift: ['鉱石', '布'], sit: () => !!G.built.knights,
+  teach: '副長どのは、騎士団の遠征弁当だ。遠征の味が、いちばん落ち着くらしい', thx: 'victor smile 「かたじけない。……部下にも、この味を教えてやらねば」' });
+PGdef('eir', { n: 'エイル', sp: 'eir', sub: '竜騎士', drink: 'd_snowmilk', fav: 'p_dragonegg', gift: ['魔物素材', '魔石'], sit: () => !!G.built.dragon,
+  teach: '竜騎士の娘は、竜の卵(のような)オムレツ。本物じゃねえと分かるまで、毎回聞く', thx: 'eir smile 「……おいしかった。竜にも、話しておく」' });
 PGdef('adv', { n: () => (pgAdv() || {}).n || '冒険者', sp: 'adv', sub: () => { const a = pgAdv(); return a ? (clsOf(a.cls) || {}).n || '冒険者' : '冒険者'; }, drink: 'd_knightale', fav: 'p_adventbento', gift: ['魔物素材', '鉱石', '薬草'], sit: () => false, adv: true });
 
 // ---------- 台詞 ----------
@@ -22322,6 +22329,394 @@ owner normal 「……傷の数だけ、帰ってきたんだろう」
 jin surprise 「…………」
 jin smile 「……そうだったな。自分で言ったことだ。……やってみるか」`);
 
+// ===== No.211 (作者「毎日いろんな話が聞ける方が楽しい」): ふだんの話・夜の話を足した =====
+// --- 村長 ---
+T('chief', null, `
+chief smile 「ゴズ、今夜は何の煮込みじゃ」
+gozu normal 「兎だ」
+chief smile 「昨日もそう言うとった」
+gozu smile 「昨日も兎だった。明日もたぶん兎だ」
+chief smile 「……ほっほ。それで五十年、文句を言わずに来とる。わしも大したもんじゃ」`);
+T('chief', null, `
+chief normal 「坊。夜はちゃんと寝とるか」
+owner normal 「・・・」
+chief trouble 「工房の灯りが、わしの家の窓から見えるんじゃ。夜中まで、ずっと」
+chief smile 「……まあ、ええ。灯りが見えると、わしもよう眠れる。妙なもんじゃな」`);
+T('chief', () => pgCh(2), `
+chief smile 「今朝、知らん顔の旅人に道を聞かれた。この村でじゃぞ」
+gozu smile 「もう村じゃなくて町だからな」
+chief smile 「道を聞かれる村長になるとは、思わなんだ。……ちゃんと、教えてやったわい」`);
+T('chief', () => pgCh(3), `
+chief trouble 「港の若い衆に、潮の読み方を教わった。……さっぱり分からん」
+gozu smile 「年寄りの手習いか」
+chief smile 「分からんのが楽しいんじゃ。この歳で、まだ分からんことがあるのはありがたい」`);
+// --- エマ ---
+T('emma', null, `
+emma smile 「今日、新米さんが初めて依頼を受けていきました。手が震えてて」
+emma normal 「だから、包帯を一巻き、余分に持たせました。……行きの分と、帰り道の分」
+gozu smile 「おまえさんの口ぐせだな」
+emma smile 「店主さんの棚から、うつったんです」`);
+T('emma', null, `
+emma trouble 「ギルドの名簿、字が汚いって本部に怒られました」
+gozu surprise 「おまえさんの字がか?」
+emma trouble 「冒険者さんの字です。自分で名前を書いてもらうので……」
+emma smile 「でも、汚い字の方が、帰ってきた時に『あ、この人だ』って分かるんですよ」`);
+T('emma', () => pgCh(2), `
+emma smile 「出張所の掲示板、もう貼る場所がないんです。依頼が多すぎて」
+owner normal 「・・・」
+emma smile 「……前は、一枚もなかったんですよ。画びょうが、さびてました」`);
+T('emma', () => pgCh(4), `
+emma normal 「騎士団の人たちも、ギルドに顔を出すようになりました」
+emma smile 「みんな、出かける前に同じことを聞くんです。『万事屋、開いてるか』って」`);
+// --- イルマ ---
+T('irma', null, `
+irma normal 「ゴズ、あんたも顔色が悪いね。塩を控えな」
+gozu trouble 「料理人に塩を控えろってのは、医者に薬を控えろってのと同じだぞ」
+irma smile 「医者は薬を控えるよ。効く分だけ出すんだ」
+gozu trouble 「…………」`);
+T('irma', null, `
+irma pout 「今日の患者は、転んで膝をすりむいた子が三人。……みんな、走って転んだんだ」
+owner normal 「・・・」
+irma smile 「走り回る子がいる村は、いい村だよ。昔は、走る子もいなかった」`);
+T('irma', () => pgCh(2), `
+irma normal 「あんたの回復薬、教会のシスターにも分けてやったよ。施療院の分にね」
+irma smile 「あの子、薬瓶を宝物みたいに抱えて帰っていった。……変わった子だね」`);
+T('irma', () => pgCh(3), `
+irma trouble 「学院の若い先生が、わたしの薬の配合を聞きに来た。紙に書いて持って帰ろうとするんだ」
+gozu smile 「教えてやったのか」
+irma smile 「教えたさ。ただし、手で覚えるまで帰さなかった。紙は、雨で溶けるからね」`);
+// --- ゼンじい ---
+T('zen', null, `
+zen smile 「今日は一匹も釣れんかった」
+gozu surprise 「じゃあ、持ちこみはなしか」
+zen smile 「ない。今夜は、客として来た。……たまには、ええじゃろ」
+gozu smile 「……爺さんが客ってのは、落ち着かねえな」`);
+T('zen', null, `
+zen normal 「川はの、毎日ちがう顔をしとる。同じ場所で、同じ竿で、同じ時間に投げてもじゃ」
+owner normal 「・・・」
+zen smile 「だから飽きん。……炉の火も、そうじゃろう」
+owner normal 「……ああ」`);
+T('zen', () => pgFish('lake'), `
+zen smile 「湖に行ったそうじゃな。ミナは、どうしとった」
+owner normal 「・・・」(うなずく)
+zen smile 「うなずいたか。……なら、元気なんじゃろう。それで十分じゃ」`);
+// --- ミナ ---
+T('mina', null, `
+mina smile 「湖の小舟、今日は三つも貸せたんです! 新記録です!」
+gozu smile 「そりゃめでてえ」
+mina smile 「えへへ。……あ、店主さんにも、今度、いちばんいい舟を貸しますね。とくべつに!」`);
+T('mina', null, `
+mina trouble 「町の人って、どうしてみんな、こんなに夜ふかしなんですか?」
+gozu smile 「湖の人間が早寝すぎるんだ」
+mina surprise 「えっ、日が沈んだら寝ませんか!? 魚も寝ますよ!」`);
+T('mina', () => pgFish('sea'), `
+mina normal 「店主さん、海にも行ったんですよね。……父さん、元気そうでした?」
+owner normal 「・・・」(うなずく)
+mina smile 「そっか。……あ、べつに、気になってたわけじゃないですけど! 一応です、一応!」`);
+// --- ボルグ ---
+T('borg', null, `
+borg smile 「陸の酒場は静かでいけねえ。船の上じゃ、波が勝手に歌ってくれた」
+gozu smile 「歌ってほしけりゃ、吟遊詩人でも呼べ」
+borg smile 「いや。……静かなのも、慣れりゃ悪くねえ」`);
+T('borg', null, `
+borg normal 「港の若い漁師が、網の繕い方を聞きに来やがった」
+borg smile 「教えてやったよ。膝は動かなくても、指は動くからな」
+owner normal 「・・・」`);
+T('borg', () => pgFish('river'), `
+borg trouble 「親父のやつ、まだ川で竿を振ってんのか」
+owner normal 「・・・」(うなずく)
+borg smile 「……そうか。あの爺さんから竿を取ったら、何も残らねえからな」`);
+// --- ハル ---
+T('hal', null, `
+hal smile 「次の行き先、王都の手前の宿場なんだ。何か運んでほしい物ある?」
+owner normal 「・・・」
+hal smile 「ないか。じゃあ、万事屋さんの噂だけ運んどくよ。北の端に、いい店があるって」`);
+T('hal', null, `
+hal trouble 「おやじのパイ、おふくろの隊商の味なんだけど、ちょっとだけ違うんだよね」
+gozu normal 「この村の井戸の水で作ってるからな」
+hal smile 「……そっか。じゃあ、これはおやじの味だ」`);
+T('hal', () => pgCh(4), `
+hal normal 「街道に、騎士団の見回りが出るようになった。夜でも荷車が動かせる」
+hal smile 「隊商にとっちゃ、灯りが一つ増えるのと同じなんだ。ありがたいよ」`);
+// --- ノエル ---
+T('noel', null, `
+noel normal 「今日、千年前の帳簿を読みました。小麦の値段が書いてありました」
+gozu surprise 「千年前の小麦の値段か」
+noel smile 「ええ。……今より、少し高かったです。昔の人も、やりくりに困っていたようです」`);
+T('noel', null, `
+noel normal 「本を読むのは得意ですが、人の顔を読むのは苦手です」
+gozu smile 「今、俺は何を考えてる」
+noel normal 「……グラタンが焦げていないか、でしょうか」
+gozu surprise 「…………当たりだ」`);
+// --- バルド ---
+T('bard', null, `
+bard normal 「おまえの祖父の打った鍬を、今日、見せてもらった。農家の納屋でな」
+owner normal 「・・・」
+bard smile 「五十年使って、まだ刃が立っとった。……いい鉄だ。いい手だ」`);
+T('bard', null, `
+bard trouble 「鍛冶屋が酒場で鉄の話をすると、嫌われるそうだ」
+gozu smile 「誰が言った」
+bard normal 「わしの親方だ。……三十年前にな」
+gozu trouble 「三十年、聞いてねえってことか」`);
+T('bard', () => pgCh(4), `
+bard normal 「騎士団の鎧を、十領打った。……胸に、妙な印を入れてくれと頼まれた」
+owner normal 「・・・」
+bard smile 「断ったら、自分で彫ると言いよった。下手くそに彫られるくらいなら、わしが入れる」`);
+// --- ネネ ---
+T('nene', null, `
+nene smile 「南の町でね、雪を見たことない子に、雪の話をしたの! 空から白いのが降ってくるって!」
+gozu smile 「信じたか?」
+nene trouble 「……ううん。『うそつき』って言われた。えへへ」`);
+T('nene', null, `
+nene normal 「荷車の車輪、また替えなきゃ。この町の道、石がでこぼこなんだもん」
+owner normal 「……工房で、見ておく」
+nene surprise 「えっ、ほんと!? ……あ、でも、お代は払うからね! ちゃんと!」`);
+T('nene', () => pgCh(3), `
+nene smile 「港の船乗りさんたち、ぜんぜん知らない国の歌を歌ってた! 覚えて帰ろうとしたけど、ぜんぶ忘れちゃった!」
+gozu smile 「歌ってみな」
+nene smile 「らー、らららー……ら? ……ほら、忘れてる!」`);
+E('nene', { c: () => pgCh(2) }, `
+nene normal 「わたしの荷車ね、母さんのお下がりなんだ。車輪だけ、何回も替えてるけど」
+nene smile 「荷台の板に、町の名前がいっぱい彫ってあるの。母さんが行った町。わたしが行った町」
+owner normal 「・・・」
+nene normal 「この町の名前、まだ彫ってないんだ。……なんでかな。彫ったら、通りすぎた町になっちゃう気がして」
+gozu smile 「彫らなきゃいい」
+nene surprise 「…………」
+nene smile 「……うん。ここは、彫らない町にする!」`);
+// --- ガンツ ---
+T('gantz', null, `
+gantz normal 「……今日は、三尺掘った」
+gozu normal 「多いのか」
+gantz normal 「……普通だ」
+(それきり、ガンツは黙って飲んだ。普通の一日だったらしい。)`);
+T('gantz', null, `
+gantz normal 「……おまえの店の、つるはし」
+owner normal 「・・・」
+gantz smile 「……刃がいい。若いのが、取り合いをしてる」`);
+T('gantz', () => pgCh(3), `
+gantz normal 「……港の石屋が、うちの鉱石を船に積んで、よその国へ売るそうだ」
+gozu smile 「出世したじゃねえか」
+gantz smile 「……石がな。俺じゃねえ」`);
+E('gantz', { c: () => pgCh(2) }, `
+gantz normal 「……坑道の奥で、時々、歌が聞こえる」
+gozu surprise 「歌?」
+gantz normal 「……水の音だ。岩の割れ目を流れる。……若いのは怖がるが」
+gantz smile 「俺は、あれを聞くと、ここはまだ生きてると思う。死んだ山は、黙る」
+owner normal 「・・・」
+gantz normal 「……だから、掘りすぎねえ。山が黙らねえ分だけ、掘る」`);
+// --- ミレ ---
+T('mire', null, `
+mire smile 「教えてあげる。今いちばん忙しいのは、パン屋さんよ。かまどを二つに増やしたの」
+gozu smile 「なんで分かる」
+mire smile 「煉瓦を注文しに来たもの。資材屋は、町の噂の入口なのよ」`);
+T('mire', null, `
+mire trouble 「店主さん、工房の屋根、そろそろ板を替えた方がいいわよ。雨の日、音が違うもの」
+owner normal 「……聞こえるのか」
+mire smile 「聞こえるわよ。町じゅうの屋根の音、わたし、だいたい覚えてるの」`);
+T('mire', () => pgCh(4), `
+mire normal 「城壁の石、どこから運んでるか知ってる? 半分は、ガンツさんの山なのよ」
+gozu smile 「あの無口が、町を守ってるってわけか」
+mire smile 「本人に言ったら、『石がな』って言うわよ。きっと」`);
+E('mire', { c: () => pgCh(2) }, `
+mire normal 「わたしね、町に新しい家が建つと、必ず見に行くの。棟上げの日に」
+mire smile 「柱が立って、屋根の骨が組まれて。……あの瞬間、町がひとつ大きくなるのが分かるのよ」
+owner normal 「・・・」
+mire normal 「この村、わたしが来た頃は、棟上げなんて一つもなかった。直す家ばかりで」
+mire smile 「今は、毎月どこかで建ってる。……資材屋にとって、これ以上の景色はないわ」
+owner normal 「……良かったな」
+mire surprise 「…………あら。店主さんが言うと、なんだか本当に良かった気がするわね」`);
+// --- リコリス ---
+T('licorice', null, `
+licorice smile 「ねえ店主さん。毒と薬の違い、知ってる?」
+owner normal 「・・・」
+licorice smile 「量よ。……あなたの工房の夜ふかしも、そろそろ毒の量ね」`);
+T('licorice', null, `
+licorice normal 「あのおばあさま、最近、咳が出てるでしょう」
+gozu surprise 「イルマがか?」
+licorice smile 「……わたしの店の喉の草、置いておいたの。わたしからとは、言わないでね」`);
+T('licorice', () => pgCh(3), `
+licorice smile 「学院の先生がね、魔物素材の買い取りに来たの。手袋を三枚重ねて」
+gozu smile 「怖がられてるな」
+licorice smile 「ふふ。いいのよ。怖がる人の方が、長生きするもの」`);
+T('licorice', () => pgCh(2), `
+licorice normal 「今日、子どもが店の前で泣いてたの。猫が、毒の草をかじったって」
+licorice smile 「かじったのは、ただのよもぎだったわ。……猫より、子どもの方が大変だったわね」`);
+// --- ポム ---
+T('pom', null, `
+pom smile 「マスター! 今日のかぶ、どうだった!? 朝採ったやつ!」
+gozu smile 「甘かった」
+pom smile 「でしょ!? 霜が降りると、甘くなるの! ……ってことは、明日はもっと甘いよ!」`);
+T('pom', null, `
+pom trouble 「畑のかかしがね、鳥に完全になめられてる」
+gozu smile 「かかしの上に止まるのか」
+pom trouble 「止まって、歌ってる。……かかし、ちょっとかわいそう」`);
+T('pom', () => pgCh(3), `
+pom smile 「港の船で、遠くの国の種をもらったの! 何が生えるか分かんない!」
+owner normal 「・・・」
+pom smile 「分かんないのが楽しいんだよ! 生えたら、いちばんに持ってくるね!」`);
+E('pom', { c: () => pgCh(2) }, `
+pom normal 「わたしの畑ね、もとは荒れ地だったの。石ばっかりで、誰も耕さなくて」
+pom smile 「村長さんが、『耕すなら、ただでええ』って。……ただより高いものはないって、思ったけど」
+gozu smile 「高かったか」
+pom smile 「高かった! 石を拾うのに、二年かかった! ……でも、三年目に、かぶが生えたの」
+owner normal 「・・・」
+pom smile 「マスターのスープに入ってる野菜、ぜんぶ、あの石ころ畑の子たちだよ。……おいしいでしょ!」`);
+// --- セレス ---
+T('seres', null, `
+seres normal 「今日の石は、青。……誰かが、遠くから帰ってくる日ね」
+gozu smile 「当たったら教えてくれ」
+seres smile 「教えないわ。当たったかどうかは、帰ってきた人だけが知っていればいいもの」`);
+T('seres', null, `
+seres smile 「店主さんの石は、黒曜石ね。割れると、とても鋭い。……でも、磨くと、鏡になるの」
+owner normal 「・・・」
+seres smile 「どちらになるかは、石じゃなくて、持ち主が決めるのよ」`);
+T('seres', () => pgCh(4), `
+seres normal 「大聖堂のステンドグラス、見た? あれ、色ガラスの中に、少しだけ本物の石が入ってるのよ」
+gozu surprise 「よく分かるな」
+seres smile 「光り方が、ちがうもの。……本物は、うそをつけないの」`);
+// --- ヨハン ---
+T('johan', null, `
+johan smile 「店主、本は読むかね」
+owner normal 「・・・」
+johan smile 「読まない顔だね。……それでいい。君の手は、本より多くのことを知っているようだから」`);
+T('johan', null, `
+johan normal 「村長とは、もう三十年、盤上の遊びをしているよ」
+gozu smile 「どっちが勝ち越してる」
+johan smile 「数えていないのさ。数えたら、どちらかがやめてしまうからね」`);
+T('johan', () => pgCh(3), `
+johan smile 「学院の若い学者が、わたしの店の本を買いに来るようになった。困ったものだ」
+gozu surprise 「売れるならいいじゃねえか」
+johan trouble 「いい本から順に買っていくのだよ。……わたしの読む分が、なくなる」`);
+T('johan', () => pgCh(4), `
+johan normal 「図書館ができたね。本が、ようやく帰る家を見つけた」
+johan smile 「わたしの店は、本の宿屋のようなものだったのさ。……宿屋も、悪くなかったがね」`);
+E('johan', { c: () => pgCh(2) }, `
+johan normal 「わたしの店の奥に、一冊だけ、売らない本がある」
+owner normal 「・・・」
+johan smile 「中身は、白紙だ。若い頃、何か書こうと思って買ったのさ。それきり、一文字も書いていない」
+gozu smile 「五十年、白紙か」
+johan smile 「ああ。……だがね、最近、少し書けそうな気がしている」
+johan normal 「この町のことだよ。何もなかった北の村に、灯りが一つずつ増えていった話」
+johan smile 「……主人公は、あまりしゃべらない男にしよう。書く方は、楽だからね」`);
+// --- リュート ---
+T('lute', null, `
+lute smile 「この町の歌を作るなら、最初の一行は決めています。『北の果ての、ほこりをかぶった店』」
+gozu smile 「二行目は」
+lute smile 「……それを、毎晩ここで探しているのですよ」`);
+// --- ジン ---
+T('jin', null, `
+jin normal 「新しい傷が一つ増えた。……前だったら、数えて落ちこんでた」
+gozu smile 「今は」
+jin smile 「数えて、帰ってこれた数だと思うことにしてる。あんたの店のせいだ」`);
+
+// ===== No.211 (作者承認 2026-11-02): 施設の人 ダリア・ヴィクトル・エイル =====
+F('dahlia', null, `
+dahlia smile 「あんたが万事屋かい。……いい足だった足だね」
+owner normal 「・・・」
+dahlia smile 「それだけさ。賭けの値をつける癖でね。もう言わないよ」
+gozu trouble 「……おまえ、初対面でそれか」
+dahlia smile 「初対面だから言うのさ。二度目からは、ただの客だ」`);
+T('dahlia', null, `
+dahlia smile 「今夜の勝ち抜き戦、番狂わせが出たよ。胴元は大損さ」
+gozu surprise 「そのわりに、機嫌がいいな」
+dahlia smile 「番狂わせのない闘技場なんて、誰も見に来やしない。損した夜ほど、客は増えるのさ」`);
+T('dahlia', null, `
+dahlia normal 「新入りの闘士がね、あんたの店の盾を持ってきた。安物だと思ってたらしい」
+dahlia smile 「三試合、傷ひとつ付かなかった。……今じゃ、あんたの店の名前を盾に彫ってるよ」
+owner normal 「・・・」`);
+T('dahlia', null, `
+dahlia smile 「十年、負けなしだった。……十年目に、飽きたのさ」
+gozu smile 「贅沢な引退だな」
+dahlia smile 「勝ち続けるとね、相手の顔が見えなくなる。それが嫌でやめた。……今は、毎晩いろんな顔が見られる」`);
+T('dahlia', () => pgCh(4), `
+dahlia normal 「城壁の騎士団から、闘士を何人か貸してくれと言われた」
+dahlia smile 「貸したよ。ただし条件をつけた。『帰りは、ちゃんと歩いて帰ってくること』」`);
+B('dahlia', null, `
+dahlia smile 「おごりかい。……じゃあ、明日の勝ち抜き戦の、一番人気を教えてやろう。当たるかどうかは知らないけどね」`);
+E('dahlia', {}, `
+dahlia normal 「闘技場の掟を、一つだけ教えてやろう」
+owner normal 「・・・」
+dahlia normal 「『死ぬ闘士に賭ける客は、二度と来させない』。……わたしが胴元になって、最初に決めた」
+gozu normal 「客が減るだろう」
+dahlia smile 「減ったさ。最初の年は、半分になった。……でも残った客は、闘士の名前を覚えて帰る客だった」
+dahlia smile 「名前を覚えられた闘士は、無茶をしなくなる。帰りを待ってる客がいるからね」
+owner normal 「……いい掟だ」
+dahlia surprise 「…………」
+dahlia smile 「……あんたに褒められると、妙に効くね。賭けの値が、上がっちまうよ」`);
+E('dahlia', { c: () => pgRg('luca', 3) }, `
+dahlia normal 「ルカの坊やのことだけどね」
+owner normal 「・・・」
+dahlia smile 「負けた夜、闘技場の裏で、盾のへこみを指でなぞってた。泣きもしないで、ずっと」
+dahlia normal 「ああいう負け方ができるやつは、強くなる。……十年、見てきたからね。分かるのさ」
+gozu smile 「本人に言ってやれ」
+dahlia smile 「言わないよ。言ったら、そこで止まる。……あんたも、言わない口だろう?」`);
+
+F('victor', null, `
+victor normal 「……店主殿。騎士団の若い者の鎧の胸に、この店の印が入っているのを、ご存じか」
+owner normal 「・・・」
+victor normal 「最初は、ルカ一人でした。今は、七人です。……規則には反しておりますが」
+victor smile 「止めませぬ。あれを入れた者は、必ず帰ってくるので」`);
+T('victor', null, `
+victor normal 「麦酒を一杯。……いえ、半分で結構。明朝は見回りがございますので」
+gozu smile 「騎士さまは、酔うのも半分か」
+victor smile 「残りの半分は、部下が全員帰ってきた夜に、取っておくのです」`);
+T('victor', null, `
+victor trouble 「部下が、ここの煮込みの方が詰所の飯よりうまいと言うのです」
+gozu smile 「本当のことだろう」
+victor normal 「……本当のことなので、叱れないのです」`);
+T('victor', null, `
+victor normal 「先輩……ベルトラン殿には、若い頃、剣より先に礼儀を叩きこまれました」
+victor smile 「おかげで今でも、酒場の椅子に座る前に、一礼してしまうのです」
+gozu smile 「どうりで、入ってくるたびに頭を下げてるわけだ」`);
+T('victor', () => pgCh(5), `
+victor normal 「王都の通りに、灯りが戻りました。……まだ半分ほどですが」
+victor smile 「残りの半分は、民が自分でともすのを待っております。騎士が全部ともしては、意味がございませんので」`);
+B('victor', null, `
+victor normal 「かたじけない。……では、半分だけ。残りは、部下に回してやってくだされ」`);
+E('victor', { c: () => pgSn('c4_fall') }, `
+(ヴィクトルの鎧の肩に、焦げたあとがあった。磨いても、落ちないらしかった。)
+victor normal 「この焦げは、落とさぬことにしております」
+owner normal 「・・・」
+victor normal 「あの夜、陛下は、民を南へ逃がせと仰せになった。……わたしは、命に従いました」
+victor trouble 「城に残ると申し上げたかった。……申し上げなかったのは、命だったからか、怖かったからか」
+victor normal 「今も、分からぬのです」
+owner normal 「……逃がした民は、どうなった」
+victor surprise 「…………」
+victor smile 「……皆、生きております。この町にも、何人か。……そうですな。それだけは、確かだ」`);
+E('victor', {}, `
+victor normal 「ルカのことですが」
+owner normal 「・・・」
+victor smile 「あれは、剣の筋はまだ荒い。ですが、仲間を置いて先に帰ったことが、一度もない」
+victor normal 「騎士に一番要るのは、そこなのです。強さは、後から付いてきます」
+gozu smile 「誰かさんの店の、口ぐせみてえだな」
+victor smile 「……ええ。おそらく、この店から学んだのでしょう。帰ってこられる備えを」`);
+
+F('eir', null, `
+eir normal 「竜の卵のオムレツ、というのを頼んだ。……本物ではないのか」
+gozu trouble 「本物だったら、俺は今ごろ竜の巣で焼かれてる」
+eir smile 「……よかった。竜たちに、言い訳をしなくてすむ」`);
+T('eir', null, `
+eir trouble 「町は、灯りが多すぎる。夜なのに、星が半分しか見えない」
+gozu smile 「慣れるさ」
+eir normal 「……慣れたくない気もする。でも、この店の灯りは、嫌いじゃない」`);
+T('eir', null, `
+eir normal 「わたしの竜は、この店の匂いを覚えた。厩舎から、こっちの方ばかり見ている」
+gozu surprise 「……食われねえよな、俺」
+eir smile 「大丈夫。あの子が好きなのは、店主の炉の匂いだ」`);
+T('eir', null, `
+eir normal 「人と話すのは、竜と話すより難しい」
+owner normal 「・・・」
+eir smile 「……店主は、竜に近い。言葉が少なくて、うそがない」`);
+B('eir', null, `
+eir smile 「……ありがとう。山では、もらったら同じだけ返す。明日、竜の抜けたうろこを届ける」`);
+E('eir', {}, `
+eir normal 「竜は、約束を守る者には牙をむかない。破る者のことは、決して忘れない」
+owner normal 「・・・」
+eir normal 「一族の子は、みんな最初にそう教わる。だから、軽い約束は、しないことにしている」
+eir smile 「……でも、この町の人は、毎日小さな約束をする。『また明日』とか」
+gozu smile 「守れるかどうかも分からねえのにな」
+eir smile 「うん。最初は、こわかった。……でも、みんな、本当にまた明日来る。それが、ふしぎで、いい」`);
+
 // ===== ギルドの冒険者(名簿の、今日帰った人。{name} {place} {item} {loot} を埋める) =====
 const PG_ADV = {
   ok: [`
@@ -22396,6 +22791,39 @@ gozu normal 「……それに、ここに座る客の顔は、王都になっ�
 
 // ===== 並ぶと(二人が同じ夜に座った時・どちらかと話すと一度だけ) =====
 const PG_PAIR = [
+  // No.211: 並んだ二人を足した
+  { ks: ['gantz', 'mire'], t: `
+mire smile 「ガンツさん、城壁の石、ありがとうね。町の人、みんな知ってるわよ」
+gantz normal 「……石がな」
+mire smile 「ほら言った」
+gantz trouble 「……」
+owner normal 「・・・」` },
+  { ks: ['pom', 'nene'], t: `
+nene smile 「ポムちゃん、南の町の果物、持ってきたよ! 種、植えてみて!」
+pom surprise 「えっ、ほんと!? 何が生えるの!?」
+nene smile 「わかんない!」
+pom smile 「わかんないの、最高!」
+gozu smile 「……似た者同士だな」` },
+  { ks: ['emma', 'irma'], t: `
+irma normal 「エマ。あんた、また昼を抜いたね。顔に書いてある」
+emma trouble 「……どうして分かるんですか」
+irma smile 「わたしは医者だよ。……ゴズ、この子に一番腹にたまるやつを」
+gozu smile 「あいよ」` },
+  { ks: ['seres', 'licorice'], t: `
+licorice smile 「セレス、わたしの石も読んでちょうだい」
+seres normal 「……紫。毒と薬の境目に立つ人の色ね」
+licorice smile 「あら、当たり」
+seres smile 「当たったかどうかは、言わないことにしているの」` },
+  { ks: ['zen', 'johan'], t: `
+johan smile 「ゼン、川の話を書かせてくれないか。わたしの本に」
+zen smile 「ええが、魚の数は本当のことを書けよ」
+johan smile 「釣り人の話で、それはいちばん難しい注文だね」
+zen smile 「……ほっほ。それもそうじゃ」` },
+  { ks: ['emma', 'chief'], t: `
+chief smile 「エマ、ギルドの掲示板、もう満杯じゃそうじゃな」
+emma smile 「はい。画びょうが足りなくて」
+chief smile 「わしが若い頃は、掲示板に依頼が一枚もなかった。……画びょうの心配をする日が来るとはのう」
+owner normal 「・・・」` },
   { ks: ['zen', 'chief'], t: `
 chief smile 「ゼン、また持ちこみか」
 zen smile 「おまえこそ、また腰の文句か」
