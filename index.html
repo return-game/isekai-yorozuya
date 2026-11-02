@@ -9442,12 +9442,22 @@ const FACS = [
   { id: 'inn', n: '宿屋', who: 'コレット', ch: 'colette', bg: 'bg_inn', hi: ['お客さんに出す料理、うちだけじゃ間に合わなくて…。', 'パンが朝のうちに全部なくなっちゃうんです。', '旅の人たち、店主さんの料理だって言うと喜ぶんですよ。'], ty: ['ありがとうございます! 今夜の分、足りそうです。', 'わあ、いい匂い…。', 'これでお客さんをお待たせしなくてすみます。'], none: '今日はまだ、うちで出せる物はないみたいですね。また寄ってください。', fav: '料理',
     buys: it => it.cat === 'food' || (it.cat === 'mat' && ['食材', '布'].includes(it.sub)),
     isFav: it => it.cat === 'food', sells: it => it.raw && ['食材', '布'].includes(it.sub) },
-  { id: 'church', n: '教会', who: 'トラン司祭', ch: 'priest', bg: 'bg_church', hi: ['巡礼の方々が、聖水と護符を求めておられます。', '祈りの書も、写す手が足りないのです。', 'あなたの品は、心を込めて作られていますね。'], ty: ['神のご加護を。', 'これで巡礼の方々にお分けできます。', 'ありがたく頂戴します。'], none: '今日は、お預かりできる物はないようですね。', fav: '聖水・護符',
+  { id: 'church', n: '教会', get who() { return G && G.stage >= 4 ? 'ベルトラン' : 'トラン司祭'; }, get ch() { return G && G.stage >= 4 ? 'chancellor' : 'priest'; }, bg: 'bg_church',   // No.216: 第5章は宰相になったベルトランが朝だけ司祭 hi: ['巡礼の方々が、聖水と護符を求めておられます。', '祈りの書も、写す手が足りないのです。', 'あなたの品は、心を込めて作られていますね。'], ty: ['神のご加護を。', 'これで巡礼の方々にお分けできます。', 'ありがたく頂戴します。'], none: '今日は、お預かりできる物はないようですね。', fav: '聖水・護符',
     buys: it => it.id === 'holy' || it.id === 'candle' || (it.cat === 'magic' && ['護符', 'スクロール', '魔導書'].includes(it.sub)) || (it.cat === 'mat' && ['紙', '宝石'].includes(it.sub)),
     isFav: it => it.id === 'holy' || (it.cat === 'magic' && it.sub === '護符'), sells: it => it.raw && ['紙', '宝石'].includes(it.sub) },
   { id: 'guild', n: '冒険者ギルド', who: 'エマ', ch: 'guild', bg: 'bg_guild', hi: ['出発前の冒険者さんに、道具が足りなくて…。', '魔物の素材は、ギルドで買い取って王都へ送るんです。', '店主さんの道具なら、みんな安心して持っていけます。'], ty: ['ありがとうございます! すぐ冒険者さんに回しますね。', '助かります。', 'これで明日の探索も安心です。'], none: '今日はギルドで引き取れる物はないみたいです。', fav: '冒険道具',
     buys: it => (it.cat === 'tool' && it.sub === '冒険道具') || it.id === 'ration' || (it.cat === 'alch' && it.sub === '爆薬') || (it.cat === 'mat' && ['魔物素材', '魔石'].includes(it.sub)),
     isFav: it => (it.cat === 'tool' && it.sub === '冒険道具') || it.id === 'ration' || (it.cat === 'alch' && it.sub === '爆薬'), sells: it => it.raw && it.sub === '魔石' },
+  // No.216 (作者承認): 第3章からの施設のページ(建物は前からある。ページを足した)
+  { id: 'arena', n: '闘技場', who: 'ダリア', ch: 'dahlia', bg: 'bg_arena', hi: ['いらっしゃい。今日の一番人気は、教えないよ'], ty: ['いい品だ。闘士が喜ぶ', 'まいど。……値切りはしないよ', '助かるよ'], none: '今日は、うちで引き取れる物はないね。武器ができたら持っておいで', fav: '武器',
+    buys: it => (it.cat === 'equip' && !it.broken && ['武器', '防具', '属性武器'].includes(it.sub)) || (it.cat === 'alch' && it.sub === '薬'),
+    isFav: it => it.cat === 'equip' && !it.broken && ['武器', '属性武器'].includes(it.sub), sells: () => false },
+  { id: 'knights', n: '騎士団詰所', who: 'ヴィクトル', ch: 'victor', bg: 'bg_knights', hi: ['店主殿。ようこそ、詰所へ'], ty: ['かたじけない', '部下に回します', '助かります'], none: '本日は、お引き取りできる物はないようです。防具ができましたら、ぜひ', fav: '防具',
+    buys: it => (it.cat === 'equip' && !it.broken && ['武器', '防具'].includes(it.sub)) || it.id === 'ration' || it.id === 'bento' || (it.cat === 'alch' && it.sub === '薬'),
+    isFav: it => it.cat === 'equip' && !it.broken && it.sub === '防具', sells: () => false },
+  { id: 'dragon', n: '竜騎士の厩舎', who: 'エイル', ch: 'eir', bg: 'bg_stable', hi: ['……来た。竜が、先に気づいた'], ty: ['ありがとう', '竜が、喜ぶ', '……いい匂い'], none: '今日は、竜にあげられる物がない。肉を焼いたら、持ってきて', fav: '肉料理',
+    buys: it => it.cat === 'food' || (it.cat === 'equip' && !it.broken && /spear/.test(it.id)) || (it.cat === 'mat' && ['魔物素材', '魔石'].includes(it.sub)),
+    isFav: it => ['grilled_meat', 'herb_roast', 'wyvern_steak'].includes(it.id), sells: () => false },
 ];
 const FAC = Object.fromEntries(FACS.map(f => [f.id, f]));
 const facOpen = id => !!G.built[id];
@@ -23342,6 +23352,123 @@ colette smile 「峠の天気とか、この先の道のこととか。……全
 colette surprise 「わあ……! これ、お客さんに出したら、うちの宿の名物になっちゃいます!」
 colette smile 「お代、はずみますね!」`,
   },
+  // ---------- No.216 (作者承認): 第2章以降の施設。「台本案_第2章以降の施設(2026-11-02)」 ----------
+  smithy: {
+    hi: [['normal', '来たか。炉は温まっとる'], ['normal', '……ふん。今日も混ぜ物のない鉄を持ってきたか'], ['smile', '弟子が、お前の店の剣を眺めとった。見るだけならただだと言ってやった']],
+    back: ['normal', '冒険者どもの剣が、刃こぼれ一つなく戻ってきた。……打った奴がいい'],
+    hurt: ['normal', '盾がへこんで戻ってきた。……へこむ盾は、持ち主を守った盾だ。直しておく'],
+    talks: [{ st: 1, t: `
+bard normal 「人間の鍛冶屋は、すぐ火を強くしたがる」
+bard normal 「お前は違うな。火が落ち着くのを、ちゃんと待つ」
+bard normal 「素人の手つきではない。……よほどいい腕を、そばで見てきたか」
+owner normal 「・・・」` }, { st: 1, t: `
+bard normal 「この通りに、わしのほかにも鍛冶屋が来た」
+bard smile 「客の取り合いだと? 違う。槌の音が増えると、通りが通りらしくなるのだ」` }, { st: 1, t: `
+bard trouble 「弟子が、炉の前で居眠りしおった」
+bard normal 「……叱らなかった。わしも、若い頃はよく寝た」` }, { st: 2, t: `
+bard normal 「港から、南の鉄が入ってくるようになった」
+bard normal 「悪くない鉄だ。だが、山の鉄ほどは鳴らん」` }, { st: 3, t: `
+bard normal 「騎士団の鎧を、何十と打っとる」
+bard normal 「胸に印を彫れと言うやつが多くてな。……下手に彫られるくらいなら、わしが彫る」` }, { st: 4, t: `
+bard normal 「アダマンタイトは、打つたびに腕が痺れる」
+bard smile 「……痺れるうちは、まだ打てるということだ」` }],
+    ord: { pick: it => it.cat === 'mat' && it.sub === 'インゴット',
+      why: ['町の鍛冶屋どもに、混ぜ物のない鉄を見せてやりたい。', '大きな注文が入った。わしの炉だけでは、鉄が間に合わん。', '弟子に、いい鉄の手ざわりを覚えさせたい。'],
+      ask: ['normal', '{item}を{n}つ打ってくれ。代金は相場どおり払う'],
+      done: `bard smile 「……いい音だ。混ぜ物がない」` },
+    eye: `
+bard surprise 「……こいつは」
+bard smile 「値切ったら、鉄に笑われる。この値で買う」`,
+  },
+  church: {
+    hi: [['normal', 'ようこそ、おいでくださいました'], ['normal', '祈りの時間ではございませぬ。どうぞ、楽に'], ['smile', '鐘の綱が、少々ほつれてまいりました。よく鳴らしておる証でございます']],
+    hi5: [['normal', '宰相の務めの前に、ここで祈ることにしております。朝だけは、司祭でございます']],
+    back: ['normal', '冒険者の方々が、無事を感謝しに参られました。……祈りより先に、あなたの店の名を口にしておりましたが'],
+    talks: [{ st: 1, t: `
+priest normal 「村長殿が、毎朝一番に鐘を聞きに来られます」
+priest smile 「鳴り終わるまで、帽子を取って立っておられる。……あれほど熱心に聞かれては、鳴らす手も抜けませぬ」` }, { st: 1, t: `
+priest normal 「シスターは、ろうそくを買いに行くと申しては、なかなか戻りませぬ」
+priest trouble 「……道に迷うほどの村ではございませぬのに」
+owner normal 「・・・」` }, { st: 1, t: `
+priest normal 「シスターに、算術を教えております」
+priest trouble 「銅貨三枚と銀貨一枚では、なぜ銀貨の方が多いのか、と問われました」` }, { st: 2, t: `
+priest normal 「港の船乗りが、海の無事を祈りに参ります」
+priest smile 「祈りのあとで、あなたの店の護符も買っていく。……抜け目のないことで」` }, { st: 2, c: () => storySeen('c3_tran'), t: `
+priest normal 「……町の者には、まだ『トラン』のままで結構でございます」
+priest normal 「ただの口うるさい司祭で、通しておりますので」` }, { st: 3, t: `
+priest normal 「大聖堂ができてからも、この小さな教会に来る者がおります」
+priest smile 「最初の鐘を覚えておる者たちでございます」` }, { st: 4, t: `
+bertrand normal 「宰相というのは、書類に名を書く仕事でございます」
+bertrand trouble 「一日に、何百と。……陛下は、私の字が硬すぎると仰せです」` }],
+    ord: { pick: it => it.id === 'holy' || it.id === 'candle' || (it.cat === 'magic' && it.sub === '護符'),
+      why: ['巡礼の方々が、明日まとめてお見えになります。', '近くの村から、祭りの支度を頼まれまして。', '冬の夜祈りに、灯りが足りませぬ。'],
+      ask: ['normal', '{item}を{n}つ、お願いできましょうか。代金は、教区からきちんとお支払いいたします'],
+      done: `{sp} smile 「かたじけのうございます。……これで、祈りに来た者を手ぶらで帰さずにすみます」` },
+    eye: `
+{sp} surprise 「……これは」
+{sp} normal 「教区の倉にあるものより、よほどよい。相応のお代を、お支払いいたしましょう」`,
+  },
+  arena: {
+    hi: [['smile', 'いらっしゃい。今日の一番人気は、教えないよ'], ['normal', '客席の掃除が終わったところさ。闘士より、客の方が散らかすんだ'], ['smile', '来たね。今夜は、いい試合が組めそうだ']],
+    back: ['smile', '冒険者が、帰りに勝ち抜き戦を観ていったよ。帰ってこられるやつは、観る余裕もあるのさ'],
+    talks: [{ st: 2, t: `
+dahlia normal 「闘士の値打ちは、勝った数じゃない。立ち上がった数さ」
+dahlia smile 「……と、客には言ってる。胴元としては、勝ってくれた方がありがたいけどね」` }, { st: 2, t: `
+dahlia smile 「新入りが、あんたの店の薬を、試合の前に三本も飲もうとした」
+dahlia normal 「一本にしな、と言ってやった。……効きすぎて、相手が気の毒になる」` }, { st: 2, t: `
+dahlia normal 「賭け札は、全部わたしが手で書く」
+dahlia smile 「字が下手な胴元は、信用されないからね」` }, { st: 3, t: `
+dahlia normal 「城壁ができてから、闘技場の客が減った」
+dahlia smile 「……いいことさ。本物の戦いなんて、誰も見たくない。見世物の方が、ずっといい」` }, { st: 4, t: `
+dahlia smile 「王都の闘技場から、戻ってこいって手紙が来た」
+dahlia normal 「断ったよ。ここの客は、闘士の名前を覚えて帰るからね」` }],
+    ord: { pick: it => ['p_str', 'p_def', 'p_spd', 'p_heal'].includes(it.id),
+      why: ['明日の勝ち抜き戦、出る闘士が多くてね。', '新入りに、薬の使い方を覚えさせたい。', '大きな賭けの夜なんだ。闘士の具合を整えておきたい。'],
+      ask: ['normal', '{item}を{n}つ、頼めるかい。代金は相場どおり。値切りはしないよ'],
+      done: `dahlia smile 「助かった。これで、今夜はみんな歩いて帰れる」` },
+    eye: `
+dahlia surprise 「……へえ」
+dahlia smile 「いい品には、いい値をつける。それが胴元の仕事さ」`,
+  },
+  knights: {
+    hi: [['normal', '店主殿。ようこそ、詰所へ'], ['normal', '見回りから戻ったところです。町は、今日も静かでございます'], ['smile', '部下が、店主殿の店の前を通ると、背筋が伸びると申しております']],
+    back: ['normal', '冒険者が戻ったと、見張りから知らせがございました。……全員、歩いて帰ってきたそうです'],
+    hurt: ['normal', '冒険者が一人、肩を痛めて戻りました。……ですが、店主殿の盾で受けていたので、骨は無事だと'],
+    talks: [{ st: 3, t: `
+victor normal 「部下には、鎧を毎晩磨かせております」
+victor smile 「磨いておると、どこがへこんだか分かる。へこんだ所が、その日守ってくれた所です」` }, { st: 3, t: `
+victor trouble 「詰所の飯当番が、また塩を入れすぎました」
+victor normal 「……騎士は、文句を言わずに食べるものです。わたしも、言いませぬ。顔に出るだけで」` }, { st: 3, t: `
+victor normal 「詰所の門は、夜も開けております」
+victor smile 「避難してきた者が、夜中に灯りを見て安心するのです。……どこかの店と同じでございますな」` }, { st: 4, t: `
+victor normal 「王都に戻る騎士と、この町に残る騎士を分けました」
+victor smile 「残りたいと申す者の方が、多うございました」` }],
+    ord: { pick: it => ['ration', 'bento', 'p_heal', 'p_heal2'].includes(it.id),
+      why: ['明朝、街道の見回りに隊を出します。', '避難してきた村へ、物資を届けます。', '新しく入った者たちに、遠征の支度を覚えさせたいのです。'],
+      ask: ['normal', '{item}を{n}つ、お願いできましょうか。代金は、騎士団から相場どおりに'],
+      done: `victor smile 「かたじけない。……これで、部下を手ぶらで出さずにすみます」` },
+    eye: `
+victor surprise 「……これは、王都の御用達より」
+victor smile 「規則では値切ることになっておりますが、止めませぬ。この値で」`,
+  },
+  dragon: {
+    hi: [['normal', '……来た。竜が、先に気づいた'], ['smile', '今日は、竜の機嫌がいい。店主の炉の匂いがするから'], ['normal', '厩舎では、静かに。竜は、大きな声が苦手']],
+    back: ['normal', '冒険者が帰ってきた。竜が、空を見上げて鳴いた。……仲間が帰った時の声'],
+    talks: [{ st: 4, t: `
+eir normal 「竜のうろこは、夏と冬で生え替わる」
+eir smile 「抜けたうろこは、集めておく。山では、何も捨てない」` }, { st: 4, t: `
+eir trouble 「町の子が、竜に石を投げた」
+eir smile 「……竜は、怒らなかった。次の日、その子がりんごを持ってきた。竜は、それを覚えている」` }, { st: 4, t: `
+eir normal 「竜騎士は、竜に乗るんじゃない。竜に、乗せてもらう」
+eir smile 「だから、毎朝、頼む。今日も乗せて、って」` }],
+    ord: { pick: it => ['grilled_meat', 'herb_roast', 'wyvern_steak'].includes(it.id),
+      why: ['竜が、遠くまで飛ぶ日。', '若い竜が、はじめて山から下りてきた。', '竜の食が、少し細い。焼いた肉なら、食べる。'],
+      ask: ['normal', '{item}を{n}つ、ほしい。……お金は、ちゃんと払う。山では、もらったら同じだけ返す'],
+      done: `eir smile 「……竜が、喜んでる。尻尾が、三回揺れた」` },
+    eye: `
+eir surprise 「……これは」
+eir smile 「竜が、匂いだけで起きた。いい物には、いい値をつける。町の決まりだと、聞いた」`,
+  },
 };
 const facSpk = f => Object.keys(SPK).find(k => SPK[k].ch === f.ch) || 'emma';
 
@@ -23419,12 +23546,12 @@ function foDeliver(fid) {
 // ---------- 施設の場面(特別な会話は場面を切り替える。ふだんの話はカウンターの上の枠) ----------
 function fcScene(fid, txt, done) {
   const f = FAC[fid]; if (!f || !txt || storyOff()) { if (done) done(); return; }
-  STORY.__fc = { id: '__fc', lines: storyParse(`@bg ${f.bg}\n${txt}`) };
+  STORY.__fc = { id: '__fc', lines: storyParse(`@bg ${f.bg}\n${txt.replace(/\{sp\}/g, facSpk(f))}`) };
   storyOpen({ id: '__fc', o: { pub: done || (() => {}) } });
 }
 function fcTalk(fid) {
   const f = FAC[fid], fc = FC[fid]; if (!f) return;
-  const list = fc ? fc.talks.filter(t => t.st === undefined || t.st === G.stage) : [];
+  const list = fc ? fc.talks.filter(t => (t.st === undefined || t.st === G.stage) && (!t.c || t.c())) : [];
   let txt;
   if (list.length) { G.fct = G.fct || {}; const i = (G.fct[fid] || 0) % list.length; G.fct[fid] = i + 1; txt = list[i].t; }
   else txt = `${facSpk(f)} smile 「${f.hi[(G.day + ((G.fct || {})[fid] = ((G.fct || {})[fid] || 0) + 1)) % f.hi.length]}」`;
@@ -23448,10 +23575,12 @@ function fcGreet(f, tab) {
   if (fc.out && G.dive && !G.dive.done && G.dive.party && G.dive.party.length) return [fc.out[0], fc.out[1].replace('{name}', G.dive.party[0].n || '冒険者')];
   const b = G.pgBack;
   if (b && b.day === G.day && b.party && b.party.length && b.ok) { if (b.hurt && fc.hurt) return fc.hurt; if (!b.hurt && fc.back) return fc.back; }
-  return fc.hi[G.day % fc.hi.length];
+  const hi = fc.hi5 && G.stage >= 4 ? fc.hi5 : fc.hi;
+  return hi[G.day % hi.length];
 }
 // 頼まれごとを届けた後、次の頼みごとまでの一言
-const FC_THANKS = { clinic: '先日は助かったよ。また頼むよ', guild: '先日は、ありがとうございました。また頼みますね', inn: '先日は、ありがとうございました! また頼みますね' };
+const FC_THANKS = { clinic: '先日は助かったよ。また頼むよ', guild: '先日は、ありがとうございました。また頼みますね', inn: '先日は、ありがとうございました! また頼みますね',
+  smithy: 'また頼む。お前の鉄は、使いやすい', church: '先日は、かたじけのうございました。また、お頼みいたします', arena: '先日は助かったよ。また頼むかもね', knights: '先日は、かたじけのうございました。また、お頼みいたします', dragon: 'この前は、ありがとう。竜も、覚えている' };
 
 // ---------- 朝市の掘り出し物と「磨く」 ----------
 const DIG_SHOP = { gem: 'ore', ore: 'gear', season: 'acc' };   // セレス=汚れた原石 / ガンツ=汚れた武具 / ネネ=汚れた装飾品
