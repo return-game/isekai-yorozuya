@@ -2839,6 +2839,16 @@ body.practice #app { display: none; }
 .callout.fcwork .facrows { margin-top: 4px; }
 /* No.213: 朝市の割引の札 */
 .shop .mk-sale { display: block; font-size: 10.5px; line-height: 1.2; color: #1f1a10; background: #f1d99e; border-radius: 999px; padding: 1px 6px; margin-top: 2px; font-weight: 700; white-space: nowrap; }
+/* No.214: 施設の右上(札と「街へ戻る」)・今日の目の色が変わる品・大口の注文の材料 */
+.facpage .fac-hr { margin-left: auto; display: flex; align-items: stretch; gap: 8px; }
+.facpage .fac-hr .subtabs.pubswitch { margin-left: 0; }
+.facpage .fac-back { min-height: 44px; padding: 0 16px; white-space: nowrap; }
+.facpage .fac-back b { font-family: var(--f-display); font-size: 14.5px; font-weight: 800; letter-spacing: .06em; }
+.fc-want { display: flex; gap: 10px; align-items: center; margin-top: 4px; padding: 9px 12px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(255, 210, 120, .55); background: rgba(255, 200, 90, .08); }
+.fc-want .t b { color: #f1d99e; }
+.fo-mats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.fo-mat { display: inline-flex; align-items: center; gap: 3px; color: #e7a58c; }
+.fo-mat.ok { color: var(--ink-2); }
 
 </style>
 <div id="app">
@@ -9441,10 +9451,22 @@ const facOpen = id => !!G.built[id];
 // bought goods (from the stall or a customer) never get the 得意 bonus, so buying and selling back can't make money
 const boughtN = id => Math.min((G.bgt || {})[id] || 0, (G.inv[id] || [0])[0]);
 function noteBought(id, n) { if (!IT[id] || IT[id].raw) return; G.bgt = G.bgt || {}; G.bgt[id] = (G.bgt[id] || 0) + n; }
-// No.212 (作者): 目の色を変える — 自分で作った、一番いい出来(傑作)の品か、珍しい素材(探索のレア)で作った品は ×1.5。買った完成品には効かない
-const FAC_EYE = 1.5;
-const rareMade = it => { const r = RC_BY_OUT[it.id]; return !!(r && (r.rare || r.ins.some(([x]) => IT[x] && IT[x].rare))); };
-const facEyeNow = (f, it, q) => !it.raw && !it.broken && f.buys(it) && (q === 3 || rareMade(it)) && !(q === 0 && boughtN(it.id) > 0);
+// No.212→No.214 (作者): 目の色を変える — 施設ごとに毎朝ランダムで1種類(その施設の得意な品で、いま作れる物)。自分で作った物なら出来は問わず ×1.5・1日3個まで。買った完成品には効かない。ほかは相場どおり(得意な品は ×1.15)
+const FAC_EYE = 1.5, FAC_EYE_MAX = 3;
+function fcWantPool(f) {
+  const ok = it => !it.raw && !it.broken && !it.keep && !it.relic && f.buys(it) && f.isFav(it) && it.st <= G.stage &&
+    RECIPES.some(r => r.out === it.id && !r.repair && !r.appraise && !r.hidden && !r.rare && recUnlocked(r) && r.ins.every(([x]) => IT[x] && !IT[x].rare && !IT[x].keep));
+  const all = ITEMS.filter(ok), near = all.filter(it => it.st >= G.stage - 1);
+  return near.length ? near : all;
+}
+function fcWant(fid) {   // { id, left } — その日の目の色が変わる品
+  const f = FAC[fid]; if (!f) return null;
+  if (!G.fcWant || G.fcWant.day !== G.day) G.fcWant = { day: G.day, w: {} };
+  let w = G.fcWant.w[fid];
+  if (w === undefined) { const pool = fcWantPool(f); w = G.fcWant.w[fid] = pool.length ? { id: pick(pool).id, left: FAC_EYE_MAX } : null; }
+  return w;
+}
+const facEyeNow = (f, it, q) => { const w = fcWant(f.id); return !!(w && w.id === it.id && w.left > 0 && !it.raw && !it.broken && !(q === 0 && boughtN(it.id) > 0)); };
 function facPrice(f, it, q) {
   if (it.broken) return Math.max(1, Math.round(it.v * FAC_BROKEN));
   if (it.raw) return Math.max(1, Math.round(it.v * FAC_RAW));
@@ -9467,7 +9489,7 @@ function facSell(fid, id, q, n = 1) {
   let got = 0, sold = 0, eye = false;
   for (let i = 0; i < n; i++) {
     if (spareCount(id) <= 0 || (G.inv[id] || [])[q] <= 0) break;
-    const p = facPrice(f, it, q); if (facEyeNow(f, it, q)) eye = true;
+    const p = facPrice(f, it, q); if (facEyeNow(f, it, q)) { eye = true; fcWant(fid).left--; }
     if (q === 0 && boughtN(id) > 0) G.bgt[id]--;
     invTake(id, 1, q); G.gold += p; got += p; sold++;
   }
@@ -18575,7 +18597,7 @@ const DICT = [
   { k: 'skill', n: 'スキル盤', t: ['店主の画面。真ん中から 職人・商い・目利き・冒険・体 の五つの道がのびていて、習得した節のとなりから選ぶ。◆鍵の節は探索のレアをひとつ差し出す、⬢要の節は遊び方が変わる。', 'ポイントは、レベルが上がる・肩書が変わる・探索のレアを初めて手に入れる・ぬしを初めて倒す・常連さんの物語を見届ける・図鑑の節目・初めての傑作で増える。1回目の振り直しは無料。'] },
   { k: 'upgrade', n: '工房の設備と店の増築', t: ['工房の設備(店主の画面):鍛冶・錬金・調理・筆写の道具をお金で良くする。判定が広がり、良い品が出やすくなる。', '店の増築(街の「わが店」):作業力が増え、朝市の入荷(1段ごとに1割)とお客さんも増える。章が進むと、次の増築ができる。'] },
   { k: 'town', n: '街を育てる', t: ['「街」の建物に必要な品を納品すると建物が建つ。建物ごとに、店や村に良いことが起きる(完成すると何が起きるかは、建物の欄に書いてある)。', 'その章の建物3つがそろい、討伐の場所の「ぬし」を冒険者が倒すと、次の章へ進む。村は町へ、町は街へと育ち、新しい建物と探索の場所が増える。'] },
-  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から)。体力は使わない。', '品物は相場どおり。その施設の得意な品は、自分で作った物なら1.15倍。自分で作った傑作や、探索のレアで作った品は1.5倍(目の色を変える)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼まれごと(大口の注文)をくれる。材料は先方持ちで、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。'] },
+  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から)。体力は使わない。', '品物は相場どおり。その施設の得意な品は、自分で作った物なら1.15倍。施設ごとに毎朝1種類、「今日探している品」があり、自分で作った物なら出来を問わず1.5倍(目の色が変わる品・1日3個まで)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼まれごと(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
   { k: 'adv', n: '冒険', t: ['冒険者ギルドが建つと、ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。行き先には推奨のランクが書いてある。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
   { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。次の時間帯をまるごと釣り場で過ごす(朝市・店・工房のどれかを手放す)。釣り場では体力を使わず、時間も進まない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。1匹との勝負ごとに、冒険も1ターン進む。', '餌は1回の釣行で10投。釣りポイントで5投ずつ買い足せる(3回まで)。竿(掛かる魚の格)・リール(緑の幅)はポイントでだけ交換できる。', '釣った魚は、小屋の主にお金で売るか、ポイントに替えるか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
   { k: 'loan', n: '出世払い', t: ['開店資金3000Gは村長の出世払い。利子も期限もない。返すのは街の「村長の家」から。返すたびに、節目のごほうび(増築の許可・新しい仕入れ先など)がある。'] },
@@ -23274,7 +23296,7 @@ emma smile 「冒険者さんが帰ってきたら、まず名簿に丸をつけ
 emma smile 「丸がつくと、その日の仕事はおしまい。……どんなに書類が残ってても、です」` }],
     ord: { pick: it => it.id === 'ration' || (it.cat === 'tool' && it.sub === '冒険道具'),
       why: ['明後日、新米さんが三人まとめて出発するんです。', '本部から、ほかの出張所にも回してくれって頼まれまして。', '森の見回りの依頼が、まとめて入ったんです。'],
-      ask: ['normal', '材料は、ギルドの倉庫から持ってきました。{item}を{n}つ、お願いできますか?'],
+      ask: ['normal', '{item}を{n}つ、お願いできますか? お代は、相場どおりにお支払いします'],
       done: `emma smile 「ありがとうございます! ……これで、行きの分と帰り道の分です」` },
     eye: `
 emma surprise 「……これ、本部の支給品より、ずっといいです」
@@ -23293,8 +23315,8 @@ irma normal 「夜も鍵をかけないのは、急な病人のためさ」
 irma smile 「それに、この村で盗まれる物なんて、あたしの昼寝くらいだからね」` }],
     ord: { pick: it => it.cat === 'alch' && ['薬', '秘薬'].includes(it.sub),
       why: ['風邪がはやりかけててね。', '峠の向こうの村から、使いが来たんだよ。', '冬の前に、薬棚をいっぱいにしときたくてね。'],
-      ask: ['normal', '材料は摘んできた。{item}を{n}つ、作っておくれ。あたしの手じゃ間に合わない'],
-      done: `irma smile 「助かったよ。……余った分は、あんたが使いな。薬草は、使う人の所にあるのがいいんだ」` },
+      ask: ['normal', '{item}を{n}つ、作っておくれ。あたしの手じゃ間に合わない。代金はちゃんと払うよ'],
+      done: `irma smile 「助かったよ。……あんたの薬なら、安心して渡せる」` },
     eye: `
 irma surprise 「……こりゃ、あたしのより効くね」
 irma smile 「悔しいから、高く買ってやるよ」`,
@@ -23311,7 +23333,7 @@ colette normal 「旅のお客さんって、朝ごはんの時にいちばん�
 colette smile 「峠の天気とか、この先の道のこととか。……全部、帳面に書いてます。いつか役に立つかなって」` }],
     ord: { pick: it => it.cat === 'food',
       why: ['今夜、旅芸人の一座さんが泊まるんです!', '峠の道が崩れて、お客さんが足止めなんです。', '行商さんたちの寄り合いが、うちであるんです。'],
-      ask: ['smile', '材料はうちで用意しました。{item}を{n}つ……お願いできますか?'],
+      ask: ['smile', '{item}を{n}つ……お願いできますか? お代は、きちんとお支払いします'],
       done: `colette smile 「間に合いました……! これでお客さんをお待たせしなくてすみます」` },
     eye: `
 colette surprise 「わあ……! これ、お客さんに出したら、うちの宿の名物になっちゃいます!」
@@ -23320,14 +23342,16 @@ colette smile 「お代、はずみますね!」`,
 };
 const facSpk = f => Object.keys(SPK).find(k => SPK[k].ch === f.ch) || 'emma';
 
-// ---------- 大口の注文: 素材は相手が出す・ミニゲーム1回・体力1回分で全部・失敗しても工賃は出る・余りの材料はもらえる ----------
-const FO_X = 0.6, FO_GAP = 2, FO_DAYS = 3;
+// ---------- 大口の注文: No.214 (作者) 材料は自分で用意する(朝市で買う・工房で作る)・代金は相場どおり(出来の倍率)・ミニゲーム1回・体力1回分で全部・失敗しても頼まれた数はそろう ----------
+const FO_X = 1, FO_GAP = 2, FO_DAYS = 3;
+// 材料は、朝市で買える素材か、素材から一回で作れる物だけ(何段も作らないと届けられない注文は出さない)
+const foShallow = x => IT[x].raw || (RC_BY_OUT[x] && RC_BY_OUT[x].ins.every(([y]) => IT[y] && IT[y].raw));
 const regItemsNow = () => REGULARS.map(R => { const s = R.steps[(G.reg || {})[R.k] || 0]; return s && s.item; }).filter(Boolean);
 function foRecs(fid) {
   const fc = FC[fid]; if (!fc || !fc.ord) return [];
   const reg = regItemsNow();
   return RECIPES.filter(r => !r.repair && !r.appraise && !r.hidden && !r.rare && recUnlocked(r) && IT[r.out] && !IT[r.out].raw && !IT[r.out].keep && IT[r.out].st <= G.stage &&
-    fc.ord.pick(IT[r.out]) && !reg.includes(r.out) && r.ins.every(([x]) => IT[x] && !IT[x].keep && !IT[x].rare));
+    fc.ord.pick(IT[r.out]) && !reg.includes(r.out) && r.ins.every(([x]) => IT[x] && !IT[x].keep && !IT[x].rare && foShallow(x)));
 }
 function foGet(fid) {
   if (!FC[fid] || !FC[fid].ord || !facOpen(fid)) return null;
@@ -23340,7 +23364,11 @@ function foGet(fid) {
 }
 const foPay = (o, q) => Math.max(5, Math.round(fairPrice(IT[o.id], q) * o.qty * FO_X / 5) * 5);
 const foT = o => craftTime(RC[o.rid]);
-const foWhy = o => G.act !== 'work' ? '夜の工房の時間に作れる' : G.work < foT(o) ? '体力が足りない' : '';
+const foSets = o => Math.ceil(o.qty / (RC[o.rid].n || 1));
+const foNeed = o => RC[o.rid].ins.map(([x, n]) => [x, n * foSets(o)]);
+const foHave = o => foNeed(o).every(([x, n]) => invCount(x) >= n);
+const foWhy = o => G.act !== 'work' ? '夜の工房の時間に作れる' : !foHave(o) ? '材料が足りない' : G.work < foT(o) ? '体力が足りない' : '';
+function foMatHTML(o) { return foNeed(o).map(([x, n]) => { const h = invCount(x); return `<span class="fo-mat${h >= n ? ' ok' : ''}">${ico(x, null, { size: 'xs' })}${IT[x].name} ${Math.min(h, n)}/${n}</span>`; }).join(' '); }
 const foOpenAll = () => FACS.map(f => f.id).map(fid => [fid, foGet(fid)]).filter(([, o]) => o && !o.done);
 function foAskText(fid, o) { const fc = FC[fid]; return fc.ord.why[o.why] + fc.ord.ask[1].replace('{item}', IT[o.id].name).replace('{n}', o.qty); }
 function foStart(fid) {
@@ -23349,21 +23377,22 @@ function foStart(fid) {
   const g = UI.gauge = { fo: fid, r, z: zones(r), mg: 'mg2', started: false, stopped: false, raf: 0 };
   const v = document.createElement('div'); v.className = 'veil'; v.id = 'gveil';
   v.innerHTML = `<div class="gwrap mgwrap mg-rand" role="dialog" aria-modal="true" aria-label="大口の注文">` +
-    `<div class="ghead mghead">${portrait({ cls: 'villager', ch: f.ch }, 'sm', 'smile')}<div class="mgt"><div class="sub">${f.who}の頼みごと・体力${foT(o)}</div><h2>${IT[o.id].name} ×${o.qty}</h2></div><span class="price">工賃 ${fmt(foPay(o, 0))}〜${fmt(foPay(o, 3))}G</span></div>` +
+    `<div class="ghead mghead">${portrait({ cls: 'villager', ch: f.ch }, 'sm', 'smile')}<div class="mgt"><div class="sub">${f.who}の頼みごと・体力${foT(o)}</div><h2>${IT[o.id].name} ×${o.qty}</h2></div><span class="price">代金 ${fmt(foPay(o, 0))}〜${fmt(foPay(o, 3))}G</span></div>` +
     `<div class="gstage mgstage mg2stage" id="mgstage"><canvas id="mg2cv"></canvas><div class="mgready" id="mgready"><span>タップでスタート</span></div><div class="gfx" id="gfx"></div></div>` +
-    `<div class="mghow" id="mghow">頼まれた${o.qty}つを、一回でまとめて作る。材料は${f.who}の分。うまくいくほど工賃がはずむ(失敗しても工賃は出る)。</div>` +
+    `<div class="mghow" id="mghow">頼まれた${o.qty}つを、一回でまとめて作る。材料は手持ちから使う。うまくいくほど代金が上がる(失敗しても、頼まれた数はそろう)。</div>` +
     `<div class="gfoot" id="gfoot"><button class="btn pri big" data-act="mgbtn" id="gstop">はじめる</button><button class="mgcancel" data-act="gclose" id="gcancel">やめる<small>(体力は減らない)</small></button></div></div>`;
   document.body.appendChild(v);
   MG2.mount(v.querySelector('#mg2cv'), v.querySelector('#mgstage'), { calm: mgCalm(), onIdleTap: () => mg2Begin(g) });
   v.querySelector('#gstop').focus({ preventScroll: true }); sfx('tap');
 }
 function foEnd(g, hit) {
-  const fid = g.fo, o = G.fo[fid], r = g.r, foot = $('#gfoot'); if (!o || o.done) return;
+  const fid = g.fo, o = G.fo[fid], r = g.r, foot = $('#gfoot'); if (!o || o.done || !foHave(o)) return;
+  for (const [x, n] of foNeed(o)) invTake(x, n);   // 材料は自分の手持ちから
   const q = hit === 'fail' ? 0 : rollQuality(r, hit === 'crit', false), t = foT(o);
   G.work = Math.max(0, G.work - t); G.made[r.id] = (G.made[r.id] || 0) + 1; G.stats.crafted++;
   discover(o.id, q, true); gainXp(craftXp(r, q)); playerTurn();
   const pay = foPay(o, q); G.gold += pay; G.stats.earned += pay; if (G.today) G.today.earned += pay;
-  for (const [x, n] of r.ins) invAdd(x, 0, n, true);   // 一回分多めに置いていった材料は、もらえる
+  const extra = foSets(o) * (r.n || 1) - o.qty; if (extra > 0) invAdd(o.id, q, extra);   // 一度に2つできる品の余りは手元に
   Object.assign(o, { done: true, q, pay, next: G.day + FO_GAP }); G.foDone = (G.foDone || 0) + 1;
   sfx(hit === 'crit' ? 'crit' : 'craft_' + r.craft); setTimeout(() => sfx(q === 3 ? 'great' : q >= 1 ? 'good' : 'hit'), 300);
   if (typeof diveNotify === 'function') diveNotify(G.dive);
@@ -23371,7 +23400,7 @@ function foEnd(g, hit) {
   if (!foot) return;
   const QN = ['普通', '良品', '上質', '傑作'];
   foot.innerHTML = `<div class="gres"><div class="qbig ${q === 3 ? 'q3' : q >= 1 ? 'q1' : 'fail'}">${q === 3 ? '傑作!' : q >= 1 ? QN[q] + 'の出来' : '頼まれた数はそろった'}</div>` +
-    `<div>${IT[o.id].name} ×${o.qty}(${QN[q]})・工賃 <b class="price">+${fmt(pay)}G</b></div><div class="okc">余った材料をもらった ${r.ins.map(([x, n]) => ico(x, 0, { size: 'xs', cnt: n })).join('')}</div>` +
+    `<div>${IT[o.id].name} ×${o.qty}(${QN[q]})・代金 <b class="price">+${fmt(pay)}G</b></div>` +
     `<div class="btns" style="justify-content:center;margin-top:6px"><button class="btn pri" data-act="fodone" data-v="${fid}" data-focus>届ける</button></div></div>`;
   g.doneAt = performance.now();
   setTimeout(() => { const f = foot.querySelector('[data-focus]'); if (f && document.body.contains(f)) f.focus({ preventScroll: true }); }, 450);
@@ -23479,7 +23508,7 @@ function polEnd(g, hit) {
   const QN = ['普通', '良品', '上質', '傑作'], out = IT[res.id], val = fairPrice(out, res.q) * res.n;
   foot.innerHTML = `<div class="gres"><div class="qbig ${hit === 'crit' ? 'q3' : hit === 'ok' ? 'q1' : 'fail'}">${hit === 'crit' ? '見事に磨き上がった!' : hit === 'ok' ? 'きれいになった' : '汚れが少し残った'}</div>` +
     `<div class="okc">${ico(res.id, noQual(res.id) ? null : res.q, { size: 'md', cnt: res.n > 1 ? res.n : undefined })} <b>${out.name}</b>${res.n > 1 ? ' ×' + res.n : ''}${noQual(res.id) ? '' : '(' + QN[res.q] + ')'}${first ? ' <span class="pg-ep">はじめて</span>' : ''}${res.next ? ' <span class="pg-ep">次の章の品!</span>' : ''}</div>` +
-    `<div class="sub">相場 約${fmt(val)}G${!noQual(res.id) && res.q === 3 ? '・施設に持っていくと、目の色を変えて高く買ってくれる' : ''}</div>` +
+    `<div class="sub">相場 約${fmt(val)}G</div>` +
     `<div class="btns" style="justify-content:center;margin-top:6px"><button class="btn pri" data-act="gclose" data-focus>閉じる</button></div></div>`;
   g.doneAt = performance.now();
   setTimeout(() => { const f = foot.querySelector('[data-focus]'); if (f && document.body.contains(f)) f.focus({ preventScroll: true }); }, 450);
@@ -23490,22 +23519,24 @@ function facPage(fid) { if (!FAC[fid] || !facOpen(fid)) return; closeSheet(true)
 function facSellBody(f) {
   const goods = facGoods(f);
   const row = g => { const p = facPrice(f, g.it, g.q), eye = facEyeNow(f, g.it, g.q), fav = facFavNow(f, g.it, g.q);
-    return `<div class="facrow${eye ? ' eye' : ''}">${ico(g.it.id, g.q, { cnt: g.n, size: 'sm' })}<div style="min-width:0"><div class="t">${g.it.name}${noQual(g.it.id) ? '' : ' ' + qtag(g.q)}</div><div class="sub">${g.it.raw ? '素材(6割)' : g.it.broken ? '壊れた武具' : eye ? `<b class="fc-eye">目の色が変わる ×${FAC_EYE}</b>` : fav ? `得意な品 ×${FAC_FAV}` : '相場どおり'}</div></div><span class="price">${fmt(p)}G</span><span class="facbtns"><button class="btn sm pri" data-act="facsell" data-v="${f.id}" data-id="${g.it.id}" data-q="${g.q}" data-n="1">売る</button>${g.n > 1 ? `<button class="btn sm" data-act="facsell" data-v="${f.id}" data-id="${g.it.id}" data-q="${g.q}" data-n="${g.n}">全部</button>` : ''}</span></div>`; };
+    return `<div class="facrow${eye ? ' eye' : ''}">${ico(g.it.id, g.q, { cnt: g.n, size: 'sm' })}<div style="min-width:0"><div class="t">${g.it.name}${noQual(g.it.id) ? '' : ' ' + qtag(g.q)}</div><div class="sub">${g.it.raw ? '素材(6割)' : g.it.broken ? '壊れた武具' : eye ? `<b class="fc-eye">目の色が変わる品 ×${FAC_EYE}</b>` : fav ? `得意な品 ×${FAC_FAV}` : '相場どおり'}</div></div><span class="price">${fmt(p)}G</span><span class="facbtns"><button class="btn sm pri" data-act="facsell" data-v="${f.id}" data-id="${g.it.id}" data-q="${g.q}" data-n="1">売る</button>${g.n > 1 ? `<button class="btn sm" data-act="facsell" data-v="${f.id}" data-id="${g.it.id}" data-q="${g.q}" data-n="${g.n}">全部</button>` : ''}</span></div>`; };
   const eye = goods.filter(g => facEyeNow(f, g.it, g.q)), fav = goods.filter(g => !eye.includes(g) && !g.it.raw && !g.it.broken && f.isFav(g.it)), broken = goods.filter(g => g.it.broken), raw = goods.filter(g => g.it.raw), rest = goods.filter(g => !eye.includes(g) && !fav.includes(g) && !broken.includes(g) && !raw.includes(g));
   const grp = (h, a) => a.length ? `<div class="sub" style="margin-top:8px">${h}</div><div class="facrows">${a.map(row).join('')}</div>` : '';
-  return goods.length ? grp(`目の色が変わる品(自分で作った傑作・珍しい素材の品は ×${FAC_EYE})`, eye) + grp(`得意な品(${f.fav}・自分で作った物は ×${FAC_FAV})`, fav) + grp('壊れた武具', broken) + grp('そのほかの品', rest) + grp('素材(基準値の6割)', raw)
-    : `<p class="note">いま${f.n}に売れる物を持っていない。${f.fav}などを作って持ってこよう。</p>`;
+  const w = fcWant(f.id), wit = w && IT[w.id];
+  const want = wit ? `<div class="fc-want">${ico(wit.id, null, { size: 'sm', sil: G.found[wit.id] === undefined })}<div style="min-width:0"><div class="t">今日、${esc(f.who)}が探している品: <b>${wit.name}</b></div><div class="sub"><b class="fc-eye">目の色が変わる品 ×${FAC_EYE}</b>・自分で作った物なら出来は問わない・${w.left > 0 ? `あと${w.left}個まで` : '今日はもう買い取った'}</div></div></div>` : '';
+  return want + (goods.length ? grp(`目の色が変わる品 ×${FAC_EYE}`, eye) + grp(`得意な品(${f.fav}・自分で作った物は ×${FAC_FAV})`, fav) + grp('壊れた武具', broken) + grp('そのほかの品', rest) + grp('素材(基準値の6割)', raw)
+    : `<p class="note">いま${f.n}に売れる物を持っていない。${f.fav}などを作って持ってこよう。</p>`);
 }
 function facOrdBody(f) {
   const o = foGet(f.id);
   if (!o) return `<p class="note">今は頼みごとはない。</p>`;
-  if (o.done) return `<p class="note">${IT[o.id].name} ×${o.qty} を届けた(工賃 ${fmt(o.pay)}G)。次の頼みごとは${o.next - G.day <= 1 ? '明日' : (o.next - G.day) + '日後'}。</p>`;
+  if (o.done) return `<p class="note">${IT[o.id].name} ×${o.qty} を届けた(代金 ${fmt(o.pay)}G)。次の頼みごとは${o.next - G.day <= 1 ? '明日' : (o.next - G.day) + '日後'}。</p>`;
   const why = foWhy(o), left = o.due - G.day, r = RC[o.rid];
   return `<div class="fo-card">${ico(o.id, null, { size: 'md', sil: G.found[o.id] === undefined })}<div class="fo-in"><div class="t"><b>${IT[o.id].name} ×${o.qty}</b> <span class="sub">${left <= 0 ? '今日まで' : left === 1 ? '明日まで' : 'あと' + left + '日'}</span></div>` +
-    `<div class="sub">材料は${f.who}が置いていく(${r.ins.map(([x, n]) => IT[x].name + '×' + n).join('・')}・一回分多め。余りはもらえる)</div>` +
-    `<div class="sub">工賃 普通 <span class="price">${fmt(foPay(o, 0))}G</span> 〜 傑作 <span class="price">${fmt(foPay(o, 3))}G</span>・失敗しても工賃は出る</div>` +
+    `<div class="sub fo-mats">材料(自分で用意): ${foMatHTML(o)}</div>` +
+    `<div class="sub">代金 普通 <span class="price">${fmt(foPay(o, 0))}G</span> 〜 傑作 <span class="price">${fmt(foPay(o, 3))}G</span>(相場どおり)・失敗しても頼まれた数はそろう</div>` +
     `<div class="fo-bs"><button class="btn pri" data-act="focraft" data-v="${f.id}"${why ? ' disabled' : ''}><b>一回でまとめて作る</b><small>${why || 'ミニゲーム・体力' + foT(o)}</small></button></div></div></div>` +
-    `<p class="note" style="font-size:12px">頼まれた数を、ミニゲーム一回・体力一回分でまとめて作る。出来は一回で決まり、良い出来ほど工賃が上がる。</p>`;
+    `<p class="note" style="font-size:12px">頼まれた数を、ミニゲーム一回・体力一回分でまとめて作る。材料は朝市で買うか、工房で作って用意する。出来は一回で決まり、良い出来ほど代金が上がる。</p>`;
 }
 function vFacPage() {
   const f = FAC[UI.facId];
@@ -23522,19 +23553,19 @@ function vFacPage() {
   const scene = `<div class="cbox market pubc facc"><div class="ss pgss solo n1"><div class="ss-back fac" style="background:#1c130c url(${imgOf(f.bg)}) 50% 60% / cover no-repeat"></div><div class="pg-row n1">${fig}</div><div class="pg-win">${line}</div></div></div>`;
   const body = tab === 'ord' ? facOrdBody(f) : facSellBody(f);
   const tip = `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。${fc ? '頼まれごとは、夜の工房の時間に作れる。' : ''}所持金 <span class="price">${fmt(G.gold)}G</span></p>`;
-  return `<div class="stack pubpage facpage"><div class="phead"><div><h1>${f.n}</h1><p class="sub" style="margin:0">${f.who}・得意: ${f.fav}・<button class="linkbtn" data-act="gotab" data-v="town">街へ戻る</button></p></div>${tabs}</div><div class="sec pubdesk" data-sec="カウンター">` + scene + `<div class="pub-body">` + body + tip + `</div></div></div>`;
+  return `<div class="stack pubpage facpage"><div class="phead"><div><h1>${f.n}</h1><p class="sub" style="margin:0">${f.who}・得意: ${f.fav}</p></div><div class="fac-hr">${tabs}<button class="btn fac-back" data-act="gotab" data-v="town"><b>街へ戻る</b></button></div></div><div class="sec pubdesk" data-sec="カウンター">` + scene + `<div class="pub-body">` + body + tip + `</div></div></div>`;
 }
 // 夜の工房: 施設の頼まれごとと、磨ける掘り出し物
 function vFacWork(off) {
   if (off) return '';
   const os = foOpenAll(), ds = digOwned(); if (!os.length && !ds.length) return '';
   const orow = ([fid, o]) => { const f = FAC[fid], why = foWhy(o);
-    return `<div class="facrow">${ico(o.id, null, { size: 'sm', sil: G.found[o.id] === undefined })}<div style="min-width:0"><div class="t">${f.who}の頼み: ${IT[o.id].name} ×${o.qty}</div><div class="sub">材料は先方持ち・工賃 ${fmt(foPay(o, 0))}〜${fmt(foPay(o, 3))}G</div></div><span class="facbtns"><button class="btn sm pri" data-act="focraft" data-v="${fid}"${why ? ' disabled' : ''}>まとめて作る</button></span></div>`; };
+    return `<div class="facrow">${ico(o.id, null, { size: 'sm', sil: G.found[o.id] === undefined })}<div style="min-width:0"><div class="t">${f.who}の頼み: ${IT[o.id].name} ×${o.qty}</div><div class="sub">${foHave(o) ? '材料はそろっている' : '材料が足りない'}・代金 ${fmt(foPay(o, 0))}〜${fmt(foPay(o, 3))}G</div></div><span class="facbtns"><button class="btn sm pri" data-act="focraft" data-v="${fid}"${why ? ' disabled' : ''}>まとめて作る</button></span></div>`; };
   const drow = it => `<div class="facrow">${ico(it.id, 0, { size: 'sm', cnt: invCount(it.id) })}<div style="min-width:0"><div class="t">${it.name}</div><div class="sub">磨くと、腕しだいで良い品に・体力1</div></div><span class="facbtns"><button class="btn sm pri" data-act="polish" data-v="${it.id}"${polWhy() ? ' disabled' : ''}>磨く</button></span></div>`;
   return `<div class="callout fcwork"><div style="min-width:0;width:100%">${os.length ? `<div class="t">施設の頼まれごと</div><div class="facrows">${os.map(orow).join('')}</div>` : ''}${ds.length ? `<div class="t"${os.length ? ' style="margin-top:6px"' : ''}>掘り出し物を磨く</div><div class="facrows">${ds.map(drow).join('')}</div>` : ''}</div></div>`;
 }
 // 確かめ用
-try { window.__fc = { FC, foGet, foPay, foRecs, foStart, foEnd, foDeliver, polResult, polStart, polEnd, digStall, digPrice, digPool, digGems, facPage, fcTalk, fcNext, fcGreet }; } catch (e) { }
+try { window.__fcw = fcWant; window.__fc = { FC, foGet, foPay, foRecs, foNeed, foHave, foStart, foEnd, foDeliver, polResult, polStart, polEnd, digStall, digPrice, digPool, digGems, facPage, fcTalk, fcNext, fcGreet }; } catch (e) { }
 
 // ---- practice.js ----
 // ===== v53b: ミニゲームの練習場(ミニゲームだけを遊ぶページ) =====
