@@ -2791,6 +2791,38 @@ body.practice #app { display: none; }
 .pg-bk { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 10px; background: rgba(0, 0, 0, .18); }
 .pg-bk.dim { opacity: .55; }
 .pg-sil { display: grid; place-items: center; width: 100%; height: 100%; font: 800 18px var(--f-display); color: #999; }
+/* ===== No.208 灯り亭: カウンターを広く・ゴズと客を一つの場面に・会話の枠は場面の上に重ねる ===== */
+.pubpage .pgss, .counter-market.pubdesk-w .pgss { height: var(--counter-art, clamp(240px, 40vh, 380px)); }
+.pgss .pg-row { bottom: 0; padding: 0 2%; gap: 0; }
+.pgss .pg-p { max-width: 30%; }
+.pgss .pg-p img { bottom: -42%; height: 150%; transition: transform .15s, filter .2s; }
+.pgss .pg-p.goz { cursor: default; }
+.pgss .pg-p.goz img { bottom: -40%; height: 146%; }
+.pgss .pg-p.dim img { filter: brightness(.5) saturate(.8) drop-shadow(0 6px 10px rgba(0, 0, 0, .55)) !important; }
+.pgss .pg-p.on img { transform: translateX(-50%) translateY(-4px); }
+.pgss .pg-pn { top: 8px; bottom: auto; }
+.pgss .pg-win { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; padding: 0 12px 10px; }
+.pgss .pg-win .msgwin { margin: 0; padding: 14px 16px 10px; background: linear-gradient(180deg, rgba(28, 22, 18, .9), rgba(16, 13, 11, .94)); }
+.pgss .pg-win .msgwin .say, .pgss .pg-win .msgwin .speech { margin: 2px 0 0; min-height: 0; font-size: 14.5px; line-height: 1.65; }
+.pgss .pg-win .msgwin .speech.narr { color: #d9c7ad; font-style: italic; }
+.pg-talkwin { cursor: pointer; }
+.pg-talkwin .speech::after { content: '▼'; }
+.cbox.pubc { margin-bottom: 8px; }
+.pg-pick { display: grid; gap: 8px; margin: 10px 0; }
+.pg-pick .pg-b { display: flex; align-items: center; justify-content: flex-start; gap: 10px; min-height: 52px; text-align: left; }
+.pg-pick .pg-b small { margin-left: auto; }
+.pg-pick .pt.sm { width: 40px; height: 40px; border-radius: 8px; overflow: hidden; flex: none; }
+@media (max-width: 560px) { .pubpage .pgss { height: 240px; } .pgss .pg-win .msgwin .say, .pgss .pg-win .msgwin .speech { font-size: 13.5px; } .pgss .pg-p { max-width: 34%; } }
+/* ===== No.209 灯り亭: 立ち絵は上半身(アップにしない)・ゴズ一人/客だけ・奥のテーブル ===== */
+.pgss .pg-p img { bottom: -12%; height: 112%; }
+.pgss.solo .pg-p.goz { max-width: 40%; }
+.pgss .pg-p.goz img { bottom: -12%; height: 112%; }
+.pgss.guest .pg-row { gap: 2%; }
+.pg-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pg-booknote { font-size: 12px; }
+.pg-backt { display: grid; justify-items: start; gap: 2px; text-align: left; margin: 0 0 8px; padding: 8px 12px; min-height: 0; height: auto; }
+.pg-backt small { font-size: 11.5px; font-weight: 600; opacity: .85; }
+@media (max-width: 560px) { .pgss .pg-p img, .pgss .pg-p.goz img { bottom: -8%; height: 104%; } }
 
 </style>
 <div id="app">
@@ -10296,7 +10328,7 @@ function diveSettle() {
   rep.value = rep.items.reduce((t, x) => t + IT[x.id].v * x.n, 0) + rep.gold;
   rep.seals = rep.items.filter(x => IT[x.id].seal).reduce((t, x) => t + x.n, 0); rep.aim = d.aim;
   // 2026-11-02: 灯り亭に、今日帰った冒険者が座る
-  try { G.pgBack = { day: G.day, ok: d.done === 'home', hurt: d.done !== 'home' || d.hp < 25, place: a.n || '', party: d.party.filter(p => !p.guest && !(advById(p.id) || {}).reg).map(p => { const m = advById(p.id) || {}; return { id: p.id, n: m.n || p.n || '冒険者', cls: m.cls || p.cls || 'warrior', sex: m.sex || p.sex || 'm', trips: m.trips || 0, item: rep.healId || rep.snackId || (p.wpn && p.wpn.id) || (p.arm && p.arm.id) || null }; }), loot: (rep.items[0] || {}).id || null }; } catch (e) { G.pgBack = null; }
+  try { G.pgBack = { day: G.day, ok: d.done === 'home', hurt: d.done !== 'home' || d.hp < 25, place: a.n || '', boss: !!(d.beat && !CH_BOSS.includes(a.id) && (G.clears || {})[a.id] === 1), bossN: d.beat ? (MON[DG[a.id].boss] || {}).n || '' : '', party: d.party.filter(p => !p.guest && !(advById(p.id) || {}).reg).map(p => { const m = advById(p.id) || {}; return { id: p.id, n: m.n || p.n || '冒険者', cls: m.cls || p.cls || 'warrior', sex: m.sex || p.sex || 'm', trips: m.trips || 0, item: rep.healId || rep.snackId || (p.wpn && p.wpn.id) || (p.arm && p.arm.id) || null }; }), loot: (rep.items[0] || {}).id || null }; } catch (e) { G.pgBack = null; }
   G.diveLast = rep; G.dive = null;
   return rep;
 }
@@ -13303,6 +13335,7 @@ function melodyAt(bar, step, fn) { let pos = 0; for (let i = 0; i < bar.length; 
 function musicKey() {
   if (!G) return 'songA';
   if (typeof UI !== 'undefined' && UI.story && UI.story.bgm && TRACKS[UI.story.bgm]) return UI.story.bgm;   // v52y: 物語の場面の曲
+  if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return 'tavern';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
   if (G.act === 'fish') return 'waterside';
   if (G.act === 'market') return 'songA';   // No.194: 朝の市場は「風の通り道」
   if (G.act === 'shop') return 'day';
@@ -13429,6 +13462,33 @@ const auUnlock = () => {
   if (AU.ctx && AU.ctx.state !== 'running') { try { AU.ctx.resume(); } catch (e) { /* ignore */ } }
 };
 ['pointerup', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, auUnlock, { capture: true, passive: true }));
+
+// No.208 (作者 2026-11-02): 灯り亭の特別な会話の曲「灯り亭の夜」。落ち着いた大人のバー
+TRACKS.tavern = {
+  bpm: 56, steps: 8, bars: 16, echo: 60 / 56 * 0.75, vol: 0.75,
+  chords: ['D2 F3 A3 C4 E4', 'A#1 A3 D4 E4', 'E2 G3 A#3 D4', 'A1 G3 C#4 A#4', 'D2 F3 A3 C4 E4', 'G2 F3 A#3 A4', 'C2 E3 A#3 A4', 'A1 G3 C#4 F4',
+           'A#1 A3 D4 E4', 'A1 G3 C#4 A#4', 'D2 F3 A3 C4 E4', 'D2 F3 A3 C4 G4', 'G2 F3 A#3 A4', 'C2 E3 A#3 D4', 'E2 G3 A#3 D4', 'D2 F3 A3 C4 E4'],
+  melody: [['R', 2, 'A4', 2, 'C5', 1, 'E5', 3], ['D5', 6, 'R', 2], ['R', 1, 'D5', 1, 'C5', 2, 'A#4', 2, 'G4', 2], ['C#5', 6, 'R', 2],
+           ['R', 2, 'F4', 1, 'A4', 1, 'C5', 2, 'E5', 2], ['D5', 3, 'A#4', 1, 'A4', 4], ['R', 2, 'G4', 2, 'A#4', 1, 'D5', 1, 'E5', 2], ['C#5', 8],
+           ['R', 2, 'D5', 1, 'E5', 1, 'F5', 4], ['E5', 3, 'C#5', 1, 'A#4', 4], ['R', 2, 'A4', 2, 'G4', 1, 'F4', 1, 'E4', 2], ['F4', 6, 'R', 2],
+           ['R', 2, 'A#4', 2, 'A4', 1, 'F4', 1, 'D4', 2], ['E4', 4, 'R', 2, 'G4', 2], ['F4', 3, 'E4', 1, 'D4', 2, 'C#4', 2], ['D4', 8]],
+  play(dest, bar, step, t, sd) {
+    const c = this.chords[bar].split(' ').map(N), sw = step % 2 ? sd * 0.2 : 0;
+    // エレピ: 和音は1拍目にゆっくり崩して、薄い弦を下に敷く
+    if (step === 0) { c.slice(1).forEach((x, i) => vBell(dest, hz(x), t + i * 0.035, sd * 7, 0.018, { pan: (i - 1.5) * 0.25, rev: 0.45, dly: 0.02 })); vPad(dest, c.slice(1, 4).map(hz), t, sd * 8, 0.008); }
+    if (step === 6 && bar % 2) c.slice(2).forEach((x, i) => vBell(dest, hz(x), t + sw + i * 0.02, sd * 2, 0.009, { pan: 0.3, rev: 0.45 }));
+    // ベース: 2つ打ち(根音と5度)、低く丸く
+    if (step === 0) vPluck(dest, hz(c[0]), t, 0.17, 1.8, 450, 0.08);
+    if (step === 4) vPluck(dest, hz(c[0] + 7), t, 0.12, 1.4, 450, 0.08);
+    if (step === 7 && bar % 4 === 3) vPluck(dest, hz(c[0] + 6), t + sw, 0.07, 0.6, 450, 0.05);
+    // ブラシ: ごく小さく
+    if (step === 2 || step === 6) vNoise(dest, t, 0.018, 0.25, 'bandpass', 2200, 0.6, 0.25);
+    if (step % 2 === 1) vNoise(dest, t + sw, 0.005, 0.07, 'highpass', 6500, 0.7, 0.1);
+    // 旋律: 低めの笛、間を大事に
+    melodyAt(this.melody[bar], step, (n, len) => { if (n !== 'R') vFlute(dest, hz(N(n)), t + sw, len * sd * 0.95, 0.045, 0.5); });
+  },
+};
+TRACK_NAME.tavern = '灯り亭の夜';
 
 // ---- ui.js ----
 // ===== UI =====
@@ -13637,7 +13697,7 @@ function fitCounterArt() {
   const msg = card.getBoundingClientRect().height - art.getBoundingClientRect().height;
   const lower = market ? desk.querySelector('.market-bottom') : desk.querySelector('.ws-offer > .offer');
   const reserve = lower ? lower.scrollHeight : 0;
-  if (desk.classList.contains('pubdesk-w')) { desk.style.setProperty('--counter-art', Math.floor(Math.max(170, Math.min(250, innerHeight - 680))) + 'px'); return; }   // No.200b: 灯り亭のカウンターは品書きの長さで大きさを変えない(店先と同じく一つの大きさ)
+  if (desk.classList.contains('pubdesk-w')) { desk.style.setProperty('--counter-art', Math.floor(Math.max(240, Math.min(470, (panel.getBoundingClientRect().height || innerHeight) * 0.46))) + 'px'); return; }   // No.208 (作者): カウンターを右の枠の半分ほどに(どの施設も同じ大きさにする予定)   // No.200b: 灯り亭のカウンターは品書きの長さで大きさを変えない(店先と同じく一つの大きさ)
   const strip = market ? desk.querySelector('.shops').getBoundingClientRect().height + 10 : 0;
   const room = panel.getBoundingClientRect().bottom - parseFloat(getComputedStyle(panel).paddingBottom) - desk.getBoundingClientRect().top;
   // The shop scene has one size for every transaction. Compact controls below it.
@@ -14703,36 +14763,38 @@ function pubRow() {
 // 今日のおすすめ(2皿・2割引き)と、本日のゴズの気まぐれ(何が出るか分からない一皿)。ゴズの頼みごとはなくした(作者 10-29)
 function vPubPage() {
   const night = G.act === 'work', dined = G.dined === G.day, drank = G.drank === G.day, full = night && G.work >= workMax();
-  const tab = UI.pubTab === 'job' ? 'job' : UI.pubTab === 'guest' ? 'guest' : 'goz', rec = pubRecIds(), tonight = pubTonight();
+  const tab = UI.pubTab === 'job' ? 'job' : UI.pubTab === 'guest' ? 'guest' : 'goz', rec = pubRecIds(), tonight = pubTonightAll();
+  const pick2 = typeof pgDishPick === 'function' && pgDishPick() && !pgS().night.treat;
+  const favK = id => night && pgOpen() ? pgSeats().ks.find(k => k !== 'adv' && PG[k] && PG[k].fav === id && pgS().fav[k]) : null;   // No.209 (作者): その夜座っている客の好物で、好物を知っていれば印   // No.208: 客がいる夜は、料理を隣の人に御馳走できる
   const card = x => { const isF = x.k === 'food', done = isF ? dined : drank, price = pubPrice(x), heal = pubHeal(x), bn = x.bonus ? PUB_BONUS[x.bonus] : null, isRec = rec.includes(x.id);
-    const off = !night || done || G.gold < price || (isF && full && !bn);
-    const why = !off ? '' : !night ? '夜に開く' : done ? (isF ? '今夜はもう食べた' : '今夜はもう飲んだ') : G.gold < price ? 'お金が足りない' : '体力が満タン';   // No.201b: 選べない時は理由を出す
-    return `<button class="pubcard menu${bn ? ' bonus' : ''}${isRec ? ' rec' : ''}" data-act="pubeat" data-id="${x.id}"${off ? ' disabled' : ''}>${pubIcon(x)}<span class="pc-b">${isRec ? '<span class="pc-rec">おすすめ・2割引き</span>' : `<span class="pc-cat">${(PUB_CATS.find(c => c[0] === pubCat(x)) || [, ''])[1]}</span>`}<b>${x.n}</b><span class="pc-d">${x.d}</span><span class="pc-fx">${heal ? `<i>体力+${heal}</i>` : ''}${bn ? `<i class="bn" title="${bn.t}">${bn.n}</i>` : ''}${why ? `<i class="pc-why">${why}</i>` : ''}</span></span><span class="price pc-p">${fmt(price)}G</span></button>`; };
-  const whimOff = !night || dined || G.gold < pubWhimPrice() || full;
-  const whim = `<button class="pubcard menu whim" data-act="pubwhim"${whimOff ? ' disabled' : ''}><span class="ic md pubic whim-q">?</span><span class="pc-b"><span class="pc-rec">ゴズの気まぐれ</span><b>品書きにない一皿</b><span class="pc-d">何が出るかはお楽しみ。たまに大当たり</span></span><span class="price pc-p">${fmt(pubWhimPrice())}G</span></button>`;
+    const selfOff = !night || done || G.gold < price || (isF && full && !bn), off = selfOff && !(isF && pick2 && G.gold >= price);
+    const why = !selfOff ? '' : !night ? '夜に開く' : done ? (isF ? '今夜はもう食べた' : '今夜はもう飲んだ') : G.gold < price ? 'お金が足りない' : '体力が満タン';
+    const fk = isF ? favK(x.id) : null, favOf = fk ? `${esc(pgName(PG[fk]))}の好物` : '';   // No.201b: 選べない時は理由を出す
+    return `<button class="pubcard menu${bn ? ' bonus' : ''}${isRec ? ' rec' : ''}" data-act="${isF ? 'pubdish' : 'pubeat'}" data-id="${x.id}"${off ? ' disabled' : ''}>${pubIcon(x)}<span class="pc-b">${isRec ? '<span class="pc-rec">おすすめ・2割引き</span>' : favOf ? `<span class="pc-rec">${favOf}</span>` : `<span class="pc-cat">${(PUB_CATS.find(c => c[0] === pubCat(x)) || [, ''])[1]}</span>`}<b>${x.n}</b><span class="pc-d">${x.d}</span><span class="pc-fx">${heal ? `<i>体力+${heal}</i>` : ''}${bn ? `<i class="bn" title="${bn.t}">${bn.n}</i>` : ''}${why ? `<i class="pc-why">${why}</i>` : ''}</span></span><span class="price pc-p">${fmt(price)}G</span></button>`; };
   // ゴズの一言
   const line = !night ? '「まだ仕込みの最中だ。夜になったら来な」' : dined && drank ? '「今夜はもう食って飲んだろう。また明日来な」'
     : dined ? '「今夜はもう食ったろう。一杯どうだ」'
     : rec.length ? `「よう、店主。今夜は${PUB_BY[rec[0]].n}がうまいぞ。${pick(['', '安くしとく。', '腹、減ってんだろ。'])}」` : `「${pick(PUB.greet)}」`;
   const talk = night && G.day % 3 === 0 ? `<p class="pub-talk">${pick(PUB.masterTalk)}</p>` : '';
-  const scene = `<div class="cbox adv market pubc">` + counterScene({ img: chibiURL({ ch: PUB.master.ch, img: PUB.master.img }, night ? 'smile' : 'normal'), ch: true, alt: PUB.master.n, back: 'pub', goods: '' }) +
-    `<div class="msgwin"><div class="nameplate"><b>${PUB.master.n}</b><span>${PUB.master.sub}</span></div><p class="say">${line}</p>${talk}</div></div>`;
+  // No.208 (作者): カウンターの場面は一つ(ゴズと座っている客)。会話の枠は場面の上に重ねる
+  const gl = tab === 'guest' ? pgGozLine() : line;
+  const scene = `<div class="cbox market pubc">` + pgScene(`<div class="msgwin"><div class="nameplate"><b>${PUB.master.n}</b><span>${PUB.master.sub}</span></div><p class="say">${gl}</p>${tab === 'guest' ? '' : talk}</div>`, tab) + `</div>`;
   // No.200b (作者): 札は右上へ(店の「市場・店先・工房」と同じ形)。下を広く使う。「ほかの客」もここに並べる予定
-  const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="灯り亭の中"><button class="stab${tab === 'goz' ? ' on' : ''}" data-act="pubtab" data-v="goz" role="tab" aria-selected="${tab === 'goz'}"><b>品書き</b><small>ゴズの料理</small></button><button class="stab${tab === 'job' ? ' on' : ''}" data-act="pubtab" data-v="job" role="tab" aria-selected="${tab === 'job'}"><b>バイト</b><small>体力1</small></button><button class="stab${tab === 'guest' ? ' on' : ''}" data-act="pubtab" data-v="guest" role="tab" aria-selected="${tab === 'guest'}"><b>ほかの客</b><small>${night ? pgSeats().ks.length + '人' : '夜に来る'}</small></button></div>`;
+  const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="灯り亭の中"><button class="stab${tab === 'goz' ? ' on' : ''}" data-act="pubtab" data-v="goz" role="tab" aria-selected="${tab === 'goz'}"><b>品書き</b><small>ゴズの料理</small></button><button class="stab${tab === 'job' ? ' on' : ''}" data-act="pubtab" data-v="job" role="tab" aria-selected="${tab === 'job'}"><b>バイト</b><small>体力1</small></button><button class="stab${tab === 'guest' ? ' on' : ''}" data-act="pubtab" data-v="guest" role="tab" aria-selected="${tab === 'guest'}"><b>ほかの客</b><small>${!pgOpen() ? 'ギルドの後' : night ? pgSeats().ks.length + '人' : '夜に来る'}</small></button></div>`;
   let body = '';
   if (tab === 'guest') body = vPgBody();
   else if (tab === 'goz') {
     const recL = rec.map(id => PUB_BY[id]).filter(Boolean), rest = tonight.filter(x => !rec.includes(x.id));
     const grp = (h, list) => list.length ? `<div class="pb-g">${h}</div><div class="pubmenu book">${list.map(card).join('')}</div>` : '';
     body = `<div class="pub-book"><div class="pb-h"><b>今夜の品書き</b><span class="sub">料理はひと晩に一皿${dined ? '(今夜は済)' : ''}・飲み物はひと晩に一杯${drank ? '(今夜は済)' : ''}・所持金 <span class="price">${fmt(G.gold)}G</span></span></div>` +
-      `<div class="pb-g">今日のおすすめ・ゴズの気まぐれ</div><div class="pubmenu book">${whim}${recL.map(card).join('')}</div>` + (night && pgDishGuest() && pgDish(pgDishGuest()) ? `<div class="pb-g">今夜の一皿(ほかの客)</div><div class="pubmenu book"><button class="pubcard menu rec" data-act="pubtab" data-v="guest">${pubIcon(pgDish(pgDishGuest()))}<span class="pc-b"><span class="pc-rec">${pgS().fav[pgDishGuest().k] ? esc(pgName(pgDishGuest())) + 'の好物' : '誰かの好物らしい'}</span><b>${pgDish(pgDishGuest()).n}</b><span class="pc-d">「ほかの客」で、隣の人に御馳走できる</span></span><span class="price pc-p">${fmt(pubPrice(pgDish(pgDishGuest())))}G</span></button></div>` : '') +
+      (recL.length ? `<div class="pb-g">今日のおすすめ</div><div class="pubmenu book">${recL.map(card).join('')}</div>` : '') + (false && pgDishGuest() && pgDish(pgDishGuest()) ? `<div class="pb-g">今夜の一皿(ほかの客)</div><div class="pubmenu book"><button class="pubcard menu rec" data-act="pubtab" data-v="guest">${pubIcon(pgDish(pgDishGuest()))}<span class="pc-b"><span class="pc-rec">${pgS().fav[pgDishGuest().k] ? esc(pgName(pgDishGuest())) + 'の好物' : '誰かの好物らしい'}</span><b>${pgDish(pgDishGuest()).n}</b><span class="pc-d">「ほかの客」で、隣の人に御馳走できる</span></span><span class="price pc-p">${fmt(pubPrice(pgDish(pgDishGuest())))}G</span></button></div>` : '') +
       `<div class="pb-g">今夜の料理と飲み物</div><div class="pubmenu book">${PUB_CATS.flatMap(([k]) => rest.filter(x => pubCat(x) === k)).map(card).join('')}</div>` + `</div>` +
       `<p class="note" style="font-size:12px">品書きは毎晩かわる。料理を食べると、流行と明日の特需の噂が聞けて、冒険者も1歩進む。</p>`;
   } else {
     body = `<div class="sub" style="margin-top:6px">「手が空いてるなら、ちょいと手伝ってくれ」・体力1・材料いらず・お礼 約${fmt(jobBase())}G</div><div class="pubmenu jobs">${jobsToday().map(j => { const done = jobDone(j.k), off = !night || done || G.work < 1;
       return `<button class="pubcard job" data-act="pubjob" data-v="${j.k}"${off ? ' disabled' : ''}>${ico(j.dish, 0, { size: 'md' })}<span class="pc-b"><b>${j.n}</b><span class="pc-d">${j.d}</span><span class="pc-fx"><i class="bn">${done ? '今夜は済' : 'ミニゲーム'}</i></span></span><span class="pc-p">体力1</span></button>`; }).join('')}</div>`;
   }
-  return `<div class="stack pubpage"><div class="phead"><div><h1>灯り亭</h1><p class="sub" style="margin:0">${PUB.master.n}の酒場${night ? '' : '・夜に開く'}</p></div>${tabs}</div><div class="sec pubdesk" data-sec="カウンター">` + (tab === 'guest' && night ? `<div class="cbox pubc pgbox">${pgCounter()}</div>` : scene) + `<div class="pub-body">` + body + `</div></div></div>`;
+  return `<div class="stack pubpage"><div class="phead"><div><h1>灯り亭</h1><p class="sub" style="margin:0">${PUB.master.n}の酒場${night ? '' : '・夜に開く'}</p></div>${tabs}</div><div class="sec pubdesk" data-sec="カウンター">` + scene + `<div class="pub-body">` + body + `</div></div></div>`;
 }
 // No.198b (2026-11-01 作者): 灯り亭は窓ではなく、店先や朝市と同じように右の画面に出す
 function pubSheet() { closeSheet(true); UI.tab = 'pub'; render(); }
@@ -15432,8 +15494,10 @@ function act0(a, d) {
     case 'eat': { const it = IT[d.id], n = eat(d.id); if (n) { sfx('good'); toast(`${ico(d.id, 0, { size: 'sm' })}<div><div class="t1">体力 +${n}</div>${it.name}で元気が出た</div>`, 'lv', 1800); } if (UI.sheet && UI.sheet.ownmeal) { render(); ownMealSheet(); return; } break; }
     case 'ownmeal': ownMealSheet(); sfx('tap'); return;
     case 'dine': { if (UI.sheet && UI.sheet.pub) closeSheet(true); const r = dine(); if (r) { sfx('door'); queueSheet(`<div class="celebrate"><div class="pop">${portrait({ cls: 'villager', ch: PUB.master.ch, img: PUB.master.img })}</div><div class="kicker">灯り亭で夕食 体力+${r.gain}</div><h2>${PUB.master.n}</h2><p style="text-align:left">「${r.tip}」</p>${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}${(r.lines || []).some(l => l.k === 'dg') ? '<p class="note" style="font-size:11.5px;margin:0">ダンジョンの噂は3日ほど続く。その場所に探索を出すと、噂の魔物や品に出会いやすい。</p>' : ''}<button class="btn pri big" data-act="sclose" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); } break; }
+    case 'pubdish': if (pgDishPick() && !pgS().night.treat) { sfx('tap'); pgDishSheet(d.id); return; }   // No.208: 客がいる夜は「自分で食べる/隣の人に出す」を選ぶ
+    // falls through
     case 'pubeat': { const r = pubOrder(d.id); if (!r) return; closeSheet(true); sfx(r.item.k === 'food' ? 'door' : 'coin');
-      queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
+      queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.jack ? '<p style="text-align:left">「今夜のは出来がいい。腹いっぱい食ってけ」<br><b>体力がたっぷり戻った。</b></p>' : ''}${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
     case 'sleepno': closeSheet(); return;
     case 'recsort': { UI.recSort = REC_SORT.some(x => x[0] === d.v) ? d.v : 'todo'; sfx('tap'); break; }
     case 'slot': slotSwitch(+d.v); return;
@@ -15451,11 +15515,11 @@ function act0(a, d) {
     case 'pubtab': UI.pubTab = d.v; sfx('tap'); if (d.v === 'guest') setTimeout(() => { try { pgGozCheck(); } catch (e) { console.error(e); } }, 0); break;
     case 'pgtalk': sfx('tap'); pgTalk(d.v); return;
     case 'pgbuy': sfx('coin'); pgBuy(d.v); return;
-    case 'pgtreat': sfx('coin'); pgTreat(d.v); return;
+    case 'pgtreat': closeSheet(true); sfx('coin'); pgTreat(d.v, d.id); return;
+    case 'pgnext': sfx('tap'); pgLineNext(); return;
+    case 'pgback': sfx('tap'); pgBack(); return;
     case 'pgbook': sfx('tap'); pgBookSheet(); return;
     case 'pubcat': UI.pubCat = d.v; sfx('tap'); break;
-    case 'pubwhim': { const r = pubWhim(); if (!r) return; closeSheet(true); sfx(r.jack ? 'good' : 'door');
-      queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">本日のゴズの気まぐれ${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${r.item.n}</h2><p style="text-align:left">${r.jack ? '「今夜は当たりだ。腹いっぱい食ってけ」<br><b>大当たり! 体力がたっぷり戻った。</b>' : `「今夜の気まぐれは、こいつだ。${r.item.d}」`}</p>${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
     case 'pubjob': startJob(d.v); return;
     case 'mealsheet': mealSheet(); sfx('tap'); return;
     case 'mealpick': mealPickSheet(d.v); sfx('tap'); return;
@@ -15801,15 +15865,10 @@ function pubTonight() {
 }
 // 今日のおすすめ(今夜の品書きの料理から2皿・日で決まる)
 function pubRecIds() { if (!G) return []; const f = pubTonight().filter(x => x.k === 'food'); if (!f.length) return []; let s = ((G ? G.day : 1) * 2246822519) >>> 0; const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; const a = f.slice(), out = []; while (a.length && out.length < 2) out.push(a.splice(Math.floor(r() * a.length), 1)[0].id); return out; }
-// 本日のゴズの気まぐれ: 品書きにない一皿。頼むまで何が出るか分からない。たまに大当たり(たっぷり回復)
-const pubWhimPrice = () => Math.max(5, Math.round(dinnerCost() * 1.3 / 5) * 5);
-function pubWhim() {
-  if (G.act !== 'work' || G.dined === G.day || G.gold < pubWhimPrice()) return null;
-  const pool = PUB_MENU.filter(x => x.k === 'food' && x.st <= Math.min(4, G.stage + 1)), x = pick(pool);
-  const jack = Math.random() < 0.15, mult = jack ? 3.2 : 1 + Math.random();
-  const r = dine({ cost: pubWhimPrice(), heal: Math.round(dinnerHeal() * mult) }); if (!r) return null;
-  G.pubVisits = (G.pubVisits || 0) + 1; r.item = x; r.whim = true; r.jack = jack; return r;
-}
+// No.208 (作者): 「ゴズの気まぐれ」はなくした(中身の見えない皿は頼まない)。代わりに、おすすめの皿がたまに「今夜は出来がいい」(回復がたっぷり)
+const PUB_REC_JACK = 0.15;
+// 今夜の品書き+ほかの客の好物(ゴズが一人分だけ仕込む)。おすすめの選び方は pubTonight のまま変えない
+function pubTonightAll() { const t = pubTonight(); try { const g = typeof pgDishGuest === 'function' ? pgDishGuest() : null, x = g && PUB_BY[g.fav]; if (x && !t.includes(x)) return t.concat([x]); } catch (e) { /* 客なし */ } return t; }
 // Dedicated tavern assets: never resolve these IDs through the inventory registry.
 // Keep procedural icons available for menus without a registered PNG.
 const pubPNGKey = x => 'pub_' + x.id;
@@ -15818,9 +15877,9 @@ const pubIcon = x => `<img class="ic md pubic" data-pub-icon="${x.id}" src="${pu
 // eat (once a night) or drink (once a night). Returns the dine() result with the bonus line, or null
 function pubOrder(id) {
   const x = PUB_BY[id]; if (!x || G.act !== 'work') return null;
-  if (!pubTonight().includes(x)) return null;   // No.200b: 今夜の品書きにある物だけ
+  if (!pubTonightAll().includes(x)) return null;   // No.200b: 今夜の品書きにある物だけ(No.208: ほかの客の好物も)
   let r;
-  if (x.k === 'food') { r = dine({ cost: pubPrice(x), heal: pubHeal(x) }); if (!r) return null; }
+  if (x.k === 'food') { const jack = pubRecIds().includes(x.id) && Math.random() < PUB_REC_JACK; r = dine({ cost: pubPrice(x), heal: jack ? Math.max(pubHeal(x) * 2, Math.round(dinnerHeal() * 3)) : pubHeal(x) }); if (!r) return null; r.jack = jack; }
   else {
     if (G.drank === G.day || G.gold < pubPrice(x)) return null;
     G.gold -= pubPrice(x); G.drank = G.day; const before = G.work; G.work = Math.min(workMax(), G.work + pubHeal(x));
@@ -18437,7 +18496,7 @@ const DICT = [
   { k: 'craft', n: '作る(ミニゲーム)', t: ['作るたびに、短いミニゲームがどれかひとつ出る(13種類)。最初に大きく出る一言(「叩け!」「注げ!」など)が合図。結果は失敗・成功・会心の3つ。成功なら完成、失敗は体力-1(素材は残るが、まれにだめになる)。会心なら良品以上が確定する。', '難しい品ほど判定が狭く速い。会心を3回ためると「集中」で体力が1戻る。', '設定で「製作ごと(前の形)」や「かんたん(前のゲージ)」にもできる。'] },
   { k: 'auto', n: 'おまかせ・まとめて作る・その場で作る', t: ['おまかせ:一度ミニゲームで作ったレシピは、ミニゲームなしで作れる(普通の品・失敗なし)。体力と時間はミニゲームと同じだけ使う。', 'まとめて作る:工房の「建設と注文に足りない品」から、一度作ったレシピを、途中の材料も含めて自動で作る。', 'その場で作る:店先で、在庫がない品を欲しがる客に、素材があればその場で作って渡せる(今夜の体力を前借りする・時計が30分進む)。'] },
   { k: 'quality', n: '品質と熟練', t: ['品質は 普通・良品・上質・傑作 の4つ。良い品ほど高く売れる。良品以上を求める注文もある。', '品質はくじ引きで、スキル・工房の設備・熟練で良い品が出やすくなる。インゴットなどの素材には品質がなく、完成品を材料にすると、その品質が引き継がれる。', '熟練:同じレシピを作るほど上がる(3・10・25・50回で★が増える)。レシピを開くと見られる。'] },
-  { k: 'stamina', n: '体力と食事・灯り亭', t: ['工房の作業で体力が減り、毎晩工房に入ると満タンに戻る。はじめは8で、店の増築・村長の増築許可・スキル(体の道)で増える。', '作った料理や薬を食べると回復する(料理と薬を合わせて1日3種類まで。同じ品は1日1回)。', '灯り亭の夕食は別枠で1晩に1回(お金がかかる)。体力が戻り、流行の噂も聞ける。品書きから好きな一皿を選べて、皿ごとに値段と回復がちがう。今日のおすすめは2割引き、本日のゴズの気まぐれは何が出るか分からない。バイトもできる。'] },
+  { k: 'stamina', n: '体力と食事・灯り亭', t: ['工房の作業で体力が減り、毎晩工房に入ると満タンに戻る。はじめは8で、店の増築・村長の増築許可・スキル(体の道)で増える。', '作った料理や薬を食べると回復する(料理と薬を合わせて1日3種類まで。同じ品は1日1回)。', '灯り亭の夕食は別枠で1晩に1回(お金がかかる)。体力が戻り、流行の噂も聞ける。品書きから好きな一皿を選べて、皿ごとに値段と回復がちがう。今日のおすすめは2割引きで、たまに「今夜は出来がいい」と体力がたっぷり戻る。冒険者ギルドができると、ほかの客も座るようになり、品書きの皿を隣の人に御馳走できる。バイトもできる。'] },
   { k: 'appraise', n: '鑑定', t: ['封印された箱や謎の品は、夜の工房の「鑑定」で開ける。箱を開けると中身の影が一瞬だけ映るので、覚えた形の品を選ぶ(影合わせ)。外すと作業1を使い、箱はそのまま残る。2秒以内に当てると会心。', '壊れた武具は、工房の鍛冶で直せる(壊れた武具+インゴット)。街の鍛冶通りでも少し高く引き取ってもらえる。'] },
   { k: 'skill', n: 'スキル盤', t: ['店主の画面。真ん中から 職人・商い・目利き・冒険・体 の五つの道がのびていて、習得した節のとなりから選ぶ。◆鍵の節は探索のレアをひとつ差し出す、⬢要の節は遊び方が変わる。', 'ポイントは、レベルが上がる・肩書が変わる・探索のレアを初めて手に入れる・ぬしを初めて倒す・常連さんの物語を見届ける・図鑑の節目・初めての傑作で増える。1回目の振り直しは無料。'] },
   { k: 'upgrade', n: '工房の設備と店の増築', t: ['工房の設備(店主の画面):鍛冶・錬金・調理・筆写の道具をお金で良くする。判定が広がり、良い品が出やすくなる。', '店の増築(街の「わが店」):作業力が増え、朝市の品数とお客さんも増える。章が進むと、次の増築ができる。'] },
@@ -22260,6 +22319,21 @@ adv smile 「……そうだな。帰り道の分、持たせてくれてたも�
   cls: { rookie: '次は、もうちょっと奥まで行けそうな気がするんだ!', hunter: '獲物の足跡はな、帰り道を教えてくれる。……あんたの店の地図ほどじゃないがな',
     warrior: '斧の刃こぼれ、また頼む。……今日は三匹ぶん、こぼれた', mage: '魔力が空っぽです……あ、花茶、ありがとうございます……', dwarf: '迷宮の石は、鳴りが悪い。うちの山とは大違いだ',
     knight: '仲間の前に立つのが仕事だ。……帰ってくるまでが、な', elf: '森の外の夜は、星がうるさい。……でも、ここの灯りは、静かでいい', dragoon: '空から見ると、この町の灯りは、道しるべみたいに見える' },
+  // No.209: 特別な夜(初めて灯り亭に来た夜・採集地のボスを初めて倒した夜)
+  first: [`
+adv surprise 「ここが灯り亭か。ギルドの連中が、帰ったらまずここだって言うもんでな」
+gozu smile 「よく帰ったな。座りな」
+adv smile 「……帰ってくるってのは、いいもんだな」`, `
+adv normal 「初めて潜って、初めて帰ってきた。……足が、まだ笑ってる」
+gozu smile 「笑ってるうちは、上等だ」
+adv smile 「へへ。店主、{item}、ちゃんと役に立ったぜ」`],
+  boss: [`
+adv smile 「{boss}を倒してきた。……正直、最後は足が震えてた」
+gozu smile 「震えて、それでも帰ってきた。それで十分だ」
+adv smile 「ああ。今夜は、いい酒になりそうだ」`, `
+adv normal 「{place}の奥のやつ……{boss}な。仲間と、なんとか倒した」
+owner normal 「・・・」
+adv smile 「何も言わねえけど、店主の品があったからだ。……それだけ、言いに来た」`],
   buy: `
 adv smile 「おっ、気前がいいな店主。じゃあ、これ持ってけ。{loot}だ。重くてかなわねえ」`,
 };
@@ -22380,9 +22454,9 @@ nene smile 「……えへへ。じゃあ、もっと運んでいいよ!」` },
 //         pair:{i:1} / goz:{章:1} / pend:[お返し待ち] / seat:{day,ks,dish} / last:[前の晩の顔ぶれ] / night:{day,talk,buy,treat} / cave }
 function pgS() {
   const p = G.pg = G.pg || {};
-  for (const k of ['fav', 'ep', 'ts', 'treat', 'met', 'pair', 'goz']) p[k] = p[k] || {};
+  for (const k of ['fav', 'ep', 'ts', 'treat', 'met', 'pair', 'goz', 'advMet']) p[k] = p[k] || {};
   p.pend = p.pend || []; p.last = p.last || [];
-  if (!p.night || p.night.day !== G.day) p.night = { day: G.day, talk: {}, buy: {}, treat: null };
+  if (!p.night || p.night.day !== G.day) p.night = { day: G.day, talk: {}, buy: {}, treat: null, back: 0 };
   return p;
 }
 const pgv = (v, ...a) => typeof v === 'function' ? v(...a) : v;
@@ -22392,6 +22466,12 @@ const pgSp = g => pgv(g.sp);
 const pgSub = g => pgv(g.sub) || '';
 const pgDrink = g => PUB_BY[pgv(g.drink)] || null;
 const pgDish = g => PUB_BY[g.fav] || null;
+// 冒険者の特別な夜: ボスを初めて倒した(隊の先頭)/まだ灯り亭に来ていない人がいる。席を決める時に一度だけ見る
+function pgAdvSpecial() {
+  if (!pgBackToday()) return null; const b = G.pgBack, p = pgS();
+  if (b.boss && b.ok) return { i: 0, why: 'boss' };
+  const i = b.party.findIndex(a => !p.advMet[a.id]); return i >= 0 && b.ok ? { i, why: 'first' } : null;
+}
 const pgAdv = () => { const b = G.pgBack; if (!pgBackToday()) return null; const s = pgS().seat; return b.party[((s && s.adv) || 0) % b.party.length]; };
 function pgPic(g, ex) { const sp = pgSp(g); if (sp === 'adv') { const a = pgAdv(); return a ? spkPic('adv', ex || 'normal', { adv: { cls: a.cls, sex: a.sex, n: a.n } }) : null; } return spkPic(sp, ex || 'normal'); }
 // 次に見られる夜の話(過ぎた話は飛ばす)。無ければ -1
@@ -22404,20 +22484,24 @@ function pgEpNext(g) {
 const pgEpLeft = g => g.eps.length - Math.min(g.eps.length, pgS().ep[g.k] || 0);
 const pgWaiting = g => !!g.reg && pgWait(g.reg, (G.reg || {})[g.reg] || 0);
 // 今夜座る人(日で決まる)と、今夜の一皿(座っている一人の好物)
+// No.208 (作者): ギルド出張所ができるまで「ほかの客」は来ない(序盤は村長ばかり座ってしまうため)
+const pgOpen = () => typeof guildOpen === 'function' && guildOpen();
 function pgSeats() {
-  const p = pgS(); if (p.seat && p.seat.day === G.day) return p.seat;
+  const p = pgS(); if (!pgOpen()) return { day: G.day, ks: [], dish: null, adv: 0 };
+  if (p.seat && p.seat.day === G.day && !!p.seat.bk === pgBackToday()) return p.seat;   // 探索から帰ったら席を決め直す
   let s = ((G.day * 7919 + 31) * 2654435761) >>> 0; const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   if (G.trend === 'cavein') p.cave = 1;   // 落盤の週(ガンツは来ない。次の週に夜の話2)
-  const n = G.stage >= 2 ? 3 : 2, out = [];
-  let adv = 0; if (pgBackToday()) { out.push('adv'); adv = Math.floor(r() * G.pgBack.party.length); }
-  const last = (p.seat && p.seat.ks) || p.last || [];
+  const n = G.stage >= 1 ? 3 : 2, out = [];   // No.209 (作者): 第1章は2人・第2章から3人
+  // No.209 (作者): 冒険者がカウンターに座るのは特別な夜だけ(その人が初めて灯り亭に来る夜/採集地のボスを初めて倒した夜)。ほかの夜は奥のテーブル
+  let adv = 0, advWhy = ''; const sp = pgAdvSpecial(); if (sp) { out.push('adv'); adv = sp.i; advWhy = sp.why; p.advMet[G.pgBack.party[sp.i].id] = 1; }
+  const last = (p.seat && p.seat.day === G.day ? p.last : p.seat && p.seat.ks) || p.last || [];
   const el = PG_LIST.filter(g => !g.adv && pgSafe(g.sit));
-  const score = g => (pgWaiting(g) ? 6 : 0) + (pgEpNext(g) >= 0 && !p.treat[g.k] ? 3 : pgEpNext(g) >= 0 ? 2 : 0) + (last.includes(g.k) ? -5 : 0) + r() * 4 * g.w;
+  const score = g => (pgWaiting(g) ? 6 : 0) + (pgEpNext(g) >= 0 && !p.treat[g.k] ? 3 : pgEpNext(g) >= 0 ? 2 : 0) + (last.includes(g.k) ? -9 : 0) + r() * 4 * g.w;
   const order = el.map(g => [g, score(g)]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
   let mk = 0;
   for (const g of order) {
     if (out.length >= n) break;
-    if (g.mk && mk) continue;
+    if (g.mk && mk >= (n >= 3 ? 2 : 1)) continue;   // No.209: 3席の夜は朝市の店主が2人まで
     if ((g.k === 'mina' && out.includes('clara')) || (g.k === 'clara' && out.includes('mina'))) continue;
     out.push(g.k); if (g.mk) mk++;
   }
@@ -22426,41 +22510,59 @@ function pgSeats() {
   const first = cand.filter(k => !p.treat[k] || pgEpNext(PG[k]) >= 0);
   const pool = first.length ? first : cand;
   const dish = pool.length ? pool[Math.floor(r() * pool.length)] : null;
-  p.last = last; p.seat = { day: G.day, ks: out, dish, adv };
+  p.last = last; p.seat = { day: G.day, ks: out, dish, adv, advWhy, bk: pgBackToday() };
   return p.seat;
 }
 const pgSeatOf = k => pgSeats().ks.includes(k);
 const pgDishGuest = () => { const s = pgSeats(); return s.dish ? PG[s.dish] : null; };
 // 値段
 const pgBuyPrice = g => { const d = pgDrink(g); return d ? pubPrice(d) : Math.max(5, Math.round(dinnerCost() * 0.35 / 5) * 5); };
-function pgTreatDish(g) { if (g.adv) return PUB_BY.p_adventbento; const dg = pgDishGuest(); if (dg && dg.k === g.k) return pgDish(g); const f = pubTonight().filter(x => x.k === 'food' && pubCat(x) !== 'big').sort((a, b) => pubPrice(a) - pubPrice(b)); return f[0] || pgDish(g); }   // 好物でない夜は、今夜の品書きのいちばん手ごろな皿
-const pgOwnerEats = () => G.dined !== G.day;
-const pgTreatPrice = g => { const x = pgTreatDish(g); const one = x ? pubPrice(x) : dinnerCost(); return one * (pgOwnerEats() ? 2 : 1); };
-const pgIsFav = g => { const dg = pgDishGuest(); return !!dg && dg.k === g.k && !g.adv; };
+// No.208 (作者): 御馳走は品書きから選ぶ。相手の分だけ払う(店主は同じ物を食べなくていい)
+const pgTreatPrice = x => x ? pubPrice(x) : dinnerCost();
+const pgIsFavDish = (g, x) => !!x && !g.adv && g.fav === x.id;
 // できない理由(空ならできる)
-function pgWhy(g, what) {
+function pgWhy(g, what, x) {
   const p = pgS(); if (G.act !== 'work') return '夜に開く';
   if (what === 'talk') return p.night.talk[g.k] ? '今夜は話した' : '';
-  if (what === 'buy') return p.night.buy[g.k] ? '今夜はおごった' : G.gold < pgBuyPrice(g) ? 'お金が足りない' : '';
-  if (what === 'treat') return p.night.treat ? (p.night.treat === g.k ? '今夜は御馳走した' : '御馳走はひと晩に一人') : G.gold < pgTreatPrice(g) ? 'お金が足りない' : '';
+  if (what === 'buy') return p.night.buy[g.k] ? '今夜はおごった' : Object.keys(p.night.buy).length ? '一杯はひと晩に一人' : G.gold < pgBuyPrice(g) ? 'お金が足りない' : '';   // No.208 (作者): 一杯もひと晩に一人
+  if (what === 'treat') return p.night.treat ? (p.night.treat === g.k ? '今夜は御馳走した' : '御馳走はひと晩に一人') : G.gold < pgTreatPrice(x) ? 'お金が足りない' : '';
   return '';
 }
 // ---------- 会話を流す ----------
 function pgFill(t, g) {
   const a = g && g.adv ? pgAdv() : null, b = G.pgBack || {};
   return t.replace(/\{name\}/g, a ? a.n : '').replace(/\{place\}/g, b.place || '迷宮').replace(/\{item\}/g, a && a.item && IT[a.item] ? IT[a.item].name : 'あんたの店の薬')
-    .replace(/\{loot\}/g, b.loot && IT[b.loot] ? IT[b.loot].name : '拾い物');
+    .replace(/\{boss\}/g, b.bossN || 'ぬし').replace(/\{loot\}/g, b.loot && IT[b.loot] ? IT[b.loot].name : '拾い物');
 }
-function pgPlay(txt, g, done) {
+// No.208 (作者): ふだんの会話はカウンターの場面の中で(場面を切り替えない)。特別な会話(初めての夜・夜の話・章ごとのゴズの話)だけ場面を切り替え、曲は「灯り亭の夜」
+function pgPlay(txt, g, done, special) {
+  if (UI.pgLine) { const q0 = UI.pgLine; UI.pgLine = null; if (q0.done) try { q0.done(); } catch (e) { console.error(e); } }   // 途中で次の会話を始めたら、前のお返しの知らせは先に出す
   if (UI.story || !txt || storyOff()) { if (done) done(); return; }
   const a = g && g.adv ? pgAdv() : null;
-  STORY.__pg = { id: '__pg', lines: storyParse('@bg bg_pub\n' + pgFill(txt, g)) };
+  if (!special && UI.tab === 'pub') {
+    const L = storyParse(pgFill(txt, g)).filter(l => l.t || l.act);
+    if (!L.length) { if (done) done(); return; }
+    UI.pgLine = { L, i: 0, done: done || null, adv: a ? { cls: a.cls, sex: a.sex, n: a.n } : undefined }; render(); return;
+  }
+  STORY.__pg = { id: '__pg', bgm: 'tavern', lines: storyParse('@bg bg_pub\n' + pgFill(txt, g)) };
   storyOpen({ id: '__pg', o: { pub: done || (() => {}), adv: a ? { cls: a.cls, sex: a.sex, n: a.n } : undefined } });
+}
+function pgLineNext() {
+  const q = UI.pgLine; if (!q) return;
+  if (++q.i < q.L.length) { render(); return; }
+  UI.pgLine = null; render(); if (q.done) try { q.done(); } catch (e) { console.error(e); }
+}
+// カウンターの会話の一行(msgwin の中身)。会話がなければ null
+function pgLineHTML() {
+  const q = UI.pgLine; if (!q) return null; if (G.act !== 'work') { UI.pgLine = null; return null; } const l = q.L[q.i]; if (!l) return null;
+  const nm = l.who ? spkName(l.who, { adv: q.adv }) : '';
+  const say = (l.t ? (l.who ? `「${l.t}」` : l.t) : '') + (l.act ? (l.t ? ' ' : '') + `(${l.act})` : '');
+  return `<div class="msgwin pg-talkwin" data-act="pgnext" role="button" aria-label="次へ">${nm ? `<div class="nameplate"><b>${esc(nm)}</b></div>` : ''}<p class="speech${l.who ? '' : ' narr'}">${esc(say)}</p></div>`;
 }
 // 章が変わって初めて「ほかの客」を開いた夜に、ゴズの話を一度
 function pgGozCheck() {
-  const p = pgS(); if (G.act !== 'work' || UI.story || p.goz[G.stage]) return;
-  p.goz[G.stage] = 1; pgPlay(PG_GOZ[Math.min(G.stage, PG_GOZ.length - 1)], null, null);
+  const p = pgS(); if (G.act !== 'work' || UI.story || !pgOpen() || p.goz[G.stage]) return;
+  p.goz[G.stage] = 1; pgPlay(PG_GOZ[Math.min(G.stage, PG_GOZ.length - 1)], null, null, true);
 }
 // 話す
 function pgTalk(k) {
@@ -22470,11 +22572,12 @@ function pgTalk(k) {
   // 並んだ二人(まだ見ていない組)
   const pi = PG_PAIR.findIndex((x, i) => !p.pair[i] && x.ks.includes(k) && x.ks.every(kk => seat.includes(kk)) && (!x.c || pgSafe(x.c)));
   if (pi >= 0) { p.pair[pi] = 1; pgPlay(PG_PAIR[pi].t, g); return; }
-  if (g.first && !p.met[k] && pgSafe(g.first.c)) { p.met[k] = 1; pgPlay(g.first.t, g); return; }
+  if (g.first && !p.met[k] && pgSafe(g.first.c)) { p.met[k] = 1; pgPlay(g.first.t, g, null, true); return; }
   p.met[k] = 1;
   if (g.adv) {
     const b = G.pgBack, a = pgAdv() || {}, tr = a.trips || 0;
-    let t = pick(b.hurt ? PG_ADV.hurt : PG_ADV.ok);
+    const why = pgSeats().advWhy;
+    let t = why === 'boss' ? pick(PG_ADV.boss) : why === 'first' ? pick(PG_ADV.first) : pick(b.hurt ? PG_ADV.hurt : PG_ADV.ok);
     const cl = PG_ADV.cls[a.cls]; t += '\n' + (G.day % 2 && cl ? `adv normal 「${cl}」` : PG_ADV.tier[tr >= 30 ? 2 : tr > 5 ? 1 : 0]);
     pgPlay(t, g); return;
   }
@@ -22483,6 +22586,12 @@ function pgTalk(k) {
   const fresh = list.find(([, i]) => !seen.includes(i)), [x, i] = fresh || list[G.day % list.length];
   if (!seen.includes(i)) seen.push(i);
   pgPlay(x.t, g);
+}
+// 奥のテーブル(No.209): 特別な夜でない帰還の夜。声をかけると、カウンターの枠で一言だけ
+function pgBack() {
+  const p = pgS(), b = G.pgBack; if (G.act !== 'work' || !pgBackToday() || p.night.back) return;
+  p.night.back = 1; const a = b.party[0] || {}, cl = PG_ADV.cls[a.cls];
+  pgPlay((b.hurt ? pick(PG_ADV.hurt) : `adv smile 「${cl || '今日も、なんとか帰ってきたぜ'}」`), PG.adv, null);
 }
 // 一杯おごる: ゴズが好物を教える(初めての時)・小さなお返し
 function pgBuy(k) {
@@ -22493,25 +22602,34 @@ function pgBuy(k) {
   if (teach) { p.fav[k] = 1; t += `\ngozu smile 「……ああ、そうだ。${g.teach}」`; }
   const msg = pgGift(g, Math.round(cost * 1.5), 'buy');
   save();
-  pgPlay(t, g, () => { FX.push({ t: 'toast', msg: (teach ? `客の帳面に、${pgName(g)}の好物「${pgDish(g) ? pgDish(g).n : ''}」を書いた。` : '') + msg }); });
+  pgPlay(t, g, () => { FX.push({ t: 'toast', msg: (teach ? `客の帳面に、${pgName(g)}の好物「${pgDish(g) ? pgDish(g).n : ''}」を書いた。` : '') + msg }); }, true);   // No.209 (作者): 一杯おごる・御馳走は場面を切り替える
 }
-// 御馳走する: 二人で同じ皿を食べる(店主の夕食もそれで済む)。好物なら夜の話が一つ進む
-function pgTreat(k) {
-  const g = PG[k], p = pgS(); if (!g || pgWhy(g, 'treat')) return;
-  const x = pgTreatDish(g), one = x ? pubPrice(x) : dinnerCost(), fav = pgIsFav(g);
-  let heal = 0;
-  if (pgOwnerEats()) { const r = dine({ cost: one * 2, heal: x ? pubHeal(x) : dinnerHeal() }); if (!r) return; heal = r.gain || 0; }
-  else { if (G.gold < one) return; G.gold -= one; }
-  p.night.treat = k; p.met[k] = 1;
+// 御馳走する(No.208): 品書きの皿を、隣の人に一皿。店主は食べない(自分の夕食は別に頼める)。好物なら夜の話が一つ進む
+function pgTreat(k, id) {
+  const g = PG[k], p = pgS(), x = PUB_BY[id];
+  if (!g || !x || x.k !== 'food' || !pgSeatOf(k) || !pubTonightAll().includes(x) || pgWhy(g, 'treat', x)) return;
+  const one = pgTreatPrice(x), fav = pgIsFavDish(g, x);
+  G.gold -= one; p.night.treat = k; p.met[k] = 1;
   const ei = fav ? pgEpNext(g) : -1;
   if (fav) { p.treat[k] = (p.treat[k] || 0) + 1; p.fav[k] = 1; }
   if (ei >= 0) p.ep[k] = ei + 1;
   const msg = pgGift(g, Math.round(one * (fav ? 2 : 1.5)), 'treat');
   save();
+  const head = `(${pgName(g)}の前に、${x.n}を一皿。)`;
   const t = ei >= 0 ? g.eps[ei].t : (g.thx || (g.adv ? 'adv smile 「ごちそうさん! 次も、帰ってくるぜ」' : ''));
-  const head = `(${x ? x.n : '料理'}を、二人分。${pgName(g)}の隣で、同じ料理を食べた。)`;
-  pgPlay(head + '\n' + t, g, () => { FX.push({ t: 'toast', msg: (heal ? `体力が${heal}回復した。` : '') + msg }); });
+  pgPlay(head + '\n' + t, g, () => { FX.push({ t: 'toast', msg }); }, true);
 }
+// 品書きの料理を押した時: 自分で食べるか、座っている人に出すか(客がいる夜だけ)
+function pgDishSheet(id) {
+  const x = PUB_BY[id], s = pgSeats(), p = pgS(); if (!x) return;
+  const dined = G.dined === G.day, full = G.work >= workMax() && !x.bonus, selfWhy = dined ? '今夜はもう食べた' : G.gold < pubPrice(x) ? 'お金が足りない' : full ? '体力が満タン' : '';
+  const gb = s.ks.map(k => { const g = PG[k], why = pgWhy(g, 'treat', x), pic = pgPic(g, 'normal'), fv = p.fav[k] && pgIsFavDish(g, x);
+    return `<button class="btn pg-b pg-to" data-act="pgtreat" data-v="${k}" data-id="${x.id}"${why ? ' disabled' : ''}>${pic ? `<span class="pt sm"><img class="ch" src="${pic}" alt=""></span>` : ''}<b>${esc(pgName(g))}に出す${fv ? ' <span class="pc-rec">好物</span>' : ''}</b>${why ? `<small class="pg-why">${why}</small>` : ''}</button>`; }).join('');
+  openSheet(`${xBtn}<div class="lead">${pubIcon(x)}<div style="min-width:0"><div class="sub">今夜の品書き</div><h2>${x.n}</h2><div class="sub"><span class="price">${fmt(pubPrice(x))}G</span>・${x.d}</div></div></div>` +
+    `<div class="pg-pick"><button class="btn pri pg-b" data-act="pubeat" data-id="${x.id}"${selfWhy ? ' disabled' : ''}><b>自分で食べる</b>${selfWhy ? `<small class="pg-why">${selfWhy}</small>` : `<small>体力+${pubHeal(x)}</small>`}</button>${gb}</div>` +
+    `<p class="note" style="font-size:12px">御馳走はひと晩に一人。相手の分だけ払う。好物だと、話が聞けることがある。</p>`, { crumb: ['灯り亭', x.n] });
+}
+const pgDishPick = () => G.act === 'work' && pgOpen() && pgSeats().ks.length > 0;
 // ---------- お返し ----------
 function pgMatFor(g, value) {
   value = Math.max(4, value);
@@ -22574,29 +22692,47 @@ function pgVisits() {
 
 // ================= 画面 =================
 // カウンターに座っている人(絵を並べる)
-function pgCounter() {
-  const s = pgSeats();
-  const pics = s.ks.map(k => { const g = PG[k], u = pgPic(g, 'normal'); return u ? `<div class="pg-p" data-act="pgtalk" data-v="${k}" role="button" aria-label="${esc(pgName(g))}と話す"><img src="${u}" alt="${esc(pgName(g))}"><span class="pg-pn">${esc(pgName(g))}</span></div>` : ''; }).join('');
-  return `<div class="ss pgss"><div class="ss-back pub"></div><div class="pg-row n${s.ks.length}">${pics}</div></div>`;
+// No.208 (作者): カウンターの場面は一つ。ゴズと、座っている客を並べる。ふだんの会話はこの上の枠で流す
+// No.209 (作者): 品書き・バイトの札はゴズ一人、ほかの客の札は客だけ
+function pgScene(line, mode) {
+  const s = pgSeats(), q = UI.pgLine, cur = q && q.L[q.i], who = cur && cur.who;
+  const fig = (k, g, isGoz) => {
+    const sp = isGoz ? 'gozu' : pgSp(g), on = who && (who === sp || (sp === 'adv' && who === 'adv')), ex = on ? (cur.ex || 'normal') : (isGoz ? (G.act === 'work' ? 'smile' : 'normal') : 'normal');
+    const u = isGoz ? (on ? spkPic('gozu', ex) : null) || chibiURL({ ch: PUB.master.ch, img: PUB.master.img }, ex === 'smile' ? 'smile' : 'normal') : pgPic(g, ex);
+    if (!u) return '';
+    const nm = isGoz ? PUB.master.n : pgName(g), dim = who && !on ? ' dim' : '';
+    return isGoz ? `<div class="pg-p goz${dim}${on ? ' on' : ''}"><img src="${u}" alt="${esc(nm)}"></div>`
+      : `<div class="pg-p${dim}${on ? ' on' : ''}" data-act="pgtalk" data-v="${k}" role="button" aria-label="${esc(nm)}と話す"><img src="${u}" alt="${esc(nm)}"><span class="pg-pn">${esc(nm)}</span></div>`;
+  };
+  const ks = mode === 'guest' && G.act === 'work' ? s.ks : [], figs = mode === 'guest' ? ks.map(k => fig(k, PG[k], false)) : [fig('', null, true)];
+  return `<div class="ss pgss ${mode === 'guest' ? 'guest' : 'solo'} n${figs.length}"><div class="ss-back pub"></div><div class="pg-row n${figs.length}">${figs.join('')}</div><div class="pg-win">${pgLineHTML() || line}</div></div>`;
 }
 function vPgBody() {
-  const night = G.act === 'work', s = pgSeats(), p = pgS(), dg = pgDishGuest();
+  const night = G.act === 'work', s = pgSeats(), p = pgS();
+  if (!pgOpen()) return `<p class="note" style="margin-top:8px">ギルド出張所ができて、村に冒険者が戻ってくると、ほかの客も灯り亭に来るようになる。</p>`;
   if (night && !p.goz[G.stage] && !UI.story) setTimeout(() => { try { pgGozCheck(); } catch (e) { console.error(e); } }, 0);
-  const dish = dg && pgDish(dg);
-  const dishLine = !night ? '「客が来るのは夜だ。また来な」' : !s.ks.length ? '「今夜は静かだな。たまには、こういう夜もいい」'
-    : dg ? (p.fav[dg.k] ? `「今夜は${pgName(dg)}が来てるからな。${dish.n}を仕込んどいた」` : '「今夜は一皿、仕込んどいた。……誰のためかは、一杯おごってくれたら教えてやる」') : `「${pick(PUB.greet)}」`;
-  const dishCard = night && dish ? `<div class="pg-dish">${pubIcon(dish)}<div class="pc-b"><span class="pc-rec">今夜の一皿</span><b>${dish.n}</b><span class="pc-d">${p.fav[dg.k] ? `${esc(pgName(dg))}の好物・御馳走すると、特別な話が聞けることがある` : '誰かの好物らしい'}</span></div><span class="price pc-p">${fmt(pubPrice(dish))}G</span></div>` : '';
-  const btn = (g, what, label, price, sub) => { const why = pgWhy(g, what); return `<button class="btn${what === 'treat' ? ' gold' : ''} pg-b" data-act="pg${what}" data-v="${g.k}"${why ? ' disabled' : ''}><b>${label}${price ? ` <span class="price">${fmt(price)}G</span>` : ''}</b>${why ? `<small class="pg-why">${why}</small>` : sub ? `<small>${sub}</small>` : ''}</button>`; };
+  const btn = (g, what, label, price, sub) => { const why = pgWhy(g, what); return `<button class="btn pg-b" data-act="pg${what}" data-v="${g.k}"${why ? ' disabled' : ''}><b>${label}${price ? ` <span class="price">${fmt(price)}G</span>` : ''}</b>${why ? `<small class="pg-why">${why}</small>` : sub ? `<small>${sub}</small>` : ''}</button>`; };
   const card = k => {
-    const g = PG[k], dr = pgDrink(g), fv = pgDish(g), isF = pgIsFav(g), ep = !g.adv && isF && pgEpNext(g) >= 0, x = pgTreatDish(g);
+    const g = PG[k], dr = pgDrink(g), fv = pgDish(g), dg = pgDishGuest(), isF = !!dg && dg.k === k && !g.adv, ep = isF && pgEpNext(g) >= 0 && p.fav[k];
     const pic = pgPic(g, 'normal');
-    return `<div class="pg-card${isF ? ' fav' : ''}">${pic ? `<span class="pt md"><img class="ch" src="${pic}" alt=""></span>` : ''}<div class="pg-in"><div class="pg-h"><b>${esc(pgName(g))}</b><span class="sub">${esc(pgSub(g))}</span>${isF ? '<span class="pc-rec">今夜の一皿の人</span>' : ''}${ep ? '<span class="pg-ep">話がありそう</span>' : ''}</div>` +
-      `<div class="sub pg-meta">いつもの: ${dr ? dr.n : '—'}${g.adv ? '' : `・好物: ${p.fav[k] && fv ? fv.n : '?'}`}</div>` +
-      `<div class="pg-bs">${btn(g, 'talk', '話す', 0)}${btn(g, 'buy', '一杯おごる', pgBuyPrice(g))}${btn(g, 'treat', '御馳走する', pgTreatPrice(g), x ? `${x.n}${pgOwnerEats() ? '・二人分' : ''}` : '')}</div></div></div>`;
+    return `<div class="pg-card${isF && p.fav[k] ? ' fav' : ''}">${pic ? `<span class="pt md"><img class="ch" src="${pic}" alt=""></span>` : ''}<div class="pg-in"><div class="pg-h"><b>${esc(pgName(g))}</b><span class="sub">${esc(pgSub(g))}</span>${ep ? '<span class="pg-ep">話がありそう</span>' : ''}</div>` +
+      `<div class="sub pg-meta">いつもの: ${dr ? dr.n : '—'}${g.adv ? '' : `・好物: ${p.fav[k] && fv ? fv.n : '?'}`}${p.night.treat === k ? '・今夜は御馳走した' : ''}</div>` +
+      `<div class="pg-bs">${btn(g, 'talk', '話す', 0)}${btn(g, 'buy', '一杯おごる', pgBuyPrice(g))}</div></div></div>`;
   };
-  return `<div class="pg-top"><p class="say">ゴズ ${dishLine}</p>${dishCard}<button class="btn pg-bookb" data-act="pgbook">客の帳面</button></div>` +
+  const back = night && pgBackToday() && !s.ks.includes('adv') ? (() => { const b = G.pgBack, a = b.party[0] || {}, more = b.party.length > 1 ? 'たち' : '';
+    return `<button class="btn pg-backt" data-act="pgback"${p.night.back ? ' disabled' : ''}><b>奥のテーブル</b><small>${esc(a.n || '冒険者')}${more}が、${esc(b.place || '探索')}から帰って杯を上げている${p.night.back ? '' : '・声をかける'}</small></button>`; })() : '';
+  return `<div class="pg-top"><button class="btn pg-bookb" data-act="pgbook">客の帳面</button><span class="sub pg-booknote">会った客の、いつもの一杯・好物・聞いた夜の話を、ゴズが書きとめている</span></div>` + back +
     (night && s.ks.length ? `<div class="pg-list">${s.ks.map(card).join('')}</div>` : '') +
-    `<p class="note" style="font-size:12px">一杯おごると、ゴズがその人の好物を教えてくれる。御馳走は隣の人と同じ皿を二人分(店主の夕食もそれで済む)。お返しは、品は翌朝の戸口に・来店は次に店を開けた日に・割引は次の朝市で。</p>`;
+    `<p class="note" style="font-size:12px">一杯おごると(ひと晩に一人)、ゴズがその人の好物を教えてくれる。御馳走は「品書き」で料理を選ぶと、隣の人に出せる(相手の分だけ払う)。お返しは、品は翌朝の戸口に・来店は次に店を開けた日に・割引は次の朝市で。</p>`;
+}
+// ゴズの一言(ほかの客の札の時)
+function pgGozLine() {
+  const night = G.act === 'work', s = pgSeats(), p = pgS(), dg = pgDishGuest(), dish = dg && pgDish(dg);
+  if (!night) return '「客が来るのは夜だ。また来な」';
+  if (!pgOpen()) return '「客が来るようになるのは、村に冒険者が戻ってからだな」';
+  if (!s.ks.length) return '「今夜は静かだな。たまには、こういう夜もいい」';
+  if (dg && dish) return p.fav[dg.k] ? `「今夜は${pgName(dg)}が来てるからな。${dish.n}を品書きに足しといた」` : '「今夜は一皿、品書きに足しといた。……誰のためかは、一杯おごってくれたら教えてやる」';
+  return `「${pick(PUB.greet)}」`;
 }
 // 客の帳面(釣り小屋の図鑑と同じ形)
 function pgBookSheet() {
@@ -22611,7 +22747,7 @@ function pgBookSheet() {
     `<p>「客の一杯は、全部ここに入ってる」</p><div class="pg-book">${list.map(row).join('')}</div>`, { crumb: ['灯り亭', '客の帳面'] });
 }
 // 確かめ用(テストから呼ぶ)
-try { window.__pg = { SPKK: Object.keys(SPK), hasPic: (k, ex) => { if (k === 'adv') return true; const sp = SPK[k]; return !!(sp && sp.ch && (CH_FILES.has(`ch_${sp.ch}_${ex}`) || (sp.ch === 'clara' && CH_FILES.has(`ch_queen_${ex}`)))); }, PG, PG_LIST, PG_PAIR, PG_GOZ, PG_ADV, pgS, pgSeats, pgTalk, sleep, openShop, endAct, beginAct, pgBuy, pgTreat, pgEpNext, pgBookSheet, pgMorning, pgVisits, pgDiscApply, pgWhy, pgTreatPrice, pgBuyPrice, pgDishGuest }; } catch (e) { /* なし */ }
+try { window.__pg = { SPKK: Object.keys(SPK), hasPic: (k, ex) => { if (k === 'adv') return true; const sp = SPK[k]; return !!(sp && sp.ch && (CH_FILES.has(`ch_${sp.ch}_${ex}`) || (sp.ch === 'clara' && CH_FILES.has(`ch_queen_${ex}`)))); }, PG, PG_LIST, PG_PAIR, PG_GOZ, PG_ADV, pgS, pgSeats, pgTalk, pgLineNext, pgBack, pgOpen, pgDishSheet, sleep, openShop, endAct, beginAct, pgBuy, pgTreat, pgEpNext, pgBookSheet, pgMorning, pgVisits, pgDiscApply, pgWhy, pgTreatPrice, pgBuyPrice, pgDishGuest, pubTonightAll }; } catch (e) { /* なし */ }
 
 // ---- practice.js ----
 // ===== v53b: ミニゲームの練習場(ミニゲームだけを遊ぶページ) =====
