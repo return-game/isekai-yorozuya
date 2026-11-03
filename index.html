@@ -3053,6 +3053,10 @@ body.practice #app { display: none; }
 .ar-book img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:50% 12%;flex:none;background:#2a1c14}
 .ar-book.unk img{filter:brightness(0) invert(.25)}
 .ar-book b{display:block;font-size:13px}.ar-book small{display:block;font-size:11px;color:var(--ink-2)}
+/* No.233: 冒険者ギルドのページ(施設の形)。下の中身は、広い画面では左に探索と冒険者・右に行き先 */
+.gpage .gbody { display: grid; gap: 12px; }
+.gpage .gbody > .gcol { display: grid; gap: 12px; align-content: start; min-width: 0; }
+@media (min-width: 1100px) { .gpage .gbody { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
 
 </style>
 <div id="app">
@@ -13877,8 +13881,9 @@ function render() {
   // 2026-10-26 釣り: tell when fishing (and each new spot) opens, after the 冒険 note
   if (fishOn()) { const op = fishOpenSpots().map(s => s.id), seen = G.fshOpen || []; const nw = op.filter(id => !seen.includes(id)); if (nw.length) { G.fshOpen = op; const first = !seen.length;
     setTimeout(() => toast(first ? `<div><div class="t1">「釣り」のタブが増えた</div>${nw.map(id => SPOT[id].place).join('・')}で釣りができる。次の時間帯を、店のかわりに釣り場で過ごせる</div>` : `<div><div class="t1">新しい釣り場</div>${nw.map(id => SPOT[id].place + '(' + SPOT[id].n + ')').join('・')}に行けるようになった</div>`, 'lv', 5200), G.advSeen ? 600 : 5000); } }
-  if (guildOpen() && !G.advSeen) { G.advSeen = 1; if (G.tut < 0) setTimeout(() => toast('<div><div class="t1">「冒険」のタブが増えた</div>冒険者ギルドで、ダンジョンへの探索を依頼できる</div>', 'lv', 4200), 400); }
-  const p = $('#panel'); const st = p.scrollTop, colS = [...p.querySelectorAll('.wcols > *')].map(e => e.scrollTop); const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : '');
+  if (guildOpen() && !G.advSeen) { G.advSeen = 1; if (G.tut < 0) setTimeout(() => toast('<div><div class="t1">「ギルド」のタブが増えた</div>冒険者ギルドで、ダンジョンへの探索を依頼できる</div>', 'lv', 4200), 400); }
+  const p = $('#panel'); const st = p.scrollTop, colS = [...p.querySelectorAll('.wcols > *')].map(e => e.scrollTop); const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : UI.tab === 'fac' ? UI.facId + (UI.facTab || '') : UI.tab === 'adv' ? (UI.gTab || 'adv') : '');
+  const mbS = (p.querySelector('.market-bottom') || {}).scrollTop || 0;   // No.233 (作者): 施設・ギルド・灯り亭の下の枠(PC)も、売ったり品を開いて閉じたりしても同じ位置のまま(工房と同じ)
   if (UI.tab === 'inv' && UI.invView === 'dex' && G.dexNew && G.dexNew.length) { UI.dexNewShown = G.dexNew.slice(); G.dexNew = []; }
   if (UI.tab === 'owner' && UI.jumpSec && innerWidth <= 560) UI.ownView = /スキル|肩書/.test(UI.jumpSec) ? 'skill' : 'shop';
   if (UI.tab === 'town' && UI.jumpSec) UI.townView = ['施設', '灯り亭'].includes(UI.jumpSec) ? 'fac' : /常連/.test(UI.jumpSec) ? 'reg' : 'build';
@@ -13887,11 +13892,13 @@ function render() {
   if (sameK) p.scrollTop = st; else p.scrollTop = 0;
   render._k = key;
   tagSections();
-  p.dataset.v = UI.tab === 'fac' ? 'pub' : UI.tab === 'main' ? 'main-' + shopView() : UI.tab === 'inv' ? 'inv-' + (UI.invView || 'inv') : UI.tab === 'town' ? 'town-' + (UI.townView || (innerWidth <= 560 ? 'map' : 'build')) : UI.tab === 'owner' && innerWidth <= 560 && G.tut < 0 ? 'owner-' + (UI.ownView || 'skill') : UI.tab;
+  p.dataset.v = UI.tab === 'fac' || UI.tab === 'adv' ? 'pub' : UI.tab === 'main' ? 'main-' + shopView() : UI.tab === 'inv' ? 'inv-' + (UI.invView || 'inv') : UI.tab === 'town' ? 'town-' + (UI.townView || (innerWidth <= 560 ? 'map' : 'build')) : UI.tab === 'owner' && innerWidth <= 560 && G.tut < 0 ? 'owner-' + (UI.ownView || 'skill') : UI.tab;
   { const landing = innerWidth <= 560 && UI.tab === 'town' && (UI.townView || 'map') === 'map';   // phone: the 街 landing shows the live town window
     $('#app').classList.toggle('scene-open', !!G.sceneOpen || landing); $('#app').classList.toggle('town-win', landing); }
   wideLayout();
-  if (sameK && colS.some(x => x > 0)) p.querySelectorAll('.wcols > *').forEach((e, i) => { if (colS[i]) e.scrollTop = colS[i]; });   // No.195: 品を開いて閉じても、PCの列は同じ位置のまま
+  if (sameK && colS.some(x => x > 0)) p.querySelectorAll('.wcols > *').forEach((e, i) => { if (colS[i]) e.scrollTop = colS[i]; });
+  if (sameK && mbS) { const mb = p.querySelector('.market-bottom'); if (mb) mb.scrollTop = mbS; }
+  if (sameK && (UI.tab === 'fac' || UI.tab === 'adv') && !UI.jumpSec) { p.scrollTop = st; requestAnimationFrame(() => { if (render._k === key && Math.abs(p.scrollTop - st) > 2 && !UI.scrollFit && !UI.scrollAdv) p.scrollTop = st; }); }   // No.233: スマホの施設のページも、売った後に位置がずれない   // No.195: 品を開いて閉じても、PCの列は同じ位置のまま
   phoneWork();
   { const t = p.querySelector('.wk-todo'), r = p.querySelector('.wk-recs'); render._wkc = UI.craftCat + (UI.onlyOk ? '1' : '0') + (UI.recSort || '');
     if (render._k === key && wkS.length) { if (t && wkS.length > 1) t.scrollTop = wkS[0]; if (r && wkCat === render._wkc) r.scrollTop = wkS[wkS.length - 1]; } }
@@ -14045,7 +14052,7 @@ function sceneBig(on) {
 document.addEventListener('click', e => { const t = e.target; if (!t) return; if (t.id === 'scenebig' || (t.id === 'scene' && $('#scenebig'))) sceneBig(false); else if (t.id === 'scene' && isWide()) sceneBig(true); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#scenebig')) sceneBig(false); });
 // ---------- where am I: the screen and the part of it you are looking at; tap for the whole tree ----------
-const SCREEN_N = { home: 'ホーム', pub: '灯り亭', adv: '冒険', inv: '倉庫', dex: '図鑑', town: '街', owner: '店主' };
+const SCREEN_N = { home: 'ホーム', pub: '灯り亭', adv: '冒険者ギルド', inv: '倉庫', dex: '図鑑', town: '街', owner: '店主' };
 const screenName = (t = UI.tab) => t === 'main' ? VIEW_TITLE() : t === 'inv' && UI.invView === 'dex' ? '図鑑' : t === 'inv' && UI.invView === 'tonya' ? '問屋' : SCREEN_N[t] || '';
 function secText(el) { const c = el.cloneNode(true); c.querySelectorAll('.aside,.hl-x,.n,.qtag,.num').forEach(x => x.remove()); return c.textContent.replace(/\s+/g, ' ').trim().slice(0, 18); }
 function tagSections() {
@@ -14082,7 +14089,7 @@ function curSecIdx() {
   return k;
 }
 function crumbTree(k) {
-  const tabs = [['main', '店・' + VIEW_TITLE()], ...(guildOpen() ? [['adv', '冒険']] : []), ['inv', '倉庫'], ['town', '街'], ['owner', '店主']];
+  const tabs = [['main', '店・' + VIEW_TITLE()], ...(guildOpen() ? [['adv', 'ギルド']] : []), ['inv', '倉庫'], ['town', '街'], ['owner', '店主']];
   return `<div class="crtree" role="menu">` + tabs.map(([t, n]) => {
     const cur = t === UI.tab;
     let h = `<button class="crt-tab${cur ? ' on' : ''}" data-act="crtab" data-v="${t}" role="menuitem">${n}</button>`;
@@ -14238,7 +14245,7 @@ function renderTabs() {
     ['pub', '灯り亭', 0],
     ...(fishOn() ? [['fish', '釣り', 0]] : []),
     // No.203 (2026-11-02 作者): 「食事」の札はなくした(食べて意味があるのは夜の工房だけ。工房の中で食べる)
-    ...(guildOpen() ? [['adv', '冒険', wait ? '!' : 0]] : []),
+    ...(guildOpen() ? [['adv', 'ギルド', wait ? '!' : 0]] : []),   // No.233 (作者): 「冒険」→「ギルド」
     ['inv', '倉庫', (G.dexNew || []).length],
     ['owner', '店主', G.sp],
   ];
@@ -14253,7 +14260,7 @@ function renderTabs() {
     `<div class="mnav" style="--nmn:${guildOpen() ? 6 : 5}">` + navBackButton() +
     `<button class="mn${UI.tab === 'main' ? ' on' : ''}" data-act="tab" data-v="main">${tabIcon('main', G.phase)}<span>店</span>${deliverable ? '<b class="alert"></b>' : ''}</button>` +
     `<button class="mn${UI.tab === 'town' ? ' on' : ''}" data-act="tab" data-v="town">${tabIcon('town', G.phase)}<span>街</span>${bldReadyN() ? '<b class="alert"></b>' : ''}</button>` +
-    (guildOpen() ? `<button class="mn${UI.tab === 'adv' ? ' on' : ''}" data-act="tab" data-v="adv">${tabIcon('adv', G.phase)}<span>冒険</span>${wait ? '<b class="alert bang">!</b>' : ''}</button>` : '') +
+    (guildOpen() ? `<button class="mn${UI.tab === 'adv' ? ' on' : ''}" data-act="tab" data-v="adv">${tabIcon('adv', G.phase)}<span>ギルド</span>${wait ? '<b class="alert bang">!</b>' : ''}</button>` : '') +
     `<button class="mn home${UI.tab === 'home' ? ' on' : ''}" data-act="home">${lineIcon(HOME_SVG.home)}<span>ホーム</span>${G.sp || (G.dexNew || []).length ? '<b class="alert"></b>' : ''}</button>` +
     `<button class="mn${UI.helpGlowOn ? ' glow' : ''}" data-act="help">${lineIcon(HOME_SVG.ask)}<span>エマ</span></button></div>`;
 }
@@ -14314,7 +14321,7 @@ function vHome() {
     ['灯り亭', SKI.cutlery, 'data-act="pub"', G.act !== 'work' ? '夜に夕食' : '', '', '#a0583f'],
     ...(fishOn() ? [['釣り', SKI.hook || SKI.bowl, 'data-act="fshmenu"', G.act === 'fish' ? '釣りをしている' : '時間帯を使う', ['river', 'lake', 'sea'].some(id => storySeen('fish_inv_' + id) && !(fishState().met || {})[id]) ? '•' : '', '#3f6f8a']] : []),   // No.180: 誘われてまだ行っていない釣り場があれば、釣りに点
     ['食事', SKI.bowl, 'data-act="ownmeal"', G.act === 'work' ? '体力を戻す' : '夜に食べる', '', '#b07a3a'],
-    ...(guildOpen() ? [['冒険', TAB_SVG.adv(), 'data-act="hgo" data-tab="adv"', '', wait ? '!' : '', '#3f7d6e']] : []),
+    ...(guildOpen() ? [['ギルド', TAB_SVG.adv(), 'data-act="hgo" data-tab="adv"', '', wait ? '!' : '', '#3f7d6e']] : []),
     ['倉庫', TAB_SVG.inv(), 'data-act="hgo" data-tab="inv" data-inv="items"', '', '', '#6b6f8a'],
     ['図鑑', HOME_SVG.book, 'data-act="hgo" data-tab="inv" data-inv="dex"', (G.dexNew || []).length ? `新しい品 ${G.dexNew.length}` : '', (G.dexNew || []).length ? '•' : '', '#4f7a8a'],
     ['住人', SKI.bubble, 'data-act="hgo" data-tab="town" data-sec="常連さん"', '', '', '#a0707a'],
@@ -15058,7 +15065,7 @@ function vFacs() {
   if (!shown.length) return '';
   return `<div class="sec" data-sec="施設"><h2>施設<span class="aside">売る・頼まれごと・話す</span></h2><div class="rows facrows">` + shown.map(f => {
     const open = facOpen(f.id);
-    return `<button class="dine dinego facgo" data-act="fac" data-v="${f.id}"${open ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: f.ch }, 'sm')}<div style="min-width:0"><div class="t">${f.n}<span class="sub" style="font-weight:500"> ${f.who}</span></div><div class="sub">${open ? (() => { const o = foGet(f.id); if (f.id === 'arena') return '勝ち抜き戦(夜だけ)・闘士に賭ける'; return (o && !o.done ? `<b class="fc-eye">頼まれごと: ${IT[o.id].name}×${o.qty}</b>・` : '') + `得意: ${f.fav}は高く買い取り`; })() : '完成すると、買い取りが開く'}</div></div><span class="dg-go"><b>›</b></span></button>`; }).join('') + `</div></div>`;
+    return `<button class="dine dinego facgo" data-act="fac" data-v="${f.id}"${open ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: f.ch }, 'sm')}<div style="min-width:0"><div class="t">${f.n}<span class="sub" style="font-weight:500"> ${f.who}</span></div><div class="sub">${open ? (() => { const o = foGet(f.id); if (f.id === 'arena') return '勝ち抜き戦(夜だけ)・闘士に賭ける'; if (f.id === 'guild') return (o && !o.done ? `<b class="fc-eye">頼まれごと: ${IT[o.id].name}×${o.qty}</b>・` : '') + '冒険者に探索を依頼する・買い取り'; return (o && !o.done ? `<b class="fc-eye">頼まれごと: ${IT[o.id].name}×${o.qty}</b>・` : '') + `得意: ${f.fav}は高く買い取り`; })() : '完成すると、買い取りが開く'}</div></div><span class="dg-go"><b>›</b></span></button>`; }).join('') + `</div></div>`;
 }
 function facSheet(fid, tab, keepScroll) {
   const f = FAC[fid]; if (!f) return;
@@ -15700,7 +15707,8 @@ function act0(a, d) {
   if (FISH_ACTS[a]) { const r = FISH_ACTS[a](d || {}); save(); if (r !== false) render(); return; }
   const c = curCust();
   switch (a) {
-    case 'tab': if (d.v === 'town' && innerWidth <= 560) UI.townView = 'map'; if (d.v !== 'inv') UI.dexNewShown = null; if (d.v === 'main' && UI.tab === 'main') UI.shopView = null; UI.tab = d.v; UI.confirmReset = false; UI.treeOpen = false; sfx('tab'); break;
+    case 'gtab': UI.gTab = d.v === 'sell' ? 'sell' : 'adv'; UI.fcLine = null; sfx('tap'); render(); return;   // No.233: ギルドの札(冒険・売る・頼まれごと)
+    case 'tab': if (d.v === 'adv' && UI.tab !== 'adv') { UI.gTab = 'adv'; UI.fcLine = null; } if (d.v === 'town' && innerWidth <= 560) UI.townView = 'map'; if (d.v !== 'inv') UI.dexNewShown = null; if (d.v === 'main' && UI.tab === 'main') UI.shopView = null; UI.tab = d.v; UI.confirmReset = false; UI.treeOpen = false; sfx('tab'); break;
     case 'sview': if (d.close) closeSheet(true); UI.shopView = d.v === G.act ? null : d.v; if (d.tonya) UI.tonyaOpen = true; UI.tab = 'main'; if (d.tonya) UI.jumpSec = '体力の回復'; sfx('tab'); break;
     case 'iview': UI.invView = d.v; if (d.v !== 'dex') UI.dexNewShown = null; sfx('tab'); break;
     case 'settings': UI.confirmReset = false; helpClose(); settingsSheet(); sfx('tap'); return;
@@ -18694,7 +18702,7 @@ function fsTurn() {
   const d = G.dive; if (!d || d.done) return;
   const was = !!d.pending;
   if (diveTurn()) { save(); try { render(); } catch (e) { /* the panel can wait */ } }
-  if (!was && d.pending) fsSay('冒険者が判断を待っている(小屋に戻って冒険のタブへ)');
+  if (!was && d.pending) fsSay('冒険者が判断を待っている(小屋に戻ってギルドのタブへ)');
 }
 
 // the cast power: a slim glass gauge beside the rod; the fill is how far the float will fly
@@ -18723,7 +18731,7 @@ function fsPowDraw() {
 function helpNow() {
   const L = [], d = G.dive;
   if (G.tut >= 0) return [{ t: 'いまは開店の案内の途中です。わたしの吹き出しの指示にしたがって進めてくださいね。' }];
-  if (d && d.pending && !d.done) L.push({ t: `${d.party[0].n}${d.party.length > 1 ? 'たち' : ''}が判断を待っています。冒険のタブから指示を出しましょう。急がなくても、その場で待ってくれます。`, to: { tab: 'adv', dec: 1 } });
+  if (d && d.pending && !d.done) L.push({ t: `${d.party[0].n}${d.party.length > 1 ? 'たち' : ''}が判断を待っています。ギルドのタブから指示を出しましょう。急がなくても、その場で待ってくれます。`, to: { tab: 'adv', dec: 1 } });
   for (const b of BUILDINGS) if (b.st === G.stage && !G.built[b.id]) for (const [id, q] of b.needs) {
     const got = (G.deliv[b.id] || {})[id] || 0;
     if (got < q && invCount(id) > 0 && !L.some(x => x.k === 'bld')) L.push({ k: 'bld', t: `${b.n}に「${IT[id].name}」を納品できます。街の画面へどうぞ。`, to: { tab: 'town' } });
@@ -18755,7 +18763,7 @@ function helpScreen() {
     market: { t: '朝市です。素材を仕入れて、準備ができたら店を開けます。建物と注文に要る素材は「まとめて買う」で一度に仕入れられますよ。', k: 'market' },
     shop: { t: '店先です。お客さんは1人ずつ来ます。陳列棚と特需の枠に並べた品は売れやすい。', k: 'shelf' },
     work: { t: '夜の工房です。作る時はミニゲーム。一度作ったレシピは「おまかせ」や「まとめて作る」で、ミニゲームなしで作れます(普通の品)。良品以上が欲しい時はミニゲームで。', k: 'auto' },
-    adv: { t: '冒険のタブです。冒険者に武具と道具袋を持たせて送り出します。分かれ道とぬしの前では一息ついて、進むか休むか引き返すかを決めます。最後まで行くと封印された箱が手に入りますよ。', k: 'adv' },
+    adv: { t: 'ギルドのタブです。冒険者に武具と道具袋を持たせて送り出します。分かれ道とぬしの前では一息ついて、進むか休むか引き返すかを決めます。最後まで行くと封印された箱が手に入りますよ。', k: 'adv' },
     inv: { t: '倉庫です。持ち物と図鑑を切り替えられます。品をタップすると、レア度と使い道、どこで使えるかが分かります。', k: 'collect' },
     town: { t: '街の広場です。建物に品を納品すると建物が建って、村が育ちます。建った施設では品物を売れます。灯り亭の夕食では体力が戻って、噂も聞けます。', k: 'town' },
     owner: { t: '店主の画面です。肩書とスキル盤、工房の設備があります。スキル盤では五つの道(職人・商い・目利き・冒険・体)の節を習得できます。ポイントはレベル・肩書・探索のレア・常連さんの物語などで増えます。', k: 'skill' },
@@ -18771,7 +18779,7 @@ function helpStuck() {
   if (!G.facUsed && G.gold < 150 && FACS.some(f => facOpen(f.id) && facGoods(f).length)) return { t: '店で売れ残った品や、探索で持ち帰った素材は、街の施設でも売れますよ。鍛冶通りやギルドの人たちも、手が足りない時は万事屋の品を仕入れて自分の店で売っているんです。', to: { tab: 'town' } };
   if (G.act === 'shop' && stock <= 0) return { t: '売り物がないと、お客さんは帰ってしまいます。店を閉めて、工房で作りましょう。', to: { tab: 'main', view: 'shop' } };
   if (G.act === 'work' && G.work <= 0 && !edibles().some(it => !ateToday(it.id))) return { t: '今夜の体力は使い切りました。眠れば明日は満タンです。料理や薬を作っておくと、食べて回復できますよ(料理と薬を合わせて1日3種類まで)。', to: { tab: 'main', view: 'work' } };
-  if (guildOpen() && !G.dive) { const ro = ensureRoster(); if (ro.length && !ro.some(advReady)) return { t: '冒険者がみんな療養中です。冒険のタブで、薬や料理で手当てすると1日早く治ります。', to: { tab: 'adv' } }; }
+  if (guildOpen() && !G.dive) { const ro = ensureRoster(); if (ro.length && !ro.some(advReady)) return { t: '冒険者がみんな療養中です。ギルドのタブで、薬や料理で手当てすると1日早く治ります。', to: { tab: 'adv' } }; }
   { const sp = stageProgress(), bs = sp.boss;
     if (!bs.done && (G.chFail || {})[bs.area.id] && !G.dive && sp.blds.every(b => G.built[b.id] || b.id === 'gate'))
       return { t: `${bs.area.n}の「${bs.n}」は手ごわいですね…。工房でいちばん良い武器と防具を作って持たせ、回復薬を道具袋に入れて、2人以上で行きましょう。休んでいる冒険者は薬や料理で手当てできます。負けても何度でも挑めますよ。`, to: { tab: 'adv' } };
@@ -18829,7 +18837,7 @@ setInterval(() => {
 // k: 項目の名前(チュートリアルのひとことから、ここを指せるように)。t: 本文(段落ごと)
 const DICT = [
   { k: 'day', n: '1日の流れ', t: ['朝市で仕入れ、昼は店を開けて売り、夜は工房で作る。どの時間にも制限はなく、やることが済んだら下のボタンで自分で次へ進む(進む前に確かめが出る)。時間は戻らない。', '「いまやること」の帯は、次にやるとよいことを教えてくれる。タップするとその画面へ行ける。'] },
-  { k: 'move', n: '画面の移り方', t: ['スマホは、下のバーで「店・街・冒険・ホーム・エマ」を行き来する(冒険は冒険者ギルドが建ってから)。倉庫・図鑑・店主・灯り亭・設定は、ホームから。', 'PCは、左の並び(店・街・灯り亭・冒険・倉庫・店主)から。', '「店」の中は市場・店先・工房に分かれていて、いまの時間の場所が自動で開く。上の切り替えで、いつでも行き来できる(夜でも店先で棚を整えられる)。'] },
+  { k: 'move', n: '画面の移り方', t: ['スマホは、下のバーで「店・街・ギルド・ホーム・エマ」を行き来する(ギルドは冒険者ギルドが建ってから)。倉庫・図鑑・店主・灯り亭・設定は、ホームから。', 'PCは、下の並び(店・街・灯り亭・釣り・ギルド・倉庫・店主)から。', '「店」の中は市場・店先・工房に分かれていて、いまの時間の場所が自動で開く。上の切り替えで、いつでも行き来できる(夜でも店先で棚を整えられる)。'] },
   { k: 'market', n: '朝市と問屋', t: ['朝市には、季節の行商・鉱石・資材(木材・布など)・薬草と魔物素材・食材・宝石と魔石の店が並ぶ。今の章と前の章の素材は、毎朝ぜんぶ入荷する。古書商(レシピの本)が来る日もある。', '朝市にしかない物: 次の章の素材(ときどき)と、掘り出し物(汚れた品。夜の工房で磨くと化ける)。市場が建つと、毎朝どこか1店が1割引きになる(商隊の日は、別の1店が2割引き)。割引は重ならず、一番大きいものだけ。', '「建設と注文に足りない素材」の「まとめて買う」で、建物と受けた注文に要る素材を一度に仕入れられる。迷ったらまずこれ。赤い数字の素材は、まだ朝市に並ばない(先の章の素材は、持ち込みや探索を待つ)。', '値段は相場で動く。流行(1週間ごとに変わる)で上がる品・下がる品があり、灯り亭の噂で来週の流行が分かることもある。', '問屋は、基本の素材だけを夜でも買える(朝市の1.5倍ほど)。'] },
   { k: 'shelf', n: '陳列棚', t: ['陳列棚と特需の枠に並べた品は、お客さんの目に留まって売れやすい(買い物客のおよそ4人に3人は棚から選ぶ)。棚にない作った品も、倉庫から売れることがある。素材は棚に置いた時だけ売れる。', '「空いたら自動で並べる」をつけると、売れた所に倉庫から補充する。建物や受けた注文に使う分は取っておき、並べない(棚の下に何を取っておいたか出る)。素材も並べる(作った品が先)。素材を取っておきたい時は、チェックを外す。'] },
   { k: 'cust', n: 'お客さん', t: ['お客さんは1人ずつ来る。種類は毎日ランダムで、買い物客(棚の品を買う)・依頼の客(品を注文していく)・持ち込みの客(素材や壊れた武具、謎の品を売りに来る)のほか、たまに小さな物語を持った客も来る。', '時計が進むと客層が変わる(朝=出発前の冒険者/昼=村人や行商人/夕方=帰ってきた冒険者の持ち込み/夜=騎士や貴族)。店先の上に、いまの客層と「いま売れ筋」が出る。', '買い物客の欲しい品が棚になければ、その客は依頼の客になる(依頼が4件で埋まっている時は、持ち込みの客)。'] },
@@ -18846,9 +18854,9 @@ const DICT = [
   { k: 'skill', n: 'スキル盤', t: ['店主の画面。真ん中から 職人・商い・目利き・冒険・体 の五つの道がのびていて、習得した節のとなりから選ぶ。◆鍵の節は探索のレアをひとつ差し出す、⬢要の節は遊び方が変わる。', 'ポイントは、レベルが上がる・肩書が変わる・探索のレアを初めて手に入れる・ぬしを初めて倒す・常連さんの物語を見届ける・図鑑の節目・初めての傑作で増える。1回目の振り直しは無料。'] },
   { k: 'upgrade', n: '工房の設備と店の増築', t: ['工房の設備(店主の画面):鍛冶・錬金・調理・筆写の道具をお金で良くする。判定が広がり、良い品が出やすくなる。', '店の増築(街の「わが店」):作業力が増え、朝市の入荷(1段ごとに1割)とお客さんも増える。章が進むと、次の増築ができる。'] },
   { k: 'town', n: '街を育てる', t: ['「街」の建物に必要な品を納品すると建物が建つ。建物ごとに、店や村に良いことが起きる(完成すると何が起きるかは、建物の欄に書いてある)。', 'その章の建物3つがそろい、討伐の場所の「ぬし」を冒険者が倒すと、次の章へ進む。村は町へ、町は街へと育ち、新しい建物と探索の場所が増える。'] },
-  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から)。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼まれごと(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
+  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から。ギルドは下の「ギルド」からも)。札は「売る・頼まれごと」の1つで、頼まれごとがあれば上に出る。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼まれごと(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
   { k: 'arena', n: '闘技場の勝ち抜き戦', t: ['闘技場ができると、ダリアの施設のページに「勝ち抜き戦」の札が出る。1日1回・体力は使わない。', '二人の闘士の、どちらかに賭ける。闘士には型があり、剛は技に、技は迅に、迅は剛に強い。勝ち残った闘士は、傷を負ったまま次の試合に出る。倍率は客の読みなので、相性と傷をよく見れば少し得をする。', '当てたら「まだ行く(もうけを全部、次の試合に乗せる)」か「もう帰る」。最大5試合。外れたら賭けた分はなくなる。賭けの上限は章で上がる(300G→600G→1000G)。'] },
-  { k: 'adv', n: '冒険', t: ['冒険者ギルドが建つと、ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。行き先には推奨のランクが書いてある。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
+  { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)と「売る・頼まれごと」の2つ。', 'ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。行き先には推奨のランクが書いてある。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
   { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。次の時間帯をまるごと釣り場で過ごす(朝市・店・工房のどれかを手放す)。釣り場では体力を使わず、時間も進まない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。1匹との勝負ごとに、冒険も1ターン進む。', '餌は1回の釣行で10投。釣りポイントで5投ずつ買い足せる(3回まで)。竿(掛かる魚の格)・リール(緑の幅)はポイントでだけ交換できる。', '釣った魚は、小屋の主にお金で売るか、ポイントに替えるか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
   { k: 'loan', n: '出世払い', t: ['開店資金3000Gは村長の出世払い。利子も期限もない。返すのは街の「村長の家」から。返すたびに、節目のごほうび(増築の許可・新しい仕入れ先など)がある。'] },
   { k: 'collect', n: '集める・図鑑・レシピの紙', t: ['図鑑には見つけた品が載る。影絵の品は、まだ見つけていない物(タップすると手がかり)。節目ごとにスキルポイントが入る。', '品にはレア度(E〜S)と使い道の印がつく。倉庫では使い道で絞りこめる。', '秘伝のレシピの紙は、常連さん・建物・ぬしの寝床などで手に入る。破れた所は、探索のレアで読めるようになる。工房の「秘伝」で作る。', '季節限定の素材、常連さんの物語、探索のレア、謎の品の鑑定。図鑑をすべて埋めるのが最終目標。'] },
@@ -18957,7 +18965,8 @@ function renderDive() {
     if (!(typeof guildOpen === 'function' && guildOpen())) { el.hidden = true; return; }
     el.hidden = false; el.classList.remove('wait', 'back');
     const g = guildBg();
-    el.innerHTML = `<button class="dw-view dw-idle" data-act="guild" aria-label="冒険者ギルドへ" style="background-image:url('${IMG_BASE}${g}.webp')"></button><div class="dw-info" data-act="guild" role="button" tabindex="0"><div class="dw-h"><b>冒険者ギルド</b><span class="dw-st">待機中</span></div><div class="dw-last"><span class="lg">冒険者はギルドで休んでいる。依頼を出せる。</span></div><div class="dw-haul ins"><button class="btn sm gold" data-act="guild">依頼を出す</button></div></div>`;
+    // No.233 (作者): 「依頼を出す」は別窓ではなく、ギルドのページへ(入り口を1つに)
+    el.innerHTML = `<button class="dw-view dw-idle" data-act="tab" data-v="adv" aria-label="冒険者ギルドへ" style="background-image:url('${IMG_BASE}${g}.webp')"></button><div class="dw-info" data-act="tab" data-v="adv" role="button" tabindex="0"><div class="dw-h"><b>冒険者ギルド</b><span class="dw-st">待機中</span></div><div class="dw-last"><span class="lg">冒険者はギルドで休んでいる。依頼を出せる。</span></div><div class="dw-haul ins"><button class="btn sm gold" data-act="tab" data-v="adv">ギルドへ行く</button></div></div>`;
     return;
   }
   el.hidden = false;
@@ -19054,7 +19063,7 @@ function askCall(d) {
   if (!askPC()) { const w = $('#divewin .dw-ask'); if (w) { w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash'); } return; }
   const pc = askPC(), e = document.createElement(pc ? 'div' : 'button');
   e.id = 'askcall'; e.className = 'askcall ' + (pc ? 'pc' : 'sp');
-  if (pc) { e.setAttribute('role', 'status'); e.innerHTML = `<span class="ak">${kn}</span><b>${esc(askWho(d))}が判断を待っています</b><span class="sub">左の「冒険」か、探索の窓から指示を出せる</span>`; }
+  if (pc) { e.setAttribute('role', 'status'); e.innerHTML = `<span class="ak">${kn}</span><b>${esc(askWho(d))}が判断を待っています</b><span class="sub">下の「ギルド」か、探索の窓から指示を出せる</span>`; }
   else { e.type = 'button'; e.dataset.act = 'dvask'; e.innerHTML = `<span class="ak">${kn}</span><b>${esc(askWho(d))}が判断を待っています</b><i aria-hidden="true">›</i>`; }
   document.body.appendChild(e);
   UI.askT = setTimeout(() => { e.classList.add('out'); setTimeout(() => e.remove(), 380); }, pc ? 2600 : 4500);
@@ -19395,9 +19404,20 @@ const DIVE_ACTS = {
 };
 
 // ---------- the 冒険 tab (v31): the party in the field, the guild's adventurers, and the places so far ----------
+// No.233 (2026-11-03 作者): 「冒険」のページを冒険者ギルドにまとめた。施設のページと同じ形(上の枠=エマと背景は固定・下はスクロール)。
+// 札は「冒険」(最初に開く)と「売る・頼まれごと」(ほかの施設と同じ)。いずれ間に「名簿」(冒険者の登録と別れ)を足す。依頼を出す画面は、今までどおり別窓(diveSheet)。
 function vAdv() {
+  const f = FAC.guild, tab = UI.gTab === 'sell' ? 'sell' : 'adv', d = G.dive;
+  const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="gtab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
+  const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('adv', '冒険', d ? (d.pending && !d.done ? '判断を待っている' : '探索中') : '依頼を出せる')}${facSellTab(f, tab, 'gtab')}</div>`;
+  const body = tab === 'sell' ? facSellAll(f)
+    : advBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。店で1ターン動くたびに、冒険者も1部屋進む。</p>`;
+  return facFrame(f, tab, tabs, body, `${GUILD_CLERK.n}・${f.who}`, 'gpage');
+}
+// 「冒険」の札の中身(前の「冒険」のページ)。PCの広い画面では左に探索と冒険者、右に行き先
+function advBody() {
   const d = G.dive, last = G.diveLast;
-  let h = `<div class="stack"><div class="phead"><div><h1>冒険</h1><p>店で1ターン動くたびに、冒険者も1部屋進む。</p></div></div>`;
+  let h = `<div class="gbody"><div class="gcol">`;
   if (d && d.pending && !d.done) {
     const p = d.pending, [k1] = DEC_HEAD[p.k] || ['判断'];
     h += `<button class="dvwait" data-act="dvask" data-sec="判断を待っている"><span class="dvw-k">判断を待っている</span><b>${k1}${p.foe && MON[p.foe] ? `・${MON[p.foe].n}` : ''}</b><span class="sub">${AR[d.area].n}・${d.party.map(m => m.n).join('・')}がその場で待っている</span><span class="btn pri sm">指示を出す</span></button>`;
@@ -19427,6 +19447,7 @@ function vAdv() {
     const gear = [m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">武具なし</span>';
     return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}${mealOf(m.id) ? `<span class="tag ok">${MEAL_B[mealOf(m.id).buff].n}</span>` : ''}</div><div class="ins">${gear}</div></div></div>`;
   }).join('') + `</div><button class="btn sm" data-act="guild" style="margin-top:8px">ギルドで武具を整える・手当て</button></div>`;
+  h += `</div><div class="gcol">`;
   // places and records
   const opened = AREAS.filter(areaOpen);
   h += `<div class="sec" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所</span></h2><div class="rows">` + AREAS.map(a => {
@@ -19435,7 +19456,7 @@ function vAdv() {
     return `<button class="ri gxarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="sub" style="font-weight:500;margin-left:6px">推奨${RANKS[a.rk].n}・${daysWord(a)}</span></div><div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div></div><span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
   }).join('') + `</div></div>`;
   h += vGuildReport();
-  return h + `</div>`;
+  return h + `</div></div>`;
 }
 
 // ---- tut.js ----
@@ -23809,8 +23830,9 @@ function fcGreet(f, tab) {
   if (!fc) return ['smile', facGoods(f).length ? f.hi[G.day % f.hi.length] : f.none];
   if (tab === 'bout') return ['smile', arDone() ? '今夜の勝負は、もう終わったよ。また明日おいで' : !arIsNight() ? '興行は夜からさ。日が落ちたら、またおいで' : 'いい席が空いてるよ。今夜の勝ち抜き戦、見ていくかい'];
   const o = foGet(f.id);
-  if (tab === 'ord' && o && !o.done) return [fc.ord.ask[0], foAskText(f.id, o)];
-  if (tab === 'ord' && o && o.done) return ['smile', FC_THANKS[f.id] || f.ty[0]];
+  // No.233: 売ると頼まれごとを1つの札にしたので、頼まれごとがある日は一日おきに頼みの言葉(ほかの日はふだんの出迎え)
+  if (tab === 'sell' && o && !o.done && G.day % 2 === 0) return [fc.ord.ask[0], foAskText(f.id, o)];
+  if (tab === 'sell' && o && o.done && o.next - G.day >= 1 && G.day % 2 === 0) return ['smile', FC_THANKS[f.id] || f.ty[0]];
   if (fc.out && G.dive && !G.dive.done && G.dive.party && G.dive.party.length) return [fc.out[0], fc.out[1].replace('{name}', G.dive.party[0].n || '冒険者')];
   const b = G.pgBack;
   if (b && b.day === G.day && b.party && b.party.length && b.ok) { if (b.hurt && fc.hurt) return fc.hurt; if (!b.hurt && fc.back) return fc.back; }
@@ -23886,7 +23908,9 @@ function polEnd(g, hit) {
 }
 
 // ---------- 施設のページ(灯り亭と同じ形: 上にカウンターの場面・右上の札・下に中身) ----------
-function facPage(fid) { if (!FAC[fid] || !facOpen(fid)) return; closeSheet(true); if (UI.facId !== fid) UI.facTab = 'sell'; UI.facId = fid; UI.fcLine = null; UI.tab = 'fac'; render(); }
+function facPage(fid) { if (!FAC[fid] || !facOpen(fid)) return; closeSheet(true);
+  if (fid === 'guild') { UI.gTab = 'adv'; UI.fcLine = null; UI.tab = 'adv'; render(); return; }   // No.233 (作者): ギルドは「冒険」のページにまとめた
+  if (UI.facId !== fid) UI.facTab = 'sell'; UI.facId = fid; UI.fcLine = null; UI.tab = 'fac'; render(); }
 // No.215: 注文・建設に使う予定の数(売れるが、目印に出す)
 function resvNote(id) { const n = reservedNeeds()[id] || 0; return n > 0 && invCount(id) > 0 ? ` <span class="fc-resv">・${Math.min(n, invCount(id))}個は注文・建設に使う予定</span>` : ''; }
 // お目当ての品で、×1.5 で売れる数(買った普通の品は除く)
@@ -23923,20 +23947,40 @@ function facOrdBody(f) {
 function vFacPage() {
   const f = FAC[UI.facId];
   if (!f || !facOpen(f.id)) { UI.tab = 'town'; return vTown(); }
+  if (f.id === 'guild') { UI.tab = 'adv'; return vAdv(); }   // No.233
   const fc = FC[f.id], o = fc ? foGet(f.id) : null;   // No.213 (作者): 朝市は仕入れ、施設は売る(「分けてもらう」はなくした)
-  let tab = UI.facTab || 'sell'; if ((tab === 'ord' && !fc) || tab === 'buy' || (tab === 'bout' && f.id !== 'arena')) tab = 'sell';
+  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena')) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
   if (f.id === 'arena') tab = 'bout';   // No.223 (作者): 闘技場は入ったら賭けだけ(売る・頼まれごとはなし) UI.facTab = tab;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="factab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('sell', '売る', '買い取り')}${fc ? T('ord', '頼まれごと', o && !o.done ? `${IT[o.id].name}×${o.qty}` : o && o.done ? '届けた' : 'いまはない') : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : facSellAll(f);   // No.217: 闘技場の勝ち抜き戦
+  return facFrame(f, tab, tabs, body, `${f.who}・得意: ${f.fav}`);
+}
+// No.233 (作者): 「売る・頼まれごと」の札(どの施設も同じ。空いた所に、いずれ施設ごとの色の札を足す)
+function facSellTab(f, tab, act) {
+  const o = FC[f.id] ? foGet(f.id) : null, on = tab === 'sell';
+  return `<button class="stab${on ? ' on' : ''}" data-act="${act}" data-v="sell" role="tab" aria-selected="${on}"><b>${FC[f.id] ? '売る・頼まれごと' : '売る'}</b><small>${o && !o.done ? `頼まれごと: ${IT[o.id].name}×${o.qty}` : '買い取り'}</small></button>`;
+}
+// 中身: 上に頼まれごと(あれば)、下に売る一覧
+function facSellAll(f) {
+  const fc = FC[f.id], o = fc ? foGet(f.id) : null;
+  const ord = !o ? '' : o.done ? `<p class="note fo-done" style="font-size:12.5px">頼まれごと: ${IT[o.id].name} ×${o.qty} を届けた(代金 ${fmt(o.pay)}G)。次は${o.next - G.day <= 1 ? '明日' : (o.next - G.day) + '日後'}。</p>` : `<div class="sub" style="margin-bottom:4px">${esc(f.who)}からの頼まれごと</div>` + facOrdBody(f);
+  return ord + `<div class="sub" style="margin-top:${ord ? 10 : 0}px">売る</div>` + facSellBody(f) +
+    `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。${fc ? '頼まれごとは、夜の工房の時間に作れる。' : ''}所持金 <span class="price">${fmt(G.gold)}G</span></p>`;
+}
+// No.233: 施設の上の枠(背景と施設の人・ふだんの話)。ギルドのページ(diveui.js の vAdv)も使う
+function facScene(f, tab) {
   const sp = facSpk(f), q = UI.fcLine && UI.fcLine.fid === f.id ? UI.fcLine : null, cur = q && q.L[q.i], who = cur && cur.who;
   const [gx, gt] = fcGreet(f, tab), on = !who || who === sp, ex = who === sp ? (cur.ex || 'normal') : gx;
   const pic = spkPic(sp, ex) || spkPic(sp, 'normal') || chibiURL({ ch: f.ch }, 'normal');
   const fig = `<div class="pg-p goz fc-p${on ? '' : ' dim'}" data-act="fctalk" data-v="${f.id}" role="button" aria-label="${esc(f.who)}と話す">${pic ? `<img src="${pic}" alt="${esc(f.who)}">` : ''}</div>`;
   const line = fcLineHTML(f.id) || `<div class="msgwin"><div class="nameplate"><b>${esc(f.who)}</b><span>${esc(f.n)}</span></div><p class="say">「${esc(gt)}」</p></div>`;
   const scene = `<div class="cbox market pubc facc"><div class="ss pgss solo n1"><div class="ss-back fac" style="background:#1c130c url(${imgOf(facBg(f))}) 50% 60% / cover no-repeat"></div><div class="pg-row n1">${fig}</div><div class="pg-win">${line}</div></div></div>`;
-  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() : tab === 'ord' ? facOrdBody(f) : facSellBody(f);   // No.217: 闘技場の勝ち抜き戦
-  const tip = `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。${fc ? '頼まれごとは、夜の工房の時間に作れる。' : ''}所持金 <span class="price">${fmt(G.gold)}G</span></p>`;
-  return `<div class="stack pubpage facpage"><div class="phead"><div><h1>${f.n}</h1><p class="sub" style="margin:0">${f.who}・得意: ${f.fav}</p></div><div class="fac-hr">${tabs}<button class="btn fac-back" data-act="gotab" data-v="town"><b>街へ戻る</b></button></div></div><div class="sec pubdesk" data-sec="カウンター">` + scene + `<div class="pub-body">` + body + tip + `</div></div></div>`;
+  return scene;
+}
+// No.233: 施設のページの形(上の枠は固定・下はスクロール。PCの広い画面では wideLayout が counter-market に組み直す)
+function facFrame(f, tab, tabs, body, sub, cls) {
+  return `<div class="stack pubpage facpage${cls ? ' ' + cls : ''}"><div class="phead"><div><h1>${f.n}</h1><p class="sub" style="margin:0">${sub}</p></div><div class="fac-hr">${tabs}<button class="btn fac-back" data-act="gotab" data-v="town"><b>街へ戻る</b></button></div></div><div class="sec pubdesk" data-sec="カウンター">` + facScene(f, tab) + `<div class="pub-body">` + body + `</div></div></div>`;
 }
 // 夜の工房: 施設の頼まれごとと、磨ける掘り出し物
 function vFacWork(off) {
