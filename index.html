@@ -13608,31 +13608,140 @@ const TRACKS = {
 function melodyAt(bar, step, fn) { let pos = 0; for (let i = 0; i < bar.length; i += 2) { if (pos === step) fn(bar[i], bar[i + 1]); pos += bar[i + 1]; } }
 
 // which tune fits where we are: the market, the shop floor or the workshop (the tavern borrows the jig)
+// Shared playback gain for the original synthesized tracks.
+const ORIGINAL_BGM_GAIN = 1.5;
+// No.235 (2026-11-04 作者): mp3 は継ぎ目が目立った5曲だけ、曲の終わりの何もない無音を除いたループ位置を指定(音の最後まで残す。フェードもそのまま)
+const FILE_BGM = {
+  confessionShade: {"file":"kageri.mp3","loop":null},
+  endingDream: {"file":"daydream.mp3","loop":[0, 144.616]},
+  dragonVictory: {"file":"sign-of-victory.mp3","loop":[0.028, 211.982]},
+  dragonMeeting: { file: "strategy-meeting.mp3", loop: null },
+  knightsStory: {"file":"nightfall-castle.mp3","loop":null},
+  cathedralStory: {"file":"royal-capital-2.mp3","loop":null},
+  crowdStorm: {"file":"fight-against-the-thunderstorm.mp3","loop":null},
+  fallBattle: {"file":"battle05.mp3","loop":null},
+  pubStory: {"file":"take-a-break.mp3","loop":null},
+  lateWorkshop: {"file":"quiet-workshop.mp3","loop":[0.036, 93.018]},
+  lateShop: {"file":"cafe-et-croissant.mp3","loop":null},
+  lateMarket: {"file":"schuttfeld-market.mp3","loop":[0.022, 188.085]},
+  westPort: {"file":"west-port.mp3","loop":null},
+  miningCity: { file: "mining-city.mp3", loop: null },
+  stoneRoad: { file: "stone-road.mp3", loop: null },
+  arenaScene: { file: "counterattack.mp3", loop: null },
+  academyStory: { file: "musicbox_spiritual_01.mp3", loop: null },
+  portStory: { file: "port-merca.mp3", loop: null },
+  smithStory: { file: "marche.mp3", loop: null },
+  clinicStory: {"file":"rafendel-street.mp3","loop":[0.022, 165.528]},
+  churchStory: {"file":"hill-monastery.mp3","loop":null},
+  valleyDream: {"file":"MusMus-BGM-148.ogg","loop":[2.800589569160998,198.71884353741495]},
+  coletteInn: {"file":"MusMus-BGM-177.ogg","loop":[9.250226757369614,105.25024943310657]},
+  guildStory: {"file":"MusMus-BGM-156.ogg","loop":[80.39832199546485,167.7985941043084]},
+  "title": {
+    "file": "MusMus-BGM-180.ogg",
+    "loop": [
+      20.79997732426304,
+      113.801179138322
+    ]
+  },
+  "shopStory": {
+    "file": "MusMus-BGM-072.ogg",
+    "loop": [
+      0.33285714285714285,
+      175.35208616780045
+    ]
+  },
+  "songA": {
+    "file": "MusMus-BGM-162.ogg",
+    "loop": [
+      36.800657596371884,
+      108.80528344671202
+    ]
+  },
+  "day": {
+    "file": "MusMus-BGM-003.ogg",
+    "loop": [
+      36.85133786848073,
+      196.86115646258503
+    ]
+  },
+  "night": {
+    "file": "MusMus-BGM-179.ogg",
+    "loop": [
+      78.0004081632653,
+      272.9357596371882
+    ]
+  }
+};
+async function startFileBgm(track, gain, token) {
+  const entry = FILE_BGM[track];
+  try {
+    const response = await fetch('bgm/' + entry.file);
+    if (!response.ok) throw new Error('BGM HTTP ' + response.status);
+    if (AU.musicToken !== token) return;
+    const buffer = await AU.ctx.decodeAudioData(await response.arrayBuffer());
+    if (AU.musicToken !== token) return;
+    const source = AU.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    if (entry.loop && entry.loop[0] >= 0 && entry.loop[1] <= buffer.duration) {
+      [source.loopStart, source.loopEnd] = entry.loop;
+    }
+    source.connect(gain);
+    source.start();
+    AU.fileSource = source;
+  } catch (error) {
+    if (AU.musicToken !== token) return;   // 場面が替わった後の古い読み込みの失敗は、今の曲に影響させない
+    console.warn('BGM could not be played:', entry.file, error);
+    // No.235 (作者): 読めない・鳴らせない時(オフラインなど)は旧BGMへ。旧BGMも決まらない時は、その曲の再生を止める(エラーをくり返さない)
+    const fb = fileBgmFallback(track);
+    AU.fallback = fb;
+    if (fb) { const now = AU.ctx.currentTime; gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(0.0001, now); gain.gain.linearRampToValueAtTime(ORIGINAL_BGM_GAIN * (TRACKS[fb].vol || 1), now + 1.5); }
+    AU.filePending = false;
+    AU.step = 0; AU.next = AU.ctx.currentTime + 0.25;
+  }
+}
+// No.235: 旧BGMの代わり。同じ名前の旧曲 → 章ごとの通常曲(朝市 songA・店先 day・夜 night)・闘技場 arena → 物語の場面は warm
+const FILE_BGM_FALLBACK = { lateMarket: 'songA', lateShop: 'day', lateWorkshop: 'night', pubStory: 'night', shopStory: 'warm', arenaScene: 'arena' };
+function fileBgmFallback(track) {
+  for (const k of [track, FILE_BGM_FALLBACK[track], 'warm']) if (k && TRACKS[k]) return k;
+  return null;
+}
 function musicKey() {
   if (!G) return 'songA';
-  if (typeof UI !== 'undefined' && UI.story && UI.story.bgm && TRACKS[UI.story.bgm]) return UI.story.bgm;   // v52y: 物語の場面の曲
-  if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return 'tavern';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
-  if (typeof ARN !== 'undefined' && ARN.on) return 'arena';   // No.217: 闘技場の勝ち抜き戦
+  if (typeof UI !== 'undefined' && UI.story && (TRACKS[UI.story.bgm] || FILE_BGM[UI.story.bgm])) return UI.story.bgm;   // v52y: 物語の場面の曲
+  if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
+  if (typeof ARN !== 'undefined' && ARN.on) return 'arenaScene';   // No.217: 闘技場の勝ち抜き戦
   if (G.act === 'fish') return 'waterside';
-  if (G.act === 'market') return 'songA';   // No.194: 朝の市場は「風の通り道」
-  if (G.act === 'shop') return 'day';
-  if (G.act === 'work') return 'night';
-  return G.phase === 'morning' ? 'songA' : G.phase === 'night' ? 'night' : 'day';
+  if (G.act === 'market') return G.stage >= 3 ? 'lateMarket' : 'songA';   // No.194: 朝の市場は「風の通り道」
+  if (G.act === 'shop') return G.stage >= 3 ? 'lateShop' : 'day';
+  if (G.phase === 'night' || G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';
+  return G.phase === 'morning' ? 'songA' : 'shopStory';
 }
 function musicFor(phase) {
   if (!AU.ctx) return;
   if (AU.track === phase) return;
   const old = AU.trackGain, now = AU.ctx.currentTime;
   if (old) { old.gain.setTargetAtTime(0.0001, now, 0.5); setTimeout(() => { try { old.disconnect(); } catch (e) { /* gone */ } }, 3000); }
+  const outgoing = AU.fileSource;
+  if (outgoing) outgoing.stop(now + 3);
+  AU.fileSource = null;
+  const token = AU.musicToken = {};
+  AU.filePending = Boolean(FILE_BGM[phase]);
+  AU.fallback = undefined;   // No.235
   AU.track = phase;
   { const tr = TRACKS[phase]; if (AU.dL && tr && tr.echo) { AU.dL.delayTime.setTargetAtTime(tr.echo, now, 0.05); AU.dR.delayTime.setTargetAtTime(tr.echo, now, 0.05); } }   // No.194: こだまを曲の速さに
-  const g = AU.trackGain = AU.ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime((TRACKS[phase] && TRACKS[phase].vol) || 1, now + 1.5); g.connect(AU.music);   // No.194: vol = 曲ごとの音の大きさ(前の曲とそろえる)
+  const g = AU.trackGain = AU.ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime(FILE_BGM[phase] ? 1 : ORIGINAL_BGM_GAIN * (TRACKS[phase]?.vol || 1), now + 1.5); g.connect(AU.music);   // No.194: vol = 曲ごとの音の大きさ(前の曲とそろえる)
   AU.step = 0; AU.next = now + 0.25;
+  if (AU.filePending) startFileBgm(phase, g, token);
   if (!AU.timer) AU.timer = setInterval(musicTick, 40);
 }
 function musicTick() {
   if (!AU.ctx || !AU.track || AU.ctx.state !== 'running') return;
-  const tr = TRACKS[AU.track], sd = 60 / tr.bpm / (tr.unit === 'eighth' ? 1 : 2);
+  if (AU.filePending) return;
+  // No.235: 曲のファイルが読めなかった時は AU.fallback(旧BGM)。旧BGMもない時(null)・ファイルの曲が鳴っている時は何もしない
+  const tk = AU.fallback !== undefined ? AU.fallback : FILE_BGM[AU.track] ? null : AU.track;
+  const tr = tk && TRACKS[tk]; if (!tr) return;
+  const sd = 60 / tr.bpm / (tr.unit === 'eighth' ? 1 : 2);
   while (AU.next < AU.ctx.currentTime + 0.25) {
     const bar = Math.floor(AU.step / tr.steps) % tr.bars, step = AU.step % tr.steps;
     if (AUS.music && !AUS.mute) try { tr.play(AU.trackGain, bar, step, AU.next, sd); } catch (e) { /* skip note */ }
@@ -15254,6 +15363,10 @@ function settingsDebug() {
   }
   return h + `</div>`;
 }
+const FREE_ASSET_CREDITS = [
+  { type: 'BGM', name: 'なぐもりずの音楽室' },
+  { type: 'BGM', name: 'フリーBGM・音楽素材MusMus', url: 'https://musmus.main.jp' },
+];
 function settingsSheet(howto) {
   let h = xBtn + (DEV.on ? `<div class="btns" style="margin:0 0 10px"><button class="btn gold" data-act="devmenu">作者用メニュー(練習用の店)</button></div>` : '');   // No.186
   if (howto) { dictSheet(); return; }
@@ -15271,6 +15384,10 @@ function settingsSheet(howto) {
     `<div class="restart"><div class="rs-t">タイトルに戻る</div><p>いまの店を保存して、タイトル画面に戻る。セーブの切り替えと、はじめからはタイトルでできる。</p><div class="btns"><button class="btn" data-act="totitle">タイトルに戻る</button></div></div>` +
     `<p class="note" style="font-size:12px">${SAVE.db ? '進行はアカウントに自動保存される。' : '進行はこのブラウザに自動保存される。ログインすると、別の端末でも続きから遊べる(タイトルの設定)。'}</p><p class="note" style="font-size:12px">公開版では、ゲームのページが開かれた回数だけを数えている(GoatCounter)。セーブ・ログイン・端末を見分ける情報は送らず、Cookie も使わない。</p></div>`;
   h += `<div class="sec"><div class="btns"><button class="btn" data-act="dict">仕組みの辞典(遊び方)を開く</button></div></div>`;
+  h += '<div class="sec"><div class="sec-t">フリー素材のクレジット</div>' +
+    FREE_ASSET_CREDITS.map(({ type, name, url }) =>
+      '<p class="note">' + type + ': ' + name + (url ? ' <a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>' : '') + '</p>'
+    ).join('') + '</div>';
   openSheet(h, { crumb: ['設定と遊び方'], settings: true });
 }
 function vLoan() {
@@ -19998,7 +20115,7 @@ function storyStep() {
   if (S.i >= lines.length) { storyEnd(); return; }
   const L = lines[S.i];
   storySetBg(v, L.bg);
-  { const want = L.bgm || STORY[S.id].bgm || 'warm'; if (S.bgm !== want) { S.bgm = want; try { if (AU.ctx) musicFor(musicKey()); } catch (e) { /* no audio */ } } }   // v52y
+  { const shopScene = ['c1_pro', 'c1_open', 'new_c1_emma_visit', 'reg_luca_0', 'new_c1_luca_gate'].includes(S.id) || /^bg_shop(?:_|$)/.test(L.bg || ''); const guildScene = /^bg_guild(?:_|$)/.test(L.bg || ''); const innScene = /^bg_inn(?:_|$)/.test(L.bg || ''); const smithScene = ['bld_smithy', 'new_c3_bard_box', 'c5_forge'].includes(S.id) || /^bg_smithy(?:_|$)/.test(L.bg || ''); const want = S.id === 'c3_confess' ? 'confessionShade' : ["c5_ending", "c5_ending0"].includes(S.id) ? "endingDream" : ["boss_dragon", "bld_gate"].includes(S.id) ? "dragonVictory" : S.id === "bld_dragon" ? "dragonMeeting" : ["bld_knights", "new_c4_luca_knight", "bld_treasury"].includes(S.id) ? "knightsStory" : S.id === "bld_cathedral" ? "cathedralStory" : ["c4_crowd", "c4_square"].includes(S.id) ? "crowdStorm" : ["c4_fall", "c5_pact"].includes(S.id) ? "fallBattle" : /^bg_pub(?:_|$)/.test(L.bg || '') ? 'pubStory' : ['c4_end', 'c5_start', 'c5_queen'].includes(S.id) ? 'westPort' : ['c3_end', 'c4_start'].includes(S.id) ? 'miningCity' : S.id === 'new_c3_luca_lose' ? 'stoneRoad' : S.id === 'new_c3_bard_box' ? 'shopStory' : smithScene ? 'smithStory' : STORY[S.id].bgm === 'valleyDream' ? 'valleyDream' : /^bg_arena(?:_|$)/.test(L.bg || '') ? 'arenaScene' : /^bg_academy(?:_|$)/.test(L.bg || '') ? 'academyStory' : /^bg_port(?:_|$)/.test(L.bg || '') ? 'portStory' : /^bg_clinic(?:_|$)/.test(L.bg || '') ? 'clinicStory' : /^bg_church(?:_|$)/.test(L.bg || '') ? 'churchStory': S.id !== 'c3_news' && /^bg_market(?:_|$)/.test(L.bg || '') ? 'songA' : innScene ? 'coletteInn' : guildScene ? 'guildStory' : shopScene ? 'shopStory' : L.bgm || STORY[S.id].bgm || 'shopStory'; if (S.bgm !== want) { S.bgm = want; try { if (AU.ctx) musicFor(musicKey()); } catch (e) { /* no audio */ } } }   // v52y
   const ob = v.querySelector('.st-obj');
   if (L.obj && OBJ_FILES.has(L.obj)) { if (S.obj !== L.obj) { ob.src = imgOf(L.obj); S.obj = L.obj; } ob.hidden = false; } else { ob.hidden = true; S.obj = null; }
   const chImg = v.querySelector('.st-ch img'), chBox = v.querySelector('.st-ch');
@@ -21311,10 +21428,10 @@ const BGM_OF = {
   c1_pro: 'distant', c1_sword: 'distant', loan_story: 'distant', loan_done: 'distant', c4_night: 'distant',
   new_c2_bedtime: 'distant', new_c3_bedtime: 'distant', new_c4_bedtime: 'distant', new_c5_bedtime: 'distant',
   // 谷の記憶: 重い場面
-  new_c1_dream: 'valley', bld_clinic: 'valley', c3_rumor: 'valley', c3_church: 'valley', c3_confess: 'valley', c3_tran: 'valley', c3_ruins: 'valley',
-  c4_fall: 'valley', c4_crowd: 'valley', new_c4_before_square: 'valley', bld_library: 'valley', new_c4_irma_leg: 'valley', new_c5_eve: 'valley',
+  new_c1_dream: 'valleyDream', bld_clinic: 'shopStory', c3_rumor: 'valley', c3_church: 'valley', c3_confess: 'valley', c3_tran: 'valley', c3_ruins: 'academyStory',
+  c4_fall: 'valley', c4_crowd: 'valley', new_c4_before_square: 'valley', bld_library: 'academyStory', new_c4_irma_leg: 'valley', new_c5_eve: 'valley',
   // 祈り: クララ
-  c2_end: 'prayer', c2_end_b: 'prayer', c2_smile_clara: 'prayer', new_c3_church_night: 'prayer', c4_square: 'prayer', c5_confess: 'prayer', reg_clara_3: 'prayer',
+  c2_end: 'shopStory', c2_end_b: 'shopStory', c2_smile_clara: 'shopStory', new_c3_church_night: 'prayer', c4_square: 'prayer', c5_confess: 'prayer', reg_clara_3: 'prayer',
   // 盟約: 古竜・聖剣を打つ・戦いの前
   c1_guide: 'pact', c2_guide: 'pact', c3_guide: 'pact', c4_guide: 'pact', c5_guide: 'pact', c5_forge: 'pact', c5_pact: 'pact', c5_hero: 'pact',
   // 凱旋: 王都・凱旋門・エンディング
@@ -23339,7 +23456,7 @@ function pgPlay(txt, g, done, special) {
     if (!L.length) { if (done) done(); return; }
     UI.pgLine = { L, i: 0, done: done || null, adv: a ? { cls: a.cls, sex: a.sex, n: a.n } : undefined }; render(); return;
   }
-  STORY.__pg = { id: '__pg', bgm: 'tavern2', lines: storyParse('@bg bg_pub\n' + pgFill(txt, g)) };
+  STORY.__pg = { id: '__pg', bgm: 'night', lines: storyParse('@bg bg_pub\n' + pgFill(txt, g)) };
   storyOpen({ id: '__pg', o: { pub: done || (() => {}), adv: a ? { cls: a.cls, sex: a.sex, n: a.n } : undefined } });
 }
 function pgLineNext() {
@@ -23910,7 +24027,9 @@ function polEnd(g, hit) {
 // ---------- 施設のページ(灯り亭と同じ形: 上にカウンターの場面・右上の札・下に中身) ----------
 function facPage(fid) { if (!FAC[fid] || !facOpen(fid)) return; closeSheet(true);
   if (fid === 'guild') { UI.gTab = 'adv'; UI.fcLine = null; UI.tab = 'adv'; render(); return; }   // No.233 (作者): ギルドは「冒険」のページにまとめた
-  if (UI.facId !== fid) UI.facTab = 'sell'; UI.facId = fid; UI.fcLine = null; UI.tab = 'fac'; render(); }
+  if (UI.facId !== fid) UI.facTab = 'sell'; UI.facId = fid; UI.fcLine = null; UI.tab = 'fac';
+  render();
+}
 // No.215: 注文・建設に使う予定の数(売れるが、目印に出す)
 function resvNote(id) { const n = reservedNeeds()[id] || 0; return n > 0 && invCount(id) > 0 ? ` <span class="fc-resv">・${Math.min(n, invCount(id))}個は注文・建設に使う予定</span>` : ''; }
 // お目当ての品で、×1.5 で売れる数(買った普通の品は除く)
