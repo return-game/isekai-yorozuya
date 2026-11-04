@@ -3056,7 +3056,30 @@ body.practice #app { display: none; }
 /* No.233: 冒険者ギルドのページ(施設の形)。下の中身は、広い画面では左に探索と冒険者・右に行き先 */
 .gpage .gbody { display: grid; gap: 12px; }
 .gpage .gbody > .gcol { display: grid; gap: 12px; align-content: start; min-width: 0; }
+/* No.241: 1列の時は、行き先を探索の様子・前回の探索のすぐ下に */
+@media (max-width: 1099px) { .gpage .gbody > .gcol { display: contents; } .gpage .gbody > .gcol > .gtop { order: -2; } .gpage .gbody > .gcol > .gdest { order: -1; } }
 @media (min-width: 1100px) { .gpage .gbody { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
+
+/* No.241: ギルドの名簿(ルイーダの酒場の形) */
+.gfaces { appearance: none; background: none; border: 0; color: inherit; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 2px 0; cursor: pointer; width: 100%; text-align: left; }
+.gfaces .gface.out { opacity: .55; } .gfaces .gface.hurt { filter: grayscale(.7); }
+.gfaces-go { margin-left: auto; font-size: 12px; color: var(--brass-hi); white-space: nowrap; }
+.grow-li { grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.gchibi { width: 44px; height: 44px; object-fit: contain; image-rendering: auto; }
+.gbench-h { appearance: none; background: none; border: 0; color: inherit; width: 100%; padding: 4px 0; cursor: pointer; }
+.rcpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin: 10px 0; }
+.rcbtn { appearance: none; font: inherit; color: inherit; background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 10px; padding: 8px 4px; display: grid; gap: 1px; justify-items: center; cursor: pointer; min-width: 0; }
+.rcbtn b { font-size: 13.5px; } .rcbtn small { font-size: 10.5px; color: var(--muted, #9aa3b2); }
+.rcbtn.on { border-color: var(--brass-hi); background: rgba(232, 196, 120, .16); box-shadow: 0 0 0 1px var(--brass-hi) inset; }
+.rcbtn:disabled { opacity: .45; cursor: default; }
+.rcbody { display: grid; grid-template-columns: minmax(0, 160px) minmax(0, 1fr); gap: 12px; align-items: start; }
+.rcpic { position: relative; }
+.rcpic > img:first-child { width: 100%; height: auto; display: block; border-radius: 10px; background: rgba(0,0,0,.25); }
+.rcpic .gchibi { position: absolute; right: -10px; bottom: -8px; width: 84px; height: 84px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+.rcname { min-width: 0; flex: 1; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: rgba(0,0,0,.25); color: inherit; }
+@media (max-width: 560px) { .rcbody { grid-template-columns: 120px minmax(0, 1fr); } }
+@media (max-width: 560px) { .gpage .pubswitch .stab b { font-size: 12.5px; line-height: 1.25; } .gpage .pubswitch .stab small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; } .gpage .pubswitch .stab { min-width: 0; padding-left: 6px; padding-right: 6px; } }
+.pubswitch .stab { align-content: center; }
 
 </style>
 <div id="app">
@@ -7340,7 +7363,7 @@ const SHOP_LV = [
 // ---------- Customers ----------
 const CLASSES = [
   { k: 'villager', n: '村人', st: 0, p: 'p_plain', pref: { food: 4, alch: 3, tool: 3, mat: 1 }, tier: 0, sell: 0.4 },
-  { k: 'rookie', n: '新米冒険者', st: 0, p: 'p_band', pref: { equip: 5, alch: 3, food: 2, tool: 1 }, tier: 1, sell: 0.35 },
+  { k: 'rookie', n: '冒険者', st: 0, p: 'p_band', pref: { equip: 5, alch: 3, food: 2, tool: 1 }, tier: 1, sell: 0.35 },
   { k: 'hunter', n: '狩人', st: 0, p: 'p_hood', pref: { equip: 3, tool: 3, food: 2, alch: 1 }, tier: 1, sell: 0.55, likes: ['bow', 'dagger'] },
   { k: 'peddler', n: '行商人', st: 0, p: 'p_hat', pref: { tool: 3, mat: 2, relic: 2, alch: 2 }, tier: 1, sell: 0.75 },
   { k: 'warrior', n: '戦士', st: 1, p: 'p_helm', pref: { equip: 6, alch: 2, food: 1 }, tier: 2, sell: 0.35 },
@@ -10060,21 +10083,69 @@ function takeBest(id, n) { const out = []; for (let i = 0; i < n; i++) { const q
 // rank -> the kinds of adventurer you meet at that rank (their pictures come from the mob set)
 const RK_CLS = [['rookie'], ['rookie', 'hunter', 'warrior'], ['warrior', 'hunter', 'mage'], ['knight', 'mage', 'elf'], ['knight', 'elf', 'dwarf'], ['hero', 'dragoon'], ['hero', 'dragoon']];
 const ROSTER_N = st => Math.min(7, 3 + st);
-function makeAdv(rk) {
-  const cls = pick(RK_CLS[rk] || RK_CLS[0]), sex = mobSex(cls);
-  const used = new Set((G.roster || []).map(m => m.n));
-  const names = (sex === 'f' ? NAMES_F : NAMES_M).filter(n => !used.has(n) && n !== 'エマ');
-  return { id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: pick(names.length ? names : NAMES_M), sex, cls, rk, xp: 0, hurt: 0, wpn: null, arm: null, trips: 0, wins: 0 };
+// No.241 (2026-11-05 作者): 名簿はルイーダの酒場の形。冒険者は自分で募集する(職業・男女・名前を選ぶ)。勝手には来ない。
+// 募集できる職業は章で増える。同じ職業を何人でも。名簿の上限は章で増え、あふれたら「預ける」(いつでも戻せる)
+const REC_CLS = [['rookie', 'warrior', 'hunter'], ['mage'], ['knight', 'elf'], ['dwarf', 'dragoon', 'hero'], []];
+const recClsOpen = () => REC_CLS.slice(0, Math.min(G.stage, 4) + 1).flat();
+const recClsSt = k => REC_CLS.findIndex(l => l.includes(k));
+const ROSTER_CAP = () => [4, 6, 8, 10, 12][Math.min(4, G.stage)];
+const recRank = () => Math.max(0, rankMax() - 1);
+const REC_FEE = [40, 80, 200, 450, 900, 1600, 1600];
+const rosterCount = () => (G.roster || []).filter(m => !m.fixed).length;
+// 闘技場の闘士の名前は使わない(同じ名前の別人にならないように)
+// 使えない名前: 名簿・預けた人・闘技場の闘士・街の住人(物語に出る人)と同じ名前
+function advNameBad(nm) {
+  if ((G.roster || []).concat(G.bench || []).some(m => m.n === nm)) return 'もう名簿にいる名前';
+  if ((typeof AR_F !== 'undefined' ? AR_F : []).some(f => f.n === nm)) return '闘技場の闘士と同じ名前';
+  if (Object.values(SPK).some(s => s.n === nm) || ['エマ', 'クララ', 'アルヴェーラ'].includes(nm)) return '街の人と同じ名前';
+  return '';
+}
+function advNameList(sex) {
+  const used = new Set((G.roster || []).concat(G.bench || []).map(m => m.n));
+  const ar = new Set((typeof AR_F !== 'undefined' ? AR_F : []).map(f => f.n));
+  return (sex === 'f' ? NAMES_F : NAMES_M).filter(n => !used.has(n) && !ar.has(n) && !advNameBad(n));
+}
+function makeAdv(rk, cls, sex, name) {
+  cls = cls || pick(RK_CLS[rk] || RK_CLS[0]); sex = sex || mobSex(cls);
+  const names = advNameList(sex);
+  return { id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: name || pick(names.length ? names : NAMES_M), sex, cls, rk, xp: 0, hurt: 0, wpn: null, arm: null, trips: 0, wins: 0 };
 }
 // the roster grows with the town; new faces arrive near the best rank the guild can field
 function ensureRoster() {
   G.roster = G.roster || [];
-  const want = ROSTER_N(G.stage), top = rankMax();
-  if (!G.roster.length) { G.roster.push(makeAdv(0)); G.roster.push(makeAdv(0)); G.roster.push(makeAdv(Math.min(1, top))); }   // one by one, so no two share a name
-  while (G.roster.length < want) G.roster.push(makeAdv(Math.max(0, top - (G.roster.length % 2))));
+  G.bench = G.bench || [];
+  // No.241: 新しく始めた時は 冒険者・戦士・狩人 の3人。ほかは「仲間を募集」で(前のセーブの名簿はそのまま)
+  if (!G.roster.length && !G.bench.length) { G.roster.push(makeAdv(0, 'rookie')); G.roster.push(makeAdv(0, 'warrior')); G.roster.push(makeAdv(Math.min(1, rankMax()), 'hunter')); }
   return G.roster;
 }
 const advById = id => (G.roster || []).find(m => m.id === id);
+function advRecruit(cls, sex, name) {
+  ensureRoster();
+  if (!recClsOpen().includes(cls) || rosterCount() >= ROSTER_CAP()) return null;
+  const rk = recRank(), fee = REC_FEE[rk];
+  if (G.gold < fee) return null;
+  name = String(name || '').trim().slice(0, 8);
+  if (!name || advNameBad(name)) return null;
+  G.gold -= fee;
+  const m = makeAdv(rk, cls, sex === 'f' ? 'f' : 'm', name);
+  G.roster.push(m);
+  return m;
+}
+// 預ける: 名簿から外してギルドの奥へ。武具は倉庫へ戻す
+function advBench(id) {
+  ensureRoster();
+  const m = advById(id); if (!m || m.fixed || advOut(m)) return false;
+  for (const s of ['wpn', 'arm']) if (m[s]) unequipAdv(m.id, s);
+  G.roster = G.roster.filter(x => x !== m); G.bench.push(m);
+  G.guildParty = (G.guildParty || []).filter(x => x !== m.id);
+  return true;
+}
+function advUnbench(id) {
+  ensureRoster();
+  const m = G.bench.find(x => x.id === id); if (!m || rosterCount() >= ROSTER_CAP()) return false;
+  G.bench = G.bench.filter(x => x !== m); G.roster.push(m);
+  return true;
+}
 const advOut = m => !!(G.dive && G.dive.party.some(p => p.id === m.id));
 const advHurt = m => Math.max(0, (m.hurt || 0) - G.day);   // days left in bed
 const advReady = m => !advOut(m) && advHurt(m) === 0;
@@ -15172,9 +15243,9 @@ function plaza() {
 function vFacs() {
   const shown = FACS.filter(f => { const b = BUILDINGS.find(x => x.id === f.id); return b && b.st <= G.stage; });
   if (!shown.length) return '';
-  return `<div class="sec" data-sec="施設"><h2>施設<span class="aside">売る・頼まれごと・話す</span></h2><div class="rows facrows">` + shown.map(f => {
+  return `<div class="sec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2><div class="rows facrows">` + shown.map(f => {
     const open = facOpen(f.id);
-    return `<button class="dine dinego facgo" data-act="fac" data-v="${f.id}"${open ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: f.ch }, 'sm')}<div style="min-width:0"><div class="t">${f.n}<span class="sub" style="font-weight:500"> ${f.who}</span></div><div class="sub">${open ? (() => { const o = foGet(f.id); if (f.id === 'arena') return '勝ち抜き戦(夜だけ)・闘士に賭ける'; if (f.id === 'guild') return (o && !o.done ? `<b class="fc-eye">頼まれごと: ${IT[o.id].name}×${o.qty}</b>・` : '') + '冒険者に探索を依頼する・買い取り'; return (o && !o.done ? `<b class="fc-eye">頼まれごと: ${IT[o.id].name}×${o.qty}</b>・` : '') + `得意: ${f.fav}は高く買い取り`; })() : '完成すると、買い取りが開く'}</div></div><span class="dg-go"><b>›</b></span></button>`; }).join('') + `</div></div>`;
+    return `<button class="dine dinego facgo" data-act="fac" data-v="${f.id}"${open ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: f.ch }, 'sm')}<div style="min-width:0"><div class="t">${f.n}<span class="sub" style="font-weight:500"> ${f.who}</span></div><div class="sub">${open ? (() => { const o = foGet(f.id); if (f.id === 'arena') return '勝ち抜き戦(夜だけ)・闘士に賭ける'; if (f.id === 'guild') return (o && !o.done ? `<b class="fc-eye">頼み事: ${IT[o.id].name}×${o.qty}</b>・` : '') + '冒険者に探索を依頼する・買い取り'; return (o && !o.done ? `<b class="fc-eye">頼み事: ${IT[o.id].name}×${o.qty}</b>・` : '') + `得意: ${f.fav}は高く買い取り`; })() : '完成すると、買い取りが開く'}</div></div><span class="dg-go"><b>›</b></span></button>`; }).join('') + `</div></div>`;
 }
 function facSheet(fid, tab, keepScroll) {
   const f = FAC[fid]; if (!f) return;
@@ -15824,7 +15895,7 @@ function act0(a, d) {
   if (FISH_ACTS[a]) { const r = FISH_ACTS[a](d || {}); save(); if (r !== false) render(); return; }
   const c = curCust();
   switch (a) {
-    case 'gtab': UI.gTab = d.v === 'sell' ? 'sell' : 'adv'; UI.fcLine = null; sfx('tap'); render(); return;   // No.233: ギルドの札(冒険・売る・頼まれごと)
+    case 'gtab': UI.gTab = d.v === 'sell' ? 'sell' : d.v === 'ros' ? 'ros' : 'adv'; if (UI.tab !== 'adv') UI.tab = 'adv'; UI.fcLine = null; sfx('tap'); render(); return;   // No.233: ギルドの札(冒険・売る・頼まれごと)
     case 'tab': if (d.v === 'adv' && UI.tab !== 'adv') { UI.gTab = 'adv'; UI.fcLine = null; } if (d.v === 'town' && innerWidth <= 560) UI.townView = 'map'; if (d.v !== 'inv') UI.dexNewShown = null; if (d.v === 'main' && UI.tab === 'main') UI.shopView = null; UI.tab = d.v; UI.confirmReset = false; UI.treeOpen = false; sfx('tab'); break;
     case 'sview': if (d.close) closeSheet(true); UI.shopView = d.v === G.act ? null : d.v; if (d.tonya) UI.tonyaOpen = true; UI.tab = 'main'; if (d.tonya) UI.jumpSec = '体力の回復'; sfx('tab'); break;
     case 'iview': UI.invView = d.v; if (d.v !== 'dex') UI.dexNewShown = null; sfx('tab'); break;
@@ -15860,6 +15931,7 @@ function act0(a, d) {
     case 'regcard': regCard(d.v); sfx('tap'); return;
     case 'gomerch': closeSheet(true); UI.marketPick = null; UI.merch = d.v; UI.tab = 'main'; UI.shopView = G.act === 'market' ? null : 'market'; sfx('tab'); break;
     case 'guild': UI.gq = {}; diveSheet(); sfx('tap'); return;
+    case 'gpick': closeSheet(); UI.tab = 'adv'; UI.gTab = 'adv'; render(); setTimeout(() => { const e = document.querySelector('[data-sec=行き先]'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 30); sfx('tap'); return;
     case 'garea': if (!UI.sheet) UI.sheetHist = []; UI.gq = { line: UI.gq && UI.gq.line, area: d.v || null, carry: UI.gq && UI.gq.carry, bags: UI.gq && UI.gq.bags }; diveSheet(); sfx('tap'); return;
     case 'iuse': UI.invUse = UI.invUse === d.v ? null : d.v; sfx('tap'); break;
     case 'isort': if ((G.invSort || 'def') === d.v) G.invSortRev = !G.invSortRev; else { G.invSort = d.v; G.invSortRev = false; } sfx('tap'); save(); break;
@@ -16115,7 +16187,7 @@ function vSideGuild() {
   const d = G.dive;
   return `<div class="sorders"><div class="row between"><b style="font-size:13.5px">ギルドの探索</b><span class="sub" style="font-size:11.5px">${G.guildDone ? `${G.guildDone}回` : ''}</span></div>` +
     (d ? `<div class="so"><button class="so-main" data-act="dvview">${ico(d.target, null, { size: 'sm' })}<span class="grow" style="min-width:0"><span class="so-t">${AR[d.area].n}${partyFaces(d)}</span><span class="so-m"><span>${diveStatus(d)}</span><span>${HP_WORD(d.hp)}</span></span></span></button></div>`
-      : `<button class="btn sm${inMarket() ? ' gold' : ''}" data-act="guild" style="justify-self:start">探索を依頼する</button>`) + `</div>`;
+      : `<button class="btn sm${inMarket() ? ' gold' : ''}" data-act="gpick" style="justify-self:start">探索を依頼する</button>`) + `</div>`;
 }
 
 window.matchMedia('(max-width:560px)').addEventListener('change',()=>{if(G){render._k='';render();}});
@@ -18971,9 +19043,9 @@ const DICT = [
   { k: 'skill', n: 'スキル盤', t: ['店主の画面。真ん中から 職人・商い・目利き・冒険・体 の五つの道がのびていて、習得した節のとなりから選ぶ。◆鍵の節は探索のレアをひとつ差し出す、⬢要の節は遊び方が変わる。', 'ポイントは、レベルが上がる・肩書が変わる・探索のレアを初めて手に入れる・ぬしを初めて倒す・常連さんの物語を見届ける・図鑑の節目・初めての傑作で増える。1回目の振り直しは無料。'] },
   { k: 'upgrade', n: '工房の設備と店の増築', t: ['工房の設備(店主の画面):鍛冶・錬金・調理・筆写の道具をお金で良くする。判定が広がり、良い品が出やすくなる。', '店の増築(街の「わが店」):作業力が増え、朝市の入荷(1段ごとに1割)とお客さんも増える。章が進むと、次の増築ができる。'] },
   { k: 'town', n: '街を育てる', t: ['「街」の建物に必要な品を納品すると建物が建つ。建物ごとに、店や村に良いことが起きる(完成すると何が起きるかは、建物の欄に書いてある)。', 'その章の建物3つがそろい、討伐の場所の「ぬし」を冒険者が倒すと、次の章へ進む。村は町へ、町は街へと育ち、新しい建物と探索の場所が増える。'] },
-  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から。ギルドは下の「ギルド」からも)。札は「売る・頼まれごと」の1つで、頼まれごとがあれば上に出る。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼まれごと(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
+  { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から。ギルドは下の「ギルド」からも)。札は「売る・頼み事」の1つで、頼み事があれば上に出る。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼み事(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
   { k: 'arena', n: '闘技場の勝ち抜き戦', t: ['闘技場ができると、ダリアの施設のページに「勝ち抜き戦」の札が出る。1日1回・体力は使わない。', '二人の闘士の、どちらかに賭ける。闘士には型があり、剛は技に、技は迅に、迅は剛に強い。勝ち残った闘士は、傷を負ったまま次の試合に出る。倍率は客の読みなので、相性と傷をよく見れば少し得をする。', '当てたら「まだ行く(もうけを全部、次の試合に乗せる)」か「もう帰る」。最大5試合。外れたら賭けた分はなくなる。賭けの上限は章で上がる(300G→600G→1000G)。'] },
-  { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)と「売る・頼まれごと」の2つ。', 'ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。行き先には推奨のランクが書いてある。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
+  { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)と「売る・頼み事」の2つ。', 'ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。「冒険」の札の「行き先」には、推奨のランク・最奥のぬし・武具の目安・レア・噂が書いてある。行き先を押すと、そこへ行く冒険者を選んで送り出せる。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
   { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。次の時間帯をまるごと釣り場で過ごす(朝市・店・工房のどれかを手放す)。釣り場では体力を使わず、時間も進まない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。1匹との勝負ごとに、冒険も1ターン進む。', '餌は1回の釣行で10投。釣りポイントで5投ずつ買い足せる(3回まで)。竿(掛かる魚の格)・リール(緑の幅)はポイントでだけ交換できる。', '釣った魚は、小屋の主にお金で売るか、ポイントに替えるか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
   { k: 'loan', n: '出世払い', t: ['開店資金3000Gは村長の出世払い。利子も期限もない。返すのは街の「村長の家」から。返すたびに、節目のごほうび(増築の許可・新しい仕入れ先など)がある。'] },
   { k: 'collect', n: '集める・図鑑・レシピの紙', t: ['図鑑には見つけた品が載る。影絵の品は、まだ見つけていない物(タップすると手がかり)。節目ごとにスキルポイントが入る。', '品にはレア度(E〜S)と使い道の印がつく。倉庫では使い道で絞りこめる。', '秘伝のレシピの紙は、常連さん・建物・ぬしの寝床などで手に入る。破れた所は、探索のレアで読めるようになる。工房の「秘伝」で作る。', '季節限定の素材、常連さんの物語、探索のレア、謎の品の鑑定。図鑑をすべて埋めるのが最終目標。'] },
@@ -19398,16 +19470,8 @@ function diveSheet() {
   const keepScroll = () => { const sc = document.querySelector('#veil .sheet'), top = sc ? sc.scrollTop : 0; return () => { const sc2 = document.querySelector('#veil .sheet'); if (sc2 && UI.gqKeep) sc2.scrollTop = top; UI.gqKeep = false; }; };
   if (G.dive) { h += `<p class="note">いまは${AR[G.dive.area].n}にパーティーが出ている。戻ってきたら次の依頼を出せる。待っている間に、ほかの冒険者の武具を整えたり、療養中の冒険者を手当てしたりできる。</p>` + rosterSec(gq, null); const k = keepScroll(); openSheet(h, { nav: false }); k(); return; }
   if (!gq.area) {
-    if (!G.guildDone && !G.diveWipes) h += `<div class="gsum" style="margin-top:4px"><b>探索の依頼</b><p class="note" style="margin:4px 0 0">ギルドの冒険者を1〜3人選び、武具を渡し、薬や料理を持たせてダンジョンへ送り出す。店で接客するたび、工房で作業するたびに、冒険者も1部屋進む(1日${diveCap()}ターンまで)。魔物や宝箱に出会うとあなたの指示を待ち、分かれ道とぬしの部屋の前では一息ついて、進むか・休むか・引き返すかを決める。最後まで行くと、ぬしの奥の「封印された箱」(その場所でしか手に入らないレア)を持ち帰れる。全滅すると道具袋の品とほとんどの収穫を失い、冒険者は2〜3日の療養が必要になる。</p></div>`;
-    h += `<div class="areas">`;
-    const rm = G.dgRumor && G.dgRumor.until >= G.day ? G.dgRumor : null;
-    for (const a of AREAS) {
-      const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id];
-      h += `<button class="area${open ? '' : ' area-off'}" data-act="garea" data-v="${a.id}"${open ? '' : ' disabled'}><span class="row between"><b>${a.n}</b><span class="row" style="gap:6px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}</span></span>` +
-        (open ? `<span class="sub" style="font-size:12px">${daysWord(a)}・${dg.rooms}部屋・最奥に${MON[dg.boss].n}・武具は${TIER_N[reqTier(a)]}以上${best ? `・最高 ${best >= dg.rooms ? '踏破' : best + '部屋'}` : ''}</span>${rm && rm.area === a.id ? `<span class="rumortag">噂: ${rumorShort(rm)}</span>` : ''}<span class="row wrap" style="gap:4px 10px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}<span class="sub" style="font-size:11px">道中</span><span class="ins">${areaIcons(a.main)}</span></span>`
-          : `<span class="sub" style="font-size:12px">${a.st <= G.stage ? '勇者が聖剣を手にすると行けるようになる' : STAGES[a.st].short + 'になると行けるようになる'}</span>`) + `</button>`;
-    }
-    h += `</div>`;   // v54u: 行き先を選ぶ前の名簿は外した(冒険者は行き先を選んだ後に選ぶ・装備する)
+    // No.241: 行き先は「ギルド」の札「冒険」から選ぶ。ここは武具を整える・手当てだけ
+    h += `<p class="note">行き先は、ギルドの「冒険」の札から選ぶ。ここでは、冒険者の武具を整えたり、療養中の冒険者を手当てしたりできる。</p>` + rosterSec(gq, null);
     const k = keepScroll(); openSheet(h, { nav: false, crumb: ['冒険者ギルド'], bg: guildBg() }); k(); return;
   }
   const a = AR[gq.area], dg = DG[a.id];
@@ -19427,7 +19491,7 @@ function diveSheet() {
   // an item handed over from its own page goes into the first bag with room
   if (gq.carry) { const id = gq.carry; delete gq.carry; const mid = gq.party.find(x => bagAdd(gq.bags, x, id, 1)); if (mid) { gq.edit = { id: mid, slot: 'bag' }; } else if (gq.party.length) toast(`<div>${IT[id].name}を入れられる袋がない</div>`); }
   const ps = gqParty(gq), fee = partyFee(a, ps);
-  h += `<button class="btn ghost sm" data-act="garea" data-v="" style="justify-self:start">‹ 行き先を選び直す</button>`;
+  h += `<button class="btn ghost sm" data-act="gpick" style="justify-self:start">‹ 行き先を選び直す</button>`;
   h += `<div class="sec"><h2>${a.n}<span class="aside">${KIND_N[a.kind]}・${daysWord(a)}・${dg.rooms}部屋</span></h2><p class="note" style="margin-top:0">${a.d} 最奥には${MON[dg.boss].n}がいる。推奨は${RANKS[a.rk].n}ランク・${TIER_N[reqTier(a)]}以上の武具。</p>`;
   h += aimPicker(gq, a);
   h += rosterSec(gq, a);
@@ -19467,6 +19531,21 @@ function aimPicker(gq, a) {
 }
 // ---------- actions ----------
 const DIVE_ACTS = {
+  rosnew() { UI.rc = UI.rc || {}; UI.rc.name = ''; recruitSheet(); sfx('tap'); },
+  rccls(d) { rcKeepName(); UI.rc.cls = d.v; recruitSheet(); sfx('tap'); },
+  rcsex(d) { rcKeepName(); const was = UI.rc.sex; UI.rc.sex = d.v; if (was !== d.v) UI.rc.name = ''; recruitSheet(); sfx('tap'); },
+  rcname() { UI.rc.name = pick(advNameList(UI.rc.sex).filter(n => n !== UI.rc.name)) || UI.rc.name; recruitSheet(); sfx('tap'); },
+  rcjoin() {
+    rcKeepName(); const rc = UI.rc, nm = String(rc.name || '').trim();
+    if (!nm) { toast('<div>名前を入れてください</div>'); return; }
+    const bad = advNameBad(nm); if (bad) { toast(`<div>「${esc(nm)}」は使えない(${bad})</div>`); sfx('tap'); return; }
+    const m = advRecruit(rc.cls, rc.sex, nm); if (!m) { sfx('tap'); return; }
+    sfx('buy'); toast(`<div><b>${esc(m.n)}</b>(${clsName(m.cls)})が名簿に加わった</div>`);
+    UI.rc = { cls: rc.cls, sex: rc.sex }; closeSheet(); UI.tab = 'adv'; UI.gTab = 'ros';
+  },
+  rosbench(d) { const m = advById(d.id); if (advBench(d.id)) { toast(`<div>${esc(m.n)}をギルドの奥に預けた。武具は倉庫へ</div>`); sfx('tap'); } },
+  rosback(d) { if (advUnbench(d.id)) sfx('tap'); },
+  rosopen() { UI.rosOpen = !UI.rosOpen; sfx('tap'); },
   dvview() { const h = diveViewHtml(); if (!h) return; openSheet(h, { nav: false, crumb: ['探索の様子'] }); attachSheetCv(); sfx('tap'); return true; },
   dvc(d) {
     const r = diveChoose(d.v); if (!r) return;
@@ -19524,25 +19603,76 @@ const DIVE_ACTS = {
 // No.233 (2026-11-03 作者): 「冒険」のページを冒険者ギルドにまとめた。施設のページと同じ形(上の枠=エマと背景は固定・下はスクロール)。
 // 札は「冒険」(最初に開く)と「売る・頼まれごと」(ほかの施設と同じ)。いずれ間に「名簿」(冒険者の登録と別れ)を足す。依頼を出す画面は、今までどおり別窓(diveSheet)。
 function vAdv() {
-  const f = FAC.guild, tab = UI.gTab === 'sell' ? 'sell' : 'adv', d = G.dive;
+  const f = FAC.guild, tab = UI.gTab === 'sell' ? 'sell' : UI.gTab === 'ros' ? 'ros' : 'adv', d = G.dive;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="gtab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('adv', '冒険', d ? (d.pending && !d.done ? '判断を待っている' : '探索中') : '依頼を出せる')}${facSellTab(f, tab, 'gtab')}</div>`;
-  const body = tab === 'sell' ? facSellAll(f)
+  const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('adv', '冒険', d ? (d.pending && !d.done ? '判断を待っている' : '探索中') : '依頼を出せる')}${T('ros', '名簿', `${rosterCount()}/${ROSTER_CAP()}人${G.bench && G.bench.length ? `・預け${G.bench.length}` : ''}`)}${facSellTab(f, tab, 'gtab')}</div>`;
+  const body = tab === 'sell' ? facSellAll(f) : tab === 'ros' ? rosterBody()
     : advBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。店で1ターン動くたびに、冒険者も1部屋進む。</p>`;
   return facFrame(f, tab, tabs, body, `${GUILD_CLERK.n}・${f.who}`, 'gpage');
 }
+// ---------- No.241 「名簿」の札(ルイーダの酒場の形): 募集する・預ける・戻す ----------
+// デフォルメの絵は闘技場の闘士と同じ(職業×男女に1人ずつ)。構えの1枚目を小さく出す
+function advChibi(m) {
+  if (m.reg || typeof ARS_IMG === 'undefined') return '';
+  const f = AR_F.find(x => x.ch === `mob_${MOB_OF[m.cls]}_${m.sex}`), fr = f && ARS_IMG[f.id];
+  return fr ? `<img class="gchibi" src="${fr[0]}" alt="" loading="lazy">` : '';
+}
+const clsName = k => (CLASSES.find(x => x.k === k) || {}).n || '';
+function rosRow(m, benched) {
+  const out = advOut(m), hurt = advHurt(m);
+  const st = benched ? '<span class="tag">預けている</span>' : out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
+  const gear = benched ? '' : [m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">装備なし</span>';
+  const can = WPN_OF[m.cls] ? `<div class="sub" style="font-size:11.5px">持てる武器: ${wpnListOf(m.cls)}・防具はどれでも</div>` : '';
+  const full = rosterCount() >= ROSTER_CAP();
+  const btn = benched ? `<button class="btn sm" data-act="rosback" data-id="${m.id}"${full ? ' disabled' : ''}>名簿に戻す</button>`
+    : m.fixed ? '' : `<button class="btn ghost sm" data-act="rosbench" data-id="${m.id}"${out ? ' disabled' : ''}>預ける</button>`;
+  return `<div class="ri grow-li">${advFace(m, 'sm')}${advChibi(m)}<div style="min-width:0"><div class="row" style="gap:6px;flex-wrap:wrap"><b>${m.n}</b><span class="sub">${m.reg ? '勇者' : clsName(m.cls)}・${m.sex === 'f' ? '女' : '男'}</span>${rankTag(m.rk)}${st}${!benched && mealOf(m.id) ? `<span class="tag ok">${MEAL_B[mealOf(m.id).buff].n}</span>` : ''}</div><div class="ins">${gear}</div>${can}</div>${btn}</div>`;
+}
+function rosterBody() {
+  const ros = ensureRoster(), cap = ROSTER_CAP(), n = rosterCount(), bench = G.bench || [];
+  let h = `<div class="sec" data-sec="名簿"><h2>名簿<span class="aside">${n}/${cap}人・章が進むと増える</span></h2>` +
+    `<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:6px"><button class="btn pri" data-act="rosnew">仲間を募集する</button><button class="btn sm" data-act="guild">武具を整える・手当て</button></div>` +
+    (n >= cap ? `<p class="note" style="font-size:12px;margin:0 0 6px">名簿がいっぱい。誰かを預けると、新しく募集できる。</p>` : '') +
+    `<div class="rows">${ros.map(m => rosRow(m)).join('')}</div></div>`;
+  if (bench.length) {
+    h += `<div class="sec" data-sec="預けている冒険者"><button class="row between gbench-h" data-act="rosopen"><b>預けている冒険者(${bench.length}人)</b><span class="sub">${UI.rosOpen ? '閉じる' : '開く'}</span></button>` +
+      (UI.rosOpen ? `<div class="rows">${bench.map(m => rosRow(m, true)).join('')}</div>` : '') + `</div>`;
+  }
+  return h + `<p class="note" style="font-size:12px">預けた冒険者は、ランクと経験をそのまま覚えている。武具は倉庫に戻る。</p>`;
+}
+function recruitSheet() {
+  const open = recClsOpen(), rc = UI.rc || (UI.rc = {});
+  if (!open.includes(rc.cls)) rc.cls = open[0];
+  if (rc.sex !== 'f' && rc.sex !== 'm') rc.sex = 'm';
+  if (!rc.name) rc.name = pick(advNameList(rc.sex)) || '';
+  const rk = recRank(), fee = REC_FEE[rk], full = rosterCount() >= ROSTER_CAP(), poor = G.gold < fee;
+  const all = REC_CLS.flat();
+  let h = `${xBtn}<div class="lead">${portrait({ cls: 'villager', ...clerkSpec() }, 'lg')}<div style="min-width:0"><div class="sub">${GUILD_CLERK.n}・${GUILD_CLERK.who}</div><h2>仲間を募集する</h2><div class="sub">どんな方をお探しですか? 職業と、男の方か女の方かを選んでくださいね。</div></div></div>`;
+  h += `<div class="rcpick">` + all.map(k => { const ok = open.includes(k); return `<button class="rcbtn${rc.cls === k ? ' on' : ''}" data-act="rccls" data-v="${k}"${ok ? '' : ' disabled'}><b>${clsName(k)}</b>${ok ? '' : `<small>第${recClsSt(k) + 1}章から</small>`}</button>`; }).join('') + `</div>`;
+  const m = { cls: rc.cls, sex: rc.sex };
+  h += `<div class="rcbody"><div class="rcpic"><img src="${chURL('mob_' + MOB_OF[rc.cls] + '_' + rc.sex, 'normal')}" alt="">${advChibi(m)}</div><div class="rcform">` +
+    `<div class="row" style="gap:6px"><button class="btn sm${rc.sex === 'm' ? ' gold' : ''}" data-act="rcsex" data-v="m">男</button><button class="btn sm${rc.sex === 'f' ? ' gold' : ''}" data-act="rcsex" data-v="f">女</button></div>` +
+    `<label class="sub" for="rcname" style="margin-top:8px;display:block">名前</label><div class="row" style="gap:6px"><input id="rcname" class="rcname" maxlength="8" value="${esc(rc.name)}"><button class="btn sm" data-act="rcname">別の名前</button></div>` +
+    (WPN_OF[rc.cls] ? `<p class="sub" style="margin:8px 0 0;font-size:12px">持てる武器: ${wpnListOf(rc.cls)}・防具はどれでも</p>` : '') +
+    `<p class="sub" style="margin:8px 0 0">${clsName(rc.cls)}・${rc.sex === 'f' ? '女' : '男'}・${rankTag(rk)}ランクで登録・募集料 <b class="price">${fee}G</b></p>` +
+    `<button class="btn pri big" data-act="rcjoin"${full || poor ? ' disabled' : ''} style="margin-top:8px">登録する</button>` +
+    (full ? `<p class="note" style="font-size:12px">名簿がいっぱい(${rosterCount()}/${ROSTER_CAP()}人)。誰かを預けると登録できる。</p>` : poor ? `<p class="note" style="font-size:12px">お金が足りない。</p>` : '') +
+    `</div></div>`;
+  openSheet(h, { nav: false, crumb: ['仲間を募集'], bg: guildBg() });
+}
+const rcKeepName = () => { const e = document.querySelector('#rcname'); if (e && UI.rc) UI.rc.name = e.value; };
 // 「冒険」の札の中身(前の「冒険」のページ)。PCの広い画面では左に探索と冒険者、右に行き先
 function advBody() {
   const d = G.dive, last = G.diveLast;
   let h = `<div class="gbody"><div class="gcol">`;
   if (d && d.pending && !d.done) {
     const p = d.pending, [k1] = DEC_HEAD[p.k] || ['判断'];
-    h += `<button class="dvwait" data-act="dvask" data-sec="判断を待っている"><span class="dvw-k">判断を待っている</span><b>${k1}${p.foe && MON[p.foe] ? `・${MON[p.foe].n}` : ''}</b><span class="sub">${AR[d.area].n}・${d.party.map(m => m.n).join('・')}がその場で待っている</span><span class="btn pri sm">指示を出す</span></button>`;
+    h += `<button class="dvwait gtop" data-act="dvask" data-sec="判断を待っている"><span class="dvw-k">判断を待っている</span><b>${k1}${p.foe && MON[p.foe] ? `・${MON[p.foe].n}` : ''}</b><span class="sub">${AR[d.area].n}・${d.party.map(m => m.n).join('・')}がその場で待っている</span><span class="btn pri sm">指示を出す</span></button>`;
   }
   if (d) {
     const a = AR[d.area], dg = DG[a.id];
     const bag = d.bag.filter(b => b.qs.length).map(b => `<span class="in">${ico(b.id, b.qs[0], { size: 'xs' })}${IT[b.id].name}×${b.qs.length}</span>`).join('') || '<span class="sub">空っぽ</span>';
-    h += `<div class="sec gxnow" data-sec="探索の様子"><h2>${a.n}<span class="aside">${diveStatus(d)}</span></h2><div class="gxview"><button class="dw-view big" data-act="${d.pending ? 'dvask' : 'dvview'}" aria-label="探索を大きく見る"><canvas class="dvbig" width="384" height="216"></canvas><span class="dw-zoom" aria-hidden="true">⤢</span></button>` +
+    h += `<div class="sec gxnow gtop" data-sec="探索の様子"><h2>${a.n}<span class="aside">${diveStatus(d)}</span></h2><div class="gxview"><button class="dw-view big" data-act="${d.pending ? 'dvask' : 'dvview'}" aria-label="探索を大きく見る"><canvas class="dvbig" width="384" height="216"></canvas><span class="dw-zoom" aria-hidden="true">⤢</span></button>` +
       `<div class="gxside"><div class="dw-hp big">${partyFaces(d)}${hpBar(d.hp)}<span>${HP_WORD(d.hp)}</span></div><div class="sub">今日 ${d.day === G.day ? d.today : 0}/${diveCap()}ターン・最奥に${MON[dg.boss].n}</div>` +
       `<div class="sub" style="margin-top:6px">道具袋</div><div class="ins">${bag}</div><div class="sub" style="margin-top:6px">収穫</div><div class="ins">${haulIcons(d.haul, 12)}${d.gold ? `<span class="in price">${d.gold}G</span>` : ''}</div></div></div>` +
       routeBar(d) + (d.aim ? `<div class="sub" style="margin-top:4px">狙い: ${ico(d.aim, null, { size: 'xs', sil: G.found[d.aim] === undefined })} ${G.found[d.aim] !== undefined ? IT[d.aim].name : '？？？'}(ぬしの奥の封印された箱)</div>` : '') +
@@ -19550,27 +19680,27 @@ function advBody() {
       `<p class="note" style="font-size:12px;margin:4px 0 0">接客1人・工房の作業1回・灯り亭の夕食で、冒険者も1ターン進む(1日${diveCap()}ターンまで)。道のり → 遭遇 → 一息 をくり返して、最奥をめざす。</p>` +
       `<div class="dvlog short">${d.log.slice(-8).reverse().map(l => `<div class="lg ${l.c}">${esc(l.t)}</div>`).join('')}</div></div>`;
   } else {
-    if (last) h += `<div class="sec" data-sec="前回の探索"><h2>前回の探索<span class="aside">${AR[last.area].n}・${last.day}日目</span></h2><div class="ins">${last.items.length ? last.items.slice(0, 8).map(x => `<span class="in">${ico(x.id, null, { size: 'xs' })}${IT[x.id].name}×${x.n}</span>`).join('') : '<span class="sub">持ち帰った品はない</span>'}</div><p class="note" style="font-size:12.5px">${last.res === 'home' ? `${last.beat ? (last.area === 'dragon' ? '古竜との戦いを終えて' : 'ぬしを倒して') : ''}帰還・持ち帰った価値 約${fmt(last.value)}G` : '全滅して、冒険者は療養中'}</p></div>`;
-    else h += `<p class="note">ギルドの冒険者を1〜3人選び、武具を渡し、薬や料理を持たせてダンジョンへ送り出す。魔物や宝箱、分かれ道に出会うと、あなたの指示を待つ(急がなくても、その場で待っている)。</p>`;
-    h += `<button class="btn pri big" data-act="guild" data-focus>探索を依頼する</button>`;
+    if (last) h += `<div class="sec gtop" data-sec="前回の探索"><h2>前回の探索<span class="aside">${AR[last.area].n}・${last.day}日目</span></h2><div class="ins">${last.items.length ? last.items.slice(0, 8).map(x => `<span class="in">${ico(x.id, null, { size: 'xs' })}${IT[x.id].name}×${x.n}</span>`).join('') : '<span class="sub">持ち帰った品はない</span>'}</div><p class="note" style="font-size:12.5px">${last.res === 'home' ? `${last.beat ? (last.area === 'dragon' ? '古竜との戦いを終えて' : 'ぬしを倒して') : ''}帰還・持ち帰った価値 約${fmt(last.value)}G` : '全滅して、冒険者は療養中'}</p></div>`;
+    else h += `<p class="note gtop">下の「行き先」を選んで、ギルドの冒険者を1〜3人送り出す。武具を渡し、薬や料理を持たせてダンジョンへ。魔物や宝箱、分かれ道に出会うと、あなたの指示を待つ(急がなくても、その場で待っている)。</p>`;
   }
   // 食事: fish up a dish, feed an adventurer, get the next trip's buff
   { const fedN = Object.keys(G.meals || {}).length; h += `<button class="btn big" data-act="mealsheet" style="margin-top:8px">食事をとる<small style="display:block;font-weight:500;opacity:.8">釣った魚で料理、次の冒険にバフ${fedN ? `・食べた人 ${fedN}人` : ''}</small></button>`; }
-  // the guild's people
+  // No.241: ギルドの冒険者の一覧は「名簿」の札へ。ここは顔の列だけ(押すと名簿へ)
   const ros = ensureRoster();
-  h += `<div class="sec" data-sec="ギルドの冒険者"><h2>ギルドの冒険者<span class="aside">${ros.length}人・受付 ${GUILD_CLERK.who}</span></h2><div class="rows">` + ros.map(m => {
-    const out = advOut(m), hurt = advHurt(m);
-    const st = out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
-    const gear = [m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">武具なし</span>';
-    return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}${mealOf(m.id) ? `<span class="tag ok">${MEAL_B[mealOf(m.id).buff].n}</span>` : ''}</div><div class="ins">${gear}</div></div></div>`;
-  }).join('') + `</div><button class="btn sm" data-act="guild" style="margin-top:8px">ギルドで武具を整える・手当て</button></div>`;
+  h += `<div class="sec" data-sec="ギルドの冒険者"><h2>ギルドの冒険者<span class="aside">${ros.length}人</span></h2><button class="gfaces" data-act="gtab" data-v="ros" aria-label="名簿を見る">${ros.map(m => `<span class="gface${advOut(m) ? ' out' : advHurt(m) ? ' hurt' : ''}">${advFace(m, 'sm')}</span>`).join('')}<span class="gfaces-go">名簿 ›</span></button>` +
+    `<button class="btn sm" data-act="guild" style="margin-top:8px">ギルドで武具を整える・手当て</button></div>`;
   h += `</div><div class="gcol">`;
   // places and records
   const opened = AREAS.filter(areaOpen);
-  h += `<div class="sec" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所</span></h2><div class="rows">` + AREAS.map(a => {
+  // No.241 (2026-11-05 作者): 行き先は依頼の別窓と同じ中身(ぬし・武具の目安・道中・レア・噂)。押すとその行き先で冒険者選びから
+  const rm = G.dgRumor && G.dgRumor.until >= G.day ? G.dgRumor : null;
+  h += `<div class="sec gdest" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所${d ? '・探索から戻ると選べる' : ''}</span></h2><div class="rows">` + AREAS.map(a => {
     const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id];
-    if (!open) return `<div class="ri gxarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${STAGES[a.st].short}になると行ける</span></div>`;
-    return `<button class="ri gxarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="sub" style="font-weight:500;margin-left:6px">推奨${RANKS[a.rk].n}・${daysWord(a)}</span></div><div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div></div><span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
+    if (!open) return `<div class="ri gxarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${a.st <= G.stage ? '勇者が聖剣を手にすると行けるようになる' : STAGES[a.st].short + 'になると行ける'}</span></div>`;
+    return `<button class="ri gxarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="row" style="gap:6px;display:inline-flex;margin-left:6px;vertical-align:1px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}</span></div>` +
+      `<div class="sub" style="font-size:12px">${daysWord(a)}・${dg.rooms}部屋・最奥に${MON[dg.boss].n}・武具は${TIER_N[reqTier(a)]}以上</div>` +
+      `<div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div>${rm && rm.area === a.id ? `<span class="rumortag">噂: ${rumorShort(rm)}</span>` : ''}</div>` +
+      `<span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
   }).join('') + `</div></div>`;
   h += vGuildReport();
   return h + `</div></div>`;
@@ -19868,7 +19998,7 @@ const HINTS = [
   { id: 'adv1', k: 'adv', sel: '[data-sec=ギルドの冒険者] [data-act=guild]', when: () => UI.tab === 'adv',
     text: '冒険者さんには、ここで武具を渡します。武具がないと、すぐにけがをして帰ってきてしまいます。けがをした人の手当ても、ここでできますよ。' },
   { id: 'adv2', k: 'adv', sel: '[data-sec=行き先] h2', when: () => UI.tab === 'adv' && hintSeen('adv1'),
-    text: '行き先には、推奨のランクが書いてあります。冒険者さんのランク(F・E…)と比べて選んでくださいね。冒険者さんが進むのは、お店で動いた時だけで、1日12ターンまでです。' },
+    text: '行き先には、推奨のランクと最奥のぬしが書いてあります。冒険者さんのランク(F・E…)と比べて、行き先を押して送り出してくださいね。冒険者さんが進むのは、お店で動いた時だけで、1日12ターンまでです。' },
   { id: 'advask', k: 'adv', sel: '#veil .sheet', when: () => !!(UI.sheet && UI.sheet.dive),
     text: '探索の途中で、魔物や宝箱、分かれ道に出会うと、こうして店主さんの判断を待ってくれます。分かれ道やぬしの前では、一息ついて、進むか・休むか・引き返すかを選びます。元気が減ったまま進むと、けがをします。戦いや宝箱を毎回聞かれるのが大変なら、「おまかせ」にもできますよ。' },
   { id: 'advback', k: 'adv', sel: '[data-sec=前回の探索] h2', when: () => UI.tab === 'adv' && !G.dive,
@@ -24079,15 +24209,15 @@ function vFacPage() {
 }
 // No.233 (作者): 「売る・頼まれごと」の札(どの施設も同じ。空いた所に、いずれ施設ごとの色の札を足す)
 function facSellTab(f, tab, act) {
-  const o = FC[f.id] ? foGet(f.id) : null, on = tab === 'sell';
-  return `<button class="stab${on ? ' on' : ''}" data-act="${act}" data-v="sell" role="tab" aria-selected="${on}"><b>${FC[f.id] ? '売る・頼まれごと' : '売る'}</b><small>${o && !o.done ? `頼まれごと: ${IT[o.id].name}×${o.qty}` : '買い取り'}</small></button>`;
+  const on = tab === 'sell';
+  return `<button class="stab${on ? ' on' : ''}" data-act="${act}" data-v="sell" role="tab" aria-selected="${on}"><b>${FC[f.id] ? '売る・頼み事' : '売る'}</b></button>`;
 }
 // 中身: 上に頼まれごと(あれば)、下に売る一覧
 function facSellAll(f) {
   const fc = FC[f.id], o = fc ? foGet(f.id) : null;
-  const ord = !o ? '' : o.done ? `<p class="note fo-done" style="font-size:12.5px">頼まれごと: ${IT[o.id].name} ×${o.qty} を届けた(代金 ${fmt(o.pay)}G)。次は${o.next - G.day <= 1 ? '明日' : (o.next - G.day) + '日後'}。</p>` : `<div class="sub" style="margin-bottom:4px">${esc(f.who)}からの頼まれごと</div>` + facOrdBody(f);
+  const ord = !o ? '' : o.done ? `<p class="note fo-done" style="font-size:12.5px">頼み事: ${IT[o.id].name} ×${o.qty} を届けた(代金 ${fmt(o.pay)}G)。次は${o.next - G.day <= 1 ? '明日' : (o.next - G.day) + '日後'}。</p>` : `<div class="sub" style="margin-bottom:4px">${esc(f.who)}からの納品</div>` + facOrdBody(f);
   return ord + `<div class="sub" style="margin-top:${ord ? 10 : 0}px">売る</div>` + facSellBody(f) +
-    `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。${fc ? '頼まれごとは、夜の工房の時間に作れる。' : ''}所持金 <span class="price">${fmt(G.gold)}G</span></p>`;
+    `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。${fc ? '頼み事の品は、夜の工房の時間に作れる。' : ''}所持金 <span class="price">${fmt(G.gold)}G</span></p>`;
 }
 // No.233: 施設の上の枠(背景と施設の人・ふだんの話)。ギルドのページ(diveui.js の vAdv)も使う
 function facScene(f, tab) {
@@ -24110,7 +24240,7 @@ function vFacWork(off) {
   const orow = ([fid, o]) => { const f = FAC[fid], why = foWhy(o);
     return `<div class="facrow">${ico(o.id, null, { size: 'sm', sil: G.found[o.id] === undefined })}<div style="min-width:0"><div class="t">${f.who}の頼み: ${IT[o.id].name} ×${o.qty}</div><div class="sub">${foHave(o) ? '材料はそろっている' : '材料が足りない'}・代金 ${fmt(foPay(o, 0))}〜${fmt(foPay(o, 3))}G</div></div><span class="facbtns"><button class="btn sm pri" data-act="focraft" data-v="${fid}"${why ? ' disabled' : ''}>まとめて作る</button></span></div>`; };
   const drow = it => `<div class="facrow">${ico(it.id, 0, { size: 'sm', cnt: invCount(it.id) })}<div style="min-width:0"><div class="t">${it.name}</div><div class="sub">磨くと、腕しだいで良い品に・体力1</div></div><span class="facbtns"><button class="btn sm pri" data-act="polish" data-v="${it.id}"${polWhy() ? ' disabled' : ''}>磨く</button></span></div>`;
-  return `<div class="callout fcwork"><div style="min-width:0;width:100%">${os.length ? `<div class="t">施設の頼まれごと</div><div class="facrows">${os.map(orow).join('')}</div>` : ''}${ds.length ? `<div class="t"${os.length ? ' style="margin-top:6px"' : ''}>掘り出し物を磨く</div><div class="facrows">${ds.map(drow).join('')}</div>` : ''}</div></div>`;
+  return `<div class="callout fcwork"><div style="min-width:0;width:100%">${os.length ? `<div class="t">施設の頼み事</div><div class="facrows">${os.map(orow).join('')}</div>` : ''}${ds.length ? `<div class="t"${os.length ? ' style="margin-top:6px"' : ''}>掘り出し物を磨く</div><div class="facrows">${ds.map(drow).join('')}</div>` : ''}</div></div>`;
 }
 // 確かめ用
 try { window.__fcw = fcWant; window.__fc = { FC, foGet, foPay, foRecs, foNeed, foHave, foStart, foEnd, foDeliver, polResult, polStart, polEnd, digStall, digPrice, digPool, digGems, facPage, fcTalk, fcNext, fcGreet }; } catch (e) { }
