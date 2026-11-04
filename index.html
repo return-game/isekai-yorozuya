@@ -9649,7 +9649,7 @@ const FACS = [
   { id: 'inn', n: '宿屋', who: 'コレット', ch: 'colette', bg: 'bg_inn', hi: ['お客さんに出す料理、うちだけじゃ間に合わなくて…。', 'パンが朝のうちに全部なくなっちゃうんです。', '旅の人たち、店主さんの料理だって言うと喜ぶんですよ。'], ty: ['ありがとうございます! 今夜の分、足りそうです。', 'わあ、いい匂い…。', 'これでお客さんをお待たせしなくてすみます。'], none: '今日はまだ、うちで出せる物はないみたいですね。また寄ってください。', fav: '料理',
     buys: it => it.cat === 'food' || (it.cat === 'mat' && ['食材', '布'].includes(it.sub)),
     isFav: it => it.cat === 'food', sells: it => it.raw && ['食材', '布'].includes(it.sub) },
-  { id: 'church', n: '教会', get who() { return G && G.stage >= 4 ? 'ベルトラン' : 'トラン司祭'; }, get ch() { return G && G.stage >= 4 ? 'chancellor' : 'priest'; }, bg: 'bg_church',   // No.216: 第5章は宰相になったベルトランが朝だけ司祭 hi: ['巡礼の方々が、聖水と護符を求めておられます。', '祈りの書も、写す手が足りないのです。', 'あなたの品は、心を込めて作られていますね。'], ty: ['神のご加護を。', 'これで巡礼の方々にお分けできます。', 'ありがたく頂戴します。'], none: '今日は、お預かりできる物はないようですね。', fav: '聖水・護符',
+  { id: 'church', n: '教会', get who() { return G && G.stage >= 4 ? 'ベルトラン' : 'トラン司祭'; }, get ch() { return G && G.stage >= 4 ? 'chancellor' : 'priest'; }, bg: 'bg_church',   /* No.216: 第5章は宰相になったベルトランが朝だけ司祭 */ hi: ['巡礼の方々が、聖水と護符を求めておられます。', '祈りの書も、写す手が足りないのです。', 'あなたの品は、心を込めて作られていますね。'], ty: ['神のご加護を。', 'これで巡礼の方々にお分けできます。', 'ありがたく頂戴します。'], none: '今日は、お預かりできる物はないようですね。', fav: '聖水・護符',
     buys: it => it.id === 'holy' || it.id === 'candle' || (it.cat === 'magic' && ['護符', 'スクロール', '魔導書'].includes(it.sub)) || (it.cat === 'mat' && ['紙', '宝石'].includes(it.sub)),
     isFav: it => it.id === 'holy' || (it.cat === 'magic' && it.sub === '護符'), sells: it => it.raw && ['紙', '宝石'].includes(it.sub) },
   { id: 'guild', n: '冒険者ギルド', who: 'エマ', ch: 'guild', bg: 'bg_guild', hi: ['出発前の冒険者さんに、道具が足りなくて…。', '魔物の素材は、ギルドで買い取って王都へ送るんです。', '店主さんの道具なら、みんな安心して持っていけます。'], ty: ['ありがとうございます! すぐ冒険者さんに回しますね。', '助かります。', 'これで明日の探索も安心です。'], none: '今日はギルドで引き取れる物はないみたいです。', fav: '冒険道具',
@@ -19761,6 +19761,8 @@ function tutBestSpot(r, bw, bh, vw, vh) {
     const q = e.getBoundingClientRect();
     if (q.width > 0 && q.height > 0 && q.bottom > 0 && q.top < vh) hot.push(q);
   }
+  // No.238: 下のタブと下のボタン(開店など)は、ふだんの画面の行き先なので、できるだけ隠さない
+  for (const sel of ['#tabs', '#fab']) { const e = $(sel); if (!e) continue; const q = e.getBoundingClientRect(); if (q.width > 0 && q.height > 0 && q.bottom > 0 && q.top < vh) for (let i = 0; i < 4; i++) hot.push(q); }
   // on wide screens prefer resting over the quieter side column rather than the main panel
   const soft = [];
   if (vw >= 900) { const pn = $('#panel'), stg = $('#stage'); if (pn) soft.push([pn.getBoundingClientRect(), 0.3]); if (stg) soft.push([stg.getBoundingClientRect(), 0.25]); }
