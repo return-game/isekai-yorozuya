@@ -3081,6 +3081,46 @@ body.practice #app { display: none; }
 @media (max-width: 560px) { .gpage .pubswitch .stab b { font-size: 12.5px; line-height: 1.25; } .gpage .pubswitch .stab small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; } .gpage .pubswitch .stab { min-width: 0; padding-left: 6px; padding-right: 6px; } }
 .pubswitch .stab { align-content: center; }
 
+/* No.242 (2026-11-05 作者): 「冒険」の札を1ページに。右の冒険者は、押すとその場で武具・道具袋・食事・手当て */
+.gm2 { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; padding: 6px 10px 6px 6px; }
+.gm2-h { appearance: none; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 2px 0; min-width: 0; font: inherit; }
+.gm2-h:disabled { cursor: default; }
+.gm2-h:hover:not(:disabled) b { color: var(--brass-hi); }
+.gm2-chev { color: var(--ink-3, #9a927f); font-size: 12px; }
+.gm2.open { border-color: rgba(232, 192, 106, .45); }
+.gm2 .gmem-a { align-self: center; }
+.gsum-r { gap: 4px; flex-wrap: wrap; align-items: center; }
+.gsum-r .gsm { padding: 1px 3px; position: relative; }
+.gsum-r .gsm.none { font-size: 11px; color: var(--ink-3, #9a927f); padding: 1px 6px; border: 1px dashed var(--line); border-radius: 8px; }
+.gsum-r .gsep { width: 1px; height: 16px; background: var(--line); margin: 0 4px; }
+.gsum-r .gsm-e { font-size: 11px; }
+.gup { font-style: normal; color: #7fe0a8; font-size: 10px; margin-left: 2px; text-shadow: 0 0 6px rgba(127, 224, 168, .5); }
+.gslot .gup { position: absolute; top: 1px; right: 2px; margin: 0; }
+.gslot { position: relative; }
+.gm2-ed { grid-column: 1 / -1; display: grid; gap: 6px; }
+.gm2-slots { gap: 6px; flex-wrap: wrap; align-items: center; }
+.gm2-k { font-size: 11px; margin-left: 4px; }
+.gm2-k:first-child { margin-left: 0; }
+.gmealslot .gmeal img, .gmealslot .gmeal svg { width: 22px; height: 22px; }
+.gxarea.on { background: rgba(232, 192, 106, .10); border-bottom-color: transparent; }
+.gxarea.on .t { color: var(--brass-hi); }
+.gxdet { padding: 8px 10px 12px; border-bottom: 1px solid var(--line); background: rgba(232, 192, 106, .05); display: grid; gap: 4px; }
+.gsend { padding: 8px 12px; border-radius: 12px; background: rgba(20, 22, 30, .96); border: 1px solid rgba(232, 192, 106, .45); box-shadow: 0 -6px 18px rgba(0, 0, 0, .35); }
+.gsend-est { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; }
+.gsend-est b { margin-left: 2px; }
+@media (min-width: 1100px) {
+  .gpage .market-bottom:has(.gbody) { overflow: hidden; display: flex; flex-direction: column; }
+  .gpage .market-bottom > .pub-body:has(> .gbody) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .gpage .gbody { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-rows: minmax(0, 1fr); overflow: hidden; }
+  .gpage .gbody > .gcol { overflow-y: auto; min-height: 0; max-height: 100%; scrollbar-width: thin; padding-right: 4px; }
+  .gpage .gbody > .gcol-adv { overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding-right: 0; }
+  .gpage .gcol-adv > .gadvs { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-right: 4px; }
+  .gpage .gcol-adv > .gsend { flex: none; }
+}
+.gm2-sp { width: 6px; }
+.gsend-row { display: flex; gap: 8px 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.gsend-row .gsend-est { flex: 1 1 260px; }
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -10028,6 +10068,35 @@ function bagAdd(bags, mid, id, n) {
   if (n > 0 && bagsHold(bags, id) + n > spareCount(id)) return false;
   b[id] = nn; return true;
 }
+// No.242 (2026-11-05 作者): 道具袋は冒険者が持つ。入れると倉庫から出る・外すと倉庫へ戻る・帰っても残る。
+// m.bag = [{ id, qs: [品質,...] }](1枠に薬・料理は2個、道具は1個)。ギルドと店は別の施設なので、袋の品は店では売れない
+const advBag = m => (m && (Array.isArray(m.bag) ? m.bag : (m.bag = []))) || [];
+const advBagCount = (m, id) => advBag(m).reduce((t, b) => t + (b.id === id ? b.qs.length : 0), 0);
+function bagPut(mid, id) {
+  const m = advById(mid); if (!m || advOut(m) || !packable(IT[id]) || spareCount(id) <= 0) return false;
+  const bag = advBag(m), b = bag.find(x => x.id === id);
+  if (b && b.qs.length >= bagStack(id)) return false;
+  if (!b && bag.length >= bagSlots(m)) return false;
+  const q = takeBest(id, 1)[0]; if (q === undefined) return false;
+  if (b) b.qs.push(q); else bag.push({ id, qs: [q] });
+  return true;
+}
+function bagPull(mid, id) {
+  const m = advById(mid); if (!m || advOut(m)) return false;
+  const bag = advBag(m), b = bag.find(x => x.id === id); if (!b || !b.qs.length) return false;
+  b.qs.sort((x, y) => y - x); invAdd(id, b.qs.pop(), 1, true);
+  if (!b.qs.length) m.bag = bag.filter(x => x !== b);
+  return true;
+}
+function bagEmpty(mid) { const m = advById(mid); if (!m || advOut(m)) return 0; let n = 0; for (const b of advBag(m)) for (const q of b.qs) { invAdd(b.id, q, 1, true); n++; } m.bag = []; return n; }
+// what came back from the field goes back into its owner's bag (what does not fit goes to the warehouse)
+function bagReturn(mid, id, q) {
+  const m = advById(mid);
+  if (m && !m.guest) { const bag = advBag(m), b = bag.find(x => x.id === id);
+    if (b && b.qs.length < bagStack(id)) { b.qs.push(q); return; }
+    if (!b && bag.length < bagSlots(m)) { bag.push({ id, qs: [q] }); return; } }
+  invAdd(id, q, 1, true);
+}
 // keep the bags honest: only the party, only what is still in the warehouse, within the slots
 function bagsClean(bags, party) {
   for (const mid in bags) if (!party.includes(mid)) delete bags[mid];
@@ -10136,6 +10205,7 @@ function advBench(id) {
   ensureRoster();
   const m = advById(id); if (!m || m.fixed || advOut(m)) return false;
   for (const s of ['wpn', 'arm']) if (m[s]) unequipAdv(m.id, s);
+  bagEmpty(m.id);   // No.242: 袋の品も倉庫へ
   G.roster = G.roster.filter(x => x !== m); G.bench.push(m);
   G.guildParty = (G.guildParty || []).filter(x => x !== m.id);
   return true;
@@ -10637,7 +10707,7 @@ function diveSettle() {
     for (const id in d.haul) give(id, d.haul[id]);
     if (d.gold) { G.gold += d.gold; G.stats.earned += d.gold; rep.gold = d.gold; }
     rep.back = d.bag.filter(b => b.qs.length).map(b => ({ id: b.id, n: b.qs.length }));
-    for (const b of d.bag) for (const q of b.qs) invAdd(b.id, q, 1, true);
+    for (const b of d.bag) for (const q of b.qs) bagReturn(b.who, b.id, q);   // No.242: 残った品は持ち主の袋へ
     gainFame(1 + Math.max(0, a.rk) + (d.beat ? 2 + a.rk : 0) + d.dl);
     G.guildDone = (G.guildDone || 0) + 1;
     G.depthBest = G.depthBest || {};
@@ -10870,14 +10940,15 @@ function sendDive(areaId, target, ids, pk) {
   if (!ms.length) return null;
   const fee = partyFee(a, ms); if (G.gold < fee) return null;
   const pack = { bag: [] };
-  if (pk.bags) {
-    const bags = bagsClean(JSON.parse(JSON.stringify(pk.bags)), ms.map(m => m.id));
-    for (const mid in bags) for (const [id, n] of Object.entries(bags[mid])) { const qs = takeBest(id, n); if (qs.length) pack.bag.push({ id, qs, who: mid }); }
-  } else for (const [id, n] of (pk.bag || []).slice(0, BAG_SLOTS)) {
+  pk = pk || {};
+  // No.242: 袋は冒険者が持っている。古い呼び方(試験の bot)の bags は、出発の前に本人の袋へ入れる
+  if (pk.bags) { for (const mid in pk.bags) if (ms.some(m => m.id === mid)) for (const [id, n] of Object.entries(pk.bags[mid])) for (let k = 0; k < n; k++) bagPut(mid, id); }
+  else for (const [id, n] of (pk.bag || []).slice(0, BAG_SLOTS)) {
     if (!packable(IT[id])) continue;
     const qs = takeBest(id, Math.min(n, BAG_STACK, spareCount(id)));
     if (qs.length) pack.bag.push({ id, qs });
   }
+  for (const m of ms) { for (const b of advBag(m)) if (b.qs.length) pack.bag.push({ id: b.id, qs: b.qs.slice(), who: m.id }); m.bag = []; }
   G.gold -= fee; if (G.today) G.today.bought += fee;
   const d = G.dive = newDive(areaId, target, ms, pack);
   // the members carry the real gear: the dive holds it while they are out
@@ -14062,7 +14133,7 @@ function render() {
   if (fishOn()) { const op = fishOpenSpots().map(s => s.id), seen = G.fshOpen || []; const nw = op.filter(id => !seen.includes(id)); if (nw.length) { G.fshOpen = op; const first = !seen.length;
     setTimeout(() => toast(first ? `<div><div class="t1">「釣り」のタブが増えた</div>${nw.map(id => SPOT[id].place).join('・')}で釣りができる。次の時間帯を、店のかわりに釣り場で過ごせる</div>` : `<div><div class="t1">新しい釣り場</div>${nw.map(id => SPOT[id].place + '(' + SPOT[id].n + ')').join('・')}に行けるようになった</div>`, 'lv', 5200), G.advSeen ? 600 : 5000); } }
   if (guildOpen() && !G.advSeen) { G.advSeen = 1; if (G.tut < 0) setTimeout(() => toast('<div><div class="t1">「ギルド」のタブが増えた</div>冒険者ギルドで、ダンジョンへの探索を依頼できる</div>', 'lv', 4200), 400); }
-  const p = $('#panel'); const st = p.scrollTop, colS = [...p.querySelectorAll('.wcols > *')].map(e => e.scrollTop); const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : UI.tab === 'fac' ? UI.facId + (UI.facTab || '') : UI.tab === 'adv' ? (UI.gTab || 'adv') : '');
+  const p = $('#panel'); const st = p.scrollTop, colS = [...p.querySelectorAll('.wcols > *, .gbody > .gcol, .gcol-adv > .gadvs')].map(e => e.scrollTop); const wkS = [...p.querySelectorAll('.wk-todo,.wk-recs')].map(e => e.scrollTop), wkCat = render._wkc; const key = UI.tab + G.day + (G.act || '') + (UI.tab === 'main' ? shopView() : UI.tab === 'inv' ? UI.invView : UI.tab === 'fac' ? UI.facId + (UI.facTab || '') : UI.tab === 'adv' ? (UI.gTab || 'adv') : '');
   const mbS = (p.querySelector('.market-bottom') || {}).scrollTop || 0;   // No.233 (作者): 施設・ギルド・灯り亭の下の枠(PC)も、売ったり品を開いて閉じたりしても同じ位置のまま(工房と同じ)
   if (UI.tab === 'inv' && UI.invView === 'dex' && G.dexNew && G.dexNew.length) { UI.dexNewShown = G.dexNew.slice(); G.dexNew = []; }
   if (UI.tab === 'owner' && UI.jumpSec && innerWidth <= 560) UI.ownView = /スキル|肩書/.test(UI.jumpSec) ? 'skill' : 'shop';
@@ -14076,7 +14147,7 @@ function render() {
   { const landing = innerWidth <= 560 && UI.tab === 'town' && (UI.townView || 'map') === 'map';   // phone: the 街 landing shows the live town window
     $('#app').classList.toggle('scene-open', !!G.sceneOpen || landing); $('#app').classList.toggle('town-win', landing); }
   wideLayout();
-  if (sameK && colS.some(x => x > 0)) p.querySelectorAll('.wcols > *').forEach((e, i) => { if (colS[i]) e.scrollTop = colS[i]; });
+  if (sameK && colS.some(x => x > 0)) p.querySelectorAll('.wcols > *, .gbody > .gcol, .gcol-adv > .gadvs').forEach((e, i) => { if (colS[i]) e.scrollTop = colS[i]; });
   if (sameK && mbS) { const mb = p.querySelector('.market-bottom'); if (mb) mb.scrollTop = mbS; }
   if (sameK && (UI.tab === 'fac' || UI.tab === 'adv') && !UI.jumpSec) { p.scrollTop = st; requestAnimationFrame(() => { if (render._k === key && Math.abs(p.scrollTop - st) > 2 && !UI.scrollFit && !UI.scrollAdv) p.scrollTop = st; }); }   // No.233: スマホの施設のページも、売った後に位置がずれない   // No.195: 品を開いて閉じても、PCの列は同じ位置のまま
   phoneWork();
@@ -15930,13 +16001,13 @@ function act0(a, d) {
     case 'tview': UI.townView = d.v; sfx('tab'); break;
     case 'regcard': regCard(d.v); sfx('tap'); return;
     case 'gomerch': closeSheet(true); UI.marketPick = null; UI.merch = d.v; UI.tab = 'main'; UI.shopView = G.act === 'market' ? null : 'market'; sfx('tab'); break;
-    case 'guild': UI.gq = {}; diveSheet(); sfx('tap'); return;
+    case 'guild': diveSheet(); sfx('tap'); return;
     case 'gpick': closeSheet(); UI.tab = 'adv'; UI.gTab = 'adv'; render(); setTimeout(() => { const e = document.querySelector('[data-sec=行き先]'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 30); sfx('tap'); return;
-    case 'garea': if (!UI.sheet) UI.sheetHist = []; UI.gq = { line: UI.gq && UI.gq.line, area: d.v || null, carry: UI.gq && UI.gq.carry, bags: UI.gq && UI.gq.bags }; diveSheet(); sfx('tap'); return;
+    case 'garea': { const g = gqState(), was = g.area, onPage = UI.tab === 'adv' && !UI.sheet; g.area = onPage && was === d.v ? null : (d.v || null); if (g.area !== was) g.target = null; diveSheet(); sfx('tap'); if (!onPage) setTimeout(() => { const e = document.querySelector('.gxarea.on'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); return; }   // No.242: 行き先は「冒険」の札の中で選ぶ(別窓なし)
     case 'iuse': UI.invUse = UI.invUse === d.v ? null : d.v; sfx('tap'); break;
     case 'isort': if ((G.invSort || 'def') === d.v) G.invSortRev = !G.invSortRev; else { G.invSort = d.v; G.invSortRev = false; } sfx('tap'); save(); break;
-    case 'gtarget': UI.gq.target = d.v; UI.gqKeep = true; diveSheet(); sfx('tap'); return;
-    case 'gaim': if (!UI.sheet) UI.sheetHist = []; UI.gq = { area: d.area, target: d.v }; diveSheet(); sfx('tap'); return;
+    case 'gtarget': gqState().target = d.v || null; render(); sfx('tap'); return;
+    case 'gaim': { const g = gqState(); g.area = d.area; g.target = d.v; diveSheet(); sfx('tap'); return; }
     case 'goto': {
       if (!UI.sheet) UI.sheetHist = [];
       UI.sheetHist = UI.sheetHist || [];
@@ -15962,7 +16033,7 @@ function act0(a, d) {
     }
     case 'idel': { const o = G.orders.find(x => x.id === d.id); if (o && o.reg) { closeSheet(true); regPriceSheet(o.id); return; } if (deliverOrder(d.id)) { sfx('coin'); flyCoins(1); render(); save(); itemSheet(d.item, (UI.sheetHist || []).length > 0); return; } break; }
     case 'ibdel': { const n = deliverToBuilding(d.b, d.id); if (n) { sfx('coin'); toast(`<div>${BLD[d.b].n}に${IT[d.id].name}を${n}個納品した</div>`); render(); save(); itemSheet(d.id, (UI.sheetHist || []).length > 0); return; } break; }
-    case 'icarry': { UI.gq = { carry: d.bag ? d.id : undefined }; closeSheet(true); diveSheet(); sfx('tap'); return; }
+    case 'icarry': { closeSheet(true); gqCarry(d.id); diveSheet(); save(); sfx('tap'); return; }
     case 'sback': { const p = (UI.sheetHist || []).pop(); if (!p) { closeSheet(); return; } if (p.t === 'rec') recipeSheet(p.id, true); else if (p.t === 'paper') paperSheet(p.id, true); else itemSheet(p.id, true); return; }
     case 'quest': if (UI.quest && UI.quest.v) { if (innerWidth <= 560 && UI.quest.v === 'town' && !UI.quest.sec) UI.quest.sec = 'いまの建物'; if (innerWidth <= 560 && UI.quest.v === 'owner' && !UI.quest.sec) UI.quest.sec = 'スキル盤'; if (UI.quest.v === 'main') UI.shopView = null; if (UI.quest.cat) { UI.craftCat = UI.quest.cat; UI.craftOpen = true; } UI.tab = UI.quest.v; if (UI.quest.sec) UI.jumpSec = UI.quest.sec; if (UI.quest.v === 'adv' && G.dive && G.dive.pending) { render(); openDecision(); return; } } break;
     case 'sbuy': if (buyStall(+d.i, +d.n)) { sfx('buy'); flyCoins(-1); } if (d.stay && UI.sheetCur) { const cur = UI.sheetCur; render(); save(); if (cur.t === 'rec') recipeSheet(cur.id); else itemSheet(cur.id, (UI.sheetHist || []).length > 0); return; } break;
@@ -19045,7 +19116,7 @@ const DICT = [
   { k: 'town', n: '街を育てる', t: ['「街」の建物に必要な品を納品すると建物が建つ。建物ごとに、店や村に良いことが起きる(完成すると何が起きるかは、建物の欄に書いてある)。', 'その章の建物3つがそろい、討伐の場所の「ぬし」を冒険者が倒すと、次の章へ進む。村は町へ、町は街へと育ち、新しい建物と探索の場所が増える。'] },
   { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から。ギルドは下の「ギルド」からも)。札は「売る・頼み事」の1つで、頼み事があれば上に出る。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼み事(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
   { k: 'arena', n: '闘技場の勝ち抜き戦', t: ['闘技場ができると、ダリアの施設のページに「勝ち抜き戦」の札が出る。1日1回・体力は使わない。', '二人の闘士の、どちらかに賭ける。闘士には型があり、剛は技に、技は迅に、迅は剛に強い。勝ち残った闘士は、傷を負ったまま次の試合に出る。倍率は客の読みなので、相性と傷をよく見れば少し得をする。', '当てたら「まだ行く(もうけを全部、次の試合に乗せる)」か「もう帰る」。最大5試合。外れたら賭けた分はなくなる。賭けの上限は章で上がる(300G→600G→1000G)。'] },
-  { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)と「売る・頼み事」の2つ。', 'ギルドの冒険者(1〜3人)に武具と道具袋を持たせて、探索に送り出せる。武具は「ギルドで武具を整える・手当て」で渡す。「冒険」の札の「行き先」には、推奨のランク・最奥のぬし・武具の目安・レア・噂が書いてある。行き先を押すと、そこへ行く冒険者を選んで送り出せる。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
+  { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)・「名簿」(仲間の募集)・「売る・頼み事」。', '「冒険」の札の左の「行き先」には、推奨のランク・最奥のぬし・武具の目安・レア・噂が書いてある。右の冒険者を押すと、その場で武具・道具袋・食事・手当てができる。渡した武具と袋の品は、帰ってきても持ったまま(袋の品は倉庫から出るので、店では売れない)。行き先を選び、冒険者を1〜3人「選ぶ」と、下の帯から送り出せる。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
   { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。次の時間帯をまるごと釣り場で過ごす(朝市・店・工房のどれかを手放す)。釣り場では体力を使わず、時間も進まない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。1匹との勝負ごとに、冒険も1ターン進む。', '餌は1回の釣行で10投。釣りポイントで5投ずつ買い足せる(3回まで)。竿(掛かる魚の格)・リール(緑の幅)はポイントでだけ交換できる。', '釣った魚は、小屋の主にお金で売るか、ポイントに替えるか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
   { k: 'loan', n: '出世払い', t: ['開店資金3000Gは村長の出世払い。利子も期限もない。返すのは街の「村長の家」から。返すたびに、節目のごほうび(増築の許可・新しい仕入れ先など)がある。'] },
   { k: 'collect', n: '集める・図鑑・レシピの紙', t: ['図鑑には見つけた品が載る。影絵の品は、まだ見つけていない物(タップすると手がかり)。節目ごとにスキルポイントが入る。', '品にはレア度(E〜S)と使い道の印がつく。倉庫では使い道で絞りこめる。', '秘伝のレシピの紙は、常連さん・建物・ぬしの寝床などで手に入る。破れた所は、探索のレアで読めるようになる。工房の「秘伝」で作る。', '季節限定の素材、常連さんの物語、探索のレア、謎の品の鑑定。図鑑をすべて埋めるのが最終目標。'] },
@@ -19384,18 +19455,16 @@ function diveUseSec(id) {
   const f = diveFx(id, bestOwnedQ(id)); if (!f) return '';
   return `<div class="sec fxsec"><h2 style="font-size:14px">探索で使える<span class="aside">冒険者の道具袋に入れる</span></h2><div class="fxrow">${fxLine(id)}</div></div>`;
 }
-// the pack as the engine wants it, using the best copies we own (what would be handed over)
+// No.242 (2026-11-05 作者): 「冒険」の札を1ページに。左=行き先、右=冒険者。右の一人ずつの所で、別窓を開かずに
+// 武器・防具・道具袋・食事・手当て・同行を決めて、下の帯から送り出す。袋は冒険者が持つ(dive.js の advBag)。
+// the pack as the engine wants it: what the chosen members carry
 function packPreview(gq) {
-  const qsOf = (id, n) => { const a = G.inv[id] || [], out = []; for (let q = 3; q >= 0 && out.length < n; q--) for (let k = 0; k < (a[q] || 0) && out.length < n; k++) out.push(q); return out; };
-  const pk = { bag: [] }, tot = {};
-  for (const b of Object.values(gq.bags || {})) for (const [id, n] of Object.entries(b)) tot[id] = (tot[id] || 0) + n;
-  for (const [id, n] of Object.entries(tot)) { const qs = qsOf(id, Math.min(n, spareCount(id))); if (qs.length) pk.bag.push({ id, qs }); }
-  return pk;
+  return { bag: gqParty(gq).flatMap(m => advBag(m).filter(b => b.qs.length).map(b => ({ id: b.id, qs: b.qs.slice(), who: m.id }))) };
 }
 const gqParty = gq => (gq.party || []).map(advById).filter(m => m && advReady(m));
 function diveEstimateCached(gq) {
   const ps = gqParty(gq);
-  const key = JSON.stringify([gq.area, gq.target, ps.map(m => [m.id, m.rk, m.wpn, m.arm]), gq.bags, G.day]);
+  const key = JSON.stringify([gq.area, gq.target, ps.map(m => [m.id, m.rk, m.wpn, m.arm, advBag(m), (G.meals || {})[m.id]]), G.day]);
   if (UI.dvEst && UI.dvEst.key === key) return UI.dvEst.e;
   const e = diveEstimate(gq.area, gq.target, ps, packPreview(gq), 140);
   UI.dvEst = { key, e }; return e;
@@ -19407,118 +19476,128 @@ function advJob(m) {
   if (!c) return '';
   return `<div class="gjob">${c}${WPN_OF[m.cls] ? `<span>・${wpnListOf(m.cls)}</span>` : ''}</div>`;
 }
-function advRow(m, gq, a) {
-  const out = advOut(m), hurt = advHurt(m), sel = (gq.party || []).includes(m.id);
-  const st = out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
-  const gear = ['wpn', 'arm'].map(slot => { const g = m[slot]; return `<button class="gslot${g ? '' : ' empty'}${gq.edit && gq.edit.id === m.id && gq.edit.slot === slot ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="${slot}"${out ? ' disabled' : ''} aria-label="${slot === 'wpn' ? '武器' : '防具'}">${g ? ico(g.id, g.q, { size: 'xs' }) + durBar(g) : `<span>${slot === 'wpn' ? '武器' : '防具'}</span>`}</button>`; }).join('');
-  const pick = a && !out && !hurt ? `<button class="btn sm${sel ? ' pri' : ''}" data-act="dvmem" data-v="${m.id}">${sel ? '同行' : '選ぶ'}</button>` : '';
-  const treat = hurt && !out ? `<button class="btn sm heal" data-act="dvtreat" data-v="${m.id}">手当て</button>` : '';
-  const bag = a && sel ? bagSlotsHtml(m, gq) : '';
-  const xp = m.rk < rankMax() ? `<span class="sub" style="font-size:11px">次のランクまで ${Math.max(0, 3 + 2 * m.rk - (m.xp || 0))}</span>` : '';
-  return `<div class="gmem${sel ? ' sel' : ''}${out || hurt ? ' off' : ''}">${advFace(m, 'sm')}<div class="gmem-b"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}${st}</div>${advJob(m)}<div class="row" style="gap:6px">${gear}${a ? `<span class="sub" style="font-size:11px">${fmt(questFee(a, m.rk))}G</span>` : xp}</div>${bag}</div><div class="gmem-a">${pick}${treat}</div>${gq.edit && gq.edit.id === m.id ? gearEditor(gq, a) : ''}</div>`;
+// the place gear is judged against: the chosen place, or the hardest one open
+const gqArea = gq => (gq && gq.area && AR[gq.area]) || AREAS.filter(areaOpen).slice(-1)[0] || AR.forest;
+// ▲: the warehouse holds a clearly better piece this adventurer can wear
+function gearBetter(m, slot, a) {
+  const best = packList(slot, a).find(it => canWield(m, it)); if (!best) return false;
+  const cur = m[slot], f = gearFrac(best, bestOwnedQ(best.id), a), fc = cur ? gearFrac(IT[cur.id], cur.q, a) * (cur.dur > 0 ? 1 : 0) : -1;
+  return f > fc + 0.02;
 }
-function bagSlotsHtml(m, gq) {
-  const b = (gq.bags || {})[m.id] || {}, ids = Object.keys(b), n = bagSlots(m), on = gq.edit && gq.edit.id === m.id && gq.edit.slot === 'bag';
-  let h = '';
-  for (let i = 0; i < n; i++) { const id = ids[i]; h += `<button class="gslot bslot${id ? '' : ' empty'}${on ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="bag" aria-label="道具袋">${id ? ico(id, bestOwnedQ(id), { size: 'xs', cnt: b[id] > 1 ? b[id] : 0 }) : '<span>袋</span>'}</button>`; }
-  return `<div class="row bagslots" style="gap:6px"><span class="sub" style="font-size:11px">道具袋</span>${h}</div>`;
+const UP_MARK = '<i class="gup" aria-label="倉庫にもっと良い品がある" title="倉庫にもっと良い品がある">▲</i>';
+function advRow(m, gq) {
+  const a = gqArea(gq), out = advOut(m), hurt = advHurt(m), sel = (gq.party || []).includes(m.id), open = gq.open === m.id && !out, ml = mealOf(m.id);
+  const st = out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
+  const gearS = ['wpn', 'arm'].map(slot => { const g = m[slot], up = !out && gearBetter(m, slot, a) ? UP_MARK : '';
+    return g ? `<span class="in gsm">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}${up}</span>` : `<span class="in gsm none">${slot === 'wpn' ? '武器なし' : '防具なし'}${up}</span>`; }).join('');
+  const bag = advBag(m).filter(b => b.qs.length), bagS = bag.length ? bag.map(b => `<span class="in gsm">${ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 })}</span>`).join('') : '<span class="sub gsm-e">袋は空</span>';
+  const mealS = ml ? `<span class="tag ok">${MEAL_B[ml.buff].n}</span>` : '';
+  const pick = !out && !hurt ? `<button class="btn sm${sel ? ' pri' : ''}" data-act="dvmem" data-v="${m.id}" aria-pressed="${sel}">${sel ? '同行' : '選ぶ'}</button>` : '';
+  const fee = gq.area && !out && !hurt ? `<span class="sub" style="font-size:11px">${fmt(questFee(AR[gq.area], m.rk))}G</span>` : '';
+  let h = `<div class="gmem gm2${sel ? ' sel' : ''}${open ? ' open' : ''}${out || hurt ? ' off' : ''}" data-mem="${m.id}">` +
+    `<button class="gm2-h" data-act="gopen" data-v="${m.id}"${out ? ' disabled' : ''} aria-expanded="${open}">${advFace(m, 'sm')}<span class="gmem-b"><span class="row" style="gap:6px;flex-wrap:wrap"><b>${m.n}</b>${rankTag(m.rk)}${st}${mealS}${fee}</span>${advJob(m)}` +
+    (open ? '' : `<span class="row gsum-r">${gearS}<span class="gsep"></span>${bagS}</span>`) + `</span><span class="gm2-chev" aria-hidden="true">${out ? '' : open ? '▴' : '▾'}</span></button>` +
+    `<div class="gmem-a">${pick}</div>`;
+  if (open) h += advEditor(m, gq, a);
+  return h + `</div>`;
+}
+// the open row: slots to press (武器・防具・袋・食事・手当て), and the chosen one's picker under them
+function advEditor(m, gq, a) {
+  const e = gq.edit || 'wpn', hurt = advHurt(m), ml = mealOf(m.id);
+  const slot = (k, inner, lab, cls = '') => `<button class="gslot${cls}${e === k ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="${k}" aria-label="${lab}">${inner}</button>`;
+  const gear = ['wpn', 'arm'].map(k => { const g = m[k], n = k === 'wpn' ? '武器' : '防具', up = gearBetter(m, k, a) ? UP_MARK : '';
+    return slot(k, g ? ico(g.id, g.q, { size: 'xs' }) + durBar(g) + up : `<span>${n}</span>${up}`, n, g ? '' : ' empty'); }).join('');
+  const bag = advBag(m), n = bagSlots(m);
+  let bs = ''; for (let i = 0; i < n; i++) { const b = bag[i]; bs += slot('bag', b ? ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 }) : '<span>袋</span>', '道具袋', ' bslot' + (b ? '' : ' empty')); }
+  const meal = slot('meal', ml ? `<span class="gmeal">${pubIcon(PUB_BY[ml.dish])}</span>` : '<span>食事</span>', '食事', ' gmealslot' + (ml ? '' : ' empty'));
+  const treat = hurt ? `<button class="btn sm heal" data-act="dvtreat" data-v="${m.id}">手当て</button>` : '';
+  let h = `<div class="gm2-ed"><div class="row gm2-slots"><span class="sub gm2-k">武具</span>${gear}<span class="sub gm2-k">道具袋</span>${bs}<span class="gm2-sp"></span>${meal}${treat}</div>`;
+  h += e === 'bag' ? bagEditor(a, m) : e === 'meal' ? mealEditor(m) : gearEditor(m, e, a);
+  return h + `</div>`;
 }
 const BAG_TABS = [['tool', '道具'], ['heal', '薬'], ['food', '食べ物']];
 const bagKind = it => isHeal(it) ? 'heal' : isSnack(it) && !TOOL_FX[it.id] ? 'food' : 'tool';
-function bagEditor(gq, a, m) {
-  const b = (gq.bags || {})[m.id] || {}, ids = Object.keys(b), full = ids.length >= bagSlots(m);
-  // No.195 (2026-10-31 作者): 道具が24個の上限の後ろに埋もれて出なかった → 道具・薬・食べ物の札で分け、上限をなくす
+function bagEditor(a, m) {
+  const bag = advBag(m), has = id => bag.some(b => b.id === id), full = bag.length >= bagSlots(m);
+  // No.195 (2026-10-31 作者): 道具・薬・食べ物の札で分け、上限をなくす
   const tab = BAG_TABS.some(x => x[0] === UI.bagTab) ? UI.bagTab : 'tool';
-  const cand = packList('bag', a).filter(it => !b[it.id] && bagKind(it) === tab).sort((x, y) => x.v - y.v);
-  const left = id => spareCount(id) - bagsHold(gq.bags, id);
-  const holder = id => { for (const mid in (gq.bags || {})) if (mid !== m.id && gq.bags[mid][id]) { const o = advById(mid); if (o) return o.n; } return ''; };
-  const cnt = k => packList('bag', a).filter(it => !b[it.id] && bagKind(it) === k).length;
-  let h = `<div class="gedit"><div class="row between"><span class="sub">${m.n}の道具袋(${ids.length}/${bagSlots(m)}枠)・薬や料理は1枠2個、道具は1個</span><button class="btn ghost sm" data-act="dvslot" data-id="${m.id}" data-v="bag">閉じる</button></div>`;
-  if (ids.length) h += `<div class="fxlist">` + ids.map(id => `<div class="fxrow in-bag">${ico(id, bestOwnedQ(id), { size: 'sm', cnt: b[id] })}<div class="fxb">${fxLine(id, null, IT[id].name)}</div><span class="fxa">${b[id] < bagStack(id) && left(id) > 0 ? `<button class="btn sm" data-act="dvbag" data-m="${m.id}" data-v="${id}" data-n="1" aria-label="${IT[id].name}をもう1つ">+</button>` : ''}<button class="btn ghost sm" data-act="dvbag" data-m="${m.id}" data-v="${id}" data-n="-1" aria-label="${IT[id].name}を1つ減らす">−</button></span></div>`).join('') + `</div>`;
+  const all = packList('bag', a), cand = all.filter(it => !has(it.id) && bagKind(it) === tab).sort((x, y) => x.v - y.v);
+  const cnt = k => all.filter(it => !has(it.id) && bagKind(it) === k).length;
+  let h = `<div class="gedit"><div class="row between"><span class="sub">${m.n}の道具袋(${bag.length}/${bagSlots(m)}枠)・薬や料理は1枠2個、道具は1個。入れた品は倉庫から出て、帰ってきても袋に残る</span>${bag.length ? `<button class="btn ghost sm" data-act="dvbagclear" data-v="${m.id}">全部外す</button>` : ''}</div>`;
+  if (bag.length) h += `<div class="fxlist">` + bag.map(b => `<div class="fxrow in-bag">${ico(b.id, b.qs[0], { size: 'sm', cnt: b.qs.length })}<div class="fxb">${fxLine(b.id, null, IT[b.id].name)}</div><span class="fxa">${b.qs.length < bagStack(b.id) && spareCount(b.id) > 0 ? `<button class="btn sm" data-act="dvbag" data-m="${m.id}" data-v="${b.id}" data-n="1" aria-label="${IT[b.id].name}をもう1つ">+</button>` : ''}<button class="btn ghost sm" data-act="dvbag" data-m="${m.id}" data-v="${b.id}" data-n="-1" aria-label="${IT[b.id].name}を1つ倉庫へ">−</button></span></div>`).join('') + `</div>`;
   h += `<div class="chips bagtabs" role="group" aria-label="品の種類" style="margin:8px 0 2px">${BAG_TABS.map(([k, n]) => `<button class="chip${k === tab ? ' on' : ''}" data-act="dvbagtab" data-v="${k}" aria-pressed="${k === tab}">${n}<span class="n">${cnt(k)}</span></button>`).join('')}</div>`;
-  if (cand.length) h += `<div class="sub" style="margin:6px 0 4px;font-size:11.5px">${full ? '袋がいっぱい。入れ替えるなら、先に − で出す' : 'タップで袋に入れる'}</div><div class="fxlist">` + cand.map(it => { const lf = left(it.id), who = lf <= 0 ? holder(it.id) : '';
-    return `<button class="fxrow pick" data-act="dvbag" data-m="${m.id}" data-v="${it.id}" data-n="1"${full || lf <= 0 ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: Math.max(0, lf) })}<div class="fxb">${fxLine(it.id, null, it.name)}${lf <= 0 ? `<span class="sub bagwhy">${who ? who + 'の袋に入っている' : 'ほかの冒険者の袋に入っている'}</span>` : ''}</div></button>`; }).join('') + `</div>`;
+  if (cand.length) h += `<div class="sub" style="margin:6px 0 4px;font-size:11.5px">${full ? '袋がいっぱい。入れ替えるなら、先に − で倉庫へ戻す' : '押すと袋に入れる(倉庫の数)'}</div><div class="fxlist">` + cand.map(it => `<button class="fxrow pick" data-act="dvbag" data-m="${m.id}" data-v="${it.id}" data-n="1"${full ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: spareCount(it.id) })}<div class="fxb">${fxLine(it.id, null, it.name)}</div></button>`).join('') + `</div>`;
   else h += `<p class="note" style="margin:6px 0 0;font-size:12px">この種類で持たせられる品は、今は倉庫にない。</p>`;
   // クラウド: items kept back for a building or an order do not show up above; say so, instead of hiding them
-  const kept = Object.keys(G.inv).map(id => IT[id]).filter(it => packable(it) && invCount(it.id) > 0 && spareCount(it.id) <= 0 && !b[it.id] && bagKind(it) === tab);
+  const kept = Object.keys(G.inv).map(id => IT[id]).filter(it => packable(it) && invCount(it.id) > 0 && spareCount(it.id) <= 0 && !has(it.id) && bagKind(it) === tab);
   if (kept.length) h += `<div class="sub" style="margin:8px 0 4px;font-size:11.5px">建設や注文に使う分として取ってある品(取ってある数より多く作ると、余りを持たせられる)</div><div class="fxlist">` + kept.slice(0, 12).map(it => `<div class="fxrow kept">${ico(it.id, bestOwnedQ(it.id), { size: 'sm', cnt: invCount(it.id) })}<div class="fxb"><b>${it.name}</b><span class="sub">所持 ${invCount(it.id)}・取ってある ${reservedNeeds()[it.id] || 0}</span></div></div>`).join('') + `</div>`;
   return h + `</div>`;
 }
-function gearEditor(gq, a) {
-  const e = gq.edit; if (!e) return '';
-  const m = advById(e.id); if (!m) return '';
-  if (e.slot === 'bag') return bagEditor(gq, a || AR.forest, m);
-  const list = packList(e.slot, a || AR.forest).sort((x, y) => canWield(m, y) - canWield(m, x)).slice(0, 12), cur = m[e.slot];
-  return `<div class="gedit"><div class="row between"><span class="sub">${m.n}の${e.slot === 'wpn' ? '武器' : '防具'}を選ぶ(ランク${RANKS[m.rk || 0].n}は${TIER_N[Math.min(6, m.rk || 0)]}まで持てる${e.slot === 'wpn' && WPN_OF[m.cls] ? `・${(CLASSES.find(x => x.k === m.cls) || {}).n || ''}は${wpnListOf(m.cls)}` : ''})</span><button class="btn ghost sm" data-act="dvslot" data-id="${m.id}" data-v="${e.slot}">閉じる</button></div>` +
-    (cur ? `<div class="row between" style="margin:4px 0"><span class="in">${ico(cur.id, cur.q, { size: 'xs' })}${itName(cur)} 耐久 ${cur.dur}/${cur.max >= 999 ? '∞' : cur.max}</span><button class="btn sm" data-act="dvunq" data-id="${m.id}" data-v="${e.slot}">外して倉庫へ</button></div>` : '') +
-    (list.length ? `<div class="gpick">` + list.map(it => { const [w, c] = GEAR_WORD(gearFrac(it, bestOwnedQ(it.id), a || AR.forest)), lock = !canWield(m, it);
-      return `<button class="cell sm${lock ? ' locked' : ''}" data-act="dveq" data-id="${m.id}" data-k="${e.slot}" data-v="${it.id}"${lock ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id))}<span class="lb">${it.name}<br>${lock ? `<b class="bad">${!clsWields(m.cls, it) ? wpnUsers(it).join('・') + '向け' : `ランク${RANKS[wieldRank(it)].n}から`}</b>` : `<b class="${c}">${w}</b>`}</span></button>`; }).join('') + `</div>`
-      : `<p class="note" style="margin:0;font-size:12px">${e.slot === 'wpn' ? '渡せる武器がない。工房で剣や斧を作ろう。' : '渡せる防具がない。盾や鎧があると罠にも強い。'}</p>`) +
+function gearEditor(m, slot, a) {
+  const list = packList(slot, a).sort((x, y) => canWield(m, y) - canWield(m, x)).slice(0, 12), cur = m[slot];
+  return `<div class="gedit"><div class="row between"><span class="sub">${m.n}の${slot === 'wpn' ? '武器' : '防具'}を選ぶ(ランク${RANKS[m.rk || 0].n}は${TIER_N[Math.min(6, m.rk || 0)]}まで持てる${slot === 'wpn' && WPN_OF[m.cls] ? `・${(CLASSES.find(x => x.k === m.cls) || {}).n || ''}は${wpnListOf(m.cls)}` : ''})</span></div>` +
+    (cur ? `<div class="row between" style="margin:4px 0"><span class="in">${ico(cur.id, cur.q, { size: 'xs' })}${itName(cur)} 耐久 ${cur.dur}/${cur.max >= 999 ? '∞' : cur.max}</span><button class="btn sm" data-act="dvunq" data-id="${m.id}" data-v="${slot}">外して倉庫へ</button></div>` : '') +
+    (list.length ? `<div class="gpick">` + list.map(it => { const [w, c] = GEAR_WORD(gearFrac(it, bestOwnedQ(it.id), a)), lock = !canWield(m, it);
+      return `<button class="cell sm${lock ? ' locked' : ''}" data-act="dveq" data-id="${m.id}" data-k="${slot}" data-v="${it.id}"${lock ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id))}<span class="lb">${it.name}<br>${lock ? `<b class="bad">${!clsWields(m.cls, it) ? wpnUsers(it).join('・') + '向け' : `ランク${RANKS[wieldRank(it)].n}から`}</b>` : `<b class="${c}">${w}</b>`}</span></button>`; }).join('') + `</div>`
+      : `<p class="note" style="margin:0;font-size:12px">${slot === 'wpn' ? '渡せる武器がない。工房で剣や斧を作ろう。' : '渡せる防具がない。盾や鎧があると罠にも強い。'}</p>`) +
     (cur && cur.dur < cur.max * 0.5 && IT['broken_' + cur.id] ? '<p class="note" style="font-size:11.5px;margin:4px 0 0">耐久が半分を切った品は、外すと「壊れた品」として戻る(インゴットで修理できる)。</p>' : '') + `</div>`;
 }
-function rosterSec(gq, a) {
-  const ros = ensureRoster();
-  return `<div class="sub" style="margin:12px 0 4px">${a ? `同行する冒険者(1〜3人)・人数が多いほど被害は分散されるが、依頼料は人数分かかる` : 'ギルドの冒険者'}</div>` +
-    `<div class="roster">${ros.map(m => advRow(m, gq, a)).join('')}</div>`;
+// 食事: the fish list right here (no sheet). The dish's buff lasts for the next trip only
+function mealEditor(m) {
+  const ml = mealOf(m.id);
+  if (ml) return `<div class="gedit"><div class="meal-got">${pubIcon(PUB_BY[ml.dish])}<span><b>${PUB_BY[ml.dish].n}</b>を食べた<br><span class="sub">${mealLine(ml)}・次に出発する冒険の間だけ</span></span></div></div>`;
+  if (!advReady(m)) return `<div class="gedit"><p class="note" style="margin:0;font-size:12px">療養中は食事ができない。手当てをして、治ってから。</p></div>`;
+  const fish = mealFish();
+  let h = `<div class="gedit"><span class="sub">釣った魚をゴズに渡すと、料理を1品作って${m.n}に食べさせる。良い魚ほど良い料理(何が出るかは出てくるまで分からない)。バフは次に出発する冒険の間だけ。</span>`;
+  if (!fish.length) return h + `<p class="note" style="margin:4px 0 0;font-size:12px"><b>倉庫に魚がない。</b>釣り場で釣った魚を、売らずに持ち帰ると渡せる。</p></div>`;
+  h += `<div class="fxlist">` + fish.map(c => `<button class="fxrow pick" data-act="gmeal" data-v="${m.id}" data-id="${c.id}" data-q="${c.q}">${ico(c.id, c.q, { size: 'sm', cnt: c.n })}<div class="fxb"><b>${IT[c.id].name}</b> <span class="sub">${QUAL[c.q].n}・${MEAL_TIER_N[c.f.tier]}料理${c.q >= 2 ? '・上振れ' : ''}</span></div></button>`).join('') + `</div>`;
+  return h + `</div>`;
+}
+// the 冒険者 column: ready ones first, then those in bed, then those out in the field
+function rosterSec(gq) {
+  const ros = ensureRoster(), ord = m => advOut(m) ? 2 : advHurt(m) ? 1 : 0;
+  const list = ros.slice().sort((x, y) => ord(x) - ord(y));
+  return `<div class="sec gadvs" data-sec="冒険者"><h2>冒険者<span class="aside">${ros.length}人・押すと武具・道具袋・食事を整えられる(帰ってきても外れない)</span></h2><div class="roster">${list.map(m => advRow(m, gq)).join('')}</div></div>`;
+}
+// the band under the 冒険者: who goes, the fee, Emma's word, and the button
+function gqSendBar(gq) {
+  const d = G.dive, a = gq.area && AR[gq.area], ps = gqParty(gq);
+  let h = `<div class="gsend">`;
+  if (d) return h + `<p class="note" style="margin:0">いまは${AR[d.area].n}にパーティーが出ている。戻ってきたら次の依頼を出せる。待っている間も、ほかの冒険者を整えられる。</p></div>`;
+  if (!a || !ps.length) return h + `<div class="row between"><span class="sub">${!a ? '左の「行き先」を選んでください' : '右の冒険者を1〜3人「選ぶ」'}${a ? `・行き先: <b>${a.n}</b>` : ps.length ? `・同行 ${ps.length}/3人` : ''}</span><button class="btn pri" disabled>送り出す</button></div></div>`;
+  const fee = partyFee(a, ps), dg = DG[a.id], e = diveEstimateCached(gq), [ew, ec] = estWord(e), gap = tierGap(a, ps);
+  const bw = e.boss >= 0.75 ? ['倒せそう', 'okc'] : e.boss >= 0.4 ? ['五分五分', ''] : e.boss >= 0.12 ? ['厳しい', 'bad'] : ['まず無理', 'bad'];
+  h += `<div class="gsend-row"><div class="gsend-est"><span>エマの見立て <b class="${ec}">${ew}</b></span><span>${MON[dg.boss].n}を <b class="${bw[1]}">${bw[0]}</b></span><span>持ち帰り 約<b>${fmt(Math.round(e.val / 10) * 10)}G</b>分</span><span>${daysWord(a)}</span></div>` +
+    `<button class="btn pri" data-act="dvsend"${G.gold < fee ? ' disabled' : ''}>${ps.length}人で送り出す<span class="price" style="color:inherit;margin-left:8px">${fmt(fee)}G</span></button></div>` +
+    (gap >= 0.5 ? `<p class="note bad" style="margin:2px 0 0;font-size:12px">「その武具では心もとないです。${TIER_N[reqTier(a)]}以上の武器と防具を持たせてあげてください」</p>` : '') +
+    (G.gold < fee ? `<p class="note bad" style="margin:2px 0 0;font-size:12px">お金が足りない。</p>` : '');
+  return h + `</div>`;
 }
 const rumorShort = rm => rm.foe ? MON[rm.foe].n + 'が多い' : rm.rare ? (G.found[rm.rare] !== undefined ? `奥に${IT[rm.rare].name}` : 'ぬしの奥に珍品') : IT[rm.item].name + 'が見つかりやすい';
 const guildBg = () => G.act === 'work' || G.phase === 'night' ? 'bg_guild_night' : 'bg_guild';
-function diveSheet() {
+// the old sheet is gone: everything happens on the 冒険 tab
+function gqState() {
   const gq = UI.gq || (UI.gq = {});
-  const head = `${xBtn}<div class="lead">${portrait({ cls: 'villager', ...clerkSpec() }, 'lg')}<div style="min-width:0"><div class="sub">${GUILD_CLERK.n}・${GUILD_CLERK.who}</div><h2>冒険者ギルド</h2><div class="sub">${gq.line || (gq.line = pick(GUILD_LINES))}</div></div></div>`;
-  let h = head;
-  const keepScroll = () => { const sc = document.querySelector('#veil .sheet'), top = sc ? sc.scrollTop : 0; return () => { const sc2 = document.querySelector('#veil .sheet'); if (sc2 && UI.gqKeep) sc2.scrollTop = top; UI.gqKeep = false; }; };
-  if (G.dive) { h += `<p class="note">いまは${AR[G.dive.area].n}にパーティーが出ている。戻ってきたら次の依頼を出せる。待っている間に、ほかの冒険者の武具を整えたり、療養中の冒険者を手当てしたりできる。</p>` + rosterSec(gq, null); const k = keepScroll(); openSheet(h, { nav: false }); k(); return; }
-  if (!gq.area) {
-    // No.241: 行き先は「ギルド」の札「冒険」から選ぶ。ここは武具を整える・手当てだけ
-    h += `<p class="note">行き先は、ギルドの「冒険」の札から選ぶ。ここでは、冒険者の武具を整えたり、療養中の冒険者を手当てしたりできる。</p>` + rosterSec(gq, null);
-    const k = keepScroll(); openSheet(h, { nav: false, crumb: ['冒険者ギルド'], bg: guildBg() }); k(); return;
-  }
-  const a = AR[gq.area], dg = DG[a.id];
-  if (gq.target && !(RARE[gq.target] && RARE[gq.target].area === a.id)) gq.target = null;   // 狙うレア (or none)
-  gq.bags = gq.bags || {};
+  if (gq.area && !(AR[gq.area] && areaOpen(AR[gq.area]))) gq.area = null;
+  if (gq.target && !(gq.area && RARE[gq.target] && RARE[gq.target].area === gq.area)) gq.target = null;
   gq.party = (gq.party || []).filter(id => { const m = advById(id); return m && advReady(m); });
-  if (a.id === 'dragon' && !bossCleared(4) && advById('luca') && advReady(advById('luca')) && !gq.party.includes('luca')) gq.party = ['luca'].concat(gq.party).slice(0, 3);   // v44: the hero goes
-  // No.195 (2026-10-31 作者): 勝手に一人を同行にしない。最後に選んだ同行者(G.guildParty)を覚えて、待機中の人だけ戻す
+  if (gq.area === 'dragon' && !bossCleared(4) && advById('luca') && advReady(advById('luca')) && !gq.party.includes('luca')) gq.party = ['luca'].concat(gq.party).slice(0, 3);   // v44: the hero goes
+  // No.195: 最後に選んだ同行者(G.guildParty)を覚えて、待機中の人だけ戻す
   if (!gq.party.length && !gq.partyTouched) gq.party = (G.guildParty || []).filter(id => { const m = advById(id); return m && advReady(m); }).slice(0, 3);
-  // 2026-10-29 作者: 選ぶのをやめた・食事をした・ギルドを開き直した時に、道具袋が空になって何度も入れ直していた。
-  // 冒険者ごとの袋の中身を UI.bagKeep に覚えておき、また同行させた時に戻す(倉庫に無くなった分は bagsClean が減らす)
-  const keep = UI.bagKeep || (UI.bagKeep = {}), cp = b => JSON.parse(JSON.stringify(b || {}));
-  for (const mid in gq.bags) if (!gq.party.includes(mid)) keep[mid] = cp(gq.bags[mid]);
-  for (const mid of gq.party) if (!gq.bags[mid] && keep[mid]) gq.bags[mid] = cp(keep[mid]);
-  bagsClean(gq.bags, gq.party);
-  for (const mid of gq.party) keep[mid] = cp(gq.bags[mid]);
-  // an item handed over from its own page goes into the first bag with room
-  if (gq.carry) { const id = gq.carry; delete gq.carry; const mid = gq.party.find(x => bagAdd(gq.bags, x, id, 1)); if (mid) { gq.edit = { id: mid, slot: 'bag' }; } else if (gq.party.length) toast(`<div>${IT[id].name}を入れられる袋がない</div>`); }
-  const ps = gqParty(gq), fee = partyFee(a, ps);
-  h += `<button class="btn ghost sm" data-act="gpick" style="justify-self:start">‹ 行き先を選び直す</button>`;
-  h += `<div class="sec"><h2>${a.n}<span class="aside">${KIND_N[a.kind]}・${daysWord(a)}・${dg.rooms}部屋</span></h2><p class="note" style="margin-top:0">${a.d} 最奥には${MON[dg.boss].n}がいる。推奨は${RANKS[a.rk].n}ランク・${TIER_N[reqTier(a)]}以上の武具。</p>`;
-  h += aimPicker(gq, a);
-  h += rosterSec(gq, a);
-  if (ps.length) h += `<div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-act="dvautoeq">おまかせで武具を渡す</button><span class="sub" style="font-size:11.5px">倉庫のいちばん良い武具を、同行する冒険者に渡す</span></div>`;
-  if (typeof mealSheet === 'function') h += `<div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-act="mealsheet">食事をとる</button><span class="sub" style="font-size:11.5px">釣った魚で料理、同行する冒険者にバフ${Object.keys(G.meals || {}).length ? `・食べた人 ${Object.keys(G.meals).length}人` : ''}</span></div>`;
-  if (ps.length) {
-    const all = [...new Set(Object.values(gq.bags).flatMap(Object.keys))], have = bagScenes(all);
-    const want = ['戦闘', '危ない時', '罠', '宝箱', '分かれ道', '隠し部屋', '野営', '帰り道'];
-    h += `<div class="gsum bagsum"><div class="row between"><span>道具袋(探索中はパーティーで共有)</span><span class="row" style="gap:6px"><button class="btn sm ghost" data-act="dvbagclear"${all.length ? '' : ' disabled'}>全部外す</button><button class="btn sm" data-act="dvautobag">おまかせで持たせる</button></span></div>` +
-      `<div class="ins" style="margin-top:4px">${all.length ? all.map(id => `<span class="in">${ico(id, bestOwnedQ(id), { size: 'xs', cnt: bagsHold(gq.bags, id) })}</span>`).join('') : '<span class="sub">まだ何も入っていない。冒険者の「袋」をタップして入れる</span>'}</div>` +
-      `<div class="row" style="gap:6px;margin-top:6px;align-items:center"><span class="sub" style="font-size:11px">備え</span>${fxChips(want, have)}</div></div>`;
-  }
-  if (ps.length) {
-    const e = diveEstimateCached(gq), [ew, ec] = estWord(e), gap = tierGap(a, ps);
-    const bw = e.boss >= 0.75 ? ['倒せそう', 'okc'] : e.boss >= 0.4 ? ['五分五分', ''] : e.boss >= 0.12 ? ['厳しい', 'bad'] : ['まず無理', 'bad'];
-    h += `<div class="gsum"><div class="row between"><span>エマの見立て</span><b class="${ec}">${ew}</b></div>` +
-      `<div class="row between"><span>${MON[dg.boss].n}を</span><b class="${bw[1]}">${bw[0]}</b></div>` +
-      `<div class="row between"><span>持ち帰りのめやす</span><b>約${fmt(Math.round(e.val / 10) * 10)}G分</b></div>` +
-      `<div class="row between"><span>ぬしの奥の封印された箱</span><b>最後まで行けば1〜2個</b></div>` +
-      `<div class="row between"><span>戻るまで</span><b>${daysWord(a)}(${diveTurnsEst(a)}ターン前後)</b></div>` +
-      (gap >= 0.5 ? `<p class="note bad" style="margin:4px 0 0;font-size:12px">「この場所に、その武具では心もとないです。${TIER_N[reqTier(a)]}以上の武器と防具を持たせてあげてください」</p>` : '') +
-      `<p class="note" style="margin:4px 0 0;font-size:12px">見立ては、慎重に指示を出した場合(箱は相場で数えている)。道中の収穫だけでは依頼料の元を取るくらいで、実入りはぬしの奥の箱しだい。全滅すると道具袋の品を失い、冒険者は療養が必要になる。</p></div>`;
-  }
-  h += `<button class="btn pri big" data-act="dvsend"${!ps.length || G.gold < fee ? ' disabled' : ''} data-focus>${ps.length ? `${ps.length}人で送り出す` : '冒険者を選ぶ'}<span class="price" style="color:inherit;margin-left:8px">${fmt(fee)}G</span></button>`;
-  if (ps.length && G.gold < fee) h += `<p class="note bad">お金が足りない。</p>`;
-  h += `</div>`;
-  const k = keepScroll(); openSheet(h, { nav: false, crumb: ['冒険者ギルド', a.n], bg: guildBg() }); k();
+  if (gq.open && !advById(gq.open)) gq.open = null;
+  return gq;
+}
+function diveSheet() {
+  if (UI.sheet) closeSheet(true);
+  UI.tab = 'adv'; UI.gTab = 'adv'; gqState(); render();
+}
+const gqDraw = () => { };   // the action dispatcher (ui.js) renders and saves after every DIVE_ACTS call
+// an item handed over from its own page: into a bag (or onto the gear slot) of the first one who can take it
+function gqCarry(id) {
+  const gq = gqState(), it = IT[id]; if (!it) return;
+  const ros = ensureRoster().filter(m => !advOut(m)), order = gq.party.map(advById).filter(Boolean).concat(ros.filter(m => !gq.party.includes(m.id)));
+  if (packable(it)) { const m = order.find(x => bagPut(x.id, id)); if (m) { gq.open = m.id; gq.edit = 'bag'; toast(`<div>${it.name}を${m.n}の道具袋に入れた</div>`); save(); } else toast(`<div>${it.name}を入れられる袋がない</div>`); }
+  else if (isWeapon(it) || isArmor(it)) { const m = order.find(x => canWield(x, it)) || order[0]; if (m) { gq.open = m.id; gq.edit = isWeapon(it) ? 'wpn' : 'arm'; } }
 }
 // 狙うレア: the rares of the place, as silhouettes until found. Aiming makes one a little likelier, never sure.
 function aimPicker(gq, a) {
@@ -19565,37 +19644,31 @@ const DIVE_ACTS = {
   },
   dvok() { closeSheet(); },
   dvmem(d) {
-    const g = UI.gq; g.party = g.party || []; g.partyTouched = true;
-    if (g.party.includes(d.v)) g.party = g.party.filter(x => x !== d.v); else if (g.party.length < 3) g.party.push(d.v);
+    const g = gqState(); g.partyTouched = true;
+    if (g.party.includes(d.v)) g.party = g.party.filter(x => x !== d.v); else if (g.party.length < 3) g.party.push(d.v); else { toast('<div>同行できるのは3人まで</div>'); sfx('fail'); return true; }
     G.guildParty = g.party.slice();   // No.195: 次に開いた時も同じ人を同行に
-    UI.gqKeep = true; diveSheet(); sfx('tap'); return true;
+    gqDraw(); sfx('tap'); return true;
   },
-  dvslot(d) { const g = UI.gq; g.edit = g.edit && g.edit.id === d.id && g.edit.slot === d.v ? null : { id: d.id, slot: d.v }; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
-  dveq(d) { if (equipAdv(d.id, d.k, d.v)) { sfx('buy'); UI.gq.edit = null; } UI.gqKeep = true; diveSheet(); save(); return true; },
-  dvunq(d) { if (unequipAdv(d.id, d.v)) sfx('tap'); UI.gqKeep = true; diveSheet(); save(); return true; },
-  dvautoeq() { const g = UI.gq, n = autoEquip(g.party || [], AR[g.area]); sfx(n ? 'buy' : 'tap'); if (!n) toast('<div>渡せる、より良い武具が倉庫にない</div>'); UI.gqKeep = true; diveSheet(); save(); return true; },
-  dvtreat(d) { const id = treatAdv(d.v); if (id) { sfx('good'); toast(`<div>${IT[id].name}で手当てした。療養が1日短くなった</div>`); } else toast('<div>手当てに使える薬や料理がない</div>'); UI.gqKeep = true; diveSheet(); save(); return true; },
-  dvbagtab(d) { UI.bagTab = d.v; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
+  // No.242: 一人ずつの行を開く(一度に一人)
+  gopen(d) { const g = gqState(); g.open = g.open === d.v ? null : d.v; if (g.open) g.edit = g.edit || 'wpn'; gqDraw(); sfx('tap'); return true; },
+  dvslot(d) { const g = gqState(); g.open = d.id; g.edit = d.v; gqDraw(); sfx('tap'); return true; },
+  dveq(d) { if (equipAdv(d.id, d.k, d.v)) sfx('buy'); gqDraw(); save(); return true; },
+  dvunq(d) { if (unequipAdv(d.id, d.v)) sfx('tap'); gqDraw(); save(); return true; },
+  dvtreat(d) { const id = treatAdv(d.v); if (id) { sfx('good'); toast(`<div>${IT[id].name}で手当てした。療養が1日短くなった</div>`); } else toast('<div>手当てに使える薬や料理がない</div>'); gqDraw(); save(); return true; },
+  dvbagtab(d) { UI.bagTab = d.v; gqDraw(); sfx('tap'); return true; },
   dvbag(d) {
-    const g = UI.gq; g.bags = g.bags || {};
-    const ok = bagAdd(g.bags, d.m, d.v, +d.n);
+    const ok = +d.n > 0 ? bagPut(d.m, d.v) : bagPull(d.m, d.v);
     if (!ok && +d.n > 0) toast('<div>この袋にはもう入らない</div>');
-    UI.gqKeep = true; diveSheet(); sfx(ok ? 'tap' : 'fail'); return true;
+    gqDraw(); if (ok) save(); sfx(ok ? 'tap' : 'fail'); return true;
   },
-  // No.195 (2026-10-31 作者): 同行する人の道具袋を空にする(品は倉庫のまま。武器・防具は外さない)
-  dvbagclear() { const g = UI.gq; g.bags = g.bags || {}; const keep = UI.bagKeep || (UI.bagKeep = {}); for (const mid of g.party || []) { g.bags[mid] = {}; keep[mid] = {}; } g.edit = null; UI.gqKeep = true; diveSheet(); sfx('tap'); return true; },
-  dvautobag() {
-    const g = UI.gq; g.bags = g.bags || {};
-    const n = autoBags(g.bags, g.party || [], AR[g.area]);
-    if (!n) toast('<div>入れられる品が倉庫にない(または袋がいっぱい)</div>');
-    UI.gqKeep = true; diveSheet(); sfx(n ? 'buy' : 'tap'); return true;
-  },
+  dvbagclear(d) { if (bagEmpty(d.v)) { sfx('tap'); save(); } gqDraw(); return true; },
+  gmeal(d) { const o = mealGive(d.v, d.id, +d.q); if (!o) { gqDraw(); return true; } sfx('good'); gqDraw(); mealReveal(o.r, o.hit); toast(`<div><div class="t1">${o.m.n}が${PUB_BY[o.r.dish].n}を食べた</div>${mealLine(o.r)}</div>`); return true; },
   dvsend() {
-    const g = UI.gq, dv = sendDive(g.area, g.target, g.party || [], { bags: g.bags || {} });
+    const g = gqState(), dv = sendDive(g.area, g.target, g.party || [], {});
     if (!dv) return;
-    if (UI.bagKeep) for (const m of dv.party) delete UI.bagKeep[m.id];   // the bags went with them
-    closeSheet(); sfx('door'); flyCoins(-1); UI.gq = {};
+    sfx('door'); flyCoins(-1); UI.gq = {};
     setTimeout(() => toast(`<div><b>${dv.party.map(m => m.n).join('・')}</b>が${AR[dv.area].n}へ出発した。店の仕事をするたびに、冒険者も先へ進む。</div>`), 60);
+    return true;
   },
 };
 
@@ -19607,7 +19680,7 @@ function vAdv() {
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="gtab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
   const tabs = `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('adv', '冒険', d ? (d.pending && !d.done ? '判断を待っている' : '探索中') : '依頼を出せる')}${T('ros', '名簿', `${rosterCount()}/${ROSTER_CAP()}人${G.bench && G.bench.length ? `・預け${G.bench.length}` : ''}`)}${facSellTab(f, tab, 'gtab')}</div>`;
   const body = tab === 'sell' ? facSellAll(f) : tab === 'ros' ? rosterBody()
-    : advBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。店で1ターン動くたびに、冒険者も1部屋進む。</p>`;
+    : advBody();
   return facFrame(f, tab, tabs, body, `${GUILD_CLERK.n}・${f.who}`, 'gpage');
 }
 // ---------- No.241 「名簿」の札(ルイーダの酒場の形): 募集する・預ける・戻す ----------
@@ -19631,14 +19704,14 @@ function rosRow(m, benched) {
 function rosterBody() {
   const ros = ensureRoster(), cap = ROSTER_CAP(), n = rosterCount(), bench = G.bench || [];
   let h = `<div class="sec" data-sec="名簿"><h2>名簿<span class="aside">${n}/${cap}人・章が進むと増える</span></h2>` +
-    `<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:6px"><button class="btn pri" data-act="rosnew">仲間を募集する</button><button class="btn sm" data-act="guild">武具を整える・手当て</button></div>` +
+    `<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:6px"><button class="btn pri" data-act="rosnew">仲間を募集する</button></div>` +
     (n >= cap ? `<p class="note" style="font-size:12px;margin:0 0 6px">名簿がいっぱい。誰かを預けると、新しく募集できる。</p>` : '') +
     `<div class="rows">${ros.map(m => rosRow(m)).join('')}</div></div>`;
   if (bench.length) {
     h += `<div class="sec" data-sec="預けている冒険者"><button class="row between gbench-h" data-act="rosopen"><b>預けている冒険者(${bench.length}人)</b><span class="sub">${UI.rosOpen ? '閉じる' : '開く'}</span></button>` +
       (UI.rosOpen ? `<div class="rows">${bench.map(m => rosRow(m, true)).join('')}</div>` : '') + `</div>`;
   }
-  return h + `<p class="note" style="font-size:12px">預けた冒険者は、ランクと経験をそのまま覚えている。武具は倉庫に戻る。</p>`;
+  return h + `<p class="note" style="font-size:12px">武具・道具袋・食事は「冒険」の札で整える。預けた冒険者は、ランクと経験をそのまま覚えている。武具と道具袋の品は倉庫に戻る。</p>`;
 }
 function recruitSheet() {
   const open = recClsOpen(), rc = UI.rc || (UI.rc = {});
@@ -19661,9 +19734,9 @@ function recruitSheet() {
   openSheet(h, { nav: false, crumb: ['仲間を募集'], bg: guildBg() });
 }
 const rcKeepName = () => { const e = document.querySelector('#rcname'); if (e && UI.rc) UI.rc.name = e.value; };
-// 「冒険」の札の中身(前の「冒険」のページ)。PCの広い画面では左に探索と冒険者、右に行き先
+// 「冒険」の札の中身。No.242 (2026-11-05 作者): PCの広い画面では左に行き先(と探索の様子)、右に冒険者と送り出す帯
 function advBody() {
-  const d = G.dive, last = G.diveLast;
+  const d = G.dive, last = G.diveLast, gq = gqState();
   let h = `<div class="gbody"><div class="gcol">`;
   if (d && d.pending && !d.done) {
     const p = d.pending, [k1] = DEC_HEAD[p.k] || ['判断'];
@@ -19679,30 +19752,21 @@ function advBody() {
       `<label class="dvauto"><input type="checkbox" data-act="dvauto"${G.diveMinorAuto ? ' checked' : ''}><span>${AUTO_TXT}</span></label>` +
       `<p class="note" style="font-size:12px;margin:4px 0 0">接客1人・工房の作業1回・灯り亭の夕食で、冒険者も1ターン進む(1日${diveCap()}ターンまで)。道のり → 遭遇 → 一息 をくり返して、最奥をめざす。</p>` +
       `<div class="dvlog short">${d.log.slice(-8).reverse().map(l => `<div class="lg ${l.c}">${esc(l.t)}</div>`).join('')}</div></div>`;
-  } else {
-    if (last) h += `<div class="sec gtop" data-sec="前回の探索"><h2>前回の探索<span class="aside">${AR[last.area].n}・${last.day}日目</span></h2><div class="ins">${last.items.length ? last.items.slice(0, 8).map(x => `<span class="in">${ico(x.id, null, { size: 'xs' })}${IT[x.id].name}×${x.n}</span>`).join('') : '<span class="sub">持ち帰った品はない</span>'}</div><p class="note" style="font-size:12.5px">${last.res === 'home' ? `${last.beat ? (last.area === 'dragon' ? '古竜との戦いを終えて' : 'ぬしを倒して') : ''}帰還・持ち帰った価値 約${fmt(last.value)}G` : '全滅して、冒険者は療養中'}</p></div>`;
-    else h += `<p class="note gtop">下の「行き先」を選んで、ギルドの冒険者を1〜3人送り出す。武具を渡し、薬や料理を持たせてダンジョンへ。魔物や宝箱、分かれ道に出会うと、あなたの指示を待つ(急がなくても、その場で待っている)。</p>`;
-  }
-  // 食事: fish up a dish, feed an adventurer, get the next trip's buff
-  { const fedN = Object.keys(G.meals || {}).length; h += `<button class="btn big" data-act="mealsheet" style="margin-top:8px">食事をとる<small style="display:block;font-weight:500;opacity:.8">釣った魚で料理、次の冒険にバフ${fedN ? `・食べた人 ${fedN}人` : ''}</small></button>`; }
-  // No.241: ギルドの冒険者の一覧は「名簿」の札へ。ここは顔の列だけ(押すと名簿へ)
-  const ros = ensureRoster();
-  h += `<div class="sec" data-sec="ギルドの冒険者"><h2>ギルドの冒険者<span class="aside">${ros.length}人</span></h2><button class="gfaces" data-act="gtab" data-v="ros" aria-label="名簿を見る">${ros.map(m => `<span class="gface${advOut(m) ? ' out' : advHurt(m) ? ' hurt' : ''}">${advFace(m, 'sm')}</span>`).join('')}<span class="gfaces-go">名簿 ›</span></button>` +
-    `<button class="btn sm" data-act="guild" style="margin-top:8px">ギルドで武具を整える・手当て</button></div>`;
-  h += `</div><div class="gcol">`;
-  // places and records
+  } else if (last) h += `<div class="sec gtop" data-sec="前回の探索"><h2>前回の探索<span class="aside">${AR[last.area].n}・${last.day}日目</span></h2><div class="ins">${last.items.length ? last.items.slice(0, 8).map(x => `<span class="in">${ico(x.id, null, { size: 'xs' })}${IT[x.id].name}×${x.n}</span>`).join('') : '<span class="sub">持ち帰った品はない</span>'}</div><p class="note" style="font-size:12.5px">${last.res === 'home' ? `${last.beat ? (last.area === 'dragon' ? '古竜との戦いを終えて' : 'ぬしを倒して') : ''}帰還・持ち帰った価値 約${fmt(last.value)}G` : '全滅して、冒険者は療養中'}</p></div>`;
+  // places
   const opened = AREAS.filter(areaOpen);
-  // No.241 (2026-11-05 作者): 行き先は依頼の別窓と同じ中身(ぬし・武具の目安・道中・レア・噂)。押すとその行き先で冒険者選びから
   const rm = G.dgRumor && G.dgRumor.until >= G.day ? G.dgRumor : null;
-  h += `<div class="sec gdest" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所${d ? '・探索から戻ると選べる' : ''}</span></h2><div class="rows">` + AREAS.map(a => {
-    const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id];
+  h += `<div class="sec gdest" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所${d ? '・探索から戻ると選べる' : '・押すと選ぶ'}</span></h2><div class="rows">` + AREAS.map(a => {
+    const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id], on = gq.area === a.id && !d;
     if (!open) return `<div class="ri gxarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${a.st <= G.stage ? '勇者が聖剣を手にすると行けるようになる' : STAGES[a.st].short + 'になると行ける'}</span></div>`;
-    return `<button class="ri gxarea" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''}><div style="min-width:0"><div class="t">${a.n}<span class="row" style="gap:6px;display:inline-flex;margin-left:6px;vertical-align:1px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}</span></div>` +
+    return `<button class="ri gxarea${on ? ' on' : ''}" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''} aria-pressed="${on}"><div style="min-width:0"><div class="t">${a.n}<span class="row" style="gap:6px;display:inline-flex;margin-left:6px;vertical-align:1px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}</span></div>` +
       `<div class="sub" style="font-size:12px">${daysWord(a)}・${dg.rooms}部屋・最奥に${MON[dg.boss].n}・武具は${TIER_N[reqTier(a)]}以上</div>` +
-      `<div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div>${rm && rm.area === a.id ? `<span class="rumortag">噂: ${rumorShort(rm)}</span>` : ''}</div>` +
-      `<span class="sub" style="font-size:12px;white-space:nowrap">${best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>`;
+      (on ? '' : `<div class="row" style="gap:6px"><span class="sub" style="font-size:11px">レア</span>${areaRares(a)}</div>`) + `${rm && rm.area === a.id ? `<span class="rumortag">噂: ${rumorShort(rm)}</span>` : ''}</div>` +
+      `<span class="sub" style="font-size:12px;white-space:nowrap">${on ? '選んでいる' : best ? (best >= dg.rooms ? '踏破' : `最高 ${best}/${dg.rooms}`) : '未踏'}</span></button>` +
+      (on ? `<div class="gxdet"><p class="note" style="margin:0">${a.d} 最奥には${MON[dg.boss].n}がいる。推奨は${RANKS[a.rk].n}ランク・${TIER_N[reqTier(a)]}以上の武具。</p>${aimPicker(gq, a)}<p class="note" style="margin:4px 0 0;font-size:11.5px">右の冒険者を選ぶと、下にエマの見立てが出る(慎重に指示を出した場合)。全滅すると道具袋の品を失い、冒険者は療養が必要になる。</p></div>` : '');
   }).join('') + `</div></div>`;
-  h += vGuildReport();
+  h += vGuildReport() + `<p class="note" style="font-size:12px">${esc(FAC.guild.who)}を押すと話ができる。店で1ターン動くたびに、冒険者も1部屋進む。</p>`;
+  h += `</div><div class="gcol gcol-adv">` + rosterSec(gq) + gqSendBar(gq);
   return h + `</div></div>`;
 }
 
@@ -19995,10 +20059,10 @@ const HINTS = [
     text: '特需です。その品を求めるお客さんが増えて、特需の枠に置くと4割高く売れます。値付けで、もっと高くもできますよ。前の夜のうちに作っておくのがおすすめです。' },
   { id: 'book', k: 'collect', sel: '[data-act=merch][data-v=book]', when: () => !!G.stallBook,
     text: '古書商さんの本を買うと、新しいレシピを覚えられます。少し高いですが、作れる物が増えますよ。' },
-  { id: 'adv1', k: 'adv', sel: '[data-sec=ギルドの冒険者] [data-act=guild]', when: () => UI.tab === 'adv',
-    text: '冒険者さんには、ここで武具を渡します。武具がないと、すぐにけがをして帰ってきてしまいます。けがをした人の手当ても、ここでできますよ。' },
+  { id: 'adv1', k: 'adv', sel: '[data-sec=冒険者] h2', when: () => UI.tab === 'adv',
+    text: '冒険者さんを押すと、ここで武具や道具袋の品を渡せます。渡した物は、帰ってきても持ったままです。武具がないと、すぐにけがをして帰ってきてしまいます。けがをした人の手当ても、ここでできますよ。' },
   { id: 'adv2', k: 'adv', sel: '[data-sec=行き先] h2', when: () => UI.tab === 'adv' && hintSeen('adv1'),
-    text: '行き先には、推奨のランクと最奥のぬしが書いてあります。冒険者さんのランク(F・E…)と比べて、行き先を押して送り出してくださいね。冒険者さんが進むのは、お店で動いた時だけで、1日12ターンまでです。' },
+    text: '行き先には、推奨のランクと最奥のぬしが書いてあります。冒険者さんのランク(F・E…)と比べて、行き先を選んで、冒険者さんを「選ぶ」と、下から送り出せます。冒険者さんが進むのは、お店で動いた時だけで、1日12ターンまでです。' },
   { id: 'advask', k: 'adv', sel: '#veil .sheet', when: () => !!(UI.sheet && UI.sheet.dive),
     text: '探索の途中で、魔物や宝箱、分かれ道に出会うと、こうして店主さんの判断を待ってくれます。分かれ道やぬしの前では、一息ついて、進むか・休むか・引き返すかを選びます。元気が減ったまま進むと、けがをします。戦いや宝箱を毎回聞かれるのが大変なら、「おまかせ」にもできますよ。' },
   { id: 'advback', k: 'adv', sel: '[data-sec=前回の探索] h2', when: () => UI.tab === 'adv' && !G.dive,
@@ -25311,7 +25375,7 @@ function boot(local, fresh) {
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
     recCenter, zones, startGauge, centerTag, recWidth, buyStall, buyBook, autoNeeds, paperCheck, paperState, grantPaper, paperRandom, papersOwned, PAPERS, PAPER, paperSrcMet, paperSrcSt, isWeapon, isArmor, isRing, SKN, SKM, SK_TOTAL, pk, shelfSize, skLearn, skWhy, skReset, skResetCost, skSync, skMigrate, skAutoLearn, spSources, spTotal, spFree, spSpent, graceUse, graceLeft, diveCap, skHas, sellTo, buyFrom, acceptOrder, convertToOrder, openShop, closeShop, sleep, nextCust, upgradeShop, learnSkill, craftTime, completion, xpNeed, autoQuality,
     hotNow, pickHot, ateToday, FACS, FAC, facGoods, facSell, facPrice, facOpen, WORK_BASE, eatGain, EAT_MULT, askCall, diveNotify, closeSheet, failCraft, rollQuality, qualOdds, gaugeHit, orderPick, orderQualMult, orderReward, returnQuests, AREAS, AR, rankMax, guildOpen, questFee, questOdds, expectQty, areaOpen, areaBonus, beginAct, endAct, workMax, custCount, sellBold, boldOdds, haggle, sellHot, hotOdds, hotPrice, HOT_MAX, buyAt, buyOdds, buyPrice, BUY_MIN, BUY_MAX, sellBase, sellQty, sellPrice, fairPrice, mktMult, eat, edibles, staminaOf, dine, buyTonya, tonyaList, shopBand, shopClosed, CLOSE_AT,
-    save, invAdd, invTake, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, bagAdd, bagsClean, autoBags, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
+    save, invAdd, invTake, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
     shelfAuto, shelfPut, shelfClean, makeCustomer, shelfGenre, counterCraft, counterCraftWhy, nightLeft, hotShelfId, onShelf, repay, loanLeft, storyChoose, shoppingList, buyList, reservedNeeds, migrate, fixLoaded, TREND, LOAN_MS,
     CH_BOSS, bossCleared, chBoss, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
