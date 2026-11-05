@@ -3121,6 +3121,10 @@ body.practice #app { display: none; }
 .gsend-row { display: flex; gap: 8px 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .gsend-row .gsend-est { flex: 1 1 260px; }
 
+/* No.243 (2026-11-05 作者): スマホは行き先を押すと別窓。見立てと「送り出す」は窓の下に貼りつく */
+.gqsheet .gadvs { margin-top: 10px; }
+.gqsheet .gsend { position: sticky; bottom: -1px; z-index: 2; margin: 10px -4px 0; box-shadow: 0 -6px 14px rgba(0,0,0,.25); }
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -16003,11 +16007,11 @@ function act0(a, d) {
     case 'gomerch': closeSheet(true); UI.marketPick = null; UI.merch = d.v; UI.tab = 'main'; UI.shopView = G.act === 'market' ? null : 'market'; sfx('tab'); break;
     case 'guild': diveSheet(); sfx('tap'); return;
     case 'gpick': closeSheet(); UI.tab = 'adv'; UI.gTab = 'adv'; render(); setTimeout(() => { const e = document.querySelector('[data-sec=行き先]'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 30); sfx('tap'); return;
-    case 'garea': { const g = gqState(), was = g.area, onPage = UI.tab === 'adv' && !UI.sheet; g.area = onPage && was === d.v ? null : (d.v || null); if (g.area !== was) g.target = null; diveSheet(); sfx('tap'); if (!onPage) setTimeout(() => { const e = document.querySelector('.gxarea.on'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); return; }   // No.242: 行き先は「冒険」の札の中で選ぶ(別窓なし)
+    case 'garea': { const g = gqState(), was = g.area, onPage = UI.tab === 'adv' && !UI.sheet; g.area = onPage && was === d.v && !gqPhone() ? null : (d.v || null); if (g.area !== was) g.target = null; diveSheet('area'); sfx('tap'); if (!onPage && !gqPhone()) setTimeout(() => { const e = document.querySelector('.gxarea.on'); if (e) e.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); return; }   // No.242: 行き先は「冒険」の札の中で選ぶ(別窓なし)
     case 'iuse': UI.invUse = UI.invUse === d.v ? null : d.v; sfx('tap'); break;
     case 'isort': if ((G.invSort || 'def') === d.v) G.invSortRev = !G.invSortRev; else { G.invSort = d.v; G.invSortRev = false; } sfx('tap'); save(); break;
-    case 'gtarget': gqState().target = d.v || null; render(); sfx('tap'); return;
-    case 'gaim': { const g = gqState(); g.area = d.area; g.target = d.v; diveSheet(); sfx('tap'); return; }
+    case 'gtarget': gqState().target = d.v || null; render(); gqDraw(); sfx('tap'); return;
+    case 'gaim': { const g = gqState(); g.area = d.area; g.target = d.v; diveSheet('area'); sfx('tap'); return; }
     case 'goto': {
       if (!UI.sheet) UI.sheetHist = [];
       UI.sheetHist = UI.sheetHist || [];
@@ -16033,7 +16037,7 @@ function act0(a, d) {
     }
     case 'idel': { const o = G.orders.find(x => x.id === d.id); if (o && o.reg) { closeSheet(true); regPriceSheet(o.id); return; } if (deliverOrder(d.id)) { sfx('coin'); flyCoins(1); render(); save(); itemSheet(d.item, (UI.sheetHist || []).length > 0); return; } break; }
     case 'ibdel': { const n = deliverToBuilding(d.b, d.id); if (n) { sfx('coin'); toast(`<div>${BLD[d.b].n}に${IT[d.id].name}を${n}個納品した</div>`); render(); save(); itemSheet(d.id, (UI.sheetHist || []).length > 0); return; } break; }
-    case 'icarry': { closeSheet(true); gqCarry(d.id); diveSheet(); save(); sfx('tap'); return; }
+    case 'icarry': { closeSheet(true); gqCarry(d.id); diveSheet('ros'); save(); sfx('tap'); return; }
     case 'sback': { const p = (UI.sheetHist || []).pop(); if (!p) { closeSheet(); return; } if (p.t === 'rec') recipeSheet(p.id, true); else if (p.t === 'paper') paperSheet(p.id, true); else itemSheet(p.id, true); return; }
     case 'quest': if (UI.quest && UI.quest.v) { if (innerWidth <= 560 && UI.quest.v === 'town' && !UI.quest.sec) UI.quest.sec = 'いまの建物'; if (innerWidth <= 560 && UI.quest.v === 'owner' && !UI.quest.sec) UI.quest.sec = 'スキル盤'; if (UI.quest.v === 'main') UI.shopView = null; if (UI.quest.cat) { UI.craftCat = UI.quest.cat; UI.craftOpen = true; } UI.tab = UI.quest.v; if (UI.quest.sec) UI.jumpSec = UI.quest.sec; if (UI.quest.v === 'adv' && G.dive && G.dive.pending) { render(); openDecision(); return; } } break;
     case 'sbuy': if (buyStall(+d.i, +d.n)) { sfx('buy'); flyCoins(-1); } if (d.stay && UI.sheetCur) { const cur = UI.sheetCur; render(); save(); if (cur.t === 'rec') recipeSheet(cur.id); else itemSheet(cur.id, (UI.sheetHist || []).length > 0); return; } break;
@@ -19564,7 +19568,7 @@ function gqSendBar(gq) {
   const d = G.dive, a = gq.area && AR[gq.area], ps = gqParty(gq);
   let h = `<div class="gsend">`;
   if (d) return h + `<p class="note" style="margin:0">いまは${AR[d.area].n}にパーティーが出ている。戻ってきたら次の依頼を出せる。待っている間も、ほかの冒険者を整えられる。</p></div>`;
-  if (!a || !ps.length) return h + `<div class="row between"><span class="sub">${!a ? '左の「行き先」を選んでください' : '右の冒険者を1〜3人「選ぶ」'}${a ? `・行き先: <b>${a.n}</b>` : ps.length ? `・同行 ${ps.length}/3人` : ''}</span><button class="btn pri" disabled>送り出す</button></div></div>`;
+  if (!a || !ps.length) return h + `<div class="row between"><span class="sub">${!a ? '左の「行き先」を選んでください' : `${gqPhone() ? '上' : '右'}の冒険者を1〜3人「選ぶ」`}${a ? `・行き先: <b>${a.n}</b>` : ps.length ? `・同行 ${ps.length}/3人` : ''}</span><button class="btn pri" disabled>送り出す</button></div></div>`;
   const fee = partyFee(a, ps), dg = DG[a.id], e = diveEstimateCached(gq), [ew, ec] = estWord(e), gap = tierGap(a, ps);
   const bw = e.boss >= 0.75 ? ['倒せそう', 'okc'] : e.boss >= 0.4 ? ['五分五分', ''] : e.boss >= 0.12 ? ['厳しい', 'bad'] : ['まず無理', 'bad'];
   h += `<div class="gsend-row"><div class="gsend-est"><span>エマの見立て <b class="${ec}">${ew}</b></span><span>${MON[dg.boss].n}を <b class="${bw[1]}">${bw[0]}</b></span><span>持ち帰り 約<b>${fmt(Math.round(e.val / 10) * 10)}G</b>分</span><span>${daysWord(a)}</span></div>` +
@@ -19587,11 +19591,25 @@ function gqState() {
   if (gq.open && !advById(gq.open)) gq.open = null;
   return gq;
 }
-function diveSheet() {
+// No.243 (2026-11-05 作者): スマホ(1099px以下)は前の形。行き先を押すと別窓で 狙うレア・同行者(その場で武具・袋・食事・手当て)・見立てと送り出す
+const gqPhone = () => innerWidth < 1100;
+function diveSheet(mode) {
+  const gq = gqState();
+  if (gqPhone() && (mode === 'area' && gq.area && !G.dive || mode === 'ros')) { UI.tab = 'adv'; UI.gTab = 'adv'; render(); gqSheet(mode === 'area' && gq.area && !G.dive ? 'area' : 'ros'); return; }
   if (UI.sheet) closeSheet(true);
-  UI.tab = 'adv'; UI.gTab = 'adv'; gqState(); render();
+  UI.tab = 'adv'; UI.gTab = 'adv'; render();
 }
-const gqDraw = () => { };   // the action dispatcher (ui.js) renders and saves after every DIVE_ACTS call
+function gqSheet(mode) {
+  const gq = gqState(), a = mode === 'area' && gq.area && !G.dive ? AR[gq.area] : null;
+  const sc = document.querySelector('#veil .sheet'), top = sc && UI.sheet && UI.sheet.gq ? sc.scrollTop : 0;
+  let h = `${xBtn}<div class="lead">${portrait({ cls: 'villager', ...clerkSpec() }, 'lg')}<div style="min-width:0"><div class="sub">${GUILD_CLERK.n}・${GUILD_CLERK.who}</div><h2>${a ? a.n : '冒険者を整える'}</h2>${a ? `<div class="row" style="gap:6px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}<span class="sub" style="font-size:12px">${daysWord(a)}</span></div>` : ''}</div></div>`;
+  if (a) { const dg = DG[a.id]; h += `<p class="note" style="margin:6px 0 0">${a.d} 最奥には${MON[dg.boss].n}がいる。推奨は${RANKS[a.rk].n}ランク・${TIER_N[reqTier(a)]}以上の武具。全滅すると道具袋の品を失い、冒険者は療養が必要になる。</p>` + aimPicker(gq, a); }
+  else if (G.dive) h += `<p class="note">いまは${AR[G.dive.area].n}にパーティーが出ている。待っている間に、ほかの冒険者を整えたり、手当てしたりできる。</p>`;
+  h += rosterSec(gq) + (a ? gqSendBar(gq) : '');
+  openSheet(`<div class="gqsheet">${h}</div>`, { gq: mode, nav: false, crumb: ['冒険者ギルド', a ? a.n : '冒険者を整える'], bg: guildBg() });
+  if (top) { const s2 = document.querySelector('#veil .sheet'); if (s2) s2.scrollTop = top; }
+}
+const gqDraw = () => { if (UI.sheet && UI.sheet.gq) gqSheet(UI.sheet.gq); };   // the action dispatcher (ui.js) renders and saves after every DIVE_ACTS call; the phone's sheet is drawn again here
 // an item handed over from its own page: into a bag (or onto the gear slot) of the first one who can take it
 function gqCarry(id) {
   const gq = gqState(), it = IT[id]; if (!it) return;
@@ -19643,6 +19661,7 @@ const DIVE_ACTS = {
     return true;
   },
   dvok() { closeSheet(); },
+  gqros() { diveSheet('ros'); sfx('tap'); return true; },
   dvmem(d) {
     const g = gqState(); g.partyTouched = true;
     if (g.party.includes(d.v)) g.party = g.party.filter(x => x !== d.v); else if (g.party.length < 3) g.party.push(d.v); else { toast('<div>同行できるのは3人まで</div>'); sfx('fail'); return true; }
@@ -19666,7 +19685,7 @@ const DIVE_ACTS = {
   dvsend() {
     const g = gqState(), dv = sendDive(g.area, g.target, g.party || [], {});
     if (!dv) return;
-    sfx('door'); flyCoins(-1); UI.gq = {};
+    sfx('door'); flyCoins(-1); UI.gq = {}; if (UI.sheet && UI.sheet.gq) closeSheet(true);
     setTimeout(() => toast(`<div><b>${dv.party.map(m => m.n).join('・')}</b>が${AR[dv.area].n}へ出発した。店の仕事をするたびに、冒険者も先へ進む。</div>`), 60);
     return true;
   },
@@ -19754,10 +19773,10 @@ function advBody() {
       `<div class="dvlog short">${d.log.slice(-8).reverse().map(l => `<div class="lg ${l.c}">${esc(l.t)}</div>`).join('')}</div></div>`;
   } else if (last) h += `<div class="sec gtop" data-sec="前回の探索"><h2>前回の探索<span class="aside">${AR[last.area].n}・${last.day}日目</span></h2><div class="ins">${last.items.length ? last.items.slice(0, 8).map(x => `<span class="in">${ico(x.id, null, { size: 'xs' })}${IT[x.id].name}×${x.n}</span>`).join('') : '<span class="sub">持ち帰った品はない</span>'}</div><p class="note" style="font-size:12.5px">${last.res === 'home' ? `${last.beat ? (last.area === 'dragon' ? '古竜との戦いを終えて' : 'ぬしを倒して') : ''}帰還・持ち帰った価値 約${fmt(last.value)}G` : '全滅して、冒険者は療養中'}</p></div>`;
   // places
-  const opened = AREAS.filter(areaOpen);
+  const opened = AREAS.filter(areaOpen), ph = gqPhone();
   const rm = G.dgRumor && G.dgRumor.until >= G.day ? G.dgRumor : null;
   h += `<div class="sec gdest" data-sec="行き先"><h2>行き先<span class="aside">${opened.length}/${AREAS.length}か所${d ? '・探索から戻ると選べる' : '・押すと選ぶ'}</span></h2><div class="rows">` + AREAS.map(a => {
-    const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id], on = gq.area === a.id && !d;
+    const open = areaOpen(a), dg = DG[a.id], best = (G.depthBest || {})[a.id], on = gq.area === a.id && !d && !ph;
     if (!open) return `<div class="ri gxarea off"><span class="sub">？？？</span><span class="sub" style="font-size:12px">${a.st <= G.stage ? '勇者が聖剣を手にすると行けるようになる' : STAGES[a.st].short + 'になると行ける'}</span></div>`;
     return `<button class="ri gxarea${on ? ' on' : ''}" data-act="garea" data-v="${a.id}"${d ? ' disabled' : ''} aria-pressed="${on}"><div style="min-width:0"><div class="t">${a.n}<span class="row" style="gap:6px;display:inline-flex;margin-left:6px;vertical-align:1px"><span class="kind ${a.kind}">${KIND_N[a.kind]}</span>推奨${rankTag(a.rk)}</span></div>` +
       `<div class="sub" style="font-size:12px">${daysWord(a)}・${dg.rooms}部屋・最奥に${MON[dg.boss].n}・武具は${TIER_N[reqTier(a)]}以上</div>` +
@@ -19766,6 +19785,7 @@ function advBody() {
       (on ? `<div class="gxdet"><p class="note" style="margin:0">${a.d} 最奥には${MON[dg.boss].n}がいる。推奨は${RANKS[a.rk].n}ランク・${TIER_N[reqTier(a)]}以上の武具。</p>${aimPicker(gq, a)}<p class="note" style="margin:4px 0 0;font-size:11.5px">右の冒険者を選ぶと、下にエマの見立てが出る(慎重に指示を出した場合)。全滅すると道具袋の品を失い、冒険者は療養が必要になる。</p></div>` : '');
   }).join('') + `</div></div>`;
   h += vGuildReport() + `<p class="note" style="font-size:12px">${esc(FAC.guild.who)}を押すと話ができる。店で1ターン動くたびに、冒険者も1部屋進む。</p>`;
+  if (ph) return h + `<button class="btn" data-act="gqros" style="width:100%;margin-top:6px">冒険者を整える・手当て<span class="sub" style="margin-left:6px;font-size:11px">${rosterCount()}人</span></button></div></div>`;   // No.243
   h += `</div><div class="gcol gcol-adv">` + rosterSec(gq) + gqSendBar(gq);
   return h + `</div></div>`;
 }
