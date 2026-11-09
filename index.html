@@ -21650,8 +21650,9 @@ owner normal 「・・・」(小さくうなずく)
 S('c1_guide', { ch: 0, when: 'any', cond: () => G.stage === 0 && chBuilt(0) && !bossCleared(0), past: () => G.stage > 0 || bossCleared(0) }, `
 @bg bg_guild
 adv normal 「街道の峠で、また荷車がやられた。ゴブリンの群れだ。頭がいるらしい」
-emma normal 「街道にゴブリンが出るせいで、旅人が村を避けているんです」
-emma normal 「ゴブリンの頭を倒せば、街道に旅人が戻ってきます」
+adv normal 「……俺の連れも一人、まだ足を引きずってる」
+emma normal 「峠の向こうから来るはずの行商さん、今月はまだ一人も来てないんです」
+emma normal 「頭さえいなくなれば、群れは散ると思います。そうしたら、また人の通れる道に」
 emma trouble 「……でも、無理はさせないでくださいね。準備ができるまで、待ってもいいんです」
 `);
 S('boss_goblin', { ch: 0, main: true, need: () => bossCleared(0), past: () => bossCleared(0) }, `
@@ -21708,10 +21709,14 @@ owner normal 「・・・」
 `);
 S('bld_port', { ch: 2, main: true, need: bldPast('port'), past: bldPast('port') }, `
 @bg bg_port
+(朝の港。異国の船から、見たことのない色の箱が次々と降ろされていく。)
 hal normal 「遠い国の品が、この港に直に入るようになった。隊商の荷も、ずいぶん軽くなるよ」
 peddler normal 「港ができりゃ、おれたち行商も仕入れが楽になる。ありがたい話だ」
+colette surprise 「見てください、あの果物! 皮が星の形してます!」
+hal smile 「南の島のだね。王都でも、めったに出ない」
 hal normal 「その代わり、噂も入ってくる。良いのも、悪いのもね」
 owner normal 「・・・」
+(店主は、帆の向こうの北の山の方を、しばらく見ていた。)
 `);
 S('bld_academy', { ch: 2, main: true, need: bldPast('academy'), past: bldPast('academy') }, `
 @bg bg_academy
@@ -21725,6 +21730,10 @@ owner normal 「・・・」
 S('bld_arena', { ch: 2, main: true, need: bldPast('arena'), past: bldPast('arena') }, `
 @bg bg_arena
 luca smile 「闘技場だってさ! 腕を磨くなら、ここしかないよな」
+dahlia smile 「いい足だ。前に出る足だね」
+luca surprise 「えっ、だ、誰?」
+dahlia normal 「ここの胴元、ダリア。名前を書いていきな。新入りの三試合は、賭け札が安いよ」
+(ダリアの目が、店主の左脚で一度だけ止まった。にやりと笑って、それきり何も言わない。)
 emma trouble 「ルカさん。闘技場は、けがをするための場所じゃありませんからね」
 luca smile 「分かってるって! ……店主さん、いつか観に来てくれよな」
 owner soft 「・・・」(小さくうなずく)
@@ -21914,7 +21923,9 @@ owner down 「・・・」
 `);
 S('c3_guide', { ch: 2, when: 'any', cond: () => G.stage === 2 && chBuilt(2) && !bossCleared(2), past: () => G.stage > 2 || bossCleared(2) }, `
 @bg bg_guild
-emma normal 「北の古代遺跡の奥に、遺跡を守るゴーレムがいます。奥まで調べられれば、遺跡の正体が分かるかもしれません」
+adv normal 「遺跡の扉の前に、石の巨人が立ってる。近づいた奴を、黙って押し返すだけなんだ」
+adv normal 「……殺す気なら、とっくに殺されてた」
+emma normal 「何かを守っているのかもしれません。奥まで行けたら、それが分かるかも」
 noel normal 「奥に文字があれば、どんな欠片でも持ち帰ってください。……石ひとつで、歴史が変わることもあります」
 `);
 S('boss_ruins', { ch: 2, main: true, need: () => bossCleared(2), past: () => bossCleared(2) }, `
@@ -21923,6 +21934,9 @@ emma smile 「おかえりなさい! 遺跡の奥まで、行けたんですね�
 adv normal 「ゴーレムは、崩れる最後まで、扉の前から動かなかった」
 adv normal 「…何千年も、ここを守ってたのか」
 adv normal 「奥で、文字の刻まれた石のかけらを拾ってきた。学院の連中なら読めるだろう」
+(駆けこんできたノエルが、かけらを両手で受け取った。)
+noel surprise 「この刻み方……どの教本にも載っていない文字です。何日かかっても、読みます」
+emma smile 「みなさん、無事で何よりです。今日の名簿は、全員に丸です」
 `);
 S('c3_ruins', { ch: 2, main: true, need: () => bossCleared(2), when: 'morning', cond: () => storyAfter('boss_ruins') && storySeen('c3_tran'), past: () => G.stage > 2 }, `
 @bg bg_library
@@ -21930,7 +21944,7 @@ noel normal 「読めました。……これは、盟約の碑文です」
 mira surprise 「初代の王さまと、古い竜が交わした約束です。人は竜の地を荒らさず、竜は魔物を奥にとどめる、って」
 noel normal 「そして、あの遺跡は……初代の都の跡です。この国は、この地から始まったのですね」
 mira normal 「王家の人は、代がわりのたびに、北の祭壇で誓いを立て直すんだそうです」
-(店の隅で話を聞いていた修道女の肩が、びくりと動いた。)
+(書架の陰で、本を返しに来ていた修道女の肩が、びくりと動いた。)
 noel normal 「最後の一文が気がかりです。『誓いの絶えし時、竜は目覚め、地は焼かれん』」
 clara trouble 「…………」(胸の聖印を握りしめる)
 owner normal 「・・・」(修道女の方を、黙って見る)
@@ -21950,6 +21964,7 @@ chief trouble 「備えあれば、というやつじゃ。……ようやく育
 priest normal 「石の積み方なら、少々心得がございます。お手伝いいたしましょう」
 chief surprise 「司祭さまが、石積みを?」
 priest normal 「……昔、少々」
+gantz normal 「石なら、山にいくらでもある。……持ってけ」
 (丘の上の教会の窓に、遅くまで灯りがともっていた。)
 `);
 
@@ -22043,6 +22058,7 @@ owner normal 「・・・」
 `);
 S('bld_cathedral', { ch: 3, main: true, after: 'c4_square', need: bldPast('cathedral'), past: bldPast('cathedral') }, `
 @bg bg_cathedral
+(長椅子の間を、避難してきた子どもたちが走り回っている。)
 priest normal 「ここなら、千人は眠れましょう。……小さな教会から始まったものが、ここまでになるとは」
 chief smile 「わしらの教会は、長いこと鐘が鳴らんかった。……今は、町中に聞こえるのう」
 clara smile 「鐘の音を聞いて、来てくれた方もいるそうです」
@@ -22053,11 +22069,16 @@ priest normal 「…………」(咳払いをする)
 S('bld_knights', { ch: 3, main: true, after: 'c4_square', need: bldPast('knights'), past: bldPast('knights') }, `
 @bg bg_knights
 knight normal 「落ち延びた近衛と騎士団、ここに集いました。……ベルトラン殿。お変わりなく」
+knight normal 「……近衛を外され、今は騎士団の副長を務めております。ヴィクトルにございます」
+(一礼してから、椅子ではなく床に膝をつく。鎧の肩に、焦げたあとが残っていた。)
+priest normal 「……その肩、磨かぬか」
+victor normal 「落としませぬ。あの夜の印ですので」
+priest normal 「…………」
 priest normal 「ふん。この髭を見て、変わりないと申すか」
-knight normal 「三年前、殿が姫様の旅に付くことを許されなかったと聞いた時は、皆で憤ったものです」
+victor normal 「三年前、殿が姫様の旅に付くことを許されなかったと聞いた時は、皆で憤ったものです」
 priest trouble 「……昔のことよ」
 (騎士たちは、修道服の王女の前に、そろって膝をついた。)
-knight normal 「姫様。我ら一同、この城壁をお守りいたします」
+victor normal 「姫様。我ら一同、この城壁をお守りいたします」
 clara normal 「……ありがとう。この町の人たちを、お願いします」
 clara normal 「この町は、私を守ると決めてくれました。だから、今度は私たちが守る番です」
 `);
@@ -22069,6 +22090,7 @@ clara smile 「この町の人を、守ってくださいね。……あなた�
 luca surprise 「……は、はい! 命に代えても!」
 clara pout 「命に代えては、いけません。帰ってくるのが、騎士の務めです」
 luca smile 「……はい!」
+victor normal 「訓練は明朝から。……遅れたら、城壁を三周です」
 (式のあと、ルカは人混みの後ろの店主を見つけて、駆け寄ってきた。)
 luca smile 「見てた? 見てたよね!」
 luca smile 「胸のとこ、見て。……この店の印、入れてもらったんだ」
@@ -22120,21 +22142,24 @@ irma smile 「それを、あたしじゃなくて、あの子に言ってやり
 `);
 S('c4_guide', { ch: 3, when: 'any', cond: () => G.stage === 3 && chBuilt(3) && !bossCleared(3) && storySeen('c4_square'), past: () => G.stage > 3 || bossCleared(3) }, `
 @bg bg_guild
-emma normal 「西の谷に、ワイバーンの群れの長がいます。古竜の先触れです。……押し返せれば、時間が稼げます」
-knight normal 「騎士団からも人を出す。……あの谷は、北の祭壇へ続く道でもある」
+adv normal 「見張り台から、谷へ飛んでいく影を数えた。……日に日に増えてる」
+emma normal 「長を押し返せれば、少しは静かになるはずです」
+victor normal 「騎士団からも人を出す。……あの谷は、北の祭壇へ続く道でもある」
 emma trouble 「みなさん、必ず帰ってきてくださいね」
 `);
 S('boss_wyvern', { ch: 3, main: true, need: () => bossCleared(3), past: () => bossCleared(3) }, `
 @bg bg_guild
 emma smile 「おかえりなさい! ……みなさん、無事ですね」
 adv normal 「谷の岩に、古い刀傷が残ってた。誰かが、ずっと前にあそこで戦ったんだな」
+luca normal 「刀傷のそばに、盾をこすった跡もあった。……誰かをかばいながら、戦ったんだ」
+(エマは名簿をめくる手を止めて、店主の方を見ないようにした。)
 adv normal 「…あいつら、怒ってたな」
 owner down 「・・・」
 `);
 S('c4_end', { ch: 3, past: () => G.stage >= 4 }, `
 @bg bg_town_4
 priest normal 「王都の民も、騎士も、書物も、すべてこの町にございます」
-knight normal 「城壁があり、港があり、人も物も集まっている。……守れる都は、今、ここしかございません」
+victor normal 「城壁があり、港があり、人も物も集まっている。……守れる都は、今、ここしかございません」
 chief smile 「なら、ここが都じゃ。……初代の都も、この地にあったそうじゃしの」
 clara normal 「都が、始まりの地へ帰ってくるのですね」
 chief normal 「坊。あんたの店から始まったんじゃよ。分かっとるか」
@@ -22216,11 +22241,12 @@ owner soft 「・・・また明日」
 `);
 S('bld_dragon', { ch: 4, past: bldPast('dragon') }, `
 @bg bg_stable
-dragoon normal 「盟約の地の山で、竜と暮らしてきた一族です。盟約を結び直す女王がいると聞き、仕えに参りました」
+eir normal 「エイル。北の山で、竜と暮らしてきた。……盟約を結び直す女王がいると聞いて、来た」
 queen smile 「人と竜が、共に生きてきた証ですね。……心強いです」
 luca surprise 「すげえ……竜って、こんなに大人しいのか」
-dragoon normal 「竜は、約束を守る者には牙をむかない。破る者には、決して忘れない」
+eir normal 「竜は、約束を守る者には牙をむかない。破る者のことは、決して忘れない」
 queen normal 「……覚えておきます」
+(エイルは店主を見て、少し首をかしげた。竜を見る時と、同じ目だった。)
 `);
 S('bld_treasury', { ch: 4, past: bldPast('treasury') }, `
 @bg bg_treasury
@@ -22240,7 +22266,7 @@ luca normal 「陛下が言ったんだ。『あの時、私の前に立って�
 owner normal 「・・・」
 luca smile 「最初の剣をくれた店で、最後の剣を頼みたい。……あんたの剣じゃなきゃ、だめなんだ」
 `);
-S('c5_forge', { ch: 4, past: () => bossCleared(4) }, `
+S('c5_forge', { ch: 4, past: () => bossCleared(4), end: () => { storyLater('new_c5_academy', 'close'); } }, `
 @bg @workshop
 bard normal 「アダマンタイトは打てる。だが、芯が要る。……お前、何か持っとるな」
 (店主は、棚の奥から箱を出した。)
@@ -22258,6 +22284,19 @@ owner normal 「……折れたままより、いい」
 (炉に火が入る。二人の槌の音が、夜通し響いた。)
 (夜明け。白く光る一振りの剣が、金床の上にあった。)
 bard smile 「……鳴りおった。じいさんの剣と、同じ音だ」
+`);
+S('new_c5_academy', { ch: 4, past: () => bossCleared(4) || storySeen('c5_hand') }, `
+@bg bg_academy
+(学院の講堂。夜遅くまで、ミラが古い言葉の稽古をしていた。店主は、頼まれた灯り油を届けに来た。)
+mira trouble 「あ、店主さん。……祭壇の言葉、まだ三か所、つかえるんです」
+noel normal 「千年前の発音です。つかえない方が、おかしいのですよ」
+mira normal 「でも、陛下の隣で唱えるのは、わたしなんです」
+mira smile 「覚えてます? 学院ができた日、『落ちたら慰めてくださいね』って言ったの」
+owner normal 「・・・」(うなずく)
+mira smile 「受かったから、まだ慰めてもらってないんです。……だから今度は、うまくいったら、褒めてください」
+owner soft 「・・・」(小さくうなずく)
+noel normal 「では、もう一度。最初から」
+(講堂の灯りは、その夜、遅くまで消えなかった。)
 `);
 S('c5_hand', { ch: 4, when: 'morning', cond: () => lucaWaits() && storySeen('c5_queen') && storyAfter('c5_confess') && (storyAfter('c5_forge') || !STORY.c5_forge || invCount('lg_holy') > 0 && storySeen('c5_forge')), past: () => bossCleared(4), end: () => { lucaTakeSword(); storyLater('new_c5_eve', 'close'); } }, `
 @bg bg_shop_day
@@ -22299,7 +22338,7 @@ owner normal 「・・・」
 S('c5_guide', { ch: 4, when: 'any', cond: () => G.stage === 4 && storySeen('c5_hand') && !bossCleared(4), past: () => bossCleared(4) }, `
 @bg bg_guild
 emma normal 「竜の巣の奥に、古竜がいます。……倒さなくていいんです。陛下が祭壇で誓いを立て直すまで、食い止めてください」
-dragoon normal 「空から、先の道を見ておく。竜の巣は、竜の目で見るのがいい」
+eir normal 「空から、先の道を見ておく。竜の巣は、竜の目で見るのがいい」
 emma normal 「みなさん、必ず帰ってきてくださいね。……帰り道の分も、持たせてありますから」
 `);
 S('c5_pact', { ch: 4, past: () => bossCleared(4) }, `
@@ -22328,8 +22367,11 @@ S('boss_dragon', { ch: 4, past: () => bossCleared(4) }, `
 @bg bg_guild
 emma smile 「……おかえりなさい。一人も、欠けずに」
 adv normal 「……竜の方から、置いていったんだ。約束の、しるしだってさ」
+eir smile 「……ね。牙、むかなかったでしょう」(ルカに)
 luca smile 「店主さん! 帰ってきたよ! ……剣、刃こぼれひとつないんだ」
 owner soft 「・・・」(小さくうなずく)
+mira smile 「店主さん! 一回も、つかえませんでした!」
+(店主は、ミラの頭に一度だけ手を置いた。)
 `);
 S('bld_gate', { ch: 4, past: bldPast('gate') }, `
 @bg bg_gate
@@ -22637,7 +22679,8 @@ owner normal 「・・・」
 S('c2_guide', { ch: 1, when: 'any', cond: () => G.stage === 1 && chBuilt(1) && !bossCleared(1), past: () => G.stage > 1 || bossCleared(1) }, `
 @bg bg_guild
 peddler normal 「東の森で、また荷を捨てて逃げてきたよ。狼の群れだ。でかいのが一頭、率いてる」
-emma normal 「東の森の狼が、街道の商人を襲っています。群れの長が退けば、交易路が開けます」
+peddler normal 「積んでたのは、この村に卸すはずの塩だ。……悪いね」
+emma normal 「長がいなくなれば、森の道がまた使えます。塩も、きっと届きます」
 emma trouble 「狼は、こちらの数を見ています。準備の足りない隊は、まっ先に狙われます」
 `);
 S('boss_wolf', { ch: 1, main: true, need: () => bossCleared(1), past: () => bossCleared(1) }, `
