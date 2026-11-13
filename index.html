@@ -3525,6 +3525,23 @@ body.btl-open{overflow:hidden}
 .cas-ceil{text-align:center;font:700 13px var(--f-ui);color:#d8c9a8;opacity:.85}
 @container cm (max-aspect-ratio:1/1){.cas-slotg .cas-ceil{grid-column:1/-1;font-size:12px}}
 
+/* ===== No.287: 温泉。灯り亭と同じ二段(一段目=宿屋の場面の枠に湯の人が並ぶ・二段目=会話の間だけ全画面で、話している人だけ)。
+   湯の重ね方は絵の側(oy_*: 乳白色の湯面だけ3割に薄くして、後ろの背景の湯が透ける)。体には何も重ねない ===== */
+.onc .pg-p img { bottom: 0; height: 100%; }
+.onc .pg-win .msgwin[data-act] { cursor: pointer; }
+.story.onsen { --onh: min(80vh, 820px); --onb: 0px; }
+.story.onsen .st-pic::after { display: none; }
+.story.onsen .st-ch { aspect-ratio: 1; height: var(--onh); bottom: var(--onb); transform: none; }
+.story.onsen .st-ch img { filter: none; }
+.story.onsen .on-side { position: absolute; left: 12px; top: max(12px, env(safe-area-inset-top)); padding: 5px 12px; border-radius: 999px; background: rgba(8, 10, 15, .62); border: 1px solid rgba(217, 184, 116, .3); color: #e8d6ad; font-size: 13px; letter-spacing: .2em; pointer-events: none; }
+.story.onsen.wall .st-name { opacity: .85; font-style: italic; }
+.story.peek .on-side { opacity: 0; }
+@media (max-aspect-ratio: 1/1) {
+  .story.onsen { --onh: min(100vw, 52vh); --onb: 120px; }
+  .story.onsen .st-bg { object-fit: cover; object-position: 50% 70%; top: 0; height: 100%; aspect-ratio: auto; }
+  .story.onsen .st-ch { right: 50%; transform: translateX(50%); }
+}
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -3553,7 +3570,7 @@ const FACES = {4:'data:image/webp;base64,UklGRiQrAABXRUJQVlA4IJAUAABQSwCdASqgAKA
 const PX_IMG = window.__PX || {};
 const IMG_BASE = 'img/';
 const CH_FILES = new Set(["ch_bard_normal", "ch_bard_smile", "ch_bard_surprise", "ch_bard_trouble", "ch_borg_normal", "ch_borg_smile", "ch_borg_surprise", "ch_borg_trouble", "ch_chancellor_normal", "ch_chancellor_smile", "ch_chancellor_surprise", "ch_chancellor_trouble", "ch_chief_normal", "ch_chief_smile", "ch_chief_surprise", "ch_chief_trouble", "ch_clara_blush", "ch_clara_joy", "ch_clara_normal", "ch_clara_pout", "ch_clara_smile", "ch_clara_surprise", "ch_clara_tears", "ch_clara_trouble", "ch_colette_normal", "ch_colette_pout", "ch_colette_smile", "ch_colette_surprise", "ch_colette_trouble", "ch_dahlia_normal", "ch_dahlia_smile", "ch_dahlia_surprise", "ch_dahlia_trouble", "ch_dealer_normal", "ch_dealer_smile", "ch_dealer_surprise", "ch_dealer_trouble", "ch_eir_normal", "ch_eir_smile", "ch_eir_surprise", "ch_eir_trouble", "ch_gantz_normal", "ch_gantz_smile", "ch_gantz_surprise", "ch_gantz_trouble", "ch_gozu_normal", "ch_gozu_smile", "ch_gozu_surprise", "ch_gozu_trouble", "ch_guild_normal", "ch_guild_smile", "ch_guild_surprise", "ch_guild_trouble", "ch_hal_normal", "ch_hal_smile", "ch_hal_surprise", "ch_hal_trouble", "ch_irma_normal", "ch_irma_pout", "ch_irma_smile", "ch_irma_surprise", "ch_irma_trouble", "ch_jin_normal", "ch_jin_smile", "ch_jin_surprise", "ch_jin_trouble", "ch_johan_normal", "ch_johan_smile", "ch_johan_surprise", "ch_johan_trouble", "ch_licorice_normal", "ch_licorice_smile", "ch_licorice_surprise", "ch_licorice_trouble", "ch_luca2_normal", "ch_luca2_smile", "ch_luca2_surprise", "ch_luca2_trouble", "ch_luca_normal", "ch_luca_smile", "ch_luca_surprise", "ch_luca_trouble", "ch_lute_normal", "ch_lute_smile", "ch_lute_surprise", "ch_lute_trouble", "ch_madame_normal", "ch_madame_smile", "ch_madame_surprise", "ch_madame_trouble", "ch_mina_normal", "ch_mina_smile", "ch_mina_surprise", "ch_mina_trouble", "ch_mira2_normal", "ch_mira2_smile", "ch_mira2_surprise", "ch_mira2_trouble", "ch_mira_normal", "ch_mira_smile", "ch_mira_surprise", "ch_mira_trouble", "ch_mire_normal", "ch_mire_smile", "ch_mire_surprise", "ch_mire_trouble", "ch_mob_dragoon_f", "ch_mob_dragoon_f_normal", "ch_mob_dragoon_f_smile", "ch_mob_dragoon_f_surprise", "ch_mob_dragoon_f_trouble", "ch_mob_dragoon_m", "ch_mob_dragoon_m_normal", "ch_mob_dragoon_m_smile", "ch_mob_dragoon_m_surprise", "ch_mob_dragoon_m_trouble", "ch_mob_dwarf_f", "ch_mob_dwarf_f_normal", "ch_mob_dwarf_f_smile", "ch_mob_dwarf_f_surprise", "ch_mob_dwarf_f_trouble", "ch_mob_dwarf_m", "ch_mob_dwarf_m_normal", "ch_mob_dwarf_m_smile", "ch_mob_dwarf_m_surprise", "ch_mob_dwarf_m_trouble", "ch_mob_elf_f", "ch_mob_elf_f_normal", "ch_mob_elf_f_smile", "ch_mob_elf_f_surprise", "ch_mob_elf_f_trouble", "ch_mob_elf_m", "ch_mob_elf_m_normal", "ch_mob_elf_m_smile", "ch_mob_elf_m_surprise", "ch_mob_elf_m_trouble", "ch_mob_hero_f", "ch_mob_hero_f_normal", "ch_mob_hero_f_smile", "ch_mob_hero_f_surprise", "ch_mob_hero_f_trouble", "ch_mob_hero_m", "ch_mob_hero_m_normal", "ch_mob_hero_m_smile", "ch_mob_hero_m_surprise", "ch_mob_hero_m_trouble", "ch_mob_hunter_f", "ch_mob_hunter_f_normal", "ch_mob_hunter_f_smile", "ch_mob_hunter_f_surprise", "ch_mob_hunter_f_trouble", "ch_mob_hunter_m", "ch_mob_hunter_m_normal", "ch_mob_hunter_m_smile", "ch_mob_hunter_m_surprise", "ch_mob_hunter_m_trouble", "ch_mob_knight_f", "ch_mob_knight_f_normal", "ch_mob_knight_f_smile", "ch_mob_knight_f_surprise", "ch_mob_knight_f_trouble", "ch_mob_knight_m", "ch_mob_knight_m_normal", "ch_mob_knight_m_smile", "ch_mob_knight_m_surprise", "ch_mob_knight_m_trouble", "ch_mob_mage_f", "ch_mob_mage_f_normal", "ch_mob_mage_f_smile", "ch_mob_mage_f_surprise", "ch_mob_mage_f_trouble", "ch_mob_mage_m", "ch_mob_mage_m_normal", "ch_mob_mage_m_smile", "ch_mob_mage_m_surprise", "ch_mob_mage_m_trouble", "ch_mob_noble_f", "ch_mob_noble_f_normal", "ch_mob_noble_f_smile", "ch_mob_noble_f_trouble", "ch_mob_noble_m", "ch_mob_noble_m_normal", "ch_mob_noble_m_smile", "ch_mob_noble_m_trouble", "ch_mob_novice_f", "ch_mob_novice_f_normal", "ch_mob_novice_f_smile", "ch_mob_novice_f_surprise", "ch_mob_novice_f_trouble", "ch_mob_novice_m", "ch_mob_novice_m_normal", "ch_mob_novice_m_smile", "ch_mob_novice_m_surprise", "ch_mob_novice_m_trouble", "ch_mob_peddler_f", "ch_mob_peddler_f_normal", "ch_mob_peddler_f_smile", "ch_mob_peddler_f_trouble", "ch_mob_peddler_m", "ch_mob_peddler_m_normal", "ch_mob_peddler_m_smile", "ch_mob_peddler_m_trouble", "ch_mob_royal_f", "ch_mob_royal_m", "ch_mob_villager_f", "ch_mob_villager_f_normal", "ch_mob_villager_f_smile", "ch_mob_villager_f_trouble", "ch_mob_villager_m", "ch_mob_villager_m_normal", "ch_mob_villager_m_smile", "ch_mob_villager_m_trouble", "ch_mob_warrior_f", "ch_mob_warrior_f_normal", "ch_mob_warrior_f_smile", "ch_mob_warrior_f_surprise", "ch_mob_warrior_f_trouble", "ch_mob_warrior_m", "ch_mob_warrior_m_normal", "ch_mob_warrior_m_smile", "ch_mob_warrior_m_surprise", "ch_mob_warrior_m_trouble", "ch_nene_normal", "ch_nene_smile", "ch_nene_surprise", "ch_nene_trouble", "ch_nezu_normal", "ch_noel_normal", "ch_noel_smile", "ch_noel_surprise", "ch_noel_trouble", "ch_owner_2_down", "ch_owner_2_normal", "ch_owner_down", "ch_owner_normal", "ch_owner_smile", "ch_owner_soft", "ch_owner_surprise", "ch_owner_teen_normal", "ch_owner_trouble", "ch_pom_normal", "ch_pom_smile", "ch_pom_surprise", "ch_pom_trouble", "ch_popo_normal", "ch_priest_normal", "ch_priest_smile", "ch_priest_surprise", "ch_priest_trouble", "ch_queen_blush", "ch_queen_joy", "ch_queen_normal", "ch_queen_normal_2", "ch_queen_pout", "ch_queen_smile", "ch_queen_surprise", "ch_queen_trouble", "ch_seres_normal", "ch_seres_smile", "ch_seres_surprise", "ch_seres_trouble", "ch_victor_normal", "ch_victor_smile", "ch_victor_surprise", "ch_victor_trouble", "ch_zen_normal", "ch_zen_smile", "ch_zen_surprise", "ch_zen_trouble"]);
-const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_port", "bg_port_night", "bg_pub", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
+const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
 const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_lever", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_coin", "obj_cas_sym_crown", "obj_cas_sym_dragon", "obj_cas_sym_fish", "obj_cas_sym_gem", "obj_cas_sym_potion", "obj_cas_sym_seven", "obj_cas_sym_sword", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
 // ---- sprites.js ----
 // ===== Pixel sprites (16x16) =====
@@ -16658,6 +16675,8 @@ function act0(a, d) {
     case 'fac': facPage(d.v); sfx('door'); return;   // No.212: 施設は灯り亭と同じ形のページに
     case 'arena': arenaOpen(); return;   // No.217
     case 'casino': casinoOpen(); return;   // No.283
+    case 'onbath': onBath(); return;   // No.287: 温泉
+    case 'ontalk': onTalk(); return;
     case 'factab': UI.facTab = d.v; UI.fcLine = null; sfx('tap'); render(); return;
     case 'fctalk': sfx('tap'); fcTalk(d.v); return;
     case 'fcnext': sfx('tap'); fcNext(); return;
@@ -21623,7 +21642,7 @@ function storyOpen(e) {
   const def = STORY[e.id]; if (!def) return;
   UI.story = { id: e.id, o: e.o, i: -1, typing: null, bg: null, obj: null };
   helpClose && helpClose();
-  const v = document.createElement('div'); v.className = 'story'; v.id = 'story'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true');
+  const v = document.createElement('div'); v.className = 'story' + (e.o && e.o.onsen ? ' onsen' : ''); v.id = 'story'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true');
   v.innerHTML = `<div class="st-pic"><img class="st-blur" alt=""><img class="st-bg a" alt=""><img class="st-bg b" alt=""></div><img class="st-obj" alt="" hidden>` +
     `<div class="st-ch"><img alt=""></div>` +
     `<div class="st-win"><div class="st-name"></div><p class="st-text"></p><span class="st-next" aria-hidden="true">▼</span></div>` +
@@ -21663,11 +21682,14 @@ function storyStep() {
   const ob = v.querySelector('.st-obj');
   if (L.obj && OBJ_FILES.has(L.obj)) { if (S.obj !== L.obj) { ob.src = imgOf(L.obj); S.obj = L.obj; } ob.hidden = false; } else { ob.hidden = true; S.obj = null; }
   const chImg = v.querySelector('.st-ch img'), chBox = v.querySelector('.st-ch');
-  const pic = L.who ? spkPic(L.who, L.ex, S.o) : null;
+  const onS = !!(S.o && S.o.onsen);   // No.287: 湯の場面は、立ち絵ではなく湯の絵を並べる
+  if (onS && typeof onFigs === 'function') onFigs(v, L);
+  const pic = onS ? (typeof onSpkPic === 'function' ? onSpkPic(L) : null) : L.who ? spkPic(L.who, L.ex, S.o) : null;
   if (pic) { if (chImg.getAttribute('src') !== pic) { chImg.src = pic; chBox.classList.remove('in'); void chBox.offsetWidth; } chBox.classList.add('in'); chBox.hidden = false; chBox.dataset.who = L.who; }
   else { chBox.hidden = true; chImg.removeAttribute('src'); chBox.classList.remove('in'); }
   const nm = v.querySelector('.st-name');
-  nm.textContent = L.who ? spkName(L.who, S.o) : ''; nm.hidden = !L.who;
+  nm.textContent = L.who ? (onS && typeof onName === 'function' ? onName(L) : spkName(L.who, S.o)) : ''; nm.hidden = !L.who;
+  v.classList.toggle('wall', !!L.wall);
   v.classList.toggle('narr', !L.who);
   v.classList.toggle('fb', !!L.fb);   // v52: 回想は色を褪せさせる
   const full = (L.t ? (L.who ? `「${L.t}」` : L.t) : '') + (L.act ? (L.t ? ' ' : '') + `(${L.act})` : '');
@@ -26067,11 +26089,11 @@ function vFacPage() {
   if (!f || !facOpen(f.id)) { UI.tab = 'town'; return vTown(); }
   if (f.id === 'guild') { UI.tab = 'adv'; return vAdv(); }   // No.233
   const fc = FC[f.id], o = fc ? foGet(f.id) : null;   // No.213 (作者): 朝市は仕入れ、施設は売る(「分けてもらう」はなくした)
-  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena')) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
+  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
   if (f.id === 'arena') tab = 'bout';   // No.223 (作者): 闘技場は入ったら賭けだけ(売る・頼まれごとはなし) UI.facTab = tab;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="factab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
-  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : facSellAll(f);   // No.217: 闘技場の勝ち抜き戦
+  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
   return facFrame(f, tab, tabs, body, `${f.who}・得意: ${f.fav}`);
 }
 // No.233 (作者): 「売る・頼まれごと」の札(どの施設も同じ。空いた所に、いずれ施設ごとの色の札を足す)
@@ -26088,6 +26110,7 @@ function facSellAll(f) {
 }
 // No.233: 施設の上の枠(背景と施設の人・ふだんの話)。ギルドのページ(diveui.js の vAdv)も使う
 function facScene(f, tab) {
+  if (f.id === 'inn' && tab === 'onsen' && typeof onScene === 'function') { const h = onScene(); if (h) return h; }   // No.287: 湯に入った夜は、場面の枠に湯の人が並ぶ
   const sp = facSpk(f), q = UI.fcLine && UI.fcLine.fid === f.id ? UI.fcLine : null, cur = q && q.L[q.i], who = cur && cur.who;
   const [gx, gt] = fcGreet(f, tab), on = !who || who === sp, ex = who === sp ? (cur.ex || 'normal') : gx;
   const pic = spkPic(sp, ex) || spkPic(sp, 'normal') || chibiURL({ ch: f.ch }, 'normal');
@@ -26710,7 +26733,7 @@ function casinoOpen() {
   casPotGrow();
   const c = casSt();
   if (!c.met) { casScene(CAS_FIRST, () => { c.met = 1; c.greet = G.day; save(); casEnter(); }); return; }
-  if (c.greet !== G.day) { c.greet = G.day; save(); casScene(casGreetTxt(), casEnter); return; }
+  if (c.greet !== G.day) { c.greet = G.day; save(); const tk = typeof onTakuTxt === 'function' ? onTakuTxt() : null; casScene(casGreetTxt(), tk ? () => casScene(tk, casEnter) : casEnter); return; }   // No.287: 卓の会話は、あいさつの後に1本
   casEnter();
 }
 function casEnter() {
@@ -27433,6 +27456,2083 @@ zen smile 「夜の川にも、魚はおるでな。……この札を見せれ�
 (古い紹介状をもらった。港のクラブは毎晩開いている。夜に町の「施設」から行ける。)
 `);
 try { window.__cas = { storyHook, storyPlay, STORY, CAS, casSt, casinoOpen, casinoClose, casAct, casEnter, rlKeyAt, rlBet, bjTotal, casSpin, casStopReel, casRlSpin, casBj, casSl, slChoose, slSym, slLinesFor, slAligned, SL_ROLE, musicKey }; } catch (e) { /* tests only */ }
+
+// ---- onsen.js ----
+// ---------- 温泉(No.287・2026-11-13 作者): 宿屋の札。夜に一度、湯に入ると体力が全部戻り、住人どうしの会話を1本聞く ----------
+// 決まりはプロジェクトの「00_温泉_決まったこと」13。会話の中身は onsen_talk.js(ON_TXT)。
+// 湯に主人は出さない。場面は誰の目でもなく見せる。卓(港のクラブ)の会話も同じ形で持ち、カジノに入った夜に1本出す。
+const ON_PRICE = [30, 60, 120, 180, 240];   // 作者: 1章30G・2章60G・3章120G・4章180G・5章240G
+const onPrice = () => ON_PRICE[Math.min(4, Math.max(0, G.stage))];
+const onSt = () => (G.onsen = G.onsen || { open: 0, bathed: 0, heard: 0, last: '', taku: 0, takuLast: '' });
+// 開く時: 第1章の3施設(ギルド・診療所・宿屋)がそろった時。ぬしを先に倒していたら、第2章が始まってから
+function onOpen() {
+  if (!G) return false;
+  const s = G.onsen; if (s && s.open) return true;
+  const three = ['guild', 'clinic', 'inn'].every(id => G.built && G.built[id]);
+  const ok = G.stage >= 1 || (three && !bossCleared(0));
+  if (ok) onSt().open = G.day;
+  return ok;
+}
+const onNight = () => G.act === 'work';
+const onDone = () => !!(G.onsen && G.onsen.bathed === G.day);
+
+// ---------- 会話の帳面 ----------
+// 名前 → 話し手。湯の絵は oy_<名>1〜4(on_ の絵の、乳白色の湯面だけを3割に薄くした物。後ろの背景の湯が透ける。No.287 作者「体は決して湯に埋もれさせない」)(1=普通・2=笑顔・3=驚き・4=困り)。ルカとミラは第5章から2組目
+const ON_WHO = {
+  'クララ': 'clara', 'コレット': 'colette', 'ダリア': 'dahlia', 'エイル': 'eir', 'エマ': 'emma', 'イルマ': 'irma', 'リコリス': 'licorice', 'リュート': 'lute',
+  'ロザリンド': 'madame', 'ロザ': 'madame', 'ミナ': 'mina', 'ミラ': 'mira', 'ミレ': 'mire', 'ネネ': 'nene', 'ノエル': 'noel', 'ポム': 'pom', 'セレス': 'seres',
+  'バルド': 'bard', 'ボルグ': 'borg', '村長': 'chief', 'ジル': 'dealer', 'ガンツ': 'gantz', 'ゴズ': 'gozu', 'ハル': 'hal', 'ジン': 'jin', 'ヨハン': 'johan',
+  'ルカ': 'luca', 'トラン': 'priest', 'トラン司祭': 'priest', '司祭': 'priest', 'ベルトラン': 'bertrand', 'ヴィクトル': 'victor', 'ゼン': 'zen', 'ゼンじい': 'zen',
+  '店主': 'owner', '主人': 'owner', 'つけひげの男': 'fakebeard', 'コレットの父': 'colpa', '村人': 'villager', '村人の女': 'villager_f', '行商人': 'peddler', '行商人の女': 'peddler_f', '女王': 'queen',
+};
+// 闘士(arena.js の AR_F)は名前で出る。湯の絵は職業の絵
+function onFighter(n) { return typeof AR_F !== 'undefined' ? AR_F.find(f => f.n === n) : null; }
+const ON_PIC = { emma: 'guild', bertrand: 'priest', villager: 'mob_villager_m', villager_f: 'mob_villager_f', peddler: 'mob_peddler_m', peddler_f: 'mob_peddler_f' };
+function onPic(k, ex) {
+  const n = Math.max(1, Math.min(4, +ex || 1));
+  if (k === 'luca' || k === 'mira') return `${IMG_BASE}oy_${k}${G.stage >= 4 ? 2 : 1}-${n}.webp`;
+  const f = typeof AR_F !== 'undefined' && AR_F.find(x => x.id === k);
+  const base = f ? f.ch : (ON_PIC[k] || k);
+  return `${IMG_BASE}oy_${base}${n}.webp`;
+}
+// 卓の会話は立ち絵: 1〜4 を立ち絵の表情に
+const ON_EX = { 1: 'normal', 2: 'smile', 3: 'surprise', 4: 'trouble' };
+
+// 会話の書き方(onsen_talk.js):
+//   #id 湯(女/男/壁/卓) [いつもの]      … 1本の頭
+//   @when 式                             … 出せる時(いつから・何の後)
+//   @until 式                            … いつまで(書いた会話は、期限より先に出す)
+//   @side 女/男                          … 壁越しの会話の、場面がある側
+//   名前1「台詞」(しぐさ)               … 数字は表情。~ を頭に付けると壁の向こうの声
+//   (地の文)
+const ON_TALK = [];
+// 話し手の名札(闘士・コレットの父・女の村人と行商人)。story.js の SPK に足す
+(function () {
+  if (typeof AR_F !== 'undefined') for (const f of AR_F) if (!SPK[f.id]) SPK[f.id] = { n: f.n, ch: f.ch };
+  Object.assign(SPK, { colpa: { n: 'コレットの父' }, fakebeard: { n: 'つけひげの男', ch: 'victor' }, villager_f: { n: '村人', ch: 'mob_villager_f' }, peddler_f: { n: '行商人', ch: 'mob_peddler_f' } });
+})();
+// 式は、このファイルの中の名前(oB・pgCh など)が見えるように、ここで読む(build.py は全体を一つの関数で包むので、new Function では見えない)
+function onExpr(x) { try { return eval('(() => (' + x + '))'); } catch (e) { console.error('温泉の式', x, e); return () => false; } }
+function onParse(src) {
+  let cur = null;
+  const who = n => { if (ON_WHO[n]) return ON_WHO[n]; const f = onFighter(n); return f ? f.id : null; };
+  for (const raw of src.split('\n')) {
+    const s = raw.trim(); if (!s) continue;
+    if (s.startsWith('#')) {
+      const m = s.match(/^#(\S+)\s+(女|男|壁|卓)(\s+いつもの)?/); if (!m) continue;
+      cur = { id: m[1], kind: { 女: 'f', 男: 'm', 壁: 'w', 卓: 't' }[m[2]], usual: !!m[3], when: null, until: null, side: null, lines: [] };
+      ON_TALK.push(cur); continue;
+    }
+    if (!cur) continue;
+    if (s.startsWith('@when ')) { cur.when = onExpr(s.slice(6)); continue; }
+    if (s.startsWith('@until ')) { cur.until = onExpr(s.slice(7)); continue; }
+    if (s.startsWith('@side ')) { cur.side = s.slice(6).trim() === '男' ? 'm' : 'f'; continue; }
+    if (/^[((]/.test(s)) { cur.lines.push({ t: s.replace(/^[((]|[))]$/g, '') }); continue; }
+    const m = s.match(/^(~?)([^\s「(()0-9]+?)([1-4])?「([\s\S]*?)」\s*(?:[((]([\s\S]*)[))])?$/);
+    const k = m && who(m[2]);
+    if (!m || !k) { cur.lines.push({ t: s, bad: true }); continue; }
+    cur.lines.push({ who: k, ex: m[3] || '1', t: m[4], act: m[5] || '', wall: !!m[1], nm: m[2] });
+  }
+}
+// 出せる時の式で使う短い名前(onsen_talk.js)
+const oB = id => !!(G.built && G.built[id]);                 // 施設が建った後
+const oC = n => G.stage >= n - 1;                             // 第n章から
+const oSn = id => storySeen(id);                              // 場面の後
+const oF = s => pgFish(s);                                    // 釣り場で会った後(river・lake・sea)
+const oV = k => !!(G.vigLast && G.vigLast[k]);                // 店先で一度会った後(minstrel・wounded)
+const oK = () => casOpenOK();                                 // 港のクラブの招待の後
+const oD2 = () => G.day >= 2;                                 // 朝市の7人(2日目から)
+const oT = id => { const f = typeof AR_F !== 'undefined' && AR_F.find(x => x.id === id); if (!f || !oB('arena')) return false; return G.stage >= f.t - 1 && G.stage <= (f.t === 2 ? 3 : 4); };   // 闘士が出る間(arena.js 101行の格)
+const onSafe = f => { if (!f) return true; try { return !!f(); } catch (e) { return false; } };
+const onCan = c => onSafe(c.when) && onSafe(c.until);
+// 見た・見ていない: セーブとは別にブラウザに覚える(2周目でも続きから出る)
+const ON_LS = 'manbanya_onsen_seen_v1';
+function onSeenAll() { try { return JSON.parse(localStorage.getItem(ON_LS) || '{}') || {}; } catch (e) { return {}; } }
+function onMarkSeen(id) { const a = onSeenAll(); a[id] = 1; try { localStorage.setItem(ON_LS, JSON.stringify(a)); } catch (e) { /* 覚えられない時は、その周だけ */ } (G.onsen.seen = G.onsen.seen || {})[id] = 1; }
+const onSeen = id => !!(onSeenAll()[id] || (G.onsen && G.onsen.seen && G.onsen.seen[id]));
+// 今夜の1本: まだ見ていない会話(いつまでがある物が先)→ 全部見たら、いつもの と見た会話を混ぜる。男湯・女湯は残りの多い方に寄る
+function onPick(kinds, last) {
+  const can = ON_TALK.filter(c => kinds.includes(c.kind) && onCan(c));
+  const fresh = can.filter(c => !c.usual && !onSeen(c.id));
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  if (fresh.length) { const due = fresh.filter(c => c.until); return pick(due.length ? due : fresh); }
+  const pool = can.filter(c => c.id !== last);
+  return pool.length ? pick(pool) : (can[0] || null);
+}
+const onKinds = () => ['f', 'm', 'w'];
+const onCount = () => { const a = ON_TALK.filter(c => c.kind !== 't' && !c.usual); return { all: a.length, seen: a.filter(c => onSeen(c.id)).length }; };
+
+// ---------- 湯に入る(灯り亭と同じ二段。作者 2026-11-13) ----------
+// 一段目: 宿屋のページの場面の枠に、今夜の湯の人が並ぶ。さわると二段目: 会話の間だけ全画面(話している人だけを灯り亭と同じ大きさで)
+function onWhy() {
+  if (!onOpen()) return '温泉は、まだない';
+  if (!onNight()) return '湯は夜だけ(夜の工房の時間)';
+  if (onDone()) return '今夜はもう入った';
+  if (G.gold < onPrice()) return 'お金が足りない';
+  return '';
+}
+const onTonight = () => { const s = G.onsen; return s && s.tonight && s.tonight.day === G.day && onDone() ? s.tonight : null; };
+function onBath() {
+  if (onWhy() || UI.story) return;
+  const s = onSt(), before = G.work;
+  G.gold -= onPrice(); s.bathed = G.day; G.work = workMax();   // 作者: 全回復。工房の前でも後でも
+  const gain = G.work - before;
+  const c = onPick(onKinds(), s.last);
+  s.tonight = null;
+  if (c) {
+    const side = c.kind === 'w' ? (c.side || 'm') : c.kind, cast = [], names = [];
+    for (const l of c.lines) if (l.who && !l.wall && !cast.includes(l.who)) { cast.push(l.who); names.push(l.nm); }
+    s.tonight = { day: G.day, id: c.id, side, cast: cast.slice(0, 5), names: names.slice(0, 5), played: false };
+    s.last = c.id; if (!c.usual && !onSeen(c.id)) s.heard = (s.heard || 0) + 1;
+    onMarkSeen(c.id);
+  }
+  sfx && sfx('door'); save(); render();
+  try { toast(`<div><b>湯に入った</b> 体力が全部戻った${gain > 0 ? `(+${gain})` : ''}</div>`); } catch (e) { /* 知らせなし */ }
+}
+// 二段目: さわると会話(一晩に一度)
+function onTalk() {
+  const t = onTonight(); if (!t || t.played || UI.story) return;
+  const c = ON_TALK.find(x => x.id === t.id); if (!c) return;
+  onPlay(c, t.side, () => { t.played = true; save(); render(); });
+}
+function onPlay(c, side, done) {
+  if (typeof storyOff === 'function' && storyOff()) { if (done) done(); return; }
+  side = side || (c.kind === 'w' ? (c.side || 'm') : c.kind);
+  const bg = side === 'f' ? 'bg_onsen_f' : 'bg_onsen_m';
+  const lines = c.lines.filter(l => !l.bad).map(l => Object.assign({ bg }, l));
+  STORY.__on = { id: '__on', bgm: 'night', lines };
+  storyOpen({ id: '__on', o: { pub: () => { if (done) done(); else render(); }, onsen: { side } } });
+}
+// story.js から: 湯の場面に「女湯/男湯」の札を出す(湯の重ね方は絵の側でしてある: 乳白色の湯面だけ薄くして、後ろの背景の湯が透ける)
+function onFigs(v, L) {
+  const S = UI.story, O = S && S.o && S.o.onsen; if (!O || v.querySelector('.on-side')) return;
+  const tag = document.createElement('div'); tag.className = 'on-side'; tag.textContent = O.side === 'f' ? '女湯' : '男湯'; v.appendChild(tag);
+}
+// story.js から: 話している人の湯の絵(壁の向こうの声と地の文は、絵を出さない)
+const onSpkPic = L => L.who && !L.wall ? onPic(L.who, L.ex) : null;
+// story.js から: 名札(壁の向こうの声は、絵を出さずに名札だけ)
+const onName = L => (L.wall ? '壁の向こう・' : '') + (L.nm || (SPK[L.who] && SPK[L.who].n) || '');
+
+// ---------- 宿屋のページの「温泉」の札 ----------
+function onTabBody() {
+  const why = onWhy();
+  return `<div class="fo-card on-entry"><div class="fo-in"><div class="t"><b>今夜の湯</b> <span class="sub">${onDone() ? '今夜はもう入った' : !onNight() ? '湯は夜だけ(夜の工房の時間)' : '夜に一度'}</span></div>` +
+    `<div class="sub">湯に入ると、体力が全部戻る。工房の前でも後でもいい。湯けむりの向こうから、町の人たちの話し声が聞こえてくる。</div>` +
+    `<div class="sub">入湯料 <span class="price">${fmt(onPrice())}G</span>・所持金 <span class="price">${fmt(G.gold)}G</span></div>` +
+    `<div class="fo-bs"><button class="btn pri" data-act="onbath"${why ? ' disabled' : ''}><b>湯に入る</b><small>${why || '体力が全部戻る'}</small></button></div></div></div>`;
+}
+// 一段目: 宿屋のページの場面の枠(facility.js の facScene から)。湯に入った夜だけ。null なら宿のいつもの場面
+function onScene() {
+  const t = onTonight(); if (!t) return null;
+  const bg = t.side === 'f' ? 'bg_onsen_f' : 'bg_onsen_m', url = imgOf(bg);
+  const back = `background:#1c2026 url(${url}) 50% 72% / cover no-repeat`;
+  const figs = t.cast.map((k, i) => `<div class="pg-p on-fig${t.played ? '' : ''}" data-act="ontalk" role="button" aria-label="話を聞く"><img src="${onPic(k, 1)}" alt="${esc(t.names[i] || '')}"><span class="pg-pn">${esc(t.names[i] || '')}</span></div>`);
+  const say = t.played ? '湯から上がると、体の疲れがすっかり抜けていた。' : '湯けむりの向こうで、話し声がしている。';
+  const win = `<div class="msgwin"${t.played ? '' : ' data-act="ontalk" role="button" aria-label="話を聞く"'}><div class="nameplate"><b>${t.side === 'f' ? '女湯' : '男湯'}</b></div><p class="speech narr">(${say})</p></div>`;
+  return `<div class="cbox market pubc facc onc"><div class="ss pgss guest n${figs.length}"><div class="ss-back fac" style="${back}"></div><div class="pg-row n${figs.length}">${figs.join('')}</div><div class="pg-win">${win}</div></div></div>`;
+}
+// 卓(港のクラブ): 入った夜に1本(あいさつの後)。主人×住人・住人×住人
+function onTakuTxt() {
+  const s = onSt(); if (s.taku === G.day) return null;
+  const c = onPick(['t'], s.takuLast); if (!c) return null;
+  s.taku = G.day; s.takuLast = c.id; onMarkSeen(c.id);
+  return c.lines.filter(l => !l.bad).map(l => l.who ? `${l.who} ${ON_EX[l.ex] || 'normal'} 「${l.t}」${l.act ? `(${l.act})` : ''}` : `(${l.t})`).join('\n');
+}
+// 開いた夜: 宿でコレットの場面(onsen_talk.js の 'onsen_open')
+try { window.__on = { ON_TALK, onPick, onCan, onOpen, onBath, onSeenAll, onCount, onTakuTxt, onPic, onParse, onPlay, onTalk, onTonight, storyParse, storyHook, storyPlay, workMax, STORY }; } catch (e) { }
+
+// ---- onsen_talk.js ----
+// ---------- 温泉と卓の会話(No.287)。書き方は onsen.js の onParse の上 ----------
+// 中身はプロジェクトの会話の文書(会話_女湯・会話_女湯_続き・続き2・会話_男湯・会話_卓・会話_湯_日々)から。台詞は文書のまま。
+// 名前の後の数字は表情(湯の絵: 1=普通・2=笑顔・3=驚き・4=困り。卓は立ち絵の normal・smile・surprise・trouble)
+
+// 開いた夜: 宿でコレット(湯の主はコレットの父・立ち絵なし。作者 2026-11-13)
+S('onsen_open', { ch: 0, when: 'any', cond: () => onOpen() && G.act === 'work' && (G.stage < 1 || storySeen('c2_start')), past: () => false }, `
+@bg bg_inn
+colette smile 「店主さん! 宿の裏に、湯が出たんです」
+colette normal 「父が、腰を治すんだって、裏山を何年も掘ってて。……やっと」
+(裏から、太い声がした。)
+colpa normal 「おーい、コレット! 薪が足りんぞ!」
+colette trouble 「……ああいう人です。湯の番は、父がします」
+colette smile 「夜に一度、どうぞ。体の疲れが、全部とれますよ。町の人も、旅の人も来ます」
+colette smile 「湯の中だと、みんな、よくしゃべるんです。宿の『温泉』から入れますからね」
+`);
+
+let ON_TXT = `
+#w_pom_eir 女
+@when oB('dragon') && oD2()
+ポム3「エイルさん、なんで足だけ?」
+エイル1「……熱い。山の湯は、もっとぬるかった」
+ポム3「山にもお風呂あるの!?」
+エイル1「岩の間から湧く。竜が先に入る。竜は、一番熱いのが好きだから」
+エイル1「人は、少し冷めてから」
+ポム2「うちも順番あったの! 九人きょうだいで、わたし、いちばん最後!」
+エイル1「……最後の湯は」
+ポム2「ぬるくて、ちょっと泥の色!」
+エイル1「……竜の後の湯も、うろこが浮いてる」
+ポム3「同じだ!」
+(二人で、まだ誰も来ていない湯ぶねを見回す)
+ポム1「……今日、わたしたち、一番じゃない?」
+エイル1「……一番だ」
+ポム2「えへへ。一番の湯って、こんなに熱いんだね」
+エイル2「……竜の気持ちが、少し分かった」(肩まで沈む)
+
+#w_colette_clara 女
+@when oSn('c2_clara')
+コレット1「クララさん、お湯、熱すぎませんか? ……クララさん?」
+クララ1「…………」(小さくうなずく)
+コレット4「あの……わたし、何か、気にさわること言いました?」
+クララ3「あっ……いいえ。申し訳ありません」
+クララ1「修道院では、湯の中では口をきかない決まりでしたので。つい」
+コレット3「ええっ。みんな、黙って入るんですか?」
+クララ1「はい。湯の音だけが聞こえます。……それはそれで、よいものでした」
+コレット2「うちのお風呂は、うるさいですよ。町じゅうの噂が、ここで沸くので」
+クララ2「ええ。先ほどから、たくさん聞こえております」(少しだけ笑う)
+クララ1「……コレットさん。あちらの隅の、おばあさま」
+コレット3「え?」
+クララ4「先ほどから、二度、縁に手をつかれました。お顔の色も、少し。……冷たいお水を、お持ちしてもよいでしょうか」
+(コレットが振り向くと、隅の老婆は、湯の縁にもたれて目を閉じていた)
+コレット3「……桶、取ってきます!」
+コレット1「クララさん、よく気づきましたね。顔色を見るの、宿屋の仕事なのに」
+クララ1「黙っている間は、見ているしかありませんでしたから」
+コレット3「……修道院のお風呂って、すごいんですね」
+クララ2「いいえ。わたくしは、こちらの湯の方が好きです。……話しながらでも、見ていられますので」
+
+#w_dahlia_rosa 女
+@when oB('arena') && oK()
+ロザリンド1「……あんた、入ってくる時、まず出口を見たね」
+ダリア1「癖さ。砂の上じゃ、出口を見ないやつから運ばれていく」
+ロザリンド1「降りて、何年になる」
+ダリア2「さあね。数えるのはやめたよ」
+ダリア1「そういうあんたは、壁を背にして座ってる。湯ぶねの角を、わざわざ選んで」
+ロザリンド1「……癖さ」
+(湯の音だけになる)
+ダリア1「背中、流してやろうか」
+ロザリンド2「……あんたにしか、頼まないよ」
+ダリア2「知ってる」
+
+#w_nene_lute 女
+@when oV('minstrel') && oC(3) && oD2()
+ネネ2「らー、らららー……ら?」
+リュート1「……ら、らら、らーら」
+ネネ3「それ! 港の船乗りさんたちの歌! 知ってるの!?」
+リュート2「南の海の歌です。どの港でも、夜になると誰かが歌っているのですよ」
+ネネ2「歌詞は? 歌詞も教えて!」
+リュート1「…………」
+リュート1「酔った船乗りが、帰りを待っている人に歌う歌です」
+ネネ2「わあ、すてき!」
+リュート1「待たせている言いわけを、十二番まで並べる歌です」
+ネネ4「……すてきじゃなかった」
+リュート2「いちばんまともなのは、七番。『風のせい』」
+ネネ4「……わたしも、それ、使ったことある」
+
+#w_irma_mina 女
+@when oF('lake')
+ミナ1「…………」
+イルマ4「ちょいと、湖の子。口まで沈んでるよ」
+ミナ1「ふぁ……ねてません」
+イルマ4「目が閉じてるじゃないか」
+ミナ1「……魚も、目、閉じないで寝ます……」
+イルマ1「あんたは魚じゃないよ。ほら、こっちに寄りな」
+(ミナが、イルマの肩にこてんと頭をのせる)
+イルマ1「日が沈んだら寝る子が、なんで夜の湯に来るんだい」
+ミナ1「峠、下りるの、遅くなっちゃって……町のお湯、いっぺん、入ってみたくて……」
+ミナ2「…………すう」
+イルマ1「…………」
+イルマ4「……のぼせちまうよ。まったく」
+(イルマは、肩を動かさなかった)
+
+#w_emma_dahlia 女
+@when oB('arena')
+ダリア1「あんた、ギルドの受付だろう」
+エマ2「はい。エマです」
+ダリア1「名簿に、左の眉に傷のある、槍の若いのがいるだろう。王都の闘技場で、わたしの前座をやってたやつさ」
+エマ1「槍の人ですね。眉の傷の」
+ダリア1「名前で覚えてないのかい」
+エマ2「名前も覚えてます。でも、顔の方が先に出てくるんです」
+エマ1「先週も、帰還です。帰りに必ず、市場で火トカゲの串焼きを買っていきます」
+ダリア1「…………」
+ダリア3「……あいつ、まだあれ食べてるのかい」
+エマ2「ダリアさんの好物だって言ってました。前座で勝った夜にだけ、おごってもらえたって」
+ダリア1「おごったのは三回だけさ。あいつ、三回しか勝たなかったからね」
+エマ1「今は、帰ってくるたびに買ってます」
+ダリア1「……そうかい」
+ダリア1「名簿に、丸はついてるんだね」
+エマ2「はい。毎回」
+ダリア2「なら、いい」(湯で顔を洗う)
+ダリア2「……で、賭けの値をつけるなら、いくらだい。あいつ」
+エマ4「ギルドでは、賭けません」
+ダリア2「知ってるよ」
+
+#w_licorice_eir 女
+@when oB('dragon') && oD2()
+エイル1「……その袋。何に効く」
+リコリス2「あら、気になる? 竜の匂いが、きれいに落ちる草よ」
+エイル3「…………」(袋から、すっと離れる)
+リコリス3「どうしたの?」
+エイル4「落ちると、困る。……匂いが変わると、あの子が、わたしを分からなくなる」
+リコリス1「……そう」
+(リコリスは黙って袋を湯から引き上げ、別の袋を浮かべた)
+リコリス2「こっちは、肌だけ。匂いは、そのまま」
+エイル1「……あなたは、毒の人だと聞いた」
+リコリス2「ふふ。誰に?」
+エイル1「厩舎の、馬番」
+リコリス2「半分は当たりね」
+エイル1「……今日は、どっちの半分」
+リコリス2「どっちだと思う?」
+エイル1「…………薬」(肩まで沈む)
+リコリス3「……あら。当てられちゃった」
+
+#w_seres_mina 女
+@when oF('lake') && oD2()
+ミナ2「セレスさん、石が読めるんですよね! 明日、月鏡の鱒、釣れますか!」
+セレス1「当たるかどうかは、言わないことにしているの」
+ミナ2「じゃあ、釣れたら当たりってことにします!」
+セレス4「……それは、ずるいわね」
+ミナ2「釣り師ですから!」
+セレス2「ふふ。……あなたの石は、湖の色。水の底で、じっと待てる石」
+ミナ2「待つの、得意です! 舟の上で、半日でも!」
+セレス1「それから……もう一つ、光っているのがあるわ」
+ミナ3「え、なんですか?」
+セレス2「言わないわ」
+ミナ3「なんでですか!」
+セレス2「そっちは、あなたが自分で釣るものだから」
+ミナ4「…………?」
+ミナ2「よく分からないけど、釣ります!」
+セレス2「ふふ。釣れたら、教えてね」
+ミナ2「はい! いちばんに!」
+
+#w_mira_pom 女
+@when oC(3) && oD2() && pgRg('mira', 2)
+@until pgRgIs('mira', 2)
+ポム3「ミラちゃん、何してるの? 手、光ってる!」
+ミラ3「しーっ! ……光の魔法の、練習です。湯気の中だと、よく見えるので」
+ポム2「きれい!」
+ミラ4「でも、十数えるくらいしか、もたないんです」
+ポム2「数えてあげる! いーち、にー、さーん……」
+(……じゅう。光が、ふっと消えた)
+ミラ4「……ほら」
+ポム2「もう一回!」
+ミラ3「えっ」
+ポム2「もう一回! いーーち、にーーい……」
+ミラ1「……ポムちゃん。数えるの、遅くなってません?」
+ポム2「畑の数え方だもん! かぶは、ゆっくり大きくなるの!」
+(……じゅーーう。光は、まだ消えていなかった)
+ミラ3「……あれ」
+ポム2「ほらね! 二十くらい、もったよ!」
+ミラ2「……ふふ。それ、ずるいです」
+ポム2「ずるくないよ。ミラちゃんの光が、のびたんだもん」
+ミラ2「…………」(湯の中で、もう一度、手を光らせる)
+
+#w_noel_nene 女
+@when oB('academy') && oC(3) && oD2()
+ネネ2「次はね、すぐ帰ってくるよ! 十日くらい!」
+ノエル1「前回も、ここで『十日で帰る』とおっしゃいました」
+ネネ2「うん!」
+ノエル1「五十三日でした」
+ネネ3「……数えてたの!?」
+ノエル1「学院へ行く道から、宿の三号室の窓が見えるのです」
+ノエル1「毎朝、開いていました。五十三日。部屋は、空なのに」
+ネネ1「…………」
+ネネ4「……今度は、何日って言えばいいのかな」
+ノエル1「言わなくていいと思います」
+ノエル2「窓は、たぶん、毎朝開きますから」
+
+#w_mire_nina 女
+@when oD2()
+@until oT('nina')
+ニーナ1「ミレさん。職人さんの弟子入り先、世話してくれるって、ほんとですか」
+ミレ2「本当よ。どこがいいの?」
+ニーナ4「どこでもいいです。……闘技場、もう怖くて」
+ミレ1「そう」
+ミレ1「今日は、何回戦まで行ったの?」
+ニーナ4「二回戦。……負けちゃいました。でも、ちゃんと歩いて帰ってきました」
+ミレ1「帰り道、何を考えてた?」
+ニーナ1「……次は、もっと高く跳べば、届くかなって」
+ニーナ3「あ」
+ミレ2「ふふ。じゃあ、弟子入りは、まだ先ね」
+ニーナ4「……怖いのは、ほんとなんです」
+ミレ2「知ってるわよ。怖いのに次のことを考えてる子は、もう少しだけ続ける子なの」
+ミレ2「やめたくなったら、いつでもおいで。いい親方、ひとり取っておくから」
+`;
+
+// ---- 湯の日々(会話_湯_日々) ----
+ON_TXT += `
+#m_gozu_jin 男
+@when oV('wounded')
+ゴズ1「……左の肩が下がってるな。今日は北の坑道か」
+ジン3「なんで分かる」
+ゴズ1「北から帰った奴は、荷を左に寄せて担ぐ。道が右に崖だからな」
+ジン4「マスター、湯の中まで仕事かよ」
+ゴズ1「品書きを決めてるだけだ。……今夜の香草焼きは、やめとけ」
+ジン3「なんでだよ。好物だぞ」
+ゴズ1「口の中を切ってるだろう。しゃべり方で分かる。香草がしみるぞ」
+ジン1「…………」
+ジン4「……噛んだんだ。自分で」
+ゴズ3「なんでまた」
+ジン4「新米の前で、痛えって言うわけにいかねえだろ。だから、噛んだ」
+ゴズ1「…………」
+ゴズ1「……兎を、やわらかく煮といてやる。汁を一杯、多めにな」
+ジン1「……悪いな」
+ゴズ2「悪かねえ。その代わり、口が治るまで、香草焼きは出さねえぞ」
+ジン4「……それが一番こたえる」
+
+#m_johan_luca1 男
+@when oD2() && pgRg('luca', 1)
+@until G.stage <= 1
+ルカ2「ヨハンさん! 冒険の本、ない? 字が少ないやつ!」
+ヨハン3「湯の中で、本のご注文ですか」
+ルカ4「店だと、なんか入りにくいんだよ。本がいっぱいで、こっち見てる気がして」
+ヨハン2「ふふ。本は、噛みつきませんよ。……字が少ない冒険の本、ですか」
+ルカ2「絵が多いやつ! 竜とか、剣とか」
+ヨハン1「一冊、ありますね。絵ばかりで、字がほとんどない本が」
+ルカ3「それ! それがいい!」
+ヨハン2「地図です」
+ルカ3「……地図って、本なの?」
+ヨハン1「いちばん古い冒険の本ですよ。どこへ行って、どこから帰るか。全部、書いてあります」
+ルカ4「……でもオレ、地図、読めない」
+ヨハン2「では、読める友だちを作りなさい。冒険の本は、一人で読むものではありませんから」
+ルカ1「友だちかあ……」
+ルカ2「へへ。じゃあ、一枚ちょうだい。読めるやつ、探してくる!」
+ヨハン2「お代は、読めるようになってからで結構ですよ」
+ルカ3「オレが?」
+ヨハン2「いいえ。その、お友だちがです」
+
+#m_zen_chief 男
+@when oF('river')
+(夜明け前。村長が、腰をさすりながら湯小屋の戸を開けた。)
+村長2「ふっふっふ。今日こそ、わしが一番じゃ」
+(湯ぶねには、もう一人いた。)
+ゼン2「ほっほ。遅いのう」
+村長3「……ゼン。おまえ、いったい何刻に起きとるんじゃ」
+ゼン1「川が起きる前じゃ」
+村長4「川は寝んじゃろう」
+ゼン1「寝とる。夜明け前に、いちばん静かになる。そのあいだに湯に入って、川へ行く」
+村長1「わしはの、今日のために、ゆうべの酒を一杯で止めたんじゃぞ」
+ゼン2「わしは二杯で止めた」
+村長4「……負けとるのう」
+ゼン1「ばあさんが言うとった。一番湯は、その日一日で、いちばんきれいな水じゃと。じゃから、わしは一番に入る。あいつの代わりにの」
+村長1「…………」
+村長2「……ほんなら、わしは二番でええわい」
+(ゼンじいは、湯ぶねの端に寄って、まんなかを空けた。)
+村長3「なんじゃ」
+ゼン2「二人で入れば、二人とも一番じゃろ」
+村長2「……ほっほ。明日も、その手でいくかの」
+ゼン2「明日は、もっと早う来る」
+
+#m_bard_jin 男
+@when oB('smithy') && oV('wounded')
+(湯小屋の裏の釜場から、細い声がした。)
+ジン1「……猫か」
+バルド1「…………」(湯ぶねの縁に、干し魚のかけらを一つ置く)
+ジン1「あんたの猫か」
+バルド1「知らん。勝手におる」
+ジン1「じゃあ、その干し魚は」
+バルド4「……わしの昼の残りだ」
+ジン3「湯に昼の残りを持ってくる奴がいるかよ」
+バルド4「…………ふん」
+(灰色の猫が湯気の中から出てきて、干し魚をくわえた。それから、バルドの足もとの石の上で丸くなった。)
+ジン2「懐いてるじゃねえか」
+バルド1「釜の石があったかいだけだ。わしじゃない」
+ジン1「名前は」
+バルド1「つけとらん。つけたら、情が移る」
+ジン2「もう移ってるだろ」
+バルド1「…………」
+バルド4「……鉄」
+ジン3「は?」
+バルド1「灰色だからな。鉄の色だ」
+ジン2「つけてんじゃねえか」
+
+#m_tran_johan 男
+@when oSn('new_c2_church_candle') && oD2()
+@until !oSn('c4_square')
+トラン1「ヨハン殿。……ひとつ、お尋ねしたいことが」
+ヨハン3「はい、司祭さま。湯の中でご相談とは、めずらしい」
+トラン4「算術の本を、一冊。……ごく、易しいものを」
+ヨハン1「易しい、と申しますと」
+トラン4「……おつりの出し方が、分かる程度の」
+ヨハン2「ふふ。ございますよ。店の奥に、子ども向けのが。絵も入っております」
+トラン1「誤解なきよう。私が使うのではございませぬ」
+ヨハン2「ええ。皆さん、そうおっしゃいます」
+トラン4「…………」
+トラン1「……教会の、子どもに」
+ヨハン1「なるほど。では、何冊ご入用で」
+トラン1「……一冊で、ございます」
+ヨハン3「子どもたちに、一冊ですか」
+トラン4「一人、覚えのたいへんよろしくない子がおりましてな。祭壇のろうそくが三十本あるのに、足りぬと言って、町へ買いに出るのでございます」
+ヨハン2「……おや。それは、算術とは別の勉強が要りそうですね」
+トラン4「…………」(咳払いをする)
+トラン1「……本を、一冊」
+ヨハン2「はい。明日、教会へお届けします。包み紙は、無地にしておきますね」
+
+#m_borg_victor 男
+@when oB('knights') && oF('sea')
+(ヴィクトルの手ぬぐいの端に、細かい縫い取りがあった。騎士団の紋と、小さな麦の穂。)
+ボルグ1「……おい、副長。その縫い取り、誰がやった」
+ヴィクトル1「わたしです」
+ボルグ2「はっ! 騎士さまが針仕事か!」
+ヴィクトル1「部下の外套のかぎ裂きを、夜に繕っております。……手が、落ち着くので」
+ボルグ1「…………」
+ボルグ1「見せろ」
+(ボルグが手ぬぐいを取って、縫い目を太い指でなぞった。)
+ボルグ3「……目がそろってやがる。網より細けえ」
+ヴィクトル3「網を、繕われるのか」
+ボルグ1「船に乗ってた頃はな。今は港の若いのに教えてる。膝はだめでも、指は動く」
+ヴィクトル1「では、ひとつ教えていただけまいか。網の結び目を。外套の裾が、どうしてもほつれるのです」
+ボルグ2「いいぜ。その代わり、そっちも教えろ。その、麦の穂のやつ」
+ヴィクトル3「……これを、どちらに」
+ボルグ4「娘の手ぬぐいにだ。……手紙は、書けねえからな」
+ヴィクトル1「…………」
+(ヴィクトルは何も聞かずに、縫い取りの手ぬぐいをたたんで、ボルグの膝に置いた。)
+ヴィクトル1「見本に、お持ちください」
+ボルグ2「……はっ。詰所で、漁師が針仕事か」
+ヴィクトル2「騎士も、しております」
+
+#m_zen_elm 男
+@when oF('river')
+@until oT('elm')
+エルム1「……明日は、西から風が来る。昼すぎに、雨だ」
+ゼン1「来ん。明日は一日、晴れじゃ」
+エルム1「湯気が、西に寄っている」
+ゼン2「わしの膝が痛まん。膝が痛まん日は、降らん」
+エルム3「……膝で、天気を」
+ゼン2「五十年、外れたことはない」
+エルム1「わたしは三百年、湯気で読んでいる」
+ゼン1「…………」
+ゼン3「……三百年?」
+エルム1「年は、言わないことにしている」
+ゼン2「今、言うたじゃろう」
+エルム4「……風が、言わせた」
+ゼン2「ほっほ。ほんなら、明日、川に来い。降ったら、わしの一番ええ浮きをやる」
+エルム1「降らなかったら」
+ゼン1「一日、わしの隣で竿を持て。……一人で釣っとると、話す相手が魚しかおらんでの」
+エルム2「……では、どちらでも、川へ行くことになる」
+ゼン2「そういうことじゃ」
+
+#m_tran_zeno 男
+@when oSn('c3_tran')
+@until oT('zeno')
+(湯小屋の天窓から、夜空がのぞいていた。)
+ゼノ1「司祭どの。あの赤い星が見えますか。今夜、北の空でいちばん明るい」
+トラン1「……ええ。見えますな」
+ゼノ2「あれは『鍛冶の星』。あれが北に出る年は、鉄がよく売れる」
+トラン1「左様で。……私の習った読みでは、あれは『番兵の星』。夜通し、動かぬ星でございます」
+ゼノ3「動かない? 星は、みんな動きますよ」
+トラン1「あれは、動きませぬ」
+(しばらく、二人で見上げていた。赤い星は、たしかに動かなかった。)
+ゼノ1「…………」
+ゼノ3「……司祭どの。あれは」
+トラン2「城壁の、見張り台の灯りでございますな」
+ゼノ4「……星を、読み違えたか」
+トラン1「いえ。番兵の星、という読みは当たっております。……若い頃、ああいう灯りの下に、よく立っておりましたので」
+ゼノ4「……司祭どのは、意地が悪い」
+トラン2「では、償いに。あの灯りの、指一本ぶん右。……あれは、本物でございます」
+ゼノ3「……あ。あれは、知らない星だ」
+トラン2「おや。星読みどのが」
+ゼノ2「今夜、読んでおきます。……明日の晩、答え合わせを」
+
+#m_tran_gald 男
+@when oB('church')
+@until oT('gald')
+トラン1「ガルド殿。……教会の子どもたちが、近ごろ、妙な遊びをしておりましてな」
+ガルド1「……」
+トラン2「棒きれを持って、『岩砕き!』と叫んで、ぶつかり合うのでございます」
+ガルド1「…………」
+ガルド3「……俺か」
+トラン2「はい。殿の二つ名で」
+ガルド1「……誰が、勝つ」
+トラン1「たいてい、『岩砕き』の役の子が負けますな」
+ガルド4「…………」
+トラン2「『跳ね兎』の役は、毎日、取り合いでございます。『岩砕き』は、いちばん体の大きい子が、しぶしぶ」
+ガルド1「……そうか」
+(ガルドは、湯の中でしばらく黙っていた。)
+ガルド1「……その子に、言っておけ」
+トラン1「何と」
+ガルド1「立っていれば、負けじゃない」
+トラン2「……伝えましょう。ただ、その子は、毎回わざと転んでおりますぞ」
+ガルド3「……なぜだ」
+トラン2「転ぶと、小さい子たちが喜んで、上に乗るので」
+ガルド1「…………」
+ガルド2「……なら、いい」
+
+#m_hal_kai 男
+@when oSn('c3_start')
+@until oT('kai')
+カイ1「ハルさん。……お願いがあります」
+ハル2「なんだい、二刀の。湯の中でかしこまって」
+カイ1「南の宿場で、わたしの噂を流していると聞きました」
+ハル2「流してるよ。『北の闘技場に、両手の剣の勇者がいる』って」
+カイ4「その『勇者』を、取っていただけませんか」
+ハル3「なんで。いい噂じゃないか」
+カイ4「わたしは勇者ではありません。旅の剣士です。……それに、勇者と呼ばれると、宿で宿代を受け取ってもらえないのです」
+ハル2「いいことじゃないか」
+カイ4「よくありません。払えないまま発つと、次にその町へ行けなくなります」
+ハル1「……へえ」
+ハル1「じゃあ、どう流す?」
+カイ1「『北の闘技場に、宿代をきちんと払う剣士がいる』と」
+ハル4「売れないなあ、それ」
+カイ1「売れなくて結構です」
+ハル3「……いや、待てよ。宿屋の連中には、そっちの方が売れるかもな。払いのいい客の噂は、宿から宿へ、すぐ回る」
+カイ4「……それは、それで困ります。今度は、どの宿も、わたしを待ちかまえる」
+ハル2「贅沢な悩みだなあ」
+
+#m_dealer_victor 男
+@when oK() && oB('knights')
+ヴィクトル2「(干し肉を手に)……ほら。騎士団の遠征弁当だ。うまいぞ」
+(灰色の猫は見向きもしない。湯ぶねの反対の端へ行って、細身の男の膝のそばで丸くなった。)
+ヴィクトル4「…………」
+ヴィクトル1「そちらの方。何か、こつがおありか」
+ジル1「何も、しておりません」
+ヴィクトル3「何も?」
+ジル1「ええ。見ない。呼ばない。手も出さない」
+ヴィクトル4「それでは、近寄りようがないではないか」
+ジル2「猫の方から来ますので」
+(ヴィクトルは干し肉をしまい、まっすぐ前を向いた。背筋を伸ばし、目を閉じた。)
+(猫は、動かなかった。)
+ジル1「……騎士さま。それは、見張りの姿勢です」
+ヴィクトル3「っ」
+ジル1「猫には、見張られているのが分かります」
+ヴィクトル4「では、どうすればよいのだ」
+ジル1「肩の力を、半分だけ」
+(ヴィクトルが、ゆっくり肩を落とした。しばらくして、猫が一歩だけ、ヴィクトルの方へ寄った。)
+ヴィクトル3「……! 来た。一歩、来た」
+ジル2「半分ですので、一歩です」
+ヴィクトル1「……では、全部落とせば」
+ジル2「騎士さまには、おそらく無理かと」
+
+#m_vald_borg 男
+@when oF('sea')
+@until oT('vald')
+ボルグ1「おい、竜の。なんで足だけなんだ。肩まで入れ」
+ヴァルド1「……肩まで入ると、地面が分からなくなる」
+ボルグ3「湯の中に地面があるか」
+ヴァルド1「底がある。足の裏が底を踏んでいれば、それでいい」
+ボルグ1「…………」
+ボルグ1「……俺は船を降りた最初の年、陸が揺れて眠れなかった」
+ヴァルド1「わたしは竜を降りた最初の晩、地面が揺れなくて眠れなかった」
+ボルグ3「はっ! 逆か!」
+ヴァルド2「逆だ」
+ボルグ1「で、今は」
+ヴァルド2「今は、どちらでも眠れる。……年を取った」
+ボルグ2「はっはっは! 俺もだ!」
+ボルグ2「よし、今夜は付き合ってやる。足だけだ」(湯ぶねの縁に腰かけて、足だけ湯に入れる)
+ヴァルド1「……漁師。膝に湯が届いていない」
+ボルグ4「…………」
+ボルグ3「やめだ! 俺は膝が先だ!」(ざぶりと肩まで入る)
+ヴァルド2「地面が分からなくなるぞ」
+ボルグ2「海の男は、分からなくていいんだよ!」
+
+#m_chief_luca2 男
+@when oSn('c5_hero')
+村長4「……あいたた。ルカ、すまん、手を貸しておくれ。腰が立たん」
+ルカ2「いいよ。ほら、背中」
+村長3「背中? 手でええ、手で」
+ルカ2「いいから。乗って」
+(ルカが村長をひょいと背負って、湯ぶねから上がった。)
+村長3「お、おお……高いのう」
+ルカ2「村長さん、軽いね」
+村長1「おまえが重うなったんじゃ。……いつの間に、こんな広い背中になりよった」
+ルカ1「鎧、毎日着てるからね」
+村長2「わしはの、おまえのおしめを替えたこともあるんじゃぞ」
+ルカ3「湯の中で言わないでよ!」
+村長2「ほっほ。……そのおしめの子に、担がれる日が来るとはのう」
+ルカ1「…………」
+ルカ4「オレさ、外だと、みんなに担がれてる気がするんだ。勇者さま、勇者さまって」
+村長1「重いか」
+ルカ1「ちょっとね。……だから、たまには担ぐ方がいい。村長さんくらいが、ちょうどいい」
+村長3「……わしは、ちょうどええ重さか」
+ルカ2「うん。腰の分だけ、ちょっと重い」
+村長4「やかましい」
+
+#m_bard_luca2 男
+@when oC(5) && oB('smithy')
+バルド1「おい、小僧。……いや」
+ルカ3「ん?」
+バルド1「……ルカ。背中を向けろ。鎧の当たりを見る」
+ルカ2「湯の中でも仕事?」
+バルド1「肩当てが、左だけ擦れとる。左で盾を受けとるな」
+ルカ1「うん。右は剣だから」
+バルド1「次に打つ時は、左を一枚厚くする」
+ルカ2「ありがと。……ねえ、バルドさん。さっき『小僧』って言いかけたよね」
+バルド4「言っとらん」
+ルカ2「言った」
+バルド4「……ふん。癖だ。直す」
+ルカ1「直さなくていいよ」
+バルド3「…………」
+ルカ1「小僧って呼ばれるとさ、まだ伸びるって言われてる気がするんだ。勇者って呼ばれると、もう伸びなくていいみたいで」
+バルド1「…………」
+バルド1「伸びしろなら、山ほどある。剣の握りが甘い。左の踏みこみが浅い。湯から上がる時、右足から上がる」
+ルカ3「最後のは関係なくない!?」
+バルド2「小僧だからな」
+
+#b_cat_names 壁
+@side 男
+@when oF('sea') && oB('academy') && oD2()
+ボルグ2「おい、ヒラメ。こっち来い」
+ゴズ3「ヒラメ?」
+ボルグ2「寝る時、平たくなるだろ」
+ゴズ1「そいつは『まかない』だ。毎晩、俺が鍋の残りをやってる」
+(灰色の猫は、湯ぶねの仕切りの下の、湯の流れる隙間をくぐっていった。)
+~リコリス「あら、ベラドンナ。いらっしゃい」
+~ノエル「……その子は、『第三巻』です」
+~リコリス「どうして本の名前なの」
+~ノエル「書庫の、三巻目の棚でいつも寝ています。三巻目の棚だけ、日が当たって紙が温かいのです」
+~リコリス「ふふ。わたしは目の色よ。ベラドンナの実と同じ、深い黒」
+ボルグ1「おーい! そっちにヒラメが行ったろ!」
+~リコリス「来てないわ。ベラドンナなら来てるけど」
+ゴズ1「まかないだ」
+~ノエル「第三巻です」
+(猫は湯気のまんなかで大きなあくびをして、どの名前にも振り向かなかった。)
+ゴズ1「……メシだぞ」
+(猫は耳を立てて、仕切りの下をくぐり、男湯へ戻っていった。)
+~ノエル「…………」
+~リコリス「……あら。いちばん正しい名前ね」
+
+#w_emma_rosa 女
+@when oK()
+ロザリンド1「……ギルドの受付のお嬢ちゃんだね。こんな遅くに」
+エマ4「帳簿が、終わらなくて。……あの、港の方ですよね」
+ロザリンド1「港の者さ。……その髪、いつもきつく結んでるだろう。跡がついてる」
+エマ4「下を向いて書くので、すぐ落ちてくるんです」
+ロザリンド1「ほどいてごらん」
+エマ3「え、でも」
+ロザリンド2「湯の中まで、帳簿をつけるわけじゃないだろう」
+(エマが髪をほどいた。ロザリンドが小瓶を出して、指先で髪油をなじませる。)
+エマ2「……いい匂いがします」
+ロザリンド1「港の油さ。南の船が運んでくる」
+エマ1「…………」
+エマ4「本当は、ほどくと、一日が終わった気がしてしまうんです。……まだ帰ってきていない人がいる日は、ほどけなくて」
+ロザリンド1「…………」
+(ロザリンドは何も言わずに、エマの髪を結い直した。さっきより、少しだけゆるく。)
+ロザリンド2「これなら、跡はつかない。結んだままでいいさ」
+エマ2「……ありがとうございます。あの、お名前を伺っても」
+ロザリンド2「港の、あのきれいな人、でいいよ。町じゃ、そう呼ばれてるんだろう」
+エマ4「それ、長いです。名前を覚えるのが、仕事なので」
+ロザリンド2「じゃあ、あんたが仕事じゃない日に教えてやる」
+エマ4「……ありません、そんな日」
+ロザリンド2「だろうね」
+
+#w_seres_lute_rosa 女
+@when oK() && oV('minstrel') && oD2() && oC(3) && pgRg('mira', 2)
+(遅い湯に、ロザリンドが入ってきた。湯ぶねの奥で、セレスとリュートの背筋が少しだけ伸びた。)
+ロザリンド1「おや。先客がいたね」
+セレス1「……はじめまして」
+リュート2「はじめまして。港の、あのきれいな方、ですね」
+ロザリンド1「…………」
+ロザリンド2「……町じゃ、そう呼ばれてるらしいね」
+(湯ぶねの手前で、ミラが首をかしげた。)
+ミラ3「あの……セレスさん。先週も、ここで『はじめまして』って言ってませんでした?」
+セレス1「……そうだったかしら」
+ミラ1「言ってました。リュートさんも」
+リュート2「わたしは耳がよいので、人の顔は、あまり覚えないのですよ」
+ミラ4「耳と顔、関係あります?」
+セレス1「湯気で、石もくもるの。顔もくもるわ」
+ミラ4「…………」
+ロザリンド2「ふふ。あたしは、何べん『はじめまして』でも構わないよ」
+ミラ1「……大人って、ふしぎです」
+ミラ2「じゃあ、わたしも! はじめまして!」
+ロザリンド2「あんたは、本当にはじめてだろう」
+ミラ2「はい! なので、ちゃんと名前を言います。ミラです!」
+ロザリンド2「……いい子だね。あたしの名前は、また今度」
+(セレスとリュートは、そろって湯気の向こうを見ていた。)
+
+#w_noel_mina 女
+@when oB('academy') && oF('lake')
+(明け方の湯。ミナが元気よく戸を開けた。)
+ミナ2「おはようございます!」
+ノエル1「……おやすみなさい」
+ミナ3「えっ」
+ノエル1「わたしは、これから寝るところです。書庫で、夜通し読んでいましたので」
+ミナ2「わたしは、これから峠を上って、舟を出すところです!」
+ノエル1「では、ミナさんの朝は、わたしの夜なのですね」
+ミナ3「ノエルさん、いつ寝てるんですか?」
+ノエル1「ミナさんが、起きている間です」
+ミナ4「じゃあ、ずっと会えないじゃないですか!」
+ノエル2「ええ。ここでだけ、少し重なります」
+ミナ1「…………」
+ミナ2「湖の夜明け、見たことあります? 水がね、最初は灰色で、それから急に金色になるんです」
+ノエル1「ありません。夜明けは、灯りを消す時間なので。……灯りを消すと、字が読めなくなって、それで一日が終わります」
+ミナ3「もったいない! いちばんきれいなとこなのに!」
+ノエル2「では、いつか、寝る前に見に行きます」
+ミナ2「舟、貸しますね! 夜明けの分は、とくべつに安くします!」
+ノエル2「ありがとうございます。……では、ミナさん。おやすみなさい」
+ミナ2「おはようございます! ……あれ?」
+ミナ2「じゃあ、ここでは、『おはやすみなさい』で!」
+ノエル3「……辞書に、ない言葉ですね」
+ミナ2「今、できました!」
+
+#w_vera_noel 女
+@when oB('academy')
+@until oT('vera')
+ノエル1「ヴェラさん」
+ヴェラ1「……書庫番さん。湯の中で、何かしら」
+ノエル1「『固いパンをやわらかくする十二の方法』。返却の期限が、過ぎています」
+ヴェラ3「どうして、湯の中で言うのよ」
+ノエル1「書庫の外でお会いできるのは、ここだけなので」
+ヴェラ4「…………」
+ヴェラ1「……学院の食堂のパン、まだ固いでしょう」
+ノエル1「はい。わたしは、スープに浸けてから読みます」
+ヴェラ4「わたしがいた頃から、ずっとよ。あれで、杖より先に歯を折りかけたわ」
+ノエル1「それで、あの本を」
+ヴェラ1「夜に、試してるの。剣にのせる火で焼くのよ。かまどより、熱が強いから」
+ノエル3「剣で、パンを」
+ヴェラ4「七番目まで試したわ。……全部、焦げた。剣の火は、熱すぎるのよ」
+ノエル1「…………」
+ヴェラ1「やわらかいのが焼けたら、食堂に持っていこうと思って。後輩たちの歯のために」
+ノエル1「では、期限を延ばします」
+ヴェラ3「いいの?」
+ノエル2「八番目は、『火から遠ざけて、待つ』です。待つ時間が、要りますので」
+ヴェラ3「……あなた、全部読んでるのね」
+ノエル1「書庫の本は、全部読んでいます。……焼けたら、一つ、書庫にも」
+ヴェラ4「書庫は飲食禁止でしょう」
+ノエル2「わたしは、外で食べます」
+
+#w_milda_mina 女
+@when oF('lake')
+@until oT('milda')
+ミルダ4「……退屈だ。誰か、腕相撲の相手はいないか」
+(湯ぶねの縁に肘をついて、ミルダが見回した。ほかの客は、目をそらした。)
+ミナ2「やります!」
+ミルダ3「……あんたが?」
+ミナ2「はい! 父さんとは、よくやりました!」
+ミルダ1「ふん。手加減はしないよ」
+(二人の手が組まれた。ミルダが、軽く力を入れる。……動かない。)
+ミルダ3「…………」
+(もう少し、力を入れる。……動かない。)
+ミナ1「いきますね」
+(ミルダの手の甲が、湯ぶねの縁についた。)
+ミルダ4「……くそっ。降参だ」
+ミナ2「やったー!」
+ミルダ1「あんた、どこの闘技場の出だ」
+ミナ2「湖です!」
+ミルダ3「……湖?」
+ミナ1「舟のかいは、毎日漕ぐので。風が強い日は、半日ずっとです」
+ミルダ1「…………」
+ミルダ1「……その舟、借りられるか」
+ミナ2「はい! 一日、銅貨三枚です!」
+ミルダ4「明日から、毎朝だ。……誰にも言うなよ。闘士が舟で鍛えてるなんて」
+ミナ2「お客さんのことは、言いません! 舟貸しですから!」
+ミルダ3「……舟貸し、関係あるか?」
+
+#w_iris_dahlia 女
+@until oT('iris')
+ダリア1「……あんた。名乗らない闘士は、あんたが初めてだよ」
+アイリス1「…………」
+ダリア4「札は、わたしが全部手で書くんだ。名前のない札は、書きにくくてね」
+アイリス1「名乗りは要らない。剣で知って」
+ダリア4「札は、剣じゃ書けないんだよ」
+アイリス1「…………」
+(アイリスは、しばらく湯の面を見ていた。)
+アイリス1「……では、あなたが、つけて」
+ダリア1「…………」
+ダリア1「それは、しないね」
+アイリス3「なぜ」
+ダリア1「闘士の名前は、闘士が持って帰るもんだ。わたしがつけたら、わたしの札になっちまう。……客が覚えて帰るのは、あんたの名前でなきゃいけない」
+アイリス1「…………」
+アイリス1「……では、白銀で」
+ダリア2「知ってるよ。もう、そう書いてる」
+アイリス3「…………」
+アイリス1「……いつか、言う。名前」
+ダリア2「そうかい。その晩は、札を書き直す手間が増えるね」
+アイリス4「……ごめんなさい」
+ダリア2「いいさ。書き直す札は、好きなんだ」
+
+#w_eir_mira2 女
+@when oB('dragon') && oC(5)
+ミラ2「エイルさん、竜って、どのくらい高く飛ぶんですか?」
+エイル1「雲の上まで」
+ミラ3「雲の上! そこの風って、どう流れてますか? わたし、風の通り道を調べてて」
+エイル1「…………」
+エイル1「乗せてもいい。……約束する」
+ミラ3「えっ」
+エイル1「約束した」
+ミラ4「ま、待ってください! そんな重い約束じゃなくていいです! 『いつか』くらいで!」
+エイル1「『いつか』は、約束じゃない」
+ミラ4「…………」
+エイル1「わたしの一族では、約束をしたら、竜も覚える。破ったら、竜はわたしを乗せなくなる」
+ミラ4「そ、そんなに……」
+エイル1「だから、決めて。いつ」
+ミラ4「……ら、来週の、晴れた朝で」
+エイル2「来週の、晴れた朝。……ミラ」
+ミラ3「!」
+ミラ3「……今、名前」
+エイル1「約束をした相手は、名前で呼ぶ。……来週の朝、雨が降ったら、晴れるまで待つ」
+ミラ3「降ったら延びるんですか!?」
+エイル1「延びる。約束は、なくならない」
+ミラ2「……じゃあ、わたし、今から風の向きを毎日見ておきます。晴れの日を、当てるので」
+エイル2「……当てなくていい。待てばいい」
+
+#w_seres_eir 女
+@when oB('dragon') && oD2()
+エイル1「……これ。このあいだの、石の分」(湯ぶねの縁に、手のひらほどの青いうろこを置く)
+セレス3「あら。……竜のうろこ?」
+エイル1「抜けた分。山では、もらったら同じだけ返す」
+セレス4「わたしがあげたのは、小指の爪くらいの水晶よ。これじゃ、わたしがもらいすぎ」
+エイル1「…………」
+エイル1「では、何か返して」
+セレス1「……じゃあ、この月長石を」
+エイル4「それでは、わたしが、もらいすぎ」
+セレス1「…………」
+セレス2「終わらないわね、これ」
+エイル2「終わらない。……山では、それで、ずっと仲がいい」
+セレス1「…………」
+セレス2「……ねえ。このうろこ、朝市に並べたら、町の娘たちがきっと欲しがるわ。光り方が、石とちがうもの」
+エイル1「竜は、毎年、抜ける」
+セレス2「あら。商いになるわね」
+エイル1「竜に、聞いてから」
+(しばらくして、エイルは湯から上がり、厩舎の方を向いて何かつぶやいた。それから戻ってきた。)
+エイル1「……『いい』と言った。ただし、取り分は半分」
+セレス3「竜が、取り分を?」
+エイル2「竜は約束を守る。だから、取り分には、うるさい」
+
+#w_rine_emma 女
+@when oB('guild')
+@until oT('rine')
+リーネ1「……あなたの癖。一つ目。戸が開くたびに、そっちを見る」
+エマ3「えっ」
+リーネ1「湯小屋の戸が開くたび。三回とも」
+エマ4「……癖です。帰ってきた人かと、思って」
+リーネ1「ここは、ギルドじゃないわ」
+エマ4「分かってるんですけど。体が、先に向くんです」
+リーネ1「二つ目。見たあと、少しだけ笑う。知らない人でも、同じだけ」
+エマ1「…………」
+エマ3「……そうですか?」
+リーネ2「そう。わたしが入ってきた時も、笑ったわ。闘士は、名簿に載らないのに」
+エマ2「名簿に載らなくても、帰ってきた人は、帰ってきた人です」
+リーネ1「…………」
+リーネ1「……三つ目は」
+エマ4「も、もういいです!」
+リーネ2「三つ目。今、耳が赤い」
+エマ4「湯のせいです!」
+リーネ2「……四つ目は、見せてもらえないのね」
+エマ4「見せません!」
+
+#m_chief_bertrand 男
+@when oC(5)
+村長1「宰相どの。……いや、湯の中じゃ、トラン殿でええかの」
+ベルトラン1「どちらでも構いませぬ、村長殿。……して、その、湯の縁に置いた紙は」
+村長2「願い状じゃ」
+ベルトラン3「湯の中で、でございますか」
+村長1「城に出すと、三月は待たされると聞いた。湯なら、すぐ渡せる」
+(ベルトランが紙を手に取った。湯気で、字が少しにじんでいた。)
+ベルトラン1「『湯小屋の湯ぶねに、年寄りのための段を、一つ』」
+村長4「腰がの。出る時に、どうも」
+ベルトラン1「……村長殿は、かつて教区へ、司祭を願う願い状を何通も出されましたな」
+村長1「出したのう。返事が来んでも、出し続けた」
+ベルトラン1「あれを読んで、この村へ来る気になった者がおりました」
+村長2「ほう。物好きもおるもんじゃ」
+ベルトラン1「…………」
+(ベルトランは、にじんだ願い状を丁寧にたたんだ。)
+ベルトラン2「受理いたしました。段は、明日、私が積みましょう」
+村長3「宰相どのが、自分でか」
+ベルトラン2「石の積み方なら、少々心得がございます」
+村長2「ほっほ。……今度は、一通で済んだのう」
+ベルトラン4「湯の中でお受けするのは、これが最初で最後でございますぞ」
+村長2「ほんなら、次も湯で出そう」
+
+#m_bertrand_victor_luca2 男
+@when oC(5) && oB('knights')
+(洗い場で、ベルトランが手ぬぐいを絞った。)
+ベルトラン1「ヴィクトル。背中を向けよ」
+ヴィクトル3「せ、宰相殿! それは、わたしが」
+ベルトラン1「近衛の頃は、毎晩、私が流してやった。覚えておらぬか」
+ヴィクトル4「……覚えております。痛かったので」
+ベルトラン2「よい。向けよ」
+(ヴィクトルが背を向けた。ベルトランが、ごしごしと流しはじめた。)
+ヴィクトル4「…………っ」
+(洗い場の反対で、ルカがそれを見ていた。)
+ルカ2「……副長、なんか、ちっちゃく見える」
+ヴィクトル1「ルカ。背中を向けよ」
+ルカ3「え、オレ?」
+ヴィクトル1「流されたら、下の者を流す。近衛の決まりだ」
+ルカ3「オレ、近衛じゃないよ!」
+ヴィクトル1「騎士団でも、今日から決まりにする」
+(三人が一列に並んだ。宰相が副長の背を、副長がルカの背を流す。)
+ルカ4「いてて! 副長、強い!」
+ヴィクトル4「わたしも、そう申し上げた」
+ベルトラン2「私も、先輩にそう申し上げた」
+ルカ4「……じゃあ、オレは誰を流せばいいの」
+(ルカは振り向いた。後ろには、誰もいなかった。)
+ルカ1「…………」
+(湯ぶねの中から、ゴズの声がした。)
+ゴズ1「……こっちへ来い。俺の背中なら、空いてる」
+ルカ3「マスター!」
+ゴズ2「ただし、子ども用の力でな」
+ルカ4「子ども用じゃないってば!」
+
+#m_gantz_hal 男
+@when oSn('c3_start') && oD2() && oB('port')
+ハル2「ガンツさん。あんたの山の鉄、どこまで行ったか知りたくない?」
+ガンツ1「……」
+ハル1「知りたくないか。じゃあ、やめとく」
+ガンツ1「……どこだ」
+ハル2「ほら、知りたいんじゃないか。南の、川沿いの町だよ。港から船で運ばれて、鍛冶屋が三軒で分けた」
+ガンツ1「……何になった」
+ハル1「鋤。畑のね。あっちは土が重くて、刃がすぐだめになるんだって。あんたの鉄のは、ひと冬もった」
+ガンツ1「……」
+ガンツ1「……誰が、使ってる」
+ハル4「そこまでは知らないなあ。百姓のじいさんとか、娘さんとか?」
+ハル3「あれ。ガンツさん、今日はよく聞くね」
+ガンツ1「……親方が言ってた。掘った石は、誰かの手に渡って、何かになる」
+ガンツ4「……俺は、何になったか、見たことがねえ」
+ハル1「…………」
+ハル2「じゃあ、次に南へ行ったら聞いてくるよ。使ってる人の名前」
+ガンツ1「……名前はいい。……顔を、覚えてこい」
+ハル4「顔は運べないよ」
+ガンツ1「……話せ。おまえは、話がうまい」
+ハル2「…………へへ。ガンツさんに褒められたの、初めてだ」
+
+#w_licorice_lute 女
+@when oD2() && oV('minstrel')
+リコリス1「ねえ、吟遊詩人さん。歌を一つ、頼めるかしら」
+リュート1「薬草の方。どのような歌を」
+リコリス1「毒の草の歌。……子ども向けの」
+リュート3「おや。物騒な子守歌ですね」
+リコリス4「ちがうわ。覚え歌よ。トリカブト、ドクゼリ、ベラドンナ。どれが危ないか歌で覚えれば、子どもがかじらないでしょう」
+リュート1「…………」
+リコリス4「店の前で子どもに泣かれるの、もうたくさんなの。かじったのが、ただのよもぎでもね」
+リュート1「それで、歌を」
+リコリス1「泣く子が減れば、わたしも静かに店番ができるもの」
+リュート2「分かりました。歌の種を、いただきます」
+(リュートが、湯気の中で小さく節を口ずさんだ。きれいな、やさしい節だった。)
+リコリス3「……ちょっと待って。それ、きれいすぎるわ」
+リュート3「いけませんか」
+リコリス4「そんなにきれいに歌ったら、子どもがその草を摘みに行っちゃうじゃない」
+リュート1「…………」
+リュート1「では、怖い節に」(低い声で、もう一度)
+リコリス4「……今度は、わたしが泣きそうよ」
+リュート2「難しいご注文ですね、薬草の方」
+リコリス2「だから、あなたに頼んでるのよ」
+
+#w_emma_seres 女
+@when oB('guild') && oD2()
+セレス1「受付さん。ギルドの掲示板に、依頼を一枚貼れるかしら」
+エマ2「はい! 何の依頼ですか」
+セレス1「洞窟のしずくを、一瓶。水晶の天井から落ちる、あれ」
+エマ1「採集の依頼ですね。報酬は」
+セレス2「その人の石を、読んであげる」
+エマ4「…………」
+エマ4「報酬は、お金か、品物でお願いします」
+セレス1「石を読むのは、品物よ」
+エマ4「形がないです」
+セレス1「形のないものの方が、長く持つのに」
+エマ4「名簿に書けないんです。『報酬・石を読む』って」
+セレス1「…………」
+セレス2「じゃあ、先にあなたの石を読みましょうか。報酬に足りるかどうか、受付さんが確かめて」
+エマ3「えっ。……は、はい」
+セレス1「あなたは、水晶。割れにくいけれど、じっと見ていると、向こう側が透けて見える」
+エマ1「…………」
+エマ4「……その報酬は、だめです」
+セレス3「あら。外れた?」
+エマ4「当たってたので、だめです。冒険者さんが、みんな恥ずかしい思いをします」
+セレス2「ふふ。じゃあ、銀貨で」
+エマ2「はい、銀貨で!」
+
+#w_mira2_dahlia 女
+@when oC(5) && oB('arena')
+ダリア1「宮廷の魔術師さまが、こんな湯に来るのかい」
+ミラ4「や、やめてください。湯では、ただのミラです」
+ダリア2「じゃあ、ただのミラ。頼みがある。闘技場に、灯りをともしてくれないかい」
+ミラ3「灯り、ですか?」
+ダリア1「夜の部をやりたいんだ。仕事帰りの客が来られる。だが松明じゃ煙で、闘士の顔が見えない」
+ミラ1「光の魔法で……」
+ダリア1「そう。どのくらい、もつ?」
+ミラ1「…………」
+ミラ4「わたし、昔は、くしゃみ一つで消えてたんです。光の魔法」
+ダリア1「今は」
+ミラ2「……朝まで、です」
+ダリア1「…………」
+ダリア2「そりゃいい。灯り代が浮く」
+ミラ3「えっ、そこですか!?」
+ダリア2「胴元だからね。……で、お代は」
+ミラ3「いりません! あ、でも……一つだけ。いちばん前の席で、一回、見てもいいですか。わたし、闘技場をちゃんと見たことがなくて」
+ダリア1「…………」
+ダリア2「ふん。一回じゃなくていい。灯りをともした晩は、毎晩、あんたの席を空けとく」
+ミラ2「ほんとですか!」
+ダリア1「その代わり、途中で灯りが消えたら、賭けは全部払い戻しだ。消すんじゃないよ」
+ミラ2「消しません! ……たぶん」
+ダリア2「たぶんは、賭けにならないね」
+
+#t_johan_lute 卓
+@when oK() && oV('minstrel')
+リュート1「古書の方。別の賭けを、いたしませんか」
+ヨハン3「卓の上で、もう一つ?」
+リュート1「この勝負に勝った方が、相手の『一行』をもらう。あなたは、この町の本を書いておられる」
+ヨハン3「……どこで、それを」
+リュート2「酒場の拍子で。……わたしは、この町の歌の二行目を探しています」
+ヨハン2「なるほど。わたしが勝てば、あなたの歌の一行を。あなたが勝てば、わたしの本の一行を」
+ジル1「……お二人とも、札は、もう一枚で」
+(札が開かれた。ヨハンの勝ちだった。)
+ヨハン2「では、いただきましょう。歌の、二行目を」
+リュート1「…………」
+リュート4「まだ、見つかっていないのです」
+ヨハン3「おや」
+リュート1「一行目は決まっています。『北の果ての、ほこりをかぶった店』。二行目は、毎晩探しています」
+ヨハン2「では、賭けは持ち越しですね」
+リュート4「申し訳ありません」
+ヨハン2「いいえ。わたしの本も、書き出しまでに三十年かかりましたから」
+ヨハン2「今度は、負けてみましょうか。本の一行なら、差し上げられますので」
+リュート4「わざと負けないでください。わざとの一行は、歌になりません」
+ジル2「……では、次の勝負は、本気で」
+`;
+
+// ---- 女湯の続き(会話_女湯_続き) ----
+ON_TXT += `
+#w_nene_mire_pom 女
+@when oD2()
+ネネ2「お姉ちゃーん! 頭、洗って!」
+ポム3「……お姉ちゃん?」
+ミレ1「そうよ。言ってなかったかしら」
+ポム3「聞いてない! ミレさんと、ネネちゃんが!?」
+ネネ2「言ってないもん。聞かれなかったし」
+ポム4「……似てないね」
+ミレ1「似てるわよ」
+ネネ3「似てるよ!」
+ポム1「じゃあ、ネネちゃん、泊まるのもミレさんのおうち?」
+ネネ2「泊まらない! 泊まったら、住みついちゃうもん」
+ミレ4「……って言って、毎回、宿に泊まるのよ。この子」
+(ミレが、ネネの髪に湯をかける。)
+ミレ1「ほら、耳。伏せて」
+(ネネの耳が、ぺたりと伏せた。ミレの耳も、つられて少し伏せた。)
+ポム1「…………」
+ポム3「……似てた!」
+
+#w_emma_lute 女
+@when oV('minstrel')
+エマ1「あの……旅の方ですよね。街道を、お一人で?」
+リュート2「ええ。町から町へ、歌の種を集めています」
+エマ1「でしたら、ギルドの名簿に、お名前を。街道は魔物が出ます。書いておけば、帰りが遅い時に捜せますから」
+リュート2「受付の方。わたしは、冒険者ではありませんよ」
+エマ4「分かってます。でも、帰ってこなかったら、困る人がいるでしょう」
+リュート1「……名前を書くと、帰ってこなければならなくなりますね」
+エマ1「はい。それが名簿です」
+リュート1「では、書けません。わたしは、帰る町を決めない旅なので」
+エマ4「…………」
+エマ1「……分かりました。じゃあ、帰ってこなくていいです」
+リュート3「おや」
+エマ2「その代わり、この町を通る時は、ギルドの前を通ってください。顔が見えたら、丸をつけます」
+リュート3「名簿にない者に、丸を?」
+エマ1「わたしの手帳に、です。名簿じゃありません」
+リュート1「…………」
+リュート2「受付の方。それは、歌の種になりますね」
+エマ4「なりません! ならなくていいです!」
+
+#w_quiet_owner 女
+@when oD2()
+@until G.stage < 1
+ネネ2「ねえ、あの店の人、帰ってきたけどさ。ぜんぜんしゃべらないね!」
+ミレ1「板を頼みに行ったら、黙って寸法を書かれたわ」
+コレット3「しゃべりますよ!」
+ネネ1「なんて?」
+コレット1「……この前、パンを届けてもらった時は、『……ああ』って」
+ネネ3「それだけ?」
+コレット2「二回、言いました!」
+ミレ4「……二回ねえ」
+イルマ1「あの子は、小さい頃からああさ。熱を出しても、『平気』しか言わない」
+ネネ3「先生、あの人を診てたの?」
+イルマ1「何べん下げてやったか。……しゃべらない子ほど、よく見てるもんだよ」
+イルマ1「行商の。あんたの荷車、車輪がきしんでるだろう。店の前を通ってごらん。たぶん、黙って見てる」
+ネネ1「…………」
+ミレ3「……そういえば。わたしが言う前に、うちの雨どいの寸法、測ってあったわ」
+コレット2「ほら! しゃべらないけど、ちゃんと聞いてるんです!」
+イルマ1「聞いてるんじゃないよ。見てるのさ」
+ネネ4「……しゃべらないのに、わたしの車輪のこと、わたしより知ってる」
+
+#w_irma_lute 女
+@when oV('minstrel')
+(洗い場で、イルマが小さく節をうなっていた。)
+リュート1「薬師どの。その歌は、どちらの」
+イルマ1「知らないよ。亭主が風呂でうなってた歌さ」
+イルマ4「音痴でね。毎晩毎晩、同じところで外すんだ。……隣の家から苦情が来たよ」
+リュート2「ふふ。……それは、東の峠の、麦刈りの歌です」
+イルマ3「へえ。そんな立派なもんだったのかい」
+リュート1「正しい節を、お教えしましょうか」
+イルマ1「いいよ。外れた方しか、覚えてないんだ。……今さら直したら、あの間抜けの歌じゃなくなっちまう」
+リュート2「では、わたしも、外れた方を覚えましょう」
+イルマ3「覚えなくていいよ! 苦情が増えるだけだ」
+リュート1「町ごとに、歌の種を一つ。……この町の分は、もう決まっていますので。これは、ただの土産です」
+イルマ2「ふん。土産なら、ちゃんと外して歌いな。真ん中の所だよ」
+
+#w_mire_colette_lute 女
+@when oD2() && oV('minstrel')
+ミレ1「……コレットちゃん。東の角の天井、板が一枚、浮いてるわよ」
+コレット3「えっ。どうして分かるんですか」
+ミレ1「しずくの音。あそこだけ、ほかより低いの」
+コレット3「すぐ直します! 板、何枚いりますか?」
+ミレ1「一枚。釘は四本。……それより、あの角の下」
+(東の角では、リュートが目を閉じて座っていた。肩に、しずくが落ちている。)
+コレット3「わあっ、ごめんなさい! 冷たいでしょう!」
+リュート1「いいえ。わたしは、好きでここに座っているのです」
+コレット3「え?」
+リュート2「湯の音の上に、このしずくが、ちょうど三つおきに落ちるのです。……いい拍子でしょう」
+コレット1「…………」
+コレット4「……ミレさん。直すの、やめた方が」
+ミレ4「直しなさい。屋根が腐るわよ」
+リュート4「直さないでください」
+ミレ1「…………」
+ミレ2「……じゃあ、板は直して、しずくの落ちる樋を一本、つけましょう。ここにだけ」
+リュート1「音が、変わってしまいますね」
+ミレ2「変わるわよ。いい音にしてあげる。資材屋だもの」
+リュート2「……資材屋の方。それは、楽しみです」
+コレット4「……そのお代は、どっちが払うんですか」
+
+#w_pom_seres 女
+@when oD2()
+ポム2「セレスさん! これ、見て! 宝石まじってない!?」(手のひらに、丸い石を三つ)
+セレス1「……まじってないわ」
+ポム3「はやい!」
+セレス1「ただの石よ。三つとも」
+ポム2「毎朝、畑で三つ拾うの。いつか一個くらい、光るのが出てくると思って」
+セレス1「…………」
+セレス1「丸いわね」
+ポム2「うん。畑の石、みんな丸いの」
+セレス1「転がってきた石は、角が取れて丸くなるの。……丸い石は、積むと崩れにくいわ」
+ポム3「……崩れにくい?」
+セレス2「畑の端に積んだら、いい風よけになる。かぶが、寒くないように」
+ポム3「…………!」
+ポム2「そっちのほうが、いい!」
+セレス2「……そう言うと思った」
+ポム3「今の、占い?」
+セレス2「いいえ。ただの、石の話」
+
+#w_mina_angler 女
+@when oF('lake') && pgRg('mira', 1) && oSn('c2_clara') && oD2()
+ポム1「ミナちゃん、湖の釣りって、どうやるの?」
+ミナ2「まず、竿の担ぎ方からです! 担ぎ方で、腕が分かるんです」
+ミラ1「へえ……」
+ミナ2「じいちゃんは腰が曲がってるから、参考になりません。いちばんきれいなのは、店主さんです。肩にこう、すっと乗せて、歩いても竿先が揺れないの。かっこいいんですよ」
+ポム1「…………」
+ミラ1「…………」
+ミナ3「……あっ」
+ポム3「かっこいいの?」
+ミナ4「つ、釣り師としての意見です!」
+ミラ2「……釣り師としての」
+ミナ4「釣り師として! 釣り師としてです!」
+ポム2「じゃあ、釣り師じゃないミナちゃんは?」
+ミナ4「…………」(ぶくぶくと湯に沈む)
+(湯ぶねの反対の端で、クララが黙って、口まで湯に沈んでいった。誰も、気づかなかった。)
+
+#w_colette_clara_mae 女
+@when oSn('c4_square') && oD2()
+@until oT('karina') && oT('vera')
+(湯ぶねは、いつもより混んでいた。一人が入ってくると、湯の音が、ふっと止んだ。)
+カリナ3「……お、王女、殿下……」
+(カリナが、湯の中で頭を下げようとして、湯を飲んだ。)
+クララ4「あ……どうか、そのまま。お湯の中では、どうか」
+(誰も動けない。コレットが、桶を抱えたまま、立ち止まっていた。)
+コレット1「…………」
+コレット4「……クララ、さ……ま」
+クララ1「…………」
+クララ4「コレットさん。……前のように、呼んでいただけませんか」
+コレット4「でも、わたし、ずっと失礼なこと言ってたじゃないですか。計算が下手になるとか、店主さんの方を見てるとか」
+クララ2「はい。全部、当たっておりました」
+コレット1「…………」
+コレット2「……じゃあ、言いますよ。前みたいに」
+クララ1「はい」
+コレット2「クララさん、また背中、洗い残してます。真ん中のところ」
+クララ3「……っ」
+コレット2「ほら、こっち向いて。宿屋は、背中を見るのも仕事なんです」
+(コレットが、ごしごしと背中を流しはじめた。カリナとヴェラが、目を丸くして見ている。)
+ヴェラ3「……い、いいの? あれ」
+ミレ2「いいのよ。この町じゃ、前からああなの」
+クララ4「……コレットさん。少し、痛いです」
+コレット2「洗い残す方が悪いんです!」
+
+#w_irma_clara_fee 女
+@when oSn('c4_square')
+イルマ1「シスター。手を出しな」
+クララ4「……大したことは、ございません」
+イルマ4「出しな」
+(差し出された指先に、細い傷がいくつもあった。包帯の端で切った傷だった。)
+イルマ4「湯にしみるだろう。黙って入ってたね」
+クララ1「……しみるのは、手当てを覚えた証だと思っておりました」
+イルマ3「誰が言ったんだい、そんなこと」
+クララ2「私です。今、思いつきました」
+イルマ1「ふん」(湯から上がらせ、指に膏薬を塗る)
+クララ1「……イルマさん。こちらの膏薬は、おいくらでしょう」
+イルマ4「手伝いの子から、薬代を取る医者がいるかい」
+クララ2「では、手伝いのお代も、いただけないのですね」
+イルマ3「…………」
+イルマ2「……生意気になったね、あんた」
+クララ2「司祭さまに、算術を習いましたので」
+イルマ4「算術じゃないよ、それは」(膏薬のふたを、ぎゅっと閉める)
+イルマ1「明日は、夜明け前に帰って寝な。それが代金だ」
+クララ2「……はい。きちんと、お支払いいたします」
+
+#w_licorice_clara 女
+@when oSn('c4_square') && oD2()
+クララ1「リコリスさん。……今朝、夜明け前に、診療所の棚に」
+リコリス3「しっ」
+クララ1「……小さな瓶を、置いていかれましたね」
+リコリス3「見てたの?」
+クララ1「はい。夜明けまで、おりましたので」
+リコリス4「……あの人には、内緒よ。自分で作った薬だと思ってるんだから」
+クララ4「嘘は、いけません」
+リコリス1「嘘じゃないわ。黙ってるだけ」
+クララ1「…………」
+クララ2「……黙っているのは、得意です」
+リコリス2「あら。じゃあ、仲間ね」
+クララ2「はい。……こういうのを、共犯、というのでしょうか」
+リコリス2「ふふ。どこで覚えたの、そんな言葉」
+(湯気の向こうから、イルマが入ってきた。)
+イルマ1「ちょいと、あんたら。隅でこそこそ、何の話だい」
+リコリス1「何も」
+クララ1「何も、ございません」
+イルマ1「ふん。……そういや近ごろ、あたしの棚の薬が、やけに効くんだよ」
+イルマ2「あたしも、まだ腕が上がるもんだね」
+(リコリスとクララは、顔を見合わせて、そろって湯に沈んだ。)
+
+#w_pom_clara_flower 女
+@when oSn('c4_square') && oD2()
+ポム2「クララさん! 王都のお城って、畑あった?」
+クララ1「畑……は、ございませんでした。庭に、花はたくさんありましたけれど」
+ポム3「花!」
+クララ4「申し訳ありません。野菜のことは、分からないのです」
+ポム1「花、食べられる?」
+クララ3「……え?」
+ポム2「食べられるなら、畑に植えられるよ! 逃げてきた人の分、畑を広げるの!」
+クララ1「……食べられる花も、ございます。すみれの砂糖漬けや、かぼちゃの花の揚げ物など」
+ポム3「かぼちゃの花!? 食べられるの!? わたし、毎年、ちぎって捨ててた!」
+クララ3「捨てて……!?」
+クララ4「城の料理長が聞いたら、泣いてしまいます」
+ポム2「クララさん、明日、畑に来て! 石を拾いながら、教えて!」
+クララ3「石……?」
+ポム2「大丈夫! 拾う人、いっぱいいるから! クララさんで、二十人目!」
+クララ1「…………」
+クララ2「……はい。二十人目に、なります」
+
+#w_crown_dolka 女
+@when oSn('c5_queen')
+@until oT('dolka')
+ドルカ2「聞いたかい、コレットちゃん。あの冠、丘の下の万事屋で打ったんだってね」
+コレット3「えっ、あ、はい……」
+ドルカ2「町の婆さまたちが、みんな泣いてたってさ。『あれは、あの店の冠じゃ』って」
+(湯ぶねの端で、コレットが、桶を落としそうになった。湯気の向こうに、もう一人、黙って湯につかっている人がいた。)
+コレット4「ド、ドルカさん、あの、その話は……」
+ドルカ2「なんだい、いいとこなんだよ。なんでも、若い頃に冒険者で村を出て、脚を悪くして帰ってきた人だってね。それが今じゃ、女王さまの冠だよ。うちの娘に話してやったら、目をまんまるにして……」
+(湯気が流れて、もう一人の顔が見えた。)
+ドルカ3「…………」
+(ドルカは、湯の中で固まった。)
+クララ1「…………」
+コレット2「……ドルカさん、続き」
+ドルカ3「つ、続き……?」
+コレット2「娘さんのところで止めたら、だめです。こちらのお客さんも、聞きたいって顔してますから」
+クララ2「……はい。続きを、伺いたいです」
+ドルカ4「……そ、そうかい?」
+ドルカ1「……じゃ、じゃあ言うけどね。あの冠を打った晩、丘の下の灯りが、夜明けまでついてたって、町じゅうの噂でね……」
+(湯ぶねの端で、女王は、鼻の下まで湯に沈んでいた。)
+
+#u_w1 女 いつもの
+コレット2「湯ぶねの縁、今日も磨いておきました! すべらないように気をつけて!」
+イルマ4「……あんたが一番すべりそうだね」
+コレット2「わたしは慣れてますから!」
+
+#u_w2 女 いつもの
+コレット2「湯上がりの牛乳、冷えてます! ……お代? お代は、いただきます!」
+
+#u_w3 女 いつもの
+(エマが、湯ぶねの縁に、指で小さく丸を書いている。)
+コレット1「エマさん、それ、何の丸ですか」
+エマ4「……癖です。今日の分の」
+
+#u_w4 女 いつもの
+@when oD2()
+ネネ2「ただいまー! ……あ、ここ、お風呂だった。えへへ、半分ただいま!」
+
+#u_w5 女 いつもの
+@when oD2()
+ミレ1「(天井を見上げて)……今日も、いい音」
+コレット3「何の音ですか?」
+ミレ1「屋根よ。雨の前の音。明日は、洗濯物を外に出さない方がいいわ」
+
+#u_w6 女 いつもの
+@when oD2()
+ポム2「今日のかぶ、湯上がりの牛乳と同じくらい白かったよ!」
+コレット4「……どういう褒め方ですか?」
+
+#u_w7 女 いつもの
+@when oD2() && oF('lake')
+(セレスが、湯の面に映る灯りを、じっと見ている。)
+ミナ1「……今日は、何色ですか?」
+セレス2「お湯の色ね」
+
+#u_w8 女 いつもの
+@when oD2()
+リコリス2「今日の袋は、肌の草。毒は入ってないわよ? ……たぶん」
+エマ3「たぶん!?」
+リコリス2「ふふ」
+
+#u_w9 女 いつもの
+@when oD2() && oSn('c2_clara')
+(クララが、湯の前で静かに手を組み、一礼してから入る。)
+ネネ3「……毎回、それするの?」
+クララ2「はい。癖です。……修道院の」
+
+#u_w10 女 いつもの
+@when oB('arena')
+(ダリアが、湯ぶねの出口がいちばんよく見える所に、黙って座る。)
+コレット1「ダリアさん、いつもその場所ですね」
+ダリア2「ここが一番、湯がいいのさ」
+
+#u_w11 女 いつもの
+@when oK()
+(遅い時間に、ロザリンドが一人で入ってきて、隅に座る。)
+コレット1「お客さん、もう少しで湯を落としますけど……」
+ロザリンド1「いいよ。落ちるまで、いるさ」
+
+#u_w12 女 いつもの
+@when oB('dragon') && oD2()
+(エイルが、湯ぶねの縁に足だけ入れている。)
+ポム1「エイルさん、今日も足だけ?」
+エイル1「……今日は、ひざまで」
+ポム3「すすんだ!」
+`;
+
+// ---- 女湯の続き その2(会話_女湯_続き2) ----
+ON_TXT += `
+#w_noel_colette 女
+@when oB('academy') && oD2()
+コレット1「ノエルさん、さっきから、みんなの顔をじっと見てますね」
+ノエル1「ええ。練習です。人の顔を読むのは、苦手なので」
+コレット2「顔なら、わたし得意です! 宿屋ですから。教えましょうか」
+ノエル1「お願いします」
+コレット2「じゃあ、あそこのミレさん。何を考えてると思います?」
+ノエル1「……屋根のことです」
+ミレ4「……聞こえてるわよ。北の角の板のことよ」
+コレット3「当たり! すごい!」
+ノエル1「顔ではありません。目が、天井を向いていました」
+コレット2「それも読むうちです! じゃあ、わたしは?」
+ノエル1「…………」
+ノエル4「……読めません。コレットさんは、いつも同じ顔です。笑っています」
+コレット3「あ……」
+コレット1「それ、宿屋の顔なんです。お客さんの前では、疲れてても笑うので」
+ノエル1「では、今は、どちらの顔ですか」
+コレット4「……今日は、ちょっとだけ、疲れてる方です。満室だったので」
+ノエル1「書き留めておきます。『満室の日の、コレットさん』。次からは、読めます」
+コレット3「書かなくていいです!」
+ノエル1「それから。肩まで、つかってください。……三日前、あなたがわたしに言った言葉です」
+コレット3「……覚えてるんですか」
+ノエル2「ええ。言葉なら、読めますので」
+
+#w_emma_mira 女
+@when oC(4) && pgRg('mira', 3)
+ミラ2「エマさん! ギルドの名簿、見せてもらえませんか。論文に使いたいんです」
+エマ4「名簿は、お見せできません。……何を調べるんですか」
+ミラ1「風です。風の強い日に、冒険者さんがどれくらい帰ってきてるか」
+エマ1「…………」
+ミラ1「風の強い日は、魔法の狙いがずれるので。帰還が少ないんじゃないかって」
+エマ1「少ないです」
+ミラ3「えっ」
+エマ1「北風の日は、けがをして帰ってくる人が、ふだんの倍です。南風の日は、少しだけ」
+ミラ3「……数えてたんですか」
+エマ1「数えてはいません。でも、北風の日は、包帯を一つ多く持たせています」
+ミラ1「…………」
+ミラ3「それ、わたしの論文の、最後の章の答えです」
+エマ1「答えは知りません。包帯の数を知ってるだけです」
+ミラ3「それが答えなんです!」
+ミラ2「あの、論文に、エマさんの名前、書いてもいいですか」
+エマ2「だめです。……包帯の数だけ、書いてください」
+
+#w_licorice_pom 女
+@when oD2() && oC(2)
+ポム3「リコリスさん! 畑に、叫ぶにんじんが生えた!」
+リコリス3「……叫ぶ?」
+ポム3「抜いたら、ギャーって! びっくりして、また埋めちゃった」
+リコリス2「ふふ。それ、マンドラゴラよ。いい土にしか生えないの」
+ポム2「いい土! やったー! ……食べられる?」
+リコリス1「量しだいね。少しなら薬。たくさんなら、ひと晩うなされるわ」
+ポム2「じゃあ、少しだけ! あ、でも、もう名前つけちゃった」
+リコリス3「名前?」
+ポム2「ギャー太」
+リコリス1「…………」
+リコリス2「ねえ、ポムちゃん。そのギャー太、わたしに売ってくれない?」
+ポム4「だめ! ギャー太は家族だもん!」
+リコリス2「……灯り亭のサラダになるのよ。マスターの、いちばん高い皿」
+ポム1「…………」
+ポム3「マスターに、料理してもらえるの?」
+リコリス2「叫ばないように、先に黙らせてから、ね」
+ポム2「じゃあ、いい! ギャー太、出世だ!」
+
+#w_sera_mira 女
+@until oT('sera')
+セラ1「なあ、魔法の子。さっきから、湯気を目で追ってるだろ」
+ミラ2「あ、はい。風を見てるんです。湯気が教えてくれるので」
+セラ1「ちょうどいい。あした、北の林で射るんだ。風、読めるかい」
+ミラ3「えっ、わたしでいいんですか」
+セラ1「矢は風で曲がる。坊主の盾じゃ、風は止まらないからね」
+ミラ3「坊主……?」
+セラ1「ルカだよ。へこんだ盾の」
+ミラ3「ルカさんの仲間なんですか!? じゃあ、ルカさんがいつも言ってる、『弓のうまいやつ』って」
+セラ4「…………あいつ、名前で言ってないのか」
+ミラ1「はい。『弓のうまいやつ』と『地図が読めるやつ』です」
+セラ4「名前で言えってんだ、あの坊主」
+ミラ2「でも、すごく自慢そうに言ってますよ」
+セラ1「…………」
+セラ1「……で、風は」
+ミラ4「あ、あしたは、北から少し西に回ります。……たぶん」
+セラ2「たぶんか。まあいい。当たったら、坊主に言っといてくれ。『セラ』だって」
+
+#w_nina_pom 女
+@when oD2()
+@until oT('nina')
+ニーナ4「ちょっと! 今、わたしのこと、子どもだと思ったでしょ!」
+ポム3「えっ、思ってないよ!?」
+ニーナ4「小さいからって、なめないでよね!」
+ポム3「なめてないよ! ほら、同じくらいだもん」
+(二人で湯ぶねの中に立って、湯の線を見くらべる。ポムの方が、指一本ぶん高かった。)
+ニーナ1「…………」
+(ポムが、そっと膝を曲げた。)
+ポム2「同じくらい!」
+ニーナ4「……今、しずんだでしょ」
+ポム3「しずんでない!」
+ニーナ4「……いいよ。どうせ、組でもいちばん下だし。ジンさんたち、みんな頭なでるんだもん」
+ポム2「わたしも! 九人きょうだいの、いちばん下!」
+ニーナ3「九人!?」
+ポム2「いちばん下はね、ごはんを食べるのが、早くなるの」
+ニーナ3「なんで?」
+ポム2「早く食べないと、なくなるから!」
+ニーナ2「……それ、うちの組もだ!」
+
+#w_leona_dahlia 女
+@until oT('leona')
+レオナ1「あなた、元は闘士でしょう。足で分かるわ」
+ダリア1「元、ね。あんたは今の一番人気だ。……負けなしの」
+レオナ1「負けたことがないの。一度も」
+ダリア1「わたしもさ。十年」
+レオナ1「……じゃあ、聞いていい? やめた時、どうだった」
+ダリア1「勝ち続けるとね、相手の顔が見えなくなるんだ。それが嫌でやめた」
+レオナ1「……わたしは、まだ見えてる」
+ダリア2「なら、まだやりな」
+レオナ4「でも、ひとつだけ分からないの。ここの人たち、負けた日のほうが、長く湯に入ってる」
+ダリア2「そりゃそうさ。勝った日は、早く上がりたくなる。自慢しにね」
+レオナ1「負けた日は?」
+ダリア1「湯がうまいんだよ。……あんたは、まだ知らないだろうけど」
+レオナ1「…………」
+レオナ2「……少し、知りたいわね」
+ダリア3「おや。負けたいのかい」
+レオナ1「負けるつもりはないわ。湯の味が、知りたいだけ」
+ダリア2「ふん。賭けが荒れて、わたしが泣くから、ほどほどに頼むよ」
+
+#w_milda_licorice 女
+@when oD2()
+@until oT('milda')
+リコリス2「あら。拳の人が、髪だけは丁寧に洗うのね」
+ミルダ4「……悪いか」
+リコリス1「悪くないわ。でも、それ、何で洗ってるの? 匂いが、ちょっと……」
+ミルダ1「卵だ」
+リコリス3「卵」
+ミルダ1「田舎のばあちゃんが、そうしてた。金色の髪は、卵がいいって」
+リコリス3「生のまま?」
+ミルダ1「生のままだ」
+リコリス2「……熱い湯でそれをやると、頭の上で、ゆで卵になるわよ」
+ミルダ3「…………!」
+リコリス2「ふふ。あしたの朝市に来て。卵より、ずっといい草があるわ」
+ミルダ4「……姐さんには、言うなよ。殴り合う女が髪なんか、って笑われる」
+リコリス2「言わないわ。……ダリアさんの髪油も、うちのだもの」
+ミルダ3「……姐さんが!?」
+リコリス2「月に一度、いちばんいいのを。誰にも言わないでって、同じ顔で言ってたわ」
+`;
+
+// ---- 男湯(会話_男湯) ----
+ON_TXT += `
+#m_luca_jin 男
+@when oV('wounded') && pgRg('luca', 1)
+@until G.stage <= 3
+ルカ3「うわ……ジンさん、背中、傷だらけ」
+ジン4「数えるなよ」
+ルカ1「一、二、三……」
+ジン4「数えるなって言ってんだろ」
+ルカ2「十四! ねえ、これ、どこで? これは?」
+ジン1「……そいつは、東の森の狼。そっちは、北の坑道。そこのでかいのは、覚えてねえ」
+ルカ3「覚えてないの!?」
+ジン1「多すぎてな。……でも、どれも、帰ってきた数だ。そう思うことにしてる」
+ルカ1「…………」
+ルカ4「オレ、まだ一個もない」
+ジン1「いい。ないまま帰ってこい。それが一番だ」
+ルカ4「えー。一個くらい、ほしい」
+ジン4「ばか言え」
+(ルカが湯から上がろうとして、石の段で足をすべらせた。)
+ルカ4「いってえ! ……あ、すりむいた」
+ルカ2「ジンさん、見て! 一個できた!」
+ジン4「それは数えねえ」
+
+#m_chief_gantz 男
+@when oD2()
+村長4「あいたた……。湯に入る前が、いちばん腰にくるわい」
+ガンツ1「……」
+村長1「ガンツ、おまえさんは腰は痛まんのか。毎日、穴の中で曲がっとるじゃろう」
+ガンツ1「……」
+村長4「……痛まんのか、痛むのか、どっちじゃ」
+ガンツ1「……」(湯ぶねの縁の石を一つ外して、村長の腰に当てる)
+村長3「お、おお……? あったかい。……効くのう、これは」
+ガンツ1「……南の層の石だ。熱を、長く持つ」
+村長1「ほう」
+ガンツ1「湯の縁に、三つだけ混じってる。……そこと、そこと、それだ」
+村長3「なんで分かる」
+ガンツ1「……触れば、分かる」
+村長1「わしは五十年この村におって、湯の縁の石のことなんぞ、考えたこともなかったわい」
+ガンツ1「……石は、黙ってるからな」
+村長2「ほっほ。ガンツ、おまえ、今日はよう喋るのう」
+ガンツ1「……石の話だからな」
+
+#m_hal_gozu 男
+@when oSn('c3_start')
+ハル2「おやじ、遅い湯だね。店、閉めてきたの?」
+ゴズ1「ああ。おまえこそ、隊商の連中はもう寝たのか」
+ハル2「寝た寝た。……ねえ、おふくろが言ってたんだけどさ。おれ、赤ん坊の頃、おやじの鍋で湯あみしてたって、ほんと?」
+ゴズ4「……あいつ、余計なことを」
+ハル3「ほんとなんだ」
+ゴズ1「隊商にたらいなんか積んでねえ。湯の加減が一番分かるのは、鍋なんだよ」
+ハル2「具と間違えなかった?」
+ゴズ1「…………」
+ハル3「おやじ?」
+ゴズ4「……一回、塩をふった」
+ハル3「えっ」
+ゴズ4「夜明け前で、寝ぼけててな。手が勝手に、いつもの手順をやっちまった」
+ハル3「おれ、味つけされてたの!?」
+ゴズ1「すぐ流した。おまえは笑ってたぞ。泣くより、ましだった」
+ハル4「……だから今でも、しょっぱい物が好きなのかなあ」
+ゴズ2「関係ねえよ。……ほれ、背中向けろ。流してやる」
+ハル2「塩はなしでね」
+
+#m_zen_borg_johan 男
+@when oF('river') && oF('sea') && oD2()
+(湯ぶねの端と端に、ゼンじいとボルグが座っている。まんなかに、ヨハン。)
+ゼン1「熱いのう」
+ボルグ1「熱いな」
+ゼン1「…………」
+ボルグ1「…………」
+ヨハン2「ふふ」
+ゼン3「なんじゃ」
+ボルグ3「なんだよ」
+ヨハン2「いえ。お二人とも、同時におっしゃるので」
+ボルグ4「親父が真似したんだ」
+ゼン4「せがれが真似したんじゃ」
+ヨハン2「……今のも、同時でしたね」
+ボルグ1「…………」
+ゼン1「……ミナは、元気にしとるかのう」
+ボルグ1「……ミナの奴、元気にしてんのか」
+ヨハン2「……三回目です」
+ボルグ3「数えてんじゃねえよ!」
+ヨハン2「書いておこうかと。『親子は、湯の温度と娘の心配を、同時にする』」
+ゼン4「書くな」
+ボルグ4「書くな」
+ヨハン2「四回目ですね」
+
+#m_tran_chief 男
+@when oB('church')
+@until !oSn('c3_tran')
+(人のいない昼下がりの湯に、司祭が一人で入っていた。背中に、古い傷がいくつもある。)
+(戸が開いて、村長が入ってきた。)
+村長3「おや、司祭さま。こんな時刻に」
+トラン1「……村長殿」
+村長2「わしも、昼の湯が好きでの。人が少ないと、腰をさすっても笑われん」
+(村長は、司祭の背中を一度だけ見て、湯ぶねの反対の端に座った。)
+トラン1「……何も、お聞きになりませぬな」
+村長1「何をじゃ」
+トラン1「…………」
+村長1「わしの腰にも、古い傷があるでの。若い頃、宝箱に閉じこめられとった新米を担いで帰った時のじゃ」
+トラン3「……宝箱に」
+村長2「笑うじゃろう。じゃから、誰にも聞かれんようにしとる。……湯気が多いと、ようけ見えんのう。わしは目が悪いでの」
+トラン1「…………」
+トラン1「……先ほど、私の手の剣だこを、三度ご覧になりました」
+村長2「ほっほ。目が悪いと、何べんも見んと分からんのじゃ」
+トラン2「……左様で、ございますか」(少しだけ、肩の力を抜いた)
+
+#m_luca_tio 男
+@when pgRg('luca', 4)
+@until oT('tio')
+ティオ4「ル、ルカさん。お背中、流しましょうか」
+ルカ3「……ティオ。なんで急に『さん』なんだよ」
+ティオ4「だって、騎士さまですし。胸に印まで入ってますし」
+ルカ1「湯の中に印はないだろ」
+ティオ4「でも、詰所の人たちも、みんな……」
+ルカ2「前みたいに呼べよ。迷宮で、オレの後ろで地図ひっくり返してた時みたいに」
+ティオ3「ひっくり返してません! あれは、北が下の地図だったんです!」
+ルカ2「ほら、それそれ」
+ティオ1「……ルカ」
+ルカ2「うん」
+ティオ1「……でも、ルカだって、ぼくのこと名前で呼んでないですよね。灯り亭で」
+ルカ3「え?」
+ティオ1「セラさんから聞きました。『地図が読めるやつ』って言ってるって」
+ルカ4「…………」
+ティオ1「それ、名前じゃないです」
+ルカ4「……ティオ」
+ティオ2「はい、ルカ……さん」
+ルカ3「さん、いらない!」
+
+#m_dealer_gozu 男
+@when oK()
+(店を閉めた後の、いちばん遅い湯。ゴズの隣に、細身の男が黙って座っていた。)
+ゴズ1「……ジル、だったな。港の」
+ジル1「はい。覚えていただけましたか」
+ゴズ1「客の顔は、一度見りゃ覚える。……あんた、どこの出だ」
+ジル1「ゴズさんの豆は、どちらの井戸の水で煮ておられるのですか」
+ゴズ1「この村のだ。……昔な、隊商の料理番をしてた。どこの水で煮ても、豆は豆の味しかしねえ。それが、ここの水で煮たら、甘かった」
+ジル1「それで、隊商を」
+ゴズ1「降りた。それだけだ。料理番が居着く理由なんて、そんなもんさ」
+ジル2「よい理由です」
+ゴズ1「…………」
+ゴズ3「……おい」
+ジル1「はい」
+ゴズ4「俺が、話してたじゃねえか。あんたの出を聞いたのは、俺の方だぞ」
+ジル2「ええ。いいお話でした」
+ゴズ4「……ちっ。食えねえ男だ」
+ジル2「豆は、食べてみたいですね。甘いという」
+ゴズ2「……明日、店に来い。一皿出してやる」
+
+#m_johan_bard_gantz 男
+@when oB('smithy') && oD2()
+ヨハン1「(眼鏡を外して、湯ぶねに入る)……ガンツさん。今日は、三尺でしたか」
+バルド4「……わしは銀掘りではない」
+ヨハン3「おや。失礼しました。おひげが、立派なので」
+バルド4「ひげで人を見分けるな」
+ヨハン2「眼鏡がないと、ひげしか見えないのですよ」
+バルド4「…………」(ひげを、両手で湯から守るように持ち上げる)
+ヨハン1「……では、こちらが」
+(ヨハンが、反対の隣の男に顔を向けた。)
+ヨハン2「バルドさん。きのうの鍋、いい鳴りでしたね」
+ガンツ1「……」
+ヨハン1「…………」
+ヨハン2「……今のは、ガンツさんですね」
+バルド3「なぜ分かった」
+ヨハン2「黙っておられたので」
+ガンツ1「……」
+バルド4「……ふん。本屋、眼鏡をかけて入れ」
+ヨハン2「湯気で曇るんですよ。……曇っても、ひげしか見えませんけれどね」
+
+#b_bitter_medicine 壁
+@side 男
+@when oV('wounded') && pgRg('luca', 1) && oB('guild')
+@until oT('nina')
+~ニーナ「エマさん。わたしが最初の依頼で倒れた話、したっけ」
+~エマ「……いいえ」
+~ニーナ「目を開けたら、ジンさんが、わたしに薬を飲ませてたの。それが、もう、すっっごく苦くて!」
+ジン4「……聞こえてるぞ」
+ルカ2「ジンさん、顔赤いよ」
+~ニーナ「『苦い』って言ったらね、ジンさん、泣きそうな顔で笑ったの」
+ジン3「泣いてねえ!」
+~エマ「……聞こえてますね、向こうに」
+~ニーナ「聞こえるように言ってるもん。ジンさん、あの薬のお代、多めに払ったんだって。わたしのせいなのに」
+ジン1「……おまえのせいじゃねえ。苦かったのは、薬のせいだ」
+ルカ1「それ、店主さんの店の薬だよね?」
+ジン1「…………だから、間に合ったんだ」
+~ニーナ「ジンさーん! 先に上がりますよー!」
+ジン2「……おう」
+
+#m_victor_loic 男
+@when oB('knights')
+@until oT('loic')
+(湯ぶねの前で、ヴィクトルが一礼した。向かいに立っていた大柄な男も、一礼を返した。)
+ヴィクトル1「……お先に、どうぞ」
+ロイク1「いえ。お先に」
+ヴィクトル1「いえいえ」
+ロイク1「いえ」
+(二人とも、動かない。)
+ヴィクトル1「……失礼ながら。闘技場の、『盾の壁』殿では」
+ロイク1「ロイクと申します」
+ヴィクトル1「騎士団の副長、ヴィクトルでございます。……ロイク殿。騎士団に、来てはいただけぬか。城壁に、あなたのような方が要る」
+ロイク1「…………」
+ロイク4「ありがたいお話です。……ですが、門は、もう持たぬことにしたのです」
+ヴィクトル4「……左様で、ございますか」
+ロイク2「代わりに、この湯の入口でしたら、守りましょう。毎晩、入口の見える所に座っておりますので」
+ヴィクトル2「では、わたしは、そのお隣に」
+(二人は、また一礼し合った。)
+ゴズ4「……おい、騎士ども。入口で礼をし合うな。後ろがつかえてる」
+
+#m_bran_bard 男
+@when oB('smithy') && oT('dolka')
+@until oT('bran') && oT('dolka')
+ブラン2「がっはっは! おぬし、見事なひげだな! どれ、わしのと比べてみよう」
+バルド4「……触るな」
+ブラン2「長さだけだ、長さだけ!」
+バルド4「触るなと言っとる」
+ブラン4「ケチくさいのう。山の男は、ひげを比べて仲良くなるもんだ」
+バルド1「わしの山では、ひげを触った奴とは、口をきかん」
+ブラン3「なんと。……どこの山だ」
+バルド1「鉄の鳴る山だ」
+ブラン2「……ほう! わしは銅の山だ! 鉄も人も、叩けば分かる! よし、一つ叩かせろ!」
+バルド3「何をだ」
+ブラン2「おぬしの桶のたがだ! 鳴りで、どこの鍛冶か当ててやる!」
+バルド1「……ふん。やってみろ、鉄打ちの」
+(ブランが、桶のたがを指ではじいた。)
+ブラン3「…………むう。こいつは、ええ音だ」
+バルド2「わしが打った」
+(壁のむこうから、声がした。)
+~ドルカ「あんたー! また人のひげ触ろうとしてるんじゃないだろうねー!」
+ブラン3「し、してないぞ、かあちゃん!」
+バルド4「……やかましい夫婦だ」
+
+#m_niko_dealer 男
+@when oK()
+@until oT('niko')
+(ジルが湯につかっていると、ふいに声がした。)
+ジル1「……後ろ、ですか」
+ニコ3「……っ。気づいたのかい、旦那」
+ジル1「湯の音が、一つ増えましたので」
+ニコ4「おれの足音は、誰にも聞こえないんだけどね。闘技場でも、まだ一回も」
+ジル2「では、湯の中だったからでしょう」
+ニコ1「……旦那、何者だい」
+ジル1「港で、少し働いている者です」
+ニコ1「港の、何を」
+ジル1「ニコさんは、闘技場の前は、何を?」
+ニコ1「おれ? おれは……山で、獣の後ろを取ってた。猟師の、その手伝いでさ」
+ジル2「よいお仕事です」
+ニコ3「…………あれ。今、おれが話してたな」
+ジル2「ええ」
+ニコ4「……旦那の後ろは、取れそうにないな」
+ジル2「後ろに立たれるのには、慣れておりますので」
+
+#u_m1 男 いつもの
+村長4「あいたた……」
+ゴズ1「入る前から言うな、爺さん」
+村長4「入る前が、いちばん痛いんじゃ」
+
+#u_m2 男 いつもの
+@when oF('river')
+(朝いちばん、まだ誰もいない湯。)
+ゼン2「……ほっほ。一番じゃ」
+
+#u_m3 男 いつもの
+@when oD2() && pgRg('luca', 1)
+ガンツ1「……」
+ルカ2「ガンツさん、今日は何尺?」
+ガンツ1「……普通だ」
+
+#u_m4 男 いつもの
+@when oB('smithy')
+(バルドが、桶のたがを指ではじいた。)
+バルド1「……ふん。まだ鳴る」
+
+#u_m5 男 いつもの
+@when oF('sea') && oF('lake')
+ボルグ2「はっ! 陸の湯も悪くねえな!」
+(壁のむこうから)
+~ミナ「父さん、声が大きいです!」
+ボルグ4「……悪くねえな」(小声になる)
+
+#u_m6 男 いつもの
+@when oSn('c3_start')
+ハル1「よその町の湯はね、もっとぬるいよ」
+ゴズ1「じゃあ、そっちに入れ」
+ハル2「やだよ。おやじの湯の方がいい」
+ゴズ4「俺の湯じゃねえ」
+
+#u_m7 男 いつもの
+@when oV('wounded')
+(新しく湯に来た者が、ジンの背中の傷を見ている。)
+ジン4「……数えるなよ」
+
+#u_m8 男 いつもの
+@when oD2()
+ヨハン1「(眼鏡を外して)……どなたか存じませんが、こんばんは」
+ガンツ1「……」
+ヨハン2「ガンツさんですね」
+
+#u_m9 男 いつもの
+@when oV('wounded') && pgRg('luca', 1)
+@until G.stage <= 3
+ルカ2「ジンさん、何個になった?」
+ジン4「数えるなって言ってんだろ」
+
+#u_m10 男 いつもの
+@when oC(5)
+ルカ1「……『様』って呼ばれないの、湯だけなんだよな」(肩まで沈む)
+
+#u_m11 男 いつもの
+@when oB('church') && onSeen('m_tran_chief')
+@until !oSn('c3_tran')
+(人のいない時刻に、司祭が一人で背中を流している。)
+村長1「……わしは目が悪いでの」
+トラン2「存じております」
+
+#u_m12 男 いつもの
+@when oB('knights')
+(ヴィクトルが、湯ぶねの前で一礼した。)
+ゴズ4「湯に礼をするな」
+ヴィクトル4「……体が、覚えておりまして」
+
+#u_m13 男 いつもの
+@when oC(5)
+ベルトラン4「宰相の肩は、判で凝るのでございます」
+ゴズ1「エマに揉んでもらえ」
+ベルトラン3「……顔を上げて揉むのでしょうか」
+
+#u_m14 男 いつもの
+(いちばん遅い湯で)
+ゴズ1「……ふう。明日は、兎だな」
+
+#u_m15 男 いつもの
+@when oK()
+(ジルが、手ぬぐいを、札のように細く切りそろえている。)
+ゴズ3「……何してる」
+ジル1「癖です」
+`;
+
+// ---- 卓(会話_卓)。「降りる」「顔を読む」の B・D と、その いつもの は、第2弾のポーカーの卓ができてから足す ----
+ON_TXT += `
+#t_zen_owner 卓
+@when oF('river')
+ジル1「お二人とも、もう一枚、引かれますか」
+ゼン1「わしは、待つ」
+主人1「・・・」(一枚引く)
+ジル1「……二十三。お気の毒です」
+ゼン2「ほっほ。坊、沈むのが早すぎじゃ」
+主人1「・・・」
+ゼン1「浮きはの、ぴくっと動いた時に合わせたらいかん。もう一度、すうっと沈むまで待つんじゃ」
+ジル1「では、ゼンさんは十四のまま、お待ちになると」
+ゼン1「待つ」
+ジル1「親は、十七です」
+ゼン4「…………」
+ゼン4「……もう一枚」
+ジル1「二十四。お気の毒です」
+主人1「・・・」
+ゼン4「…………」
+ゼン4「……今のは、魚が先に食いよったんじゃ」
+
+#t_chief_owner 卓
+村長4「ロザ、すまんが、コインをもう一山」
+ロザリンド1「今夜は三山目だよ、村長」
+村長1「わかっとる。……払いは、出世払いでええかの」
+ロザリンド2「うちは現金さ。昔から、ずっとね」
+村長2「ほっほ。知っとる。昔から言うて、昔から断られとる」
+主人1「・・・」(自分のコインを一山、村長の前に押す)
+村長3「おお、坊……」
+ロザリンド3「おや。あんたは、貸すのかい」
+主人1「……出世払いだ」
+村長1「…………」
+村長4「……坊。わしは、もう出世はせんぞ」
+主人1「……知ってる」
+ロザリンド2「ふふ。なら、取りっぱぐれだね」
+村長2「ほっほ。……それでも、ありがたく借りとくわい」
+
+#t_bertrand_victor 卓
+@when oC(5) && oB('knights')
+(クラブの戸口に、つけひげの男が立っていた。帽子を目深にかぶっている。)
+ロザリンド1「紹介状は?」
+つけひげの男1「……部下を、連れ戻しに参った者でございます」
+(男は、ロザリンドに深々と一礼した。)
+ロザリンド1「…………」
+(卓の端で、宰相が額を押さえた。)
+ベルトラン4「……ヴィクトル。礼をするな。変装の意味がない」
+ヴィクトル3「……っ、宰相殿!? なぜ、ここに」
+ベルトラン4「…………」
+ベルトラン4「……私も、連れ戻しに来たのだ」
+ヴィクトル1「どなたを」
+ベルトラン4「…………」
+主人1「・・・」(宰相の前に高く積まれたコインを見る)
+ヴィクトル3「……宰相殿。そのコインは」
+ベルトラン4「……預かっておる」
+ロザリンド2「ふふ。今夜は勝ってるよ、この人。めずらしくね」
+ヴィクトル1「……では、わたしは、部下を探してまいります」(もう一度、一礼する)
+ベルトラン3「だから、礼をするなと言っておる!」
+
+#t_gantz_bard 卓
+@when oD2() && oB('smithy')
+ジル1「バルドさん。今夜は、『ふん』が三つ目です」
+バルド4「……ふん」
+ジル2「四つ目」
+バルド4「数えるな」
+ジル1「数えずとも、聞こえますので。……ガンツさんは」
+ガンツ1「……」
+ジル1「…………」
+ジル1「ガンツさんだけは、卓に座ってから、まだ一度も読めておりません」
+バルド1「わしもだ。灯り亭で隣に座って、ずいぶんになるが、読めたためしがない」
+ガンツ1「……」
+ジル1「何か、こつがおありで?」
+ガンツ1「……石は、読むもんじゃねえ」
+ジル3「では」
+ガンツ1「……叩くもんだ」
+(ガンツが、コインの山を指で一度だけ叩いて、全部前に出した。)
+バルド4「……ふん」
+ジル2「五つ目ですね」
+
+#t_noel_seres 卓
+@when oB('academy') && oD2()
+ノエル1「……次は、絵札です」
+ジル1「…………」(札をめくる。王の札だった)
+ノエル1「その次は、小さい数です」
+ジル4「…………」(めくる。三だった)
+セレス3「……ノエルさん。数えているの?」
+ノエル1「いいえ。覚えているだけです。出た札を、順に」
+ジル4「ノエルさん。……当店では、数えるのは、ご遠慮いただいております」
+ノエル1「数えていません。覚えているだけです」
+ジル4「覚えるのも、ご遠慮を」
+ノエル4「…………忘れる方法は、どの書物にもありませんでした」
+セレス2「ふふ。じゃあ、言わなければいいのよ。覚えていても」
+ノエル1「言わない」
+セレス2「わたしは、当たったかどうかは、言わないことにしているの」
+ノエル1「……では、わたしも。次の札は、言わないことにします」
+ジル2「……助かります」
+ノエル1「ちなみに、次は七です」
+ジル4「ノエルさん」
+
+#t_lute_borg 卓
+@when oF('sea') && oV('minstrel')
+リュート2「漁師の方。……今、いい手が来ましたね」
+ボルグ3「な、なんで分かる!」
+リュート1「笑い声の拍子が、半分早くなりました」
+ボルグ3「笑ってねえ!」
+リュート2「今も、笑っています」
+ボルグ4「…………」(口を手でふさぐ)
+ジル1「ボルグさん、もう一枚、引かれますか」
+ボルグ4「…………」(ふさいだまま、首を振る)
+リュート2「鼻で、笑っていますよ」
+ボルグ2「…………っ、はっはっは! だめだ、止まらねえ!」
+ジル1「……二十一。おめでとうございます」
+ボルグ2「見たか! はっはっは!」
+リュート2「ええ。いい歌になりそうです」
+ボルグ3「歌にすんな!」
+
+#u_t1 卓 いつもの
+村長4「ロザ、もう一山」
+ロザリンド1「三山目だよ」
+
+#u_t2 卓 いつもの
+@when oF('river')
+ゼン1「待つ」
+ジル1「……では、お待ちください」
+
+#u_t3 卓 いつもの
+@when oB('smithy')
+バルド4「ふん」
+ジル2「一つ目です」
+
+#u_t4 卓 いつもの
+@when oB('academy')
+(ノエルが、札がめくられる前に、目を閉じている。)
+ジル4「ノエルさん。それも、ご遠慮を」
+
+#u_t5 卓 いつもの
+@when oV('minstrel')
+(リュートが、コインを一枚、耳の横で鳴らす。)
+ジル1「本物です」
+リュート2「ええ。いい音です」
+
+#u_t6 卓 いつもの
+@when oD2()
+ガンツ1「……」
+ジル1「…………」
+(二人とも何も言わずに、一勝負が終わる。)
+
+#u_t7 卓 いつもの
+@when oF('sea')
+ボルグ2「はっはっは!」
+ロザリンド4「声が大きいよ。外に聞こえる」
+
+#u_t8 卓 いつもの
+@when oD2()
+(ヨハンが、勝ちすぎると、黙って一山崩して降りる。)
+村長3「ヨハン、なんで降りる」
+ヨハン2「勝ちすぎは、続きませんので」
+
+#u_t9 卓 いつもの
+@when oC(5)
+ベルトラン4「……顔に、出ておりますか」
+ジル2「ええ。とても」
+`;
+
+onParse(ON_TXT);
 
 // ---- practice.js ----
 // ===== v53b: ミニゲームの練習場(ミニゲームだけを遊ぶページ) =====
