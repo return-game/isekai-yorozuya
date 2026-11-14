@@ -14017,7 +14017,7 @@ function auVolumes() {
   AU.music.gain.setTargetAtTime(AUS.mute || !AUS.music ? 0 : v.m * 0.55, AU.ctx.currentTime, 0.2);
   AU.sfx.gain.setTargetAtTime(AUS.mute || !AUS.sound ? 0 : v.s, AU.ctx.currentTime, 0.05);
 }
-const TRACK_NAME = { casinoNight: '港のクラブ', songA: '風の通り道', title: '灯のともる場所', songB: '夜更けの鍵盤', songC: 'まだ見ぬ街へ', waterside: '水辺のまどろみ', morning: '朝もやの市場', day: 'にぎわいの広場', night: '工房の灯', distant: '遠い日', warm: '灯をともす', valley: '谷の記憶', prayer: '祈り', pact: '盟約', triumph: '凱旋' };
+const TRACK_NAME = { casinoNight: '港のクラブ', onsenStory: '温泉の曲', fishing: '釣りの曲', songA: '風の通り道', title: '灯のともる場所', songB: '夜更けの鍵盤', songC: 'まだ見ぬ街へ', waterside: '水辺のまどろみ', morning: '朝もやの市場', day: 'にぎわいの広場', night: '工房の灯', distant: '遠い日', warm: '灯をともす', valley: '谷の記憶', prayer: '祈り', pact: '盟約', triumph: '凱旋' };
 document.addEventListener('input', e => {
   const k = e.target && e.target.dataset && e.target.dataset.vol; if (!k) return;
   AUS.vol[k] = (+e.target.value) / 100;
@@ -14389,7 +14389,9 @@ function melodyAt(bar, step, fn) { let pos = 0; for (let i = 0; i < bar.length; 
 const ORIGINAL_BGM_GAIN = 1.5;
 // No.236: なぐもりずの21曲は 96kbps の ogg に変換(容量を減らす)。No.235 (2026-11-04 作者): 継ぎ目が目立った5曲だけ、曲の終わりの何もない無音を除いたループ位置を指定(音の最後まで残す。フェードもそのまま)
 const FILE_BGM = {
-  casinoNight: { file: 'musmus-bgm-173.ogg', loop: null },   // No.283e: 港のクラブの中(作者の音源 MusMus-BGM-173)
+  casinoNight: { file: 'musmus-bgm-173.ogg', loop: null },
+  onsenStory: { file: 'MusMus-BGM-006.ogg', loop: null },   // No.289: 温泉の会話(作者の音源 MusMus-BGM-006)
+  fishing: { file: 'MusMus-BGM-036.ogg', loop: null },   // No.289: 釣り(作者の音源 MusMus-BGM-036)   // No.283e: 港のクラブの中(作者の音源 MusMus-BGM-173)
   confessionShade: {"file":"kageri.ogg","loop":null},
   endingDream: {"file":"daydream.ogg","loop":[0.0, 144.616]},
   dragonVictory: {"file":"sign-of-victory.ogg","loop":[0.026, 211.982]},
@@ -14500,7 +14502,7 @@ async function startFileBgm(track, gain, token) {
   }
 }
 // No.235: 旧BGMの代わり。同じ名前の旧曲 → 章ごとの通常曲(朝市 songA・店先 day・夜 night)・闘技場 arena → 物語の場面は warm
-const FILE_BGM_FALLBACK = { casinoNight: 'night', lateMarket: 'songA', lateShop: 'day', lateWorkshop: 'night', pubStory: 'night', shopStory: 'warm', arenaScene: 'arena' };
+const FILE_BGM_FALLBACK = { onsenStory: 'night', fishing: 'waterside', casinoNight: 'night', lateMarket: 'songA', lateShop: 'day', lateWorkshop: 'night', pubStory: 'night', shopStory: 'warm', arenaScene: 'arena' };
 function fileBgmFallback(track) {
   for (const k of [track, FILE_BGM_FALLBACK[track], 'warm']) if (k && TRACKS[k]) return k;
   return null;
@@ -14511,7 +14513,7 @@ function musicKey() {
   if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
   if (typeof CAS !== 'undefined' && CAS.on) return casNightBgm();   // No.283: 港のクラブ(仮で夜の曲)
   if (typeof ARN !== 'undefined' && ARN.on) return 'arenaScene';   // No.217: 闘技場の勝ち抜き戦
-  if (G.act === 'fish') return 'waterside';
+  if (G.act === 'fish') return 'fishing';   // No.289: 釣りは MusMus-BGM-036(読めない時は waterside)
   if (G.act === 'market') return G.stage >= 3 ? 'lateMarket' : 'songA';   // No.194: 朝の市場は「風の通り道」
   if (G.act === 'shop') return G.stage >= 3 ? 'lateShop' : 'day';
   if (G.phase === 'night' || G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';
@@ -27600,7 +27602,7 @@ function onPlay(c, side, done) {
   side = side || (c.kind === 'w' ? (c.side || 'm') : c.kind);
   const bg = side === 'f' ? 'bg_onsen_f' : 'bg_onsen_m';
   const lines = c.lines.filter(l => !l.bad).map(l => Object.assign({ bg }, l));
-  STORY.__on = { id: '__on', bgm: 'night', lines };
+  STORY.__on = { id: '__on', bgm: 'onsenStory', lines };   // No.289: MusMus-BGM-006
   storyOpen({ id: '__on', o: { pub: () => { if (done) done(); else render(); }, onsen: { side } } });
 }
 // story.js から: 湯の場面に「女湯/男湯」の札を出す(湯の重ね方は絵の側でしてある: 乳白色の湯面だけ薄くして、後ろの背景の湯が透ける)
