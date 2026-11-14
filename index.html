@@ -14574,10 +14574,11 @@ function roarFeed(k) {
   r.g.gain.setTargetAtTime(0.34 + k * 0.3, t, 0.15); r.g2.gain.setTargetAtTime(0.03 + k * 0.045, t, 0.15); r.lp.frequency.setTargetAtTime(160 + k * 240, t, 0.2);
 }
 // No.283e: カジノの効果音(作者の音源。bgm/ の se_cas_*.mp3)。file:// でも鳴るよう audio 要素で鳴らす。読めない時(claude.ai など)は合成の音で代わりに鳴らす
-const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3' };   // No.289: 釣りの効果音(作者の音源)
-const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit' };
-const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
+const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3', cas_ball: 'se_cas_ball.mp3' };   // No.289: 釣りの効果音(作者の音源)
+const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit', cas_ball: 'mg_tick' };
+const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
 const SE_NOW = {};
+function seReady(k) { const a = SE_EL[k]; return !!(a && !a._bad && a.readyState >= 2); }   // No.289: 音源ファイルが読めているか
 function seStop(k) { const n = SE_NOW[k]; if (!n || n.paused || n.ended) return; SE_NOW[k] = null; const v0 = n.volume, t0 = performance.now(); const iv = setInterval(() => { const q = (performance.now() - t0) / 250; if (q >= 1) { clearInterval(iv); n.pause(); return; } n.volume = Math.max(0, v0 * (1 - q)); }, 30); }
 const SE_EL = {};
 function sePreload() {
@@ -27263,9 +27264,10 @@ async function casRlSpin() {
   const dur = 5600 + Math.random() * 1400, t0 = performance.now();   // 毎回 約5.6〜7秒
   let dropped = false, nextTick = 0;
   const tLaunch = performance.now();
+  let ballStarted = false; const ballSnd = !CAS.fast && seReady('cas_ball');   // No.289: 玉の回る音(作者の音源)が読めていれば、カチカチの代わりに流す
   await new Promise(done => {
     const step = now => {
-      if (!CAS.on || CAS.view !== 'rl') return done();
+      if (!CAS.on || CAS.view !== 'rl') { seStop('cas_ball'); return done(); }
       const k = Math.min(1, (now - t0) * (CAS.fast ? 8 : 1) / dur), e = 1 - Math.pow(1 - k, 3);
       R.rot = w0 + (wf - w0) * e;
       const be = 1 - Math.pow(1 - k, 2.2);
@@ -27275,7 +27277,7 @@ async function casRlSpin() {
       else if (k < 0.58) rad = 0.9;
       else if (k < 0.7) { const q = (k - 0.58) / 0.12; rad = 0.9 - (0.9 - 0.62) * q * q + Math.sin(q * Math.PI * 3) * 0.012; }
       else {
-        if (!dropped) { dropped = true; sfx('cas_drop'); }
+        if (!dropped) { dropped = true; seStop('cas_ball'); sfx('cas_drop'); }
         const q = (k - 0.7) / 0.3, fall = Math.pow(1 - q, 1.6);
         const hop = Math.abs(Math.sin(q * Math.PI * 5.5));
         rad = 0.587 + 0.033 * (1 - q) + hop * 0.085 * fall;
@@ -27283,7 +27285,8 @@ async function casRlSpin() {
         const b = Math.floor(q * 5.5); if (b > (R.hops || 0) && q < 0.95) { R.hops = b; sfx('mg_tick'); }
       }
       // 転がる音(作者 No.283i): 「石が転がる」が鳴り終わってから、玉が入る音までのあいだを、カチカチという音でつなぐ。玉が遅くなるほど間があく
-      if (!dropped && !CAS.fast && now - tLaunch > 650 && now >= nextTick) { const v = Math.pow(1 - k, 1.2); sfx('mg_tick'); nextTick = now + 55 + (1 - v) * 230; }
+      if (ballSnd) { if (!ballStarted && !dropped && !CAS.fast && now - tLaunch > 650) { ballStarted = true; sfx('cas_ball'); } if (CAS.fast) seStop('cas_ball'); }
+      // No.289: 回っている間のピッピッという合成音は消した(玉の回る音の音源だけにする)
       R.ball = [deg, rad];
       const w = $('#caswheelimg'); if (w) w.style.transform = `rotate(${R.rot}deg)`; casBallAt(deg, rad);
       if (k >= 1) return done();
