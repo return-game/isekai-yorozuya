@@ -19262,19 +19262,22 @@ function fishSceneOpen() {
   FS.raf = requestAnimationFrame(fsFrame);
   if (typeof sePreload === 'function') sePreload();   // No.289: 釣りの音は作者の音源だけ
 }
-// No.289: 湖(岸・沖どちらも)では、岸に寄せる波の音(作者の音源)をBGMの音量に合わせて流す。22秒の音源の終わりの消えていく所を除いて、21.0秒で頭に戻す
+// No.289: 釣り場ごとの環境音(作者の音源)を、BGMの音量に合わせて重ねて流す。[ファイル, BGMに対する音量, 頭に戻す秒(0=最後まで)]。湖は岸も沖も同じ音
 const FS_AMB = { el: null };
+const FS_AMB_SET = { lake: ['se_fish_amb_lake.mp3', 1, 21.0], 'river:shallow': ['se_fish_amb_stream.mp3', 1, 0], 'river:pool': ['se_fish_amb_creek.mp3', 0.45, 0], 'sea:beach': ['se_fish_amb_beach.mp3', 0.5, 0], 'sea:pier': ['se_fish_amb_pier.mp3', 0.55, 0] };
+function fsAmbKey() { const f = G.fishing; if (!FS.on || !f) return null; const k = f.spot === 'lake' ? 'lake' : f.spot + ':' + f.sub; return FS_AMB_SET[k] ? k : null; }
 function fsAmbient() {
-  const want = FS.on && G.fishing && G.fishing.spot === 'lake';
+  const key = fsAmbKey();
+  if (FS_AMB.el && FS_AMB.key !== key) fsAmbStop();
   let el = FS_AMB.el;
-  if (want && !el) { try { el = FS_AMB.el = new Audio('bgm/se_fish_amb_lake.mp3'); el.volume = 0; el.loop = true; el.play().catch(() => { }); } catch (e) { FS_AMB.el = null; return; } }
-  if (!el) return;
+  if (key && !el) { try { el = FS_AMB.el = new Audio('bgm/' + FS_AMB_SET[key][0]); FS_AMB.key = key; el.volume = 0; el.loop = true; el.play().catch(() => { }); } catch (e) { FS_AMB.el = null; return; } }
+  if (!el || !key) return;
+  const d = FS_AMB_SET[key];
   const run = typeof AU !== 'undefined' && AU.ctx && AU.ctx.state === 'running' && AU.music && AU.master;
-  if (want && run && el.paused) el.play().catch(() => { });
-  const target = want && run ? Math.max(0, Math.min(1, AU.music.gain.value * AU.master.gain.value)) : 0;
+  if (run && el.paused) el.play().catch(() => { });
+  const target = run ? Math.max(0, Math.min(1, AU.music.gain.value * AU.master.gain.value * d[1])) : 0;
   el.volume = Math.max(0, Math.min(1, el.volume + (target - el.volume) * 0.08));
-  if (el.currentTime >= 21.0) el.currentTime = 0;
-  if (!want) fsAmbStop();
+  if (d[2] && el.currentTime >= d[2]) el.currentTime = 0;
 }
 function fsAmbStop() {
   const el = FS_AMB.el; if (!el) return; FS_AMB.el = null; const v0 = el.volume, t0 = performance.now();
