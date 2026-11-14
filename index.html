@@ -14574,8 +14574,11 @@ function roarFeed(k) {
   r.g.gain.setTargetAtTime(0.34 + k * 0.3, t, 0.15); r.g2.gain.setTargetAtTime(0.03 + k * 0.045, t, 0.15); r.lp.frequency.setTargetAtTime(160 + k * 240, t, 0.2);
 }
 // No.283e: カジノの効果音(作者の音源。bgm/ の se_cas_*.mp3)。file:// でも鳴るよう audio 要素で鳴らす。読めない時(claude.ai など)は合成の音で代わりに鳴らす
-const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3' };
-const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn' };
+const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3' };   // No.289: 釣りの効果音(作者の音源)
+const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit' };
+const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
+const SE_NOW = {};
+function seStop(k) { const n = SE_NOW[k]; if (!n || n.paused || n.ended) return; SE_NOW[k] = null; const v0 = n.volume, t0 = performance.now(); const iv = setInterval(() => { const q = (performance.now() - t0) / 250; if (q >= 1) { clearInterval(iv); n.pause(); return; } n.volume = Math.max(0, v0 * (1 - q)); }, 30); }
 const SE_EL = {};
 function sePreload() {
   for (const k in SE_FILES) if (!SE_EL[k]) { try { const a = new Audio('bgm/' + SE_FILES[k]); a.preload = 'auto'; a.addEventListener('error', () => { a._bad = true; }); a.load(); SE_EL[k] = a; } catch (e) { /* no audio element */ } }
@@ -14585,7 +14588,7 @@ function sfx(k, opt) {
   if (!auInit()) return;
   if (SE_FILES[k]) {
     const a = SE_EL[k];
-    if (a && !a._bad && a.readyState >= 2) { try { const n = a.cloneNode(); n.volume = Math.max(0, Math.min(1, AUS.vol.s * AU.master.gain.value * 0.9)); n.play().catch(() => { }); return; } catch (e) { /* fall back */ } }
+    if (a && !a._bad && a.readyState >= 2) { try { const n = a.cloneNode(); n.volume = Math.max(0, Math.min(1, AUS.vol.s * AU.master.gain.value * 0.9 * (SE_GAIN[k] || 1))); SE_NOW[k] = n; n.play().catch(() => { }); return; } catch (e) { /* fall back */ } }
     if (!a) sePreload();
     k = SE_ALT[k];
   }
@@ -19257,11 +19260,29 @@ function fishSceneOpen() {
   else if (!s.seenWater) { s.seenWater = 1; save(); fsCard(`<div class="fs-cardt">水辺</div><p>好きな所を押して、浮きを投げる。<br>影が寄ってきて、ちょん、ちょんとつつく。<br><b>浮きが沈んだら、すぐに押す。</b><br>掛かったら、押して巻く・離して緩める。針を緑の中に保つと、魚が寄ってくる。</p><p class="sub">時間は進まない。ゆっくりどうぞ。やめる時は右上の「竿をしまう」。</p>`); }
   else fsHint();
   FS.raf = requestAnimationFrame(fsFrame);
-  sfx('door');
+  if (typeof sePreload === 'function') sePreload();   // No.289: 釣りの音は作者の音源だけ
+}
+// No.289: 湖(岸・沖どちらも)では、岸に寄せる波の音(作者の音源)をBGMの音量に合わせて流す。22秒の音源の終わりの消えていく所を除いて、21.0秒で頭に戻す
+const FS_AMB = { el: null };
+function fsAmbient() {
+  const want = FS.on && G.fishing && G.fishing.spot === 'lake';
+  let el = FS_AMB.el;
+  if (want && !el) { try { el = FS_AMB.el = new Audio('bgm/se_fish_amb_lake.mp3'); el.volume = 0; el.loop = true; el.play().catch(() => { }); } catch (e) { FS_AMB.el = null; return; } }
+  if (!el) return;
+  const run = typeof AU !== 'undefined' && AU.ctx && AU.ctx.state === 'running' && AU.music && AU.master;
+  if (want && run && el.paused) el.play().catch(() => { });
+  const target = want && run ? Math.max(0, Math.min(1, AU.music.gain.value * AU.master.gain.value)) : 0;
+  el.volume = Math.max(0, Math.min(1, el.volume + (target - el.volume) * 0.08));
+  if (el.currentTime >= 21.0) el.currentTime = 0;
+  if (!want) fsAmbStop();
+}
+function fsAmbStop() {
+  const el = FS_AMB.el; if (!el) return; FS_AMB.el = null; const v0 = el.volume, t0 = performance.now();
+  const iv = setInterval(() => { const k = (performance.now() - t0) / 600; if (k >= 1) { clearInterval(iv); el.pause(); el.src = ''; return; } el.volume = Math.max(0, v0 * (1 - k)); }, 40);
 }
 function fishSceneClose() {
   if (!FS.on) return;
-  cancelAnimationFrame(FS.raf);
+  cancelAnimationFrame(FS.raf); fsAmbStop();
   FS.cv.removeEventListener('pointerdown', fsDown); FS.cv.removeEventListener('pointermove', fsMove); window.removeEventListener('pointerup', fsUp); window.removeEventListener('pointercancel', fsUp);
   window.removeEventListener('resize', fsResize); window.removeEventListener('keydown', fsKey); window.removeEventListener('keyup', fsKeyUp);
   FS.el.remove(); FS.on = false;
@@ -19314,12 +19335,12 @@ function fsDown(e) {
   if (!$('#fscard').hidden) { fsCardClose(); return; }
   const f = G.fishing; if (!f) return;
   if (FS.st === 'idle') {
-    if (f.casts <= 0) { fsSay(FS_NOBAIT, 3200); fsHint(); sfx('mg_tap'); return; }   // 2026-10-29 作者: 餌切れが不具合に見えた。少し長く出し、下の案内も替える
+    if (f.casts <= 0) { fsSay(FS_NOBAIT, 3200); fsHint(); return; }   // 2026-10-29 作者: 餌切れが不具合に見えた。少し長く出し、下の案内も替える
     // 2026-10-26 作者: not a pinpoint drop. Aim the rod left/right, hold to build power, let go to cast; the power decides how far
-    FS.aimX = x; FS.st = 'charge'; FS.chT = FS.t; fsHint(); sfx('mg_tap'); return;
+    FS.aimX = x; FS.st = 'charge'; FS.chT = FS.t; fsHint(); return;
   }
-  if (FS.st === 'wait') { FS.st = 'idle'; FS.bob = null; fsHint(); sfx('mg_tap'); return; }   // lift the line and cast again
-  if (FS.st === 'come' || FS.st === 'nib') { const o = FS.cur; if (o) { o.st = 'flee'; FS.cur = null; } FS.st = 'idle'; FS.bob = null; fsSay('早すぎた…影が逃げた'); fsGuide('miss'); if (FS.guide) FS.guide.last = null; sfx('fail'); fsHint(); return; }
+  if (FS.st === 'wait') { FS.st = 'idle'; FS.bob = null; fsHint(); return; }   // lift the line and cast again
+  if (FS.st === 'come' || FS.st === 'nib') { const o = FS.cur; if (o) { o.st = 'flee'; FS.cur = null; } FS.st = 'idle'; FS.bob = null; fsSay('早すぎた…影が逃げた'); fsGuide('miss'); if (FS.guide) FS.guide.last = null; fsHint(); return; }
   if (FS.st === 'bite') { fsHook(); return; }
   if (FS.st === 'fight') { FS.hold = true; }
 }
@@ -19348,11 +19369,11 @@ function fsHook() {
   const t = o.f.tier, rl = REELS[fishState().reel].bar;
   const X = fishX(o.f), hd = X.hard || 0;
   FS.fg = { slow: !!X.slow, F: 0.5, P: 0.5, v: 0, tgt: 0.5, nt: 0, pr: 0.2, w: fsClamp(0.34 - t * 0.02 - hd / 500 + rl / 250, 0.15, 0.48), outT: 0, sp: 0.35 + (FISH_D[t] + hd) / 100, perfect: true, n: 0.5, ph: Math.random() * 6.28, rT: 0, inZ: true, run: 1.0 };
-  FS.st = 'fight'; o.st = 'hooked'; sfx('mg_thunk'); fsSplash(FS.bob.x, FS.bob.y, 18); fsHint(); fsStat();
+  FS.st = 'fight'; o.st = 'hooked'; sfx('fs_line2'); fsSplash(FS.bob.x, FS.bob.y, 18); fsHint(); fsStat();
 }
 function fsFight(dt) {
   const g = FS.fg, o = FS.cur; if (!g || !o) return;
-  const mv = o.f.mv, s = g.sp; g.nt -= dt;
+  const mv = o.f.mv, s = g.sp; g.nt -= dt; const tg0 = g.tgt;
   if (mv === 'smooth') g.tgt = 0.5 + 0.36 * Math.sin(FS.t / 1000 * 0.9 * s * 2 + g.ph);
   else if (g.nt <= 0) {
     if (mv === 'mixed') { g.tgt = fsRnd(0.1, 0.9); g.nt = fsRnd(0.6, 1.4) / s; }
@@ -19367,6 +19388,11 @@ function fsFight(dt) {
   if (g.P < 0) { g.P = 0; g.v = Math.max(0, g.v); } if (g.P > 1) { g.P = 1; g.v = Math.min(0, g.v); }
   const n = 0.5 + (g.P - g.F), inZ = Math.abs(n - 0.5) < g.w / 2;
   g.n = n; g.inZ = inZ;
+  // No.289: 糸放出1=魚が沖へ走る間+ゲージの中心から外れている間 / 糸放出3=左クリックを押している間 / 暴れる=走る間+緑の外でバシャバシャしている間
+  const run0 = g.run > 0, off0 = Math.abs(n - 0.5) > g.w / 4;
+  if (FS.hold) { if (FS.t > (g.l3T || 0)) { g.l3T = FS.t + 3200; sfx('fs_line3'); } } else if (g.l3T) { seStop('fs_line3'); g.l3T = 0; }
+  if (run0 || off0) { if (FS.t > (g.l1T || 0)) { g.l1T = FS.t + 3900; sfx('fs_line1'); } } else if (g.l1T) { seStop('fs_line1'); g.l1T = 0; }
+  if (run0 || !inZ) { if (FS.t > (g.thT || 0)) { g.thT = FS.t + 2300; sfx('fs_thrash'); } } else if (g.thT) { seStop('fs_thrash'); g.thT = 0; }
   // No.189: 掛かった直後、魚は1秒ほど沖へ走って離れる(この間ゲージは進まない)。そこから巻き上げ
   if (g.run > 0) { const b0 = FS.bob; if (g.rx == null) { g.rx = o.x; g.ry = o.y; g.ex = fsClamp(o.x + (o.x - FS.W / 2) * 0.3 + fsRnd(-40, 40), FS.W * 0.08, FS.W * 0.92); g.ey = Math.max(FS.y0 + 30, o.y - (FS.H - FS.y0) * 0.28); }
     g.run -= dt; const k = 1 - Math.max(0, g.run) / 1.0, e = 1 - Math.pow(1 - k, 2);
@@ -19377,7 +19403,6 @@ function fsFight(dt) {
     return; }
   // out of the green: a short grace before the fish starts to get away, and it gets away slowly
   if (inZ) { g.pr += 0.17 * dt * (1 - o.f.tier * 0.05) * (g.slow ? 0.55 : 1); g.outT = 0; } else { g.outT += dt; g.perfect = false; if (g.outT > 0.25) g.pr -= 0.13 * dt; }   // No.189: 進みも減りも約6割=難しさは同じで、時間だけ長く
-  if (FS.hold && FS.t > g.rT) { g.rT = FS.t + 80; sfx('mg_reel', { f: 1 + (inZ ? 0 : 0.3) }); }
   // the fish comes toward the bank as the gauge fills; it thrashes while the needle is out of the green
   const b = FS.bob, k = fsClamp(g.pr, 0, 1), hx = b.hx != null ? b.hx : (b.hx = b.x), hy = b.hy != null ? b.hy : (b.hy = b.y);
   o.x = hx + (FS.W / 2 - hx) * k * 0.75 + Math.sin(FS.t / 90) * (inZ ? 3 : 10); o.y = hy + (FS.H * 0.86 - hy) * k * 0.75 + Math.cos(FS.t / 110) * (inZ ? 2 : 7);
@@ -19392,12 +19417,13 @@ function fsLand(hit) {
   FS.fish = FS.fish.filter(x => x !== o);
   const r = fishCatch(o.f.id, hit); save();
   if (FS.guide) { fsGuide('got'); fsGuideBye(); }
-  sfx(hit === 'crit' ? 'crit' : 'good');
+  sfx('fs_catch'); seStop('fs_line1'); seStop('fs_line3'); seStop('fs_thrash');   // No.289
   // No.185: 釣り上げた魚が水面から弧を描いて跳ねてから、カードを出す(昔のミニゲームの演出)
   const im = new Image(); im.src = itemIconURL(r.id);
   FS.leap = { t0: FS.t, x0: o.x, y0: o.y, im, crit: hit === 'crit' }; fsSplash(o.x, o.y, hit === 'crit' ? 30 : 20);
   const it = IT[r.id], fx = FISH_BY[r.id];
-  setTimeout(() => { if (!FS.on) return; FS.leap = null; fsSplash(FS.W / 2, FS.H * 0.86, 24); fsCard(`<div class="fs-cardt ${hit === 'crit' ? 'q3' : ''}">${hit === 'crit' ? '大物だ!' : '釣れた!'}</div><img class="fs-fish" src="${itemIconURL(r.id)}" alt=""><div class="fs-name">${fishRankTag(fx)}<b>${it.name}</b> <span>${r.cm}cm</span></div>` +
+  setTimeout(() => { if (!FS.on) return; FS.leap = null; fsSplash(FS.W / 2, FS.H * 0.86, 24); sfx(hit === 'crit' || (o.f && o.f.lord) ? 'fs_big' : 'fs_card');   // No.289: 「釣れた!」が出る時=決定ボタン37 / 大物・ぬし=決定ボタン30
+  fsCard(`<div class="fs-cardt ${hit === 'crit' ? 'q3' : ''}">${hit === 'crit' ? '大物だ!' : '釣れた!'}</div><img class="fs-fish" src="${itemIconURL(r.id)}" alt=""><div class="fs-name">${fishRankTag(fx)}<b>${it.name}</b> <span>${r.cm}cm</span></div>` +
     `<div class="sub">${QUAL[r.q].n}・+${r.pts}pt${r.isNew ? '・図鑑に登録' : r.rec ? '・大きさの記録を更新' : ''}</div>` + (r.say ? `<div class="fs-sayrow">${CH_FILES.has(`ch_${r.ch}_normal`) ? `<img class="fs-face" src="${chURL(r.ch, r.ex)}" alt="">` : ''}<p class="fs-say"><b>${r.who}</b>「${r.say}」</p></div>` : '') + `<div class="sub" style="margin-top:8px">押してつづける</div>`); }, 950);
   setTimeout(() => fsSpawn(false), fsRnd(1500, 4000));
   fsStat(); fsTurn();
@@ -19406,14 +19432,14 @@ function fsLose() {
   const o = FS.cur; if (o) o.st = 'flee';
   FS.st = 'idle'; FS.fg = null; FS.bob = null; FS.cur = null;
   if (G.fishing) G.fishing.streak = 0;
-  save(); sfx('fail'); fsSay('糸が外れた…逃げられた'); fsGuide('miss'); fsHint(); fsStat(); fsTurn();
+  save(); seStop('fs_line1'); seStop('fs_line3'); seStop('fs_thrash'); fsSay('糸が外れた…逃げられた'); fsGuide('miss'); fsHint(); fsStat(); fsTurn();
 }
 // ---------- the frame ----------
 function fsFrame(t) {
   if (!FS.on) return;
   FS.raf = requestAnimationFrame(fsFrame);
   const dt = Math.min(0.05, (t - FS.last) / 1000); FS.last = t; FS.t = t;
-  fsStep(dt); fsDraw();
+  fsStep(dt); fsDraw(); fsAmbient();
 }
 function fsStep(dt) {
   const b = FS.bob;
@@ -19428,11 +19454,11 @@ function fsStep(dt) {
   if (FS.st === 'cast' && b) {
     const e = FS.t - FS.castT, aim = fsAim(b.x, b.y), back = -0.25;
     if (e < 300) { const k = e / 300; FS.rodA = FS.castA0 + (back - FS.castA0) * (1 - Math.pow(1 - k, 2)); }
-    else if (e < 470) { const k = (e - 300) / 170; FS.rodA = back + (aim - 0.35 - back) * (k * k); if (!FS.whooshed) { FS.whooshed = 1; sfx('mg_whoosh'); } }
+    else if (e < 470) { const k = (e - 300) / 170; FS.rodA = back + (aim - 0.35 - back) * (k * k); if (!FS.whooshed) { FS.whooshed = 1; sfx('fs_cast'); } }   // No.289: 竿を投げる=ナイフを投げる音
     else { FS.whooshed = 0; fsRodTip(); b.sx = FS.tip.x; b.sy = FS.tip.y; b.t0 = FS.t; const d = Math.hypot(b.x - b.sx, b.y - b.sy); b.dur = fsClamp(560 + d * 0.55, 650, 1150); b.h = Math.min(FS.H * 0.32, d * 0.55 + 60); FS.st = 'fly'; }
   } else if (FS.st === 'fly' && b) {
     FS.rodA += (fsAim(b.x, b.y) - FS.rodA) * Math.min(1, 6 * dt);
-    if (FS.t - b.t0 > b.dur) { FS.st = 'wait'; b.land = FS.t; fsRipple(b.x, b.y, 1); sfx('mg_plop'); FS.waitT = FS.t + fsRnd(2500, 6000); fsLook(); fsHint(); }
+    if (FS.t - b.t0 > b.dur) { FS.st = 'wait'; b.land = FS.t; fsRipple(b.x, b.y, 1); sfx('fs_land'); FS.waitT = FS.t + fsRnd(2500, 6000); fsLook(); fsHint(); }
   } else if (FS.st === 'wait') {
     if (FS.t > FS.waitT) { if (!fsLook(true)) FS.waitT = FS.t + fsRnd(3000, 6000); }
   } else if (FS.st === 'come') {
@@ -19443,9 +19469,9 @@ function fsStep(dt) {
   } else if (FS.st === 'nib') {
     if (FS.t > FS.nibT) {
       const o = FS.cur;
-      if (o.nibN > 0) { o.nibN--; b.dip = FS.t; fsRipple(b.x, b.y, 0.4); sfx('mg_tap'); FS.nibT = FS.t + fsRnd(700, 1600); }
+      if (o.nibN > 0) { o.nibN--; b.dip = FS.t; fsRipple(b.x, b.y, 0.4); FS.nibT = FS.t + fsRnd(700, 1600); }
       else if (fishX(o.f).shy && Math.random() < fishX(o.f).shy) { o.st = 'flee'; FS.cur = null; FS.st = 'wait'; FS.waitT = FS.t + fsRnd(2000, 4500); fsSay('……食わずに、離れていった'); fsHint(); }
-      else { FS.st = 'bite'; b.sunk = FS.t; FS.biteEnd = FS.t + Math.max(420, 900 - o.f.tier * 90); fsSplash(b.x, b.y, 12); fsRipple(b.x, b.y, 1.2); sfx('mg_bubble', { f: 0.8 }); fsHint(); }
+      else { FS.st = 'bite'; b.sunk = FS.t; FS.biteEnd = FS.t + Math.max(420, 900 - o.f.tier * 90); fsSplash(b.x, b.y, 12); fsRipple(b.x, b.y, 1.2); sfx('fs_bite'); fsHint(); }   // No.289: 魚が食いついた瞬間=水をバシャッとかける1
     }
   } else if (FS.st === 'bite') {
     if (FS.t > FS.biteEnd) { const o = FS.cur; if (o) o.st = 'flee'; FS.cur = null; FS.st = 'idle'; FS.bob = null; fsGuide('miss'); if (G.fishing) { G.fishing.casts = Math.max(0, G.fishing.casts - 1); G.fishing.streak = 0; save(); } fsSay('餌だけ取られた…'); fsHint(); fsStat(); fsTurn(); }
