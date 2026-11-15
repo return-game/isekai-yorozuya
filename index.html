@@ -3571,7 +3571,7 @@ const PX_IMG = window.__PX || {};
 const IMG_BASE = 'img/';
 const CH_FILES = new Set(["ch_bard_normal", "ch_bard_smile", "ch_bard_surprise", "ch_bard_trouble", "ch_borg_normal", "ch_borg_smile", "ch_borg_surprise", "ch_borg_trouble", "ch_chancellor_normal", "ch_chancellor_smile", "ch_chancellor_surprise", "ch_chancellor_trouble", "ch_chief_normal", "ch_chief_smile", "ch_chief_surprise", "ch_chief_trouble", "ch_clara_blush", "ch_clara_joy", "ch_clara_normal", "ch_clara_pout", "ch_clara_smile", "ch_clara_surprise", "ch_clara_tears", "ch_clara_trouble", "ch_colette_normal", "ch_colette_pout", "ch_colette_smile", "ch_colette_surprise", "ch_colette_trouble", "ch_dahlia_normal", "ch_dahlia_smile", "ch_dahlia_surprise", "ch_dahlia_trouble", "ch_dealer_normal", "ch_dealer_smile", "ch_dealer_surprise", "ch_dealer_trouble", "ch_eir_normal", "ch_eir_smile", "ch_eir_surprise", "ch_eir_trouble", "ch_gantz_normal", "ch_gantz_smile", "ch_gantz_surprise", "ch_gantz_trouble", "ch_gozu_normal", "ch_gozu_smile", "ch_gozu_surprise", "ch_gozu_trouble", "ch_guild_normal", "ch_guild_smile", "ch_guild_surprise", "ch_guild_trouble", "ch_hal_normal", "ch_hal_smile", "ch_hal_surprise", "ch_hal_trouble", "ch_irma_normal", "ch_irma_pout", "ch_irma_smile", "ch_irma_surprise", "ch_irma_trouble", "ch_jin_normal", "ch_jin_smile", "ch_jin_surprise", "ch_jin_trouble", "ch_johan_normal", "ch_johan_smile", "ch_johan_surprise", "ch_johan_trouble", "ch_licorice_normal", "ch_licorice_smile", "ch_licorice_surprise", "ch_licorice_trouble", "ch_luca2_normal", "ch_luca2_smile", "ch_luca2_surprise", "ch_luca2_trouble", "ch_luca_normal", "ch_luca_smile", "ch_luca_surprise", "ch_luca_trouble", "ch_lute_normal", "ch_lute_smile", "ch_lute_surprise", "ch_lute_trouble", "ch_madame_normal", "ch_madame_smile", "ch_madame_surprise", "ch_madame_trouble", "ch_mina_normal", "ch_mina_smile", "ch_mina_surprise", "ch_mina_trouble", "ch_mira2_normal", "ch_mira2_smile", "ch_mira2_surprise", "ch_mira2_trouble", "ch_mira_normal", "ch_mira_smile", "ch_mira_surprise", "ch_mira_trouble", "ch_mire_normal", "ch_mire_smile", "ch_mire_surprise", "ch_mire_trouble", "ch_mob_dragoon_f", "ch_mob_dragoon_f_normal", "ch_mob_dragoon_f_smile", "ch_mob_dragoon_f_surprise", "ch_mob_dragoon_f_trouble", "ch_mob_dragoon_m", "ch_mob_dragoon_m_normal", "ch_mob_dragoon_m_smile", "ch_mob_dragoon_m_surprise", "ch_mob_dragoon_m_trouble", "ch_mob_dwarf_f", "ch_mob_dwarf_f_normal", "ch_mob_dwarf_f_smile", "ch_mob_dwarf_f_surprise", "ch_mob_dwarf_f_trouble", "ch_mob_dwarf_m", "ch_mob_dwarf_m_normal", "ch_mob_dwarf_m_smile", "ch_mob_dwarf_m_surprise", "ch_mob_dwarf_m_trouble", "ch_mob_elf_f", "ch_mob_elf_f_normal", "ch_mob_elf_f_smile", "ch_mob_elf_f_surprise", "ch_mob_elf_f_trouble", "ch_mob_elf_m", "ch_mob_elf_m_normal", "ch_mob_elf_m_smile", "ch_mob_elf_m_surprise", "ch_mob_elf_m_trouble", "ch_mob_hero_f", "ch_mob_hero_f_normal", "ch_mob_hero_f_smile", "ch_mob_hero_f_surprise", "ch_mob_hero_f_trouble", "ch_mob_hero_m", "ch_mob_hero_m_normal", "ch_mob_hero_m_smile", "ch_mob_hero_m_surprise", "ch_mob_hero_m_trouble", "ch_mob_hunter_f", "ch_mob_hunter_f_normal", "ch_mob_hunter_f_smile", "ch_mob_hunter_f_surprise", "ch_mob_hunter_f_trouble", "ch_mob_hunter_m", "ch_mob_hunter_m_normal", "ch_mob_hunter_m_smile", "ch_mob_hunter_m_surprise", "ch_mob_hunter_m_trouble", "ch_mob_knight_f", "ch_mob_knight_f_normal", "ch_mob_knight_f_smile", "ch_mob_knight_f_surprise", "ch_mob_knight_f_trouble", "ch_mob_knight_m", "ch_mob_knight_m_normal", "ch_mob_knight_m_smile", "ch_mob_knight_m_surprise", "ch_mob_knight_m_trouble", "ch_mob_mage_f", "ch_mob_mage_f_normal", "ch_mob_mage_f_smile", "ch_mob_mage_f_surprise", "ch_mob_mage_f_trouble", "ch_mob_mage_m", "ch_mob_mage_m_normal", "ch_mob_mage_m_smile", "ch_mob_mage_m_surprise", "ch_mob_mage_m_trouble", "ch_mob_noble_f", "ch_mob_noble_f_normal", "ch_mob_noble_f_smile", "ch_mob_noble_f_trouble", "ch_mob_noble_m", "ch_mob_noble_m_normal", "ch_mob_noble_m_smile", "ch_mob_noble_m_trouble", "ch_mob_novice_f", "ch_mob_novice_f_normal", "ch_mob_novice_f_smile", "ch_mob_novice_f_surprise", "ch_mob_novice_f_trouble", "ch_mob_novice_m", "ch_mob_novice_m_normal", "ch_mob_novice_m_smile", "ch_mob_novice_m_surprise", "ch_mob_novice_m_trouble", "ch_mob_peddler_f", "ch_mob_peddler_f_normal", "ch_mob_peddler_f_smile", "ch_mob_peddler_f_trouble", "ch_mob_peddler_m", "ch_mob_peddler_m_normal", "ch_mob_peddler_m_smile", "ch_mob_peddler_m_trouble", "ch_mob_royal_f", "ch_mob_royal_m", "ch_mob_villager_f", "ch_mob_villager_f_normal", "ch_mob_villager_f_smile", "ch_mob_villager_f_trouble", "ch_mob_villager_m", "ch_mob_villager_m_normal", "ch_mob_villager_m_smile", "ch_mob_villager_m_trouble", "ch_mob_warrior_f", "ch_mob_warrior_f_normal", "ch_mob_warrior_f_smile", "ch_mob_warrior_f_surprise", "ch_mob_warrior_f_trouble", "ch_mob_warrior_m", "ch_mob_warrior_m_normal", "ch_mob_warrior_m_smile", "ch_mob_warrior_m_surprise", "ch_mob_warrior_m_trouble", "ch_nene_normal", "ch_nene_smile", "ch_nene_surprise", "ch_nene_trouble", "ch_nezu_normal", "ch_noel_normal", "ch_noel_smile", "ch_noel_surprise", "ch_noel_trouble", "ch_owner_2_down", "ch_owner_2_normal", "ch_owner_down", "ch_owner_normal", "ch_owner_smile", "ch_owner_soft", "ch_owner_surprise", "ch_owner_teen_normal", "ch_owner_trouble", "ch_pom_normal", "ch_pom_smile", "ch_pom_surprise", "ch_pom_trouble", "ch_popo_normal", "ch_priest_normal", "ch_priest_smile", "ch_priest_surprise", "ch_priest_trouble", "ch_queen_blush", "ch_queen_joy", "ch_queen_normal", "ch_queen_normal_2", "ch_queen_pout", "ch_queen_smile", "ch_queen_surprise", "ch_queen_trouble", "ch_seres_normal", "ch_seres_smile", "ch_seres_surprise", "ch_seres_trouble", "ch_victor_normal", "ch_victor_smile", "ch_victor_surprise", "ch_victor_trouble", "ch_zen_normal", "ch_zen_smile", "ch_zen_surprise", "ch_zen_trouble"]);
 const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_club_table", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
-const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_lever", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_coin", "obj_cas_sym_crown", "obj_cas_sym_dragon", "obj_cas_sym_fish", "obj_cas_sym_gem", "obj_cas_sym_potion", "obj_cas_sym_seven", "obj_cas_sym_sword", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
+const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
 // ---- sprites.js ----
 // ===== Pixel sprites (16x16) =====
 // legend: . clear / o outline / d m l w = main ramp (dark,mid,light,hi)
@@ -7605,6 +7605,15 @@ Object.keys(RARES_OF).forEach(area => {
   ['rx_thunderspear', '雷鳴の槍', 'equip', 'smith', 15, 2, [['spear_gold', 1], ['r_thunder', 1]], { sh: 'spear', m: 'gold', s: 'wood1', a: 'light', fx: ['spark'] }, '属性武器', '雷鳴の結晶を穂先に宿した槍。', { tier: 4, gk: 'spear' }],
   ['rx_worldelixir', '世界樹の霊薬', 'alch', 'alch', 16, 3, [['r_sprout', 1], ['r_sap', 1], ['p_heal3', 1]], { sh: 'flask', m: 'worldleaf', s: 'gold', fx: ['spark'] }, '秘薬', '世界樹の若葉と樹液で作った、どんな傷も癒やす霊薬。'],
   ['rx_scalearmor', '逆鱗の鎧', 'equip', 'smith', 17, 3, [['armor_mithril', 1], ['r_dscale', 1]], { sh: 'armor', m: 'hide3', s: 'cloth3', a: 'gold', fx: ['spark'] }, '防具', '古竜の逆鱗を胸に打ちつけた鎧。竜の炎も通さない。', { tier: 5, gk: 'armor' }],
+  // No.298 (2026-11-15 作者): 料理・薬・札の高いレベルの枠にもレアの品。絵は Work(assets/px/item_<id>.png)。8品そろった
+  ['rx_moonjelly', '月の雫のゼリー', 'food', 'cook', 11, 2, [['r_moondrop', 1], ['f_honey', 1]], { sh: 'jelly', m: 'moon', s: 'plate', fx: ['spark'] }, '料理', '月の雫を蜂蜜で固めたゼリー。中に月の光がとじこめられている。'],
+  ['rx_mazecodex', '迷宮の写本', 'magic', 'scribe', 11, 2, [['r_map', 1], ['parchment', 1], ['ink', 1]], { sh: 'book', m: 'water', s: 'paper', a: 'gold', fx: ['spark'] }, '魔導書', '失われた地図の迷宮の道を書き写した写本。学者が欲しがる。'],
+  ['rx_thunderpotion', '雷鳴の秘薬', 'alch', 'alch', 12, 2, [['r_thunder', 1], ['p_heal2', 1]], { sh: 'flask', m: 'light', s: 'gold', fx: ['spark'] }, '秘薬', '雷鳴の結晶を溶かした秘薬。瓶の中で稲光が走り、飲むと体が奮い立つ。'],
+  ['rx_dragonomelet', '竜の卵のオムレツ', 'food', 'cook', 15, 2, [['r_egg', 1], ['f_spice', 1]], { sh: 'plate_fish', m: 'honey', s: 'plate', fx: ['spark'] }, '料理', '竜の卵ひとつで焼いた大きなオムレツ。一皿で一日分の力が出る。'],
+  ['rx_windcharm', '風読みの護符', 'magic', 'scribe', 15, 2, [['r_skycompass', 1], ['parchment', 1], ['ink', 1]], { sh: 'charm', m: 'paper', a: 'wind', fx: ['spark'] }, '護符', '天空の羅針盤の紋を写した護符。風の行き先が分かるという。'],
+  ['rx_hornelixir', '飛竜角の霊薬', 'alch', 'alch', 18, 3, [['r_lordhorn', 1], ['p_heal3', 1]], { sh: 'flask', m: 'wyvern', s: 'gold', fx: ['spark'] }, '秘薬', '飛竜の長の角を削って煎じた霊薬。どんな傷も癒やす。'],
+  ['rx_lifetart', '生命の実のタルト', 'food', 'cook', 19, 3, [['r_lifefruit', 1], ['f_wheat', 1], ['f_honey', 1]], { sh: 'pie', m: 'light', s: 'plate', fx: ['spark'] }, '料理', '千年に一度の生命の実をのせたタルト。ひと口で体の芯まで力が満ちる。'],
+  ['rx_dragoncharm', '竜王の護符', 'magic', 'scribe', 20, 3, [['r_dragonorb', 1], ['parchment', 1], ['ink', 1]], { sh: 'charm', m: 'paper', a: 'gold', fx: ['spark'] }, '護符', '竜王の宝玉をはめこんだ護符。持つ者は竜にも臆さない。'],
 ].forEach(([id, n, cat, cr, lv, time, ins, icon, sub, d, o]) => {
   const rare = ins.map(([x]) => x).find(x => RARE[x]);
   addItem(id, n, cat, icon, Object.assign({ st: 0, sub, desc: d, gear: cat === 'equip', fromRare: rare }, o || {}));
@@ -7772,6 +7781,9 @@ const BOOKS = [
 const BK = {}; BOOKS.forEach(b => BK[b.id] = b);
 
 // ---------- Value computation ----------
+const PRICE_MARGIN = 0.2;                       // 材料の上乗せ(No.296)
+const priceWage = lv => 8 + lv * 3;             // 体力1あたりの手間賃(No.296): Lv5=23・Lv10=38・Lv15=53・Lv20=68
+const PRICE_RARE = 2.5;                         // レアを材料にした品の倍率(No.296)
 (function computeValues() {
   for (let pass = 0; pass < 6; pass++) {
     for (const r of RECIPES) {
@@ -7780,9 +7792,12 @@ const BK = {}; BOOKS.forEach(b => BK[b.id] = b);
       let sum = 0, ok = true;
       for (const [id, q] of r.ins) { const v = IT[id].v; if (!v) { ok = false; break; } sum += v * q; }
       if (!ok) continue;
-      it.v = Math.max(2, Math.round((sum * 1.45 + r.time * 5 + r.lv * 0.8) / r.n));
-      // v49: the spear uses cheap wood, so its profit was low — lift it to the sword's level
-      if (/^spear_/.test(r.out)) it.v = Math.round(it.v + sum * 0.45);
+      // No.296 売値の式(作者「どの品も、体力と素材と売値に対して同じでないとダメ」):
+      // 売値 = 材料 + 材料の小さな上乗せ + 体力 × レベルごとの手間賃。儲けの芯は手間賃なので、
+      // 武具でも料理でも薬でも、同じレベル・同じ体力なら儲けがそろう。作る段が多くても儲けが重ならない。
+      it.v = Math.max(2, Math.round((sum * (1 + PRICE_MARGIN) + r.time * priceWage(r.lv) + r.lv * 0.8) / r.n));
+      // レアを材料にした品は、苦労した分だけ跳ねる
+      if (it.fromRare) it.v = Math.round(it.v * PRICE_RARE);
     }
   }
   for (const it of ITEMS) {
@@ -8901,7 +8916,7 @@ function hasInputs(r, times = 1) { return r.ins.every(([id, q]) => invCount(id) 
 const WORK_BASE = 8;
 function workMax() { return (window.__workBase || WORK_BASE) + G.shop * 3 + (G.loan && G.loan.ms >= 1 ? 2 : 0) + pk('stam'); }
 const workPerSlot = workMax;
-const STAMINA_ITEMS = { r_honeyball: 3, rx_springpotion: 8, rx_worldelixir: 99, p_heal: 3, p_heal2: 6, p_heal3: 10, elixir: 99, p_mana: 4, sz_elixir: 5, sz_juice: 3, h_time: 99, h_gapple: 99 };
+const STAMINA_ITEMS = { r_honeyball: 3, rx_springpotion: 8, rx_worldelixir: 99, rx_thunderpotion: 12, rx_hornelixir: 99, p_heal: 3, p_heal2: 6, p_heal3: 10, elixir: 99, p_mana: 4, sz_elixir: 5, sz_juice: 3, h_time: 99, h_gapple: 99 };
 function staminaOf(it) {
   if (!it || it.keep) return 0;
   if (STAMINA_ITEMS[it.id] !== undefined) return STAMINA_ITEMS[it.id];
@@ -10391,7 +10406,7 @@ function gearFrac(it, q, a) {
   return clamp(base + 0.05 * (gearTier(it) - (a.rk - 0.5)) + 0.025 * (q || 0), 0.03, 0.42);
 }
 // bag items: healing potions are drunk when you say so; the rest work on their own
-const HEAL_IDS = ['p_heal', 'p_mana', 'p_heal2', 'p_heal3', 'elixir', 'sz_elixir', 'h_time', 'r_honeyball', 'rx_springpotion', 'rx_worldelixir'];
+const HEAL_IDS = ['p_heal', 'p_mana', 'p_heal2', 'p_heal3', 'elixir', 'sz_elixir', 'h_time', 'r_honeyball', 'rx_springpotion', 'rx_worldelixir', 'rx_thunderpotion', 'rx_hornelixir'];
 const BUFF = {
   bomb: { n: '爆薬', when: 'big', cut: 0.3, say: '爆薬を投げつけて' },
   p_def: { n: '守りの薬', when: 'big', cut: 0.2, say: '守りの薬で身を固めて' },
@@ -26666,18 +26681,20 @@ function slPayout(stops, bet, role) {
 
 // ---- casino.js ----
 // ===== No.283: 港の夜のクラブ(カジノ)第1弾 =====
-// 入場(ゼンじいの紹介状・毎晩開く)・コイン(1枚20G・換金しない)・景品の棚・スロット(3×3・日本式)・ルーレット(アメリカ式)・ブラックジャック・ルールブック
+// 入場(ゼンじいの紹介状・毎晩開く)・コイン(1枚5G・換金しない)・景品の棚・スロット(3×3・日本式)・ルーレット(アメリカ式)・ブラックジャック・ルールブック
 // 決まりは 00_連絡/アイデア/温泉とクラブ.md「カジノの仕組み」「ルーレットの決まり」。スロットの中身(リール・役・止め方)は casslot.js。
 // No.283b(作者): 女主人ロザリンド(ロザ)・ディーラーのジル。開く時は場面。夜の曲。UI を大きく。スロットは自分で止める3×3。ルーレットは台→盤に切り替え。
 const CAS = { on: false, view: 'hall' };
-const CAS_PRICE = 20;   // コイン1枚の値段(G)
-const CAS_POT0 = 500;   // スロットの積立の始まり(枚)
-const CAS_RANK = [{ n: '銅', k: 'bronze', at: 0 }, { n: '銀', k: 'silver', at: 3000 }, { n: '金', k: 'gold', at: 20000 }];   // 使ったコインの合計
+const CAS_PRICE = 5;   // コイン1枚の値段(G)。No.296 で20→1(枚数20倍)→ 作者の決定で5(枚数は20G の時の4倍)
+const CAS_POT0 = 2000;   // スロットの積立の始まり(枚)
+const CAS_RANK = [{ n: '銅', k: 'bronze', at: 0 }, { n: '銀', k: 'silver', at: 12000 }, { n: '金', k: 'gold', at: 80000 }];   // 使ったコインの合計
 const casImg = n => `${IMG_BASE}obj_cas_${n}.webp`;
 const casNightBgm = () => 'casinoNight';   // No.283e: 作者の音源 MusMus-BGM-173
 function casSt() {
   const c = G.casino || (G.casino = {});
   for (const [k, v] of Object.entries({ invite: 0, met: 0, coins: 0, pot: CAS_POT0, used: 0, nights: 0, lastNight: -1, greet: -1, best: 0, jack: 0, rank: 0, lastWin: 0, lastWinDay: -1 })) if (c[k] === undefined) c[k] = v;
+  // No.297: コインは1枚5G。20G の時のセーブは4倍、1G の試し(No.296・v296)のセーブは5分の1にする(Gに直した値打ちを変えない)
+  if (!c.v297) { if (c.nights || c.coins || c.used) { const f = c.v296 ? 0.2 : 4; for (const k of ['coins', 'used', 'pot', 'best', 'lastWin', 'potAway']) if (c[k]) c[k] = Math.round(c[k] * f); } c.v296 = 1; c.v297 = 1; }
   if (!c.got || typeof c.got !== 'object') c.got = {};
   if (!c.slot || typeof c.slot !== 'object') c.slot = {};
   const s = c.slot; if (![1, 3, 5].includes(s.bet)) s.bet = 5; s.free = s.free || 0; s.replay = s.replay || 0; s.kaku = s.kaku || 0; if (!s.carry || !SL_ROLE[s.carry]) s.carry = null;
@@ -26699,13 +26716,18 @@ addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 
 addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 2400, raw: true, sub: '伝説の素材', nodex: true, desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
 addRec('lg_dragon', [['spear_adamant', 1], ['cas_seaheart', 1], ['crys_fire', 1]], 'smith', 19, 4, { id: 'r_lg_dragon_cas', book: 'b_legend' });
 addRec('lg_sage', [['staff_3', 1], ['crys_light', 1], ['crys_dark', 1], ['cas_starsand', 1]], 'smith', 19, 4, { id: 'r_lg_sage_cas', book: 'b_legend' });
+const casCoinOf = id => IT[id] ? Math.ceil((IT[id].v || 0) * 1.25 / CAS_PRICE) : 0;   // No.297
 function casPrizes() {
   const late = G.stage >= 3;
   return [
-    late ? { id: 'cas_starbow', q: 3, c: 2500, once: 1, hot: 1 } : { id: 'cas_tidesword', q: 3, c: 1500, once: 1, hot: 1 },
-    late ? { id: 'cas_starsand', q: 2, c: 1200, once: 1, hot: 1 } : { id: 'cas_seaheart', q: 2, c: 800, once: 1, hot: 1 },
-    { id: 'h_gapple', q: 2, c: 400 }, { id: 'herb_world', q: 2, c: 150 }, { id: 'crys_light', q: 2, c: 120 }, { id: 'ingot_mithril', q: 2, c: 90 }, { id: 'ruby', q: 2, c: 60 },
-  ].filter(p => IT[p.id]);
+    late ? { id: 'cas_starbow', q: 3, c: 10000, once: 1, hot: 1 } : { id: 'cas_tidesword', q: 3, c: 6000, once: 1, hot: 1 },
+    late ? { id: 'cas_starsand', q: 2, c: 4800, once: 1, hot: 1 } : { id: 'cas_seaheart', q: 2, c: 3200, once: 1, hot: 1 },
+    // No.297: 店でも値のつく品は「売値×1.25 を1枚の値段で割って切り上げ」(作者: 売値より少し高く)
+    ...['h_gapple', 'herb_world', 'crys_light', 'ingot_mithril', 'ruby'].map(id => ({ id, q: 2, c: casCoinOf(id) })),
+    // No.298: まだ行けないダンジョンのレア(章ごとに入れ替え)。第5章は行けない所がないので、出にくい「幻」
+    ...(G.stage >= 4 ? ['r_lordhorn', 'r_dragonorb', 'r_lifefruit'] : G.stage >= 3 ? ['r_dscale', 'r_sprout', 'r_sap'] : ['r_moondrop', 'r_windfeather', 'r_thunder'])
+      .map(id => ({ id, q: 2, c: casCoinOf(id) })),
+  ].filter(p => IT[p.id] && p.c > 0);
 }
 
 // ---------- 場面(初めての夜・毎晩のあいさつ) ----------
@@ -26722,7 +26744,7 @@ madame normal 「ここは昔、川の渡し場の倉庫にあった。あの人
 madame smile 「あの人は、卓では一度も顔に出さなかった。勝っても、負けても。……あの人の席は、今も空けてあるよ」
 dealer smile 「ジルと申します。卓は、わたしが仕切っております」
 dealer normal 「お祖父様のお噂は、ロザから。……お手並み、拝見いたします」
-madame normal 「これはルールブック。遊び方と配当は、全部ここに書いてある。コインは一枚20G。換金はしない。景品と換えるだけさ」
+madame normal 「これはルールブック。遊び方と配当は、全部ここに書いてある。コインは一枚${CAS_PRICE}G。換金はしない。景品と換えるだけさ」
 madame smile 「港のクラブは毎晩開いてる。……気が向いたら、おいで」
 `;
 function casGreetTxt() {
@@ -26753,7 +26775,7 @@ function casScene(txt, done) {
 function casPotGrow() {
   const c = casSt(); if (c.potDay === undefined) c.potDay = G.day;
   const n = Math.max(0, Math.min(60, G.day - c.potDay)); let add = 0;
-  for (let i = 0; i < n; i++) add += 60 + Math.floor(Math.random() * 91);
+  for (let i = 0; i < n; i++) add += (60 + Math.floor(Math.random() * 91)) * 4;
   c.potDay = G.day; if (add) { c.pot += add; c.potAway = (c.potAway || 0) + add; }
 }
 function casinoOpen() {
@@ -26865,7 +26887,7 @@ function casHallView() {
     `</div><p class="cas-rec">いちばん大きな勝ち ${fmt(c.best)}枚・使ったコイン ${fmt(c.used)}枚${casRankI() < 2 ? `(${CAS_RANK[casRankI() + 1].n}の会員まで あと${fmt(CAS_RANK[casRankI() + 1].at - c.used)}枚)` : ''}</p></div></div>`;
 }
 function casBuyView() {
-  const opts = [10, 50, 100, 500, 1000];
+  const opts = [50, 100, 500, 1000, 5000];
   return `<div class="cas-pane">${casSay('madame', 'normal', `コインは一枚${CAS_PRICE}G。……一度コインにしたら、Gには戻らないよ`)}` +
     `<div class="cas-buys">${opts.map(n => `<button class="cas-mb" data-act="cs_buy" data-v="${n}"${G.gold >= n * CAS_PRICE ? '' : ' disabled'}><img src="${casImg('sym_coin')}" alt=""><span><b>${fmt(n)}枚</b><small>${fmt(n * CAS_PRICE)}G</small></span></button>`).join('')}</div>` +
     `<p class="cas-rec">所持金 ${fmt(G.gold)}G・コイン ${fmt(casSt().coins)}枚</p></div>`;
@@ -26891,7 +26913,7 @@ function casPrize(id) {
 const CAS_SYM_N = { seven: '紋章', crown: '王冠', dragon: '竜', gem: '宝石', sword: '剣', bell: '金の鈴', coin: '金貨', fish: '魚', potion: '薬' };
 const casBook = () => ({
   coin: ['コインと景品', `<p>コインは女主人のロザから一枚${CAS_PRICE}Gで買う。<b>Gには戻せない。</b>景品の棚の品と換えるだけ。</p><p>棚の目玉は、ここでしか手に入らない伝説級の武具と素材。章が変わると入れ替わる。目玉はひとつずつ。換えた品は店の蔵に入り、冒険者に渡せる。</p><p>使ったコインの合計で会員の格が上がる。銅 → 銀(${fmt(CAS_RANK[1].at)}枚)→ 金(${fmt(CAS_RANK[2].at)}枚)。</p><p>クラブは毎晩開く。</p>`],
-  slot: ['スロット', `<p>1回に1・3・5枚入れて、レバーを引く。リールが回ったら、<b>ストップを押して1本ずつ止める</b>(どの順でもよい)。</p><p>そろう線: 1枚=真ん中の横一本/3枚=横三本/5枚=横三本と斜め二本。線の上に同じ絵柄が3つそろうと払い戻し(賭けた枚数×配当)。</p><table><tr><th>絵柄</th><th>役</th></tr><tr><td><img src="${casImg('sym_crown')}" alt="">王冠</td><td>プレミアBIG(×${SL_ROLE.crown.pay})+確変${SL_ROLE.crown.kaku}回。5枚賭けなら積立も丸ごと</td></tr><tr><td><img src="${casImg('sym_dragon')}" alt="">竜</td><td>BIG(×${SL_ROLE.dragon.pay})+確変${SL_ROLE.dragon.kaku}回</td></tr><tr><td><img src="${casImg('sym_seven')}" alt="">紋章</td><td>BAR(×${SL_ROLE.seven.pay})+確変${SL_ROLE.seven.kaku}回</td></tr>${['gem', 'sword', 'coin', 'potion'].map(k => `<tr><td><img src="${casImg('sym_' + k)}" alt="">${CAS_SYM_N[k]}</td><td>×${SL_ROLE[k].pay}</td></tr>`).join('')}<tr><td><img src="${casImg('sym_fish')}" alt="">魚</td><td>リプレイ(同じ枚数で、もう1回ただで回せる)</td></tr><tr><td><img src="${casImg('sym_bell')}" alt="">金の鈴</td><td>鈴が鳴って、無料の回転5回</td></tr></table><p><b>確変</b>: ボーナスのあとは確変。確変中は<b>はずれなし</b>(リプレイか小役か、竜のBIG)。どこで押してもそろう。確変中に竜がそろえば、またBIGで確変${SL_ROLE.dragon.kaku}回に戻る(連チャン)。</p><p><b>役はレバーを引いた時に決まっている。</b>ふだんは押した所から4コマまで滑ってそろう。それより遠いと取りこぼす。魚と薬は、どこで押してもそろう。</p><p><b>ランプ</b>: 上の羅針盤と両脇のランタンが灯ったら、王冠・竜・紋章のどれかがそろう番。光っている絵柄を狙って押す(ボーナスの絵柄は大きく滑ってくれる)。そろえるまでランプは消えない。</p><p><b>オート</b>: 10回・50回・ボーナスまで。止めるのも自動。ランプが灯ったらオートは止まる。</p><p><b>積立</b>: 賭けたコインの3%と、港の客が毎晩遊んだ分が足されて育つ。5枚賭けで王冠がそろうと丸ごともらえ、そのあと${CAS_POT0}枚から。</p><p>PC: スペース=レバー/ストップ、←↓→ または Z・X・C=左・中・右のストップ。</p>`],
+  slot: ['スロット', `<p>台は3つ。港の台は1回に1・3・5枚。深海の台は1枚が4枚分、天空の竜の台は8枚分で、そろった時のコインも同じだけ増える(確率は同じ)。</p><p>1回に1・3・5枚入れて、レバーを引く。リールが回ったら、<b>ストップを押して1本ずつ止める</b>(どの順でもよい)。</p><p>そろう線: 1枚=真ん中の横一本/3枚=横三本/5枚=横三本と斜め二本。線の上に同じ絵柄が3つそろうと払い戻し(賭けた枚数×配当)。</p><table><tr><th>絵柄</th><th>役</th></tr><tr><td><img src="${casImg('sym_crown')}" alt="">王冠</td><td>プレミアBIG(×${SL_ROLE.crown.pay})+確変${SL_ROLE.crown.kaku}回。5枚賭けなら積立も丸ごと</td></tr><tr><td><img src="${casImg('sym_dragon')}" alt="">竜</td><td>BIG(×${SL_ROLE.dragon.pay})+確変${SL_ROLE.dragon.kaku}回</td></tr><tr><td><img src="${casImg('sym_seven')}" alt="">紋章</td><td>BAR(×${SL_ROLE.seven.pay})+確変${SL_ROLE.seven.kaku}回</td></tr>${['gem', 'sword', 'coin', 'potion'].map(k => `<tr><td><img src="${casImg('sym_' + k)}" alt="">${CAS_SYM_N[k]}</td><td>×${SL_ROLE[k].pay}</td></tr>`).join('')}<tr><td><img src="${casImg('sym_fish')}" alt="">魚</td><td>リプレイ(同じ枚数で、もう1回ただで回せる)</td></tr><tr><td><img src="${casImg('sym_bell')}" alt="">金の鈴</td><td>鈴が鳴って、無料の回転5回</td></tr></table><p><b>確変</b>: ボーナスのあとは確変。確変中は<b>はずれなし</b>(リプレイか小役か、竜のBIG)。どこで押してもそろう。確変中に竜がそろえば、またBIGで確変${SL_ROLE.dragon.kaku}回に戻る(連チャン)。</p><p><b>役はレバーを引いた時に決まっている。</b>ふだんは押した所から4コマまで滑ってそろう。それより遠いと取りこぼす。魚と薬は、どこで押してもそろう。</p><p><b>ランプ</b>: 上の羅針盤と両脇のランタンが灯ったら、王冠・竜・紋章のどれかがそろう番。光っている絵柄を狙って押す(ボーナスの絵柄は大きく滑ってくれる)。そろえるまでランプは消えない。</p><p><b>オート</b>: 10回・50回・ボーナスまで。止めるのも自動。ランプが灯ったらオートは止まる。</p><p><b>積立</b>: 賭けたコインの3%と、港の客が毎晩遊んだ分が足されて育つ。5枚賭けで王冠がそろうと丸ごともらえ、そのあと${CAS_POT0}枚から。</p><p>PC: スペース=レバー/ストップ、←↓→ または Z・X・C=左・中・右のストップ。</p>`],
   rl: ['ルーレット', `<p>アメリカ式。ポケットは 0・00・1〜36 の38。台にチップを置いて「回す」。盤に切り替わり、玉が止まった数字で決まる。置いたチップは、当たれば配当と一緒に戻る。</p><table><tr><th>賭け方</th><th>置く所</th><th>配当</th></tr><tr><td>一点</td><td>数字の上</td><td>35倍</td></tr><tr><td>二点</td><td>2つの数字の境目</td><td>17倍</td></tr><tr><td>三点</td><td>横一列の左の端</td><td>11倍</td></tr><tr><td>四点</td><td>4つの数字の角</td><td>8倍</td></tr><tr><td>五点</td><td>0・00 の下の線(0・00・1・2・3)</td><td>6倍</td></tr><tr><td>六点</td><td>左の端の、2列の境目</td><td>5倍</td></tr><tr><td>12の組・列</td><td>1st 12 など・2to1</td><td>2倍</td></tr><tr><td>赤黒・偶奇・前後半</td><td>外側の枠</td><td>1倍</td></tr></table><p>0 と 00 は赤でも黒でもない(外側の賭けは負け)。</p>`],
   bj: ['ブラックジャック', `<p>カードの合計を21に近づけ、ディーラーのジルより大きければ勝ち。21を超えたら負け(バスト)。</p><p>A は1か11。J・Q・K は10。</p><p><b>ブラックジャック</b>(最初の2枚で A と10の札)は1.5倍。</p><p>ヒット=もう1枚。スタンド=止める。ダブル=最初の2枚の時だけ、賭けを倍にして1枚だけ引く。スプリット=最初の2枚が同じ数の時、2つの手に分ける(1回だけ。A を分けたら1枚ずつ)。</p><p>ディーラーは17以上で止まる。引き分けは賭けが戻る。札は6組を混ぜて使う。</p>`],
 });
@@ -26905,27 +26927,41 @@ function casBookView() {
 
 // ---------- スロット(3×3・自分で止める) ----------
 // 絵(Work の描き直し「幻想港の三連リールキャビネット」=slot_body・1024×1536)の窓の位置(透明の所を測った)
-const SLW = { w: 1024, h: 1536, x: [[140, 359], [406, 618], [665, 883]], y: [356, 922], stopY: 1031, compass: [512, 115] };
+// 台は3台(No.296): 銅=今の台・銀=深海・金=天空の竜。最初から3台とも座れる(作者)。台ごとに1回の値段を変える(値段は未決)。窓は台ごとに測った画素(連絡帳 No.295)
+const SL_MACH = [
+  { k: '', n: '港の台', mul: 1, rank: 0, w: 1024, h: 1536, x: [[140, 359], [406, 618], [665, 883]], y: [356, 922], stopY: 1031, compass: [512, 115] },
+  { k: '_sea', n: '深海の台', mul: 4, rank: 0, w: 1024, h: 1536, x: [[141, 356], [406, 618], [667, 882]], y: [351, 924], stopY: 1031, compass: [512, 115] },
+  { k: '_sky', n: '天空の竜の台', mul: 8, rank: 0, w: 1024, h: 1536, x: [[148, 357], [407, 613], [665, 874]], y: [359, 916], stopY: 1031, compass: [512, 115] },
+];
+const casMachI = () => { const s = casSt().slot; let i = +s.mach || 0; if (!SL_MACH[i] || SL_MACH[i].rank > casRankI()) i = 0; return i; };
+const casMach = () => SL_MACH[casMachI()];
+const casBet = () => casSt().slot.bet * casMach().mul;   // 1回に入れる枚数(台の重さ込み)。No.296: 港1・深海4・天空8
+const casSym = k => casImg('sym_' + k + casMach().k);
+let SLW = SL_MACH[0];
 const SL_SPEED = 23;   // 1秒に流れるコマ数
 function casSlotView() {
-  const c = casSt(), s = c.slot, S = casSl();
+  const c = casSt(), s = c.slot, S = casSl(); SLW = casMach();
   const pct = (v, t) => (v / t * 100).toFixed(3) + '%';
   const reels = SLW.x.map(([a, b], i) => `<div class="cas-reel" data-act="cs_stop" data-v="${i}" style="left:${pct(a, SLW.w)};width:${pct(b - a, SLW.w)};top:${pct(SLW.y[0], SLW.h)};height:${pct(SLW.y[1] - SLW.y[0], SLW.h)}"><div class="cas-strip" id="casstrip${i}"></div><i class="cas-shade"></i></div>`).join('');
   const rowY = r => SLW.y[0] + (SLW.y[1] - SLW.y[0]) * (r * 2 + 1) / 6, xa = SLW.x[0][0] + 6, xb = SLW.x[2][1] - 6;
-  const lines = Object.entries(SL_LINES).map(([k, rows]) => `<line class="ln-${k}" x1="${xa}" y1="${rowY(rows[0])}" x2="${xb}" y2="${rowY(rows[2])}"/>`).join('');
+  // 線は左の窓の中心と右の窓の中心を通し、同じ傾きで窓の端まで延ばす(No.296)
+  const ca = (SLW.x[0][0] + SLW.x[0][1]) / 2, cb = (SLW.x[2][0] + SLW.x[2][1]) / 2;
+  const lnY = (rows, x) => rowY(rows[0]) + (rowY(rows[2]) - rowY(rows[0])) * (x - ca) / (cb - ca);
+  const lines = Object.entries(SL_LINES).map(([k, rows]) => `<line class="ln-${k}" x1="${xa}" y1="${lnY(rows, xa)}" x2="${xb}" y2="${lnY(rows, xb)}"/>`).join('');
   const stops = SLW.x.map(([a, b], i) => `<button class="cas-stop" id="casstop${i}" data-act="cs_stop" data-v="${i}" style="left:${pct((a + b) / 2, SLW.w)};top:${pct(SLW.stopY, SLW.h)}" aria-label="ストップ${i + 1}"><span>STOP</span></button>`).join('');
   const lamp = s.carry ? ' lit lamp-' + s.carry : '';
   return `<div class="cas-game cas-slotg"><div class="cas-stage"><div class="cas-slot${lamp}" id="casslot">${reels}` +
     `<svg class="cas-lines b${s.bet}" id="caslines" viewBox="0 0 ${SLW.w} ${SLW.h}" preserveAspectRatio="none">${lines}</svg>` +
-    `<img class="cas-slot-body" src="${casImg('slot_body')}" alt="" draggable="false">` +
+    `<img class="cas-slot-body" src="${casImg('slot_body' + SLW.k)}" alt="" draggable="false">` +
     `<i class="cas-lamp c" style="left:${pct(SLW.compass[0], SLW.w)};top:${pct(SLW.compass[1], SLW.h)}"></i><i class="cas-lamp l"></i><i class="cas-lamp r"></i>` +
     `<div class="cas-aim" id="casaim">${s.carry ? casAimTxt(s.carry) : ''}</div>${stops}` +
-    `<button class="cas-lever" data-act="cs_spin" aria-label="レバー"><img src="${casImg('slot_lever')}" alt="" id="caslever" draggable="false"></button></div></div>` +
+    `<button class="cas-lever" data-act="cs_spin" aria-label="レバー"><img src="${casImg('slot_lever' + SLW.k)}" alt="" id="caslever" draggable="false"></button></div></div>` +
     `<div class="cas-ctrl"><div class="cas-kaku" id="caskaku"${s.kaku ? '' : ' hidden'}>確変 <b>${s.kaku}</b>回</div><div class="cas-msg" id="casmsg">${S.msg || casSlotIdleMsg()}</div><div class="cas-ceil" id="casceil">${s.kaku ? '' : `天井まで あと${Math.max(0, SL_CEIL - (s.ceil || 0))}回`}</div>` +
-    `<div class="cas-bets">${[1, 3, 5].map(n => `<button class="cas-cb${s.bet === n ? ' on' : ''}" data-act="cs_sbet" data-v="${n}"><b>${n}枚</b><small>${n === 1 ? '真ん中1本' : n === 3 ? '横3本' : '5本・積立'}</small></button>`).join('')}</div>` +
+    casMachH() +
+    `<div class="cas-bets">${[1, 3, 5].map(n => `<button class="cas-cb${s.bet === n ? ' on' : ''}" data-act="cs_sbet" data-v="${n}"><b>${n * casMach().mul}枚</b><small>${n === 1 ? '真ん中1本' : n === 3 ? '横3本' : '5本・積立'}</small></button>`).join('')}</div>` +
     `<button class="cas-big hot" id="casspin" data-act="cs_spin"><b>レバー</b><small id="casspinsub">${casSpinSub()}</small></button>` +
     `<div class="cas-auto" id="casauto">${casAutoH()}</div>` +
-    `<div class="cas-paytab"><span class="pb"><img src="${casImg('sym_crown')}" alt="王冠">プレミア</span><span class="pb"><img src="${casImg('sym_dragon')}" alt="竜">BIG</span><span class="pb"><img src="${casImg('sym_seven')}" alt="紋章">BAR</span>${['gem', 'sword', 'coin', 'potion'].map(k => `<span><img src="${casImg('sym_' + k)}" alt="${CAS_SYM_N[k]}">×${SL_ROLE[k].pay}</span>`).join('')}<span><img src="${casImg('sym_fish')}" alt="魚">リプレイ</span><span><img src="${casImg('sym_bell')}" alt="金の鈴">無料5回</span></div>` +
+    `<div class="cas-paytab"><span class="pb"><img src="${casSym('crown')}" alt="王冠">プレミア</span><span class="pb"><img src="${casSym('dragon')}" alt="竜">BIG</span><span class="pb"><img src="${casSym('seven')}" alt="紋章">BAR</span>${['gem', 'sword', 'coin', 'potion'].map(k => `<span><img src="${casSym('' + k)}" alt="${CAS_SYM_N[k]}">×${SL_ROLE[k].pay}</span>`).join('')}<span><img src="${casSym('fish')}" alt="魚">リプレイ</span><span><img src="${casSym('bell')}" alt="金の鈴">無料5回</span></div>` +
     `<p class="cas-keys">スペース=レバー/ストップ ・ ←↓→ か Z X C=ストップ</p></div></div>`;
 }
 function casAutoH() {
@@ -26933,8 +26969,13 @@ function casAutoH() {
   if (A) return `<button class="cas-cb stop" data-act="cs_auto" data-v="off"><b>オートを止める</b><small>${A.mode === 'b' ? 'ボーナスまで' : `残り${A.left}回`}</small></button>`;
   return `<span>オート</span>${[['10', '10回'], ['50', '50回'], ['b', 'ボーナスまで']].map(([v, n]) => `<button class="cas-cb" data-act="cs_auto" data-v="${v}"><b>${n}</b></button>`).join('')}`;
 }
-const casAimTxt = k => `<img src="${casImg('sym_' + k)}" alt="${CAS_SYM_N[k]}"><span>を狙え!</span>`;
-function casSpinSub() { const s = casSt().slot; return s.replay ? 'リプレイ(ただ)' : s.free ? `無料 あと${s.free}回` : `${s.bet}枚 入れる`; }
+// 台えらび: 最初から3台とも。確変中・ランプが灯っている間は移れない
+function casMachH() {
+  const s = casSt().slot, cur = casMachI(), lock = !!(s.kaku || s.carry || s.free || s.replay);
+  return `<div class="cas-bets cas-machs">${SL_MACH.map((m, i) => { const ok = m.rank <= casRankI(); return `<button class="cas-cb${i === cur ? ' on' : ''}" data-act="cs_mach" data-v="${i}"${ok && (!lock || i === cur) ? '' : ' disabled'}><b>${m.n}</b><small>${lock && i !== cur ? '今は移れない' : `1回${m.mul}〜${5 * m.mul}枚`}</small></button>`; }).join('')}</div>`;
+}
+const casAimTxt = k => `<img src="${casSym(k)}" alt="${CAS_SYM_N[k]}"><span>を狙え!</span>`;
+function casSpinSub() { const s = casSt().slot; return s.replay ? 'リプレイ(ただ)' : s.free ? `無料 あと${s.free}回` : `${casBet()}枚 入れる`; }
 function casSlotIdleMsg() { const s = casSt().slot; return s.kaku && !s.carry ? `確変中! はずれなし。竜がそろえば、またBIG` : s.carry ? 'ランプが灯っている。光る絵柄を狙って止めよう' : s.free ? `金の鈴! 無料の回転 あと${s.free}回` : s.replay ? 'リプレイ。もう一回、ただで回せる' : '賭ける枚数を選んで、レバーを引く'; }
 function casSl() { return CAS.sl || (CAS.sl = { pos: [3.0, 7.0, 11.0], spin: [false, false, false], stops: [null, null, null], target: [null, null, null], role: null, busy: false, ready: false, msg: '', raf: 0, last: 0, newLamp: false }); }
 function casSlotPaint() {
@@ -26943,14 +26984,14 @@ function casSlotPaint() {
   for (let r = 0; r < 3; r++) {
     const st = $('#casstrip' + r); if (!st) continue;
     const p = S.pos[r], base = Math.floor(p + 1e-9), fr = p - base, h = [];
-    for (let k = 2; k >= -2; k--) { const sy = SL_STRIPS[r][slMod(base + k)]; h.push(`<div class="cas-sym${glow === sy ? ' tgt' : ''}" data-row="${1 - k}"><img src="${casImg('sym_' + sy)}" alt="${CAS_SYM_N[sy]}"></div>`); }
+    for (let k = 2; k >= -2; k--) { const sy = SL_STRIPS[r][slMod(base + k)]; h.push(`<div class="cas-sym${glow === sy ? ' tgt' : ''}" data-row="${1 - k}"><img src="${casSym(sy)}" alt="${CAS_SYM_N[sy]}"></div>`); }
     const key = base + '|' + glow;
     if (st.dataset.k !== key) { st.innerHTML = h.join(''); st.dataset.k = key; }
     st.style.transform = `translateY(${(-20 + fr * 20).toFixed(3)}%)`;
     st.classList.toggle('spin', S.spin[r] && S.target[r] === null);
   }
   for (let r = 0; r < 3; r++) { const b = $('#casstop' + r); if (b) b.classList.toggle('live', S.ready && S.spin[r] && S.target[r] === null); }
-  const sp = $('#casspin'); if (sp) { sp.disabled = S.busy || (!s.free && !s.replay && casSt().coins < s.bet); const sub = $('#casspinsub'); if (sub) sub.textContent = casSpinSub(); }
+  const sp = $('#casspin'); if (sp) { sp.disabled = S.busy || (!s.free && !s.replay && casSt().coins < casBet()); const sub = $('#casspinsub'); if (sub) sub.textContent = casSpinSub(); }
   if (CAS.el) CAS.el.querySelectorAll('.cas-bets .cas-cb').forEach(b => { b.disabled = S.busy || !!s.free || !!s.replay; b.classList.toggle('on', +b.dataset.v === s.bet); });
   const ln = $('#caslines'); if (ln) ln.setAttribute('class', `cas-lines b${s.bet}`);
 }
@@ -26976,8 +27017,8 @@ function casSpin(fromAuto) {
   if (CAS.auto && !fromAuto) { casAutoSet('off'); return; }
   const c = casSt(), s = c.slot, S = casSl(); if (S.busy) { casStopNext(); return; }
   const paid = !s.free && !s.replay;
-  if (paid && c.coins < s.bet) { toast('<div>コインが足りない。ロザから買える</div>'); return; }
-  if (s.replay) s.replay = 0; else if (s.free) s.free--; else { c.coins -= s.bet; c.used += s.bet; c.pot += s.bet * SL_POT_RATE; sfx('cas_coin', { n: s.bet }); }
+  if (paid && c.coins < casBet()) { toast('<div>コインが足りない。ロザから買える</div>'); return; }
+  if (s.replay) s.replay = 0; else if (s.free) s.free--; else { const B = casBet(); c.coins -= B; c.used += B; c.pot += B * SL_POT_RATE; sfx('cas_coin', { n: s.bet }); }
   const inK = s.kaku > 0; if (inK) s.kaku--;
   let role = slDraw(null, s.carry, inK);
   // 天井(作者 No.283j): ふだんの回転でボーナスなしが SL_CEIL 回続いたら、次は必ず竜のBIG
@@ -27052,7 +27093,7 @@ function casSlotStopped(r) {
 function casSlotResult() {
   const c = casSt(), s = c.slot, S = casSl(), role = S.role;
   const res = slPayout(S.stops, s.bet, role);
-  let win = res.pay, msg = '', big = false, jack = false, lampLater = false;
+  let win = res.pay * casMach().mul, msg = '', big = false, jack = false, lampLater = false;
   if (res.got.includes('crown') && s.bet >= 5) { win += casPot(); jack = true; }
   if (role && SL_ROLE[role].bonus) {
     if (res.hitRole) { s.carry = null; s.miss = 0; }
@@ -27120,7 +27161,7 @@ function casAutoSet(v) {
 function casAutoNext() {
   const A = CAS.auto; if (!A || !CAS.on || CAS.view !== 'slot') { CAS.auto = null; return; }
   const c = casSt(), s = c.slot;
-  if (A.left <= 0 || (!s.free && !s.replay && c.coins < s.bet)) { casAutoSet('off'); return; }
+  if (A.left <= 0 || (!s.free && !s.replay && c.coins < casBet())) { casAutoSet('off'); return; }
   if (s.carry) { casAutoSet('off'); const m = $('#casmsg'); if (m) m.textContent = 'ランプが灯っている。自分で狙おう'; return; }
   A.left--; const a = $('#casauto'); if (a) a.innerHTML = casAutoH();
   casSpin(true);
@@ -27143,7 +27184,7 @@ const RL_DEG = 360 / 38;
 // 台(roulette_board・1024×1536)の升目の画素。roulette_layout.json と同じ
 const RL_OUT = { col1: [380, 1320, 560, 1410], col2: [560, 1320, 740, 1410], col3: [740, 1320, 920, 1410], dz1: [250, 240, 380, 600], dz2: [250, 600, 380, 960], dz3: [250, 960, 380, 1320], low: [120, 240, 250, 420], even: [120, 420, 250, 600], red: [120, 600, 250, 780], black: [120, 780, 250, 960], odd: [120, 960, 250, 1140], high: [120, 1140, 250, 1320] };
 const RL_PAY = { n: 35, sp: 17, st: 11, cr: 8, five: 6, sx: 5, dz: 2, col: 2, even: 1 };
-const RL_CHIPS = [[1, 'white'], [5, 'red'], [10, 'blue'], [50, 'green'], [100, 'black']];
+const RL_CHIPS = [[5, 'white'], [20, 'red'], [50, 'blue'], [200, 'green'], [500, 'black']];   // No.297: コイン1枚5G(20G の時のおよそ4倍)
 const rlColor = n => n === '0' || n === '00' ? 'g' : RL_RED.has(+n) ? 'r' : 'k';
 const rlCell = n => { if (n === '0') return [515, 180]; if (n === '00') return [785, 180]; const v = +n - 1; return [380 + (v % 3) * 180 + 90, 240 + Math.floor(v / 3) * 90 + 45]; };
 // 賭けの中身: 当たる数字の一覧・配当・チップを置く位置(台の画素)
@@ -27192,7 +27233,7 @@ function rlKeyAt(x, y) {
   if (vr !== null) return 'sp:' + [N(vr, c), N(vr + 1, c)].join(',');
   return 'n:' + N(r, c);
 }
-function casRlState() { return CAS.rl || (CAS.rl = { phase: 'bet', chip: 1, bets: {}, last: null, rot: 0, ball: null, res: null, msg: '' }); }
+function casRlState() { return CAS.rl || (CAS.rl = { phase: 'bet', chip: 5, bets: {}, last: null, rot: 0, ball: null, res: null, msg: '' }); }
 const rlTot = R => Object.values(R.bets).reduce((a, b) => a + b, 0);
 function casRlView() {
   const R = casRlState(), c = casSt(), tot = rlTot(R);
@@ -27347,7 +27388,7 @@ function bjCardH(c, i, down, nw) {
   const pips = BJ_PIPS[n].map(([x, y]) => `<img src="${src}" alt=""${y > 50 ? ' class="f"' : ''} style="left:${x}%;top:${y}%">`).join('');
   return `<div class="cas-card num${red ? ' red' : ''}${nc}" style="--i:${i};background-image:url(${casImg('card_face')})"><span class="cc-tl">${R}<img src="${casImg('suit_' + c.s)}" alt=""></span><span class="cc-pips n${n}">${pips}</span><span class="cc-br">${R}<img src="${casImg('suit_' + c.s)}" alt=""></span></div>`;
 }
-function casBjState() { if (!CAS.bj) sfx('cas_shuf2'); return CAS.bj || (CAS.bj = { bet: 5, state: 'bet', shoe: bjShoe(), d: [], hands: [], cur: 0, msg: '', face: 'normal' }); }
+function casBjState() { if (!CAS.bj) sfx('cas_shuf2'); return CAS.bj || (CAS.bj = { bet: 20, state: 'bet', shoe: bjShoe(), d: [], hands: [], cur: 0, msg: '', face: 'normal' }); }
 function bjDraw(B) { if (B.shoe.length < 52) { B.shoe = bjShoe(); B.msg = '札を混ぜ直しました'; sfx('cas_shuf1'); } return B.shoe.pop(); }
 function casBjView() {
   const B = casBjState(), c = casSt(), play = B.state === 'play';
@@ -27443,6 +27484,7 @@ function casAct(a, v) {
   if (a === 'cs_stop') { casStopReel(+v); return; }
   if (a === 'cs_spin') { casSpin(); return; }
   if (CAS.anim) return;
+  if (a === 'cs_mach') { const s = casSt().slot, i = +v, S = casSl(); if (!SL_MACH[i] || SL_MACH[i].rank > casRankI() || (S && S.busy) || ((s.kaku || s.carry || s.free || s.replay) && i !== casMachI())) return; casAutoSet('off'); s.mach = i; CAS.sl = null; sfx('tap'); save(); casDraw(); return; }
   if (a === 'cs_go') { CAS.view = v; if (v === 'book') CAS.book = null; if (v === 'slot') CAS.sl = null; sfx('tap'); casDraw(); return; }
   if (a === 'cs_buy') { const n = +v, g = n * CAS_PRICE; if (G.gold < g) return; G.gold -= g; casSt().coins += n; sfx('ar_bet'); save(); casDraw(); casPopWin(n); return; }
   if (a === 'cs_prize') { casPrize(v); return; }
@@ -27489,7 +27531,7 @@ zen normal 「最後の勝負は、じいさまの勝ちじゃった。あやつ
 zen smile 「夜の川にも、魚はおるでな。……この札を見せれば、ロザが通してくれる」
 (古い紹介状をもらった。港のクラブは毎晩開いている。夜に町の「施設」から行ける。)
 `);
-try { window.__cas = { storyHook, storyPlay, STORY, CAS, casSt, casinoOpen, casinoClose, casAct, casEnter, rlKeyAt, rlBet, bjTotal, casSpin, casStopReel, casRlSpin, casBj, casSl, slChoose, slSym, slLinesFor, slAligned, SL_ROLE, musicKey }; } catch (e) { /* tests only */ }
+try { window.__cas = { storyHook, storyPlay, STORY, CAS, casSt, casinoOpen, casinoClose, casAct, casEnter, rlKeyAt, rlBet, bjTotal, casSpin, casStopReel, casRlSpin, casBj, casSl, slChoose, slSym, slLinesFor, slAligned, SL_ROLE, musicKey, casPrizes, IT }; } catch (e) { /* tests only */ }
 
 // ---- onsen.js ----
 // ---------- 温泉(No.287・2026-11-13 作者): 宿屋の札。夜に一度、湯に入ると体力が全部戻り、住人どうしの会話を1本聞く ----------
