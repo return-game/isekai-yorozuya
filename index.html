@@ -3355,6 +3355,13 @@ body.btl-open{overflow:hidden}
   .cas-host{overflow:hidden;align-items:flex-start}
   .cas-host img{max-height:none;height:auto;width:min(100%,70cqh);object-fit:cover;object-position:top;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
   .cas-hall-r{gap:8px}
+  .cas-hall .cas-menu{gap:6px}
+  .cas-hall .cas-mb{min-height:46px;padding:3px 10px;gap:8px;border-radius:12px}
+  .cas-hall .cas-mb img{width:28px;height:28px}
+  .cas-hall .cas-mb b{font-size:clamp(13px,3.7cqw,18px)}.cas-hall .cas-mb small{font-size:clamp(10px,2.7cqw,12px)}
+  .cas-hall .cas-bub.big{font-size:clamp(13px,3.3cqw,16px);padding:7px 12px;line-height:1.45}
+  .cas-host img{object-position:50% 16%}
+  .cas-hall .cas-rec{font-size:11px;margin:0}
 }
 /* コインを買う・景品 */
 .cas-pane{max-width:900px;margin:0 auto;padding:6px 12px 18px;display:grid;gap:14px}
@@ -3432,7 +3439,11 @@ body.btl-open{overflow:hidden}
 @media (hover:none){.cas-keys{display:none}}
 .cas-bets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 @container cm (max-aspect-ratio:1/1){
-  .cas-slotg .cas-ctrl{display:grid;grid-template-columns:1fr 1fr 1fr 1.5fr;gap:6px;align-items:stretch}
+  .cas-slotg .cas-ctrl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:stretch}
+  .cas-slotg .cas-ctrl>.cas-big,.cas-slotg .cas-auto{grid-column:1/-1}
+  .cas-slotg .cas-cb{border-width:7px 9px;padding:0 2px;font-size:clamp(12px,1.7cqh,16px);min-height:38px}.cas-slotg .cas-cb small{font-size:.62em;line-height:1.1}
+  .cas-slotg .cas-big{border-width:8px 12px;min-height:46px;padding:2px 8px;font-size:clamp(16px,2.4cqh,22px)}.cas-slotg .cas-big small{display:none}
+  .cas-slotg .cas-ctrl{gap:4px}.cas-slotg .cas-ceil{display:none}
   .cas-slotg .cas-msg{grid-column:1/-1}
   .cas-slotg .cas-bets{display:contents}
   .cas-slotg .cas-paytab,.cas-slotg .cas-keys,.cas-lever{display:none}
@@ -3542,6 +3553,42 @@ body.btl-open{overflow:hidden}
   .story.onsen .st-ch { right: 50%; transform: translateX(50%); }
 }
 
+/* No.302: カードゲーム第2弾(ドローポーカー・ハイ&ロー・バカラ) */
+.cc-bets{flex-wrap:wrap;justify-content:center}
+.cc-pay{position:relative;z-index:2;grid-row:2;justify-self:start;max-width:min(46cqw,360px);max-height:none;grid-template-columns:1fr 1fr;display:grid;gap:3px}
+.cc-pay li{padding:3px 8px;font-size:clamp(11px,1.8cqh,15px)}
+.cc-row5{position:relative;z-index:2;grid-row:4;display:flex;gap:2cqw;justify-content:center;--cw:clamp(52px,min(17cqw,19cqh),150px)}
+.cc-row5 .cas-card{margin-left:0}
+.cc-row5.hl{gap:6cqw;--cw:clamp(70px,min(26cqw,26cqh),190px)}
+.cc-slot{appearance:none;border:0;background:none;padding:0;position:relative;cursor:pointer;transition:transform .15s;color:inherit}
+.cc-slot:disabled{cursor:default}
+.cc-slot.hold{transform:translateY(-10%)}
+.cc-hold{position:absolute;left:50%;bottom:-2px;transform:translate(-50%,100%);font:900 clamp(12px,2cqh,16px) var(--f-ui);color:#2a1d10;background:var(--gold);border-radius:999px;padding:1px 10px;opacity:0;transition:opacity .15s}
+.cc-slot.hold .cc-hold{opacity:1}
+.cc-bc{position:relative;z-index:2;grid-row:4;display:flex;gap:3cqw;justify-content:center;align-items:end;--cw:clamp(44px,min(13cqw,17cqh),150px)}
+.cc-sq{display:contents}
+.cc-sq.third{display:grid;place-items:center;width:calc(var(--cw) * 1.406);height:calc(var(--cw) * 1.406);margin-left:calc(var(--cw) * .12)}
+.cc-sq.third .cas-card{margin-left:0;transform:rotate(90deg);transition:transform .9s ease-in-out,filter .9s}
+.cc-sq.third.on.peek .cas-card{transform:rotate(90deg) scale(1.1);filter:drop-shadow(0 0 14px #ffe08a)}
+.cas-bcg .cas-felt{--cw:clamp(56px,min(22cqw,15cqh),170px)}
+.cas-pkg .cas-ctrl .cas-row .cas-big small,.cas-hlg .cas-ctrl small{white-space:nowrap}
+@container cm (max-aspect-ratio:1/1){.cc-pay{max-width:58cqw}}
+.cas-chip.gold img{filter:sepia(1) saturate(5) hue-rotate(-12deg) brightness(1.08)}
+.cas-chip.gold.on{box-shadow:0 0 0 4px #fff3b0,0 0 26px #ffd24a}
+.cc-fc{position:absolute;left:3%;top:2%;width:25%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fffdf6,#efe0bd);box-shadow:0 0 0 2px #b8912f,0 2px 4px rgba(0,0,0,.5);display:grid;place-items:center;align-content:center;gap:0;color:#1d1d1d}
+.cc-fc.red{color:#b3221b}.cc-fc b{font:900 calc(var(--cw) * .14)/1 var(--f-ui)}.cc-fc img{width:42%;height:auto}.cc-fc.br{left:auto;top:auto;right:3%;bottom:2%}
+
+/* No.303: Work のボタンの絵(四隅はそのまま・辺と真ん中を伸ばす)。絵は assets/obj/obj_cas_ui_*.webp */
+.cas-cb{background:none;border-style:solid;border-width:clamp(9px,1.5cqh,14px) clamp(12px,1.9cqh,18px);border-image:url(img/obj_cas_ui_btn.webp) 40 46 fill / 1 stretch;box-shadow:0 3px 6px rgba(0,0,0,.45);color:#f6e7c6;text-shadow:0 1px 2px #000;border-radius:0}
+.cas-cb small{opacity:.85}
+.cas-cb.on{background:none;border-image-source:url(img/obj_cas_ui_btn_on.webp);color:#fff3cf;box-shadow:0 0 16px rgba(255,200,90,.55),0 3px 6px rgba(0,0,0,.45)}
+.cas-cb:disabled{opacity:1;border-image-source:url(img/obj_cas_ui_btn_off.webp);color:rgba(230,215,185,.45)}
+.cas-big{background:none;border-style:solid;border-width:clamp(12px,2cqh,20px) clamp(16px,2.6cqh,26px);border-image:url(img/obj_cas_ui_big.webp) 56 64 fill / 1 stretch;box-shadow:0 6px 14px rgba(0,0,0,.5);border-radius:0;color:#fff4d6;text-shadow:0 2px 3px rgba(0,0,0,.7)}
+.cas-big:active{border-image-source:url(img/obj_cas_ui_big_down.webp)}
+.cas-big.calm,.cas-big:not(.hot){background:none;border-image-source:url(img/obj_cas_ui_btn.webp);border-image-slice:40 46 fill;color:#f6e7c6;text-shadow:0 1px 2px #000;box-shadow:0 3px 6px rgba(0,0,0,.45)}
+.cas-big:disabled{opacity:.55}
+@container cm (max-aspect-ratio:1/1){.cas-slotg .cas-slot{cursor:pointer;-webkit-tap-highlight-color:transparent}}
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -3571,7 +3618,7 @@ const PX_IMG = window.__PX || {};
 const IMG_BASE = 'img/';
 const CH_FILES = new Set(["ch_bard_normal", "ch_bard_smile", "ch_bard_surprise", "ch_bard_trouble", "ch_borg_normal", "ch_borg_smile", "ch_borg_surprise", "ch_borg_trouble", "ch_chancellor_normal", "ch_chancellor_smile", "ch_chancellor_surprise", "ch_chancellor_trouble", "ch_chief_normal", "ch_chief_smile", "ch_chief_surprise", "ch_chief_trouble", "ch_clara_blush", "ch_clara_joy", "ch_clara_normal", "ch_clara_pout", "ch_clara_smile", "ch_clara_surprise", "ch_clara_tears", "ch_clara_trouble", "ch_colette_normal", "ch_colette_pout", "ch_colette_smile", "ch_colette_surprise", "ch_colette_trouble", "ch_dahlia_normal", "ch_dahlia_smile", "ch_dahlia_surprise", "ch_dahlia_trouble", "ch_dealer_normal", "ch_dealer_smile", "ch_dealer_surprise", "ch_dealer_trouble", "ch_eir_normal", "ch_eir_smile", "ch_eir_surprise", "ch_eir_trouble", "ch_gantz_normal", "ch_gantz_smile", "ch_gantz_surprise", "ch_gantz_trouble", "ch_gozu_normal", "ch_gozu_smile", "ch_gozu_surprise", "ch_gozu_trouble", "ch_guild_normal", "ch_guild_smile", "ch_guild_surprise", "ch_guild_trouble", "ch_hal_normal", "ch_hal_smile", "ch_hal_surprise", "ch_hal_trouble", "ch_irma_normal", "ch_irma_pout", "ch_irma_smile", "ch_irma_surprise", "ch_irma_trouble", "ch_jin_normal", "ch_jin_smile", "ch_jin_surprise", "ch_jin_trouble", "ch_johan_normal", "ch_johan_smile", "ch_johan_surprise", "ch_johan_trouble", "ch_licorice_normal", "ch_licorice_smile", "ch_licorice_surprise", "ch_licorice_trouble", "ch_luca2_normal", "ch_luca2_smile", "ch_luca2_surprise", "ch_luca2_trouble", "ch_luca_normal", "ch_luca_smile", "ch_luca_surprise", "ch_luca_trouble", "ch_lute_normal", "ch_lute_smile", "ch_lute_surprise", "ch_lute_trouble", "ch_madame_normal", "ch_madame_smile", "ch_madame_surprise", "ch_madame_trouble", "ch_mina_normal", "ch_mina_smile", "ch_mina_surprise", "ch_mina_trouble", "ch_mira2_normal", "ch_mira2_smile", "ch_mira2_surprise", "ch_mira2_trouble", "ch_mira_normal", "ch_mira_smile", "ch_mira_surprise", "ch_mira_trouble", "ch_mire_normal", "ch_mire_smile", "ch_mire_surprise", "ch_mire_trouble", "ch_mob_dragoon_f", "ch_mob_dragoon_f_normal", "ch_mob_dragoon_f_smile", "ch_mob_dragoon_f_surprise", "ch_mob_dragoon_f_trouble", "ch_mob_dragoon_m", "ch_mob_dragoon_m_normal", "ch_mob_dragoon_m_smile", "ch_mob_dragoon_m_surprise", "ch_mob_dragoon_m_trouble", "ch_mob_dwarf_f", "ch_mob_dwarf_f_normal", "ch_mob_dwarf_f_smile", "ch_mob_dwarf_f_surprise", "ch_mob_dwarf_f_trouble", "ch_mob_dwarf_m", "ch_mob_dwarf_m_normal", "ch_mob_dwarf_m_smile", "ch_mob_dwarf_m_surprise", "ch_mob_dwarf_m_trouble", "ch_mob_elf_f", "ch_mob_elf_f_normal", "ch_mob_elf_f_smile", "ch_mob_elf_f_surprise", "ch_mob_elf_f_trouble", "ch_mob_elf_m", "ch_mob_elf_m_normal", "ch_mob_elf_m_smile", "ch_mob_elf_m_surprise", "ch_mob_elf_m_trouble", "ch_mob_hero_f", "ch_mob_hero_f_normal", "ch_mob_hero_f_smile", "ch_mob_hero_f_surprise", "ch_mob_hero_f_trouble", "ch_mob_hero_m", "ch_mob_hero_m_normal", "ch_mob_hero_m_smile", "ch_mob_hero_m_surprise", "ch_mob_hero_m_trouble", "ch_mob_hunter_f", "ch_mob_hunter_f_normal", "ch_mob_hunter_f_smile", "ch_mob_hunter_f_surprise", "ch_mob_hunter_f_trouble", "ch_mob_hunter_m", "ch_mob_hunter_m_normal", "ch_mob_hunter_m_smile", "ch_mob_hunter_m_surprise", "ch_mob_hunter_m_trouble", "ch_mob_knight_f", "ch_mob_knight_f_normal", "ch_mob_knight_f_smile", "ch_mob_knight_f_surprise", "ch_mob_knight_f_trouble", "ch_mob_knight_m", "ch_mob_knight_m_normal", "ch_mob_knight_m_smile", "ch_mob_knight_m_surprise", "ch_mob_knight_m_trouble", "ch_mob_mage_f", "ch_mob_mage_f_normal", "ch_mob_mage_f_smile", "ch_mob_mage_f_surprise", "ch_mob_mage_f_trouble", "ch_mob_mage_m", "ch_mob_mage_m_normal", "ch_mob_mage_m_smile", "ch_mob_mage_m_surprise", "ch_mob_mage_m_trouble", "ch_mob_noble_f", "ch_mob_noble_f_normal", "ch_mob_noble_f_smile", "ch_mob_noble_f_trouble", "ch_mob_noble_m", "ch_mob_noble_m_normal", "ch_mob_noble_m_smile", "ch_mob_noble_m_trouble", "ch_mob_novice_f", "ch_mob_novice_f_normal", "ch_mob_novice_f_smile", "ch_mob_novice_f_surprise", "ch_mob_novice_f_trouble", "ch_mob_novice_m", "ch_mob_novice_m_normal", "ch_mob_novice_m_smile", "ch_mob_novice_m_surprise", "ch_mob_novice_m_trouble", "ch_mob_peddler_f", "ch_mob_peddler_f_normal", "ch_mob_peddler_f_smile", "ch_mob_peddler_f_trouble", "ch_mob_peddler_m", "ch_mob_peddler_m_normal", "ch_mob_peddler_m_smile", "ch_mob_peddler_m_trouble", "ch_mob_royal_f", "ch_mob_royal_m", "ch_mob_villager_f", "ch_mob_villager_f_normal", "ch_mob_villager_f_smile", "ch_mob_villager_f_trouble", "ch_mob_villager_m", "ch_mob_villager_m_normal", "ch_mob_villager_m_smile", "ch_mob_villager_m_trouble", "ch_mob_warrior_f", "ch_mob_warrior_f_normal", "ch_mob_warrior_f_smile", "ch_mob_warrior_f_surprise", "ch_mob_warrior_f_trouble", "ch_mob_warrior_m", "ch_mob_warrior_m_normal", "ch_mob_warrior_m_smile", "ch_mob_warrior_m_surprise", "ch_mob_warrior_m_trouble", "ch_nene_normal", "ch_nene_smile", "ch_nene_surprise", "ch_nene_trouble", "ch_nezu_normal", "ch_noel_normal", "ch_noel_smile", "ch_noel_surprise", "ch_noel_trouble", "ch_owner_2_down", "ch_owner_2_normal", "ch_owner_down", "ch_owner_normal", "ch_owner_smile", "ch_owner_soft", "ch_owner_surprise", "ch_owner_teen_normal", "ch_owner_trouble", "ch_pom_normal", "ch_pom_smile", "ch_pom_surprise", "ch_pom_trouble", "ch_popo_normal", "ch_priest_normal", "ch_priest_smile", "ch_priest_surprise", "ch_priest_trouble", "ch_queen_blush", "ch_queen_joy", "ch_queen_normal", "ch_queen_normal_2", "ch_queen_pout", "ch_queen_smile", "ch_queen_surprise", "ch_queen_trouble", "ch_seres_normal", "ch_seres_smile", "ch_seres_surprise", "ch_seres_trouble", "ch_victor_normal", "ch_victor_smile", "ch_victor_surprise", "ch_victor_trouble", "ch_zen_normal", "ch_zen_smile", "ch_zen_surprise", "ch_zen_trouble"]);
 const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_club_table", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
-const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
+const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_joker", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_cas_ui_big", "obj_cas_ui_big_down", "obj_cas_ui_btn", "obj_cas_ui_btn_off", "obj_cas_ui_btn_on", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
 // ---- sprites.js ----
 // ===== Pixel sprites (16x16) =====
 // legend: . clear / o outline / d m l w = main ramp (dark,mid,light,hi)
@@ -26716,18 +26763,24 @@ addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 
 addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 2400, raw: true, sub: '伝説の素材', nodex: true, desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
 addRec('lg_dragon', [['spear_adamant', 1], ['cas_seaheart', 1], ['crys_fire', 1]], 'smith', 19, 4, { id: 'r_lg_dragon_cas', book: 'b_legend' });
 addRec('lg_sage', [['staff_3', 1], ['crys_light', 1], ['crys_dark', 1], ['cas_starsand', 1]], 'smith', 19, 4, { id: 'r_lg_sage_cas', book: 'b_legend' });
+// No.309 カジノ限定のインゴット3品(作者 2026-11-15)。マネキンの一式の材料になる予定。売値は交換の枚数の約15%(換金の道にしない)。
+[['ingot_dragongold','竜金のインゴット','深紅がかった赤金の延べ棒。竜の巣の金を溶かしたと噂される。カジノでしか手に入らない。',2,75],
+ ['ingot_seajade','深海翠のインゴット','深い翠の延べ棒。海の底の光を閉じこめたような色。カジノでしか手に入らない。',3,113],
+ ['ingot_starplat','星白金のインゴット','白金に星の輝きが走る延べ棒。カジノでしか手に入らない最上の金属。',3,150],
+].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, sub: 'カジノ限定のインゴット', nodex: true, desc: d }));
 const casCoinOf = id => IT[id] ? Math.ceil((IT[id].v || 0) * 1.25 / CAS_PRICE) : 0;   // No.297
 function casPrizes() {
-  const late = G.stage >= 3;
+  // 2026-11-15 作者: 店頭で買える品・まだ行けないダンジョンのレアは置かない(ダンジョンの値打ちを守る)。目玉4品は最初から全部並べる。
+  // カジノの品は性能より見た目(集める楽しみ)。カジノ限定のインゴット3品は No.309 で足した(何度でも交換できる)。
   return [
-    late ? { id: 'cas_starbow', q: 3, c: 10000, once: 1, hot: 1 } : { id: 'cas_tidesword', q: 3, c: 6000, once: 1, hot: 1 },
-    late ? { id: 'cas_starsand', q: 2, c: 4800, once: 1, hot: 1 } : { id: 'cas_seaheart', q: 2, c: 3200, once: 1, hot: 1 },
-    // No.297: 店でも値のつく品は「売値×1.25 を1枚の値段で割って切り上げ」(作者: 売値より少し高く)
-    ...['h_gapple', 'herb_world', 'crys_light', 'ingot_mithril', 'ruby'].map(id => ({ id, q: 2, c: casCoinOf(id) })),
-    // No.298: まだ行けないダンジョンのレア(章ごとに入れ替え)。第5章は行けない所がないので、出にくい「幻」
-    ...(G.stage >= 4 ? ['r_lordhorn', 'r_dragonorb', 'r_lifefruit'] : G.stage >= 3 ? ['r_dscale', 'r_sprout', 'r_sap'] : ['r_moondrop', 'r_windfeather', 'r_thunder'])
-      .map(id => ({ id, q: 2, c: casCoinOf(id) })),
-  ].filter(p => IT[p.id] && p.c > 0);
+    { id: 'cas_tidesword', q: 3, c: 6000, once: 1, hot: 1 },
+    { id: 'cas_starbow', q: 3, c: 10000, once: 1, hot: 1 },
+    { id: 'cas_seaheart', q: 2, c: 3200, once: 1, hot: 1 },
+    { id: 'cas_starsand', q: 2, c: 4800, once: 1, hot: 1 },
+    { id: 'ingot_dragongold', q: 1, c: 100 },   // No.309
+    { id: 'ingot_seajade', q: 1, c: 150 },
+    { id: 'ingot_starplat', q: 1, c: 200 },
+].filter(p => IT[p.id] && p.c > 0);
 }
 
 // ---------- 場面(初めての夜・毎晩のあいさつ) ----------
@@ -26799,7 +26852,7 @@ function casEnter() {
     `<div class="cas-top"><div class="cas-where"><b>港のクラブ</b><small id="cassub"></small></div><div class="cas-bar" id="casbar"></div><button class="cas-x" data-act="cs_back" id="casx">帰る</button></div>` +
     `<div class="cas-main" id="casmain"></div><div class="cas-fx" id="casfx"></div><div class="cas-pop" id="caspop"></div>`;
   document.body.appendChild(el);
-  Object.assign(CAS, { on: true, el, view: 'hall', fast: false, anim: false, book: null, rl: null, bj: null, sl: null });
+  Object.assign(CAS, { on: true, el, view: 'hall', fast: false, anim: false, book: null, rl: null, bj: null, sl: null, pk: null, hl: null, bc: null });
   casResize(); window.addEventListener('resize', casResize);
   el.addEventListener('pointerdown', () => { if (CAS.anim && CAS.view !== 'slot') CAS.fast = true; });
   if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
@@ -26807,11 +26860,11 @@ function casEnter() {
 }
 function casinoClose() {
   if (!CAS.on || CAS.anim) return;
-  if (CAS.bj && CAS.bj.state !== 'bet') { toast('<div>勝負の途中です。最後まで</div>'); return; }
+  if ((CAS.bj && CAS.bj.state !== 'bet') || (CAS.pk && CAS.pk.state !== 'bet') || (CAS.hl && CAS.hl.state !== 'bet') || CAS.anim) { toast('<div>勝負の途中です。最後まで</div>'); return; }
   if (CAS.sl && CAS.sl.busy) return;
   casRlRefund(); casSlotStopLoop();
   CAS.on = false; window.removeEventListener('resize', casResize);
-  CAS.el.remove(); CAS.el = null; CAS.bj = null; CAS.rl = null; CAS.sl = null; save(); render();
+  CAS.el.remove(); CAS.el = null; CAS.bj = null; CAS.rl = null; CAS.sl = null; CAS.pk = null; CAS.hl = null; CAS.bc = null; save(); render();
   if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
 }
 function casResize() {
@@ -26837,7 +26890,7 @@ function casDraw() {
   if (!CAS.on) return;
   const c = casSt(), v = CAS.view, M = $('#casmain');
   $('#casbar').innerHTML = casBar();
-  $('#cassub').textContent = { hall: `通った夜 ${c.nights}`, slot: 'スロット', rl: 'ルーレット', bj: 'ブラックジャック', prize: '景品の棚', book: 'ルールブック', buy: 'コインを買う' }[v] || '';
+  $('#cassub').textContent = { hall: `通った夜 ${c.nights}`, slot: 'スロット', rl: 'ルーレット', bj: 'ブラックジャック', pk: 'ドローポーカー', hl: 'ハイ&ロー', bc: 'バカラ', prize: '景品の棚', book: 'ルールブック', buy: 'コインを買う' }[v] || '';
   $('#casx').textContent = v === 'hall' ? '帰る' : '戻る';
   CAS.el.dataset.view = v;
   if (v === 'hall') M.innerHTML = casHallView();
@@ -26847,6 +26900,9 @@ function casDraw() {
   else if (v === 'slot') { M.innerHTML = casSlotView(); casSlotPaint(); }
   else if (v === 'rl') { M.innerHTML = casRlView(); casRlAfterDraw(); }
   else if (v === 'bj') M.innerHTML = casBjView();
+  else if (v === 'pk') M.innerHTML = casPkView();
+  else if (v === 'hl') M.innerHTML = casHlView();
+  else if (v === 'bc') M.innerHTML = casBcView();
 }
 function casRefreshBar() { const b = $('#casbar'); if (b) b.innerHTML = casBar(); }
 // 払い戻しを、数字が増えていく形で見せる
@@ -26881,6 +26937,9 @@ function casHallView() {
     B('slot', 'スロット', `積立 ${fmt(casPot())}枚`, casImg('sym_seven'), 'hot') +
     B('rl', 'ルーレット', 'アメリカ式', casImg('chip_red')) +
     B('bj', 'ブラックジャック', '21に近い方が勝ち', casImg('suit_spade')) +
+    B('pk', 'ドローポーカー', 'ジョーカー入り・ダブルアップ', casImg('card_joker')) +
+    B('hl', 'ハイ&ロー', '続けるほど倍', casImg('suit_heart')) +
+    B('bc', 'バカラ', 'プレイヤーかバンカーか', casImg('suit_diamond')) +
     B('buy', 'コインを買う', `一枚${CAS_PRICE}G`, casImg('sym_coin'), 'calm') +
     B('prize', '景品の棚', 'ここだけの品', casImg('sym_gem'), 'calm') +
     B('book', 'ルールブック', '遊び方と配当', casImg('rulebook_cover'), 'calm') +
@@ -26899,7 +26958,7 @@ function casPrizeView() {
     return `<div class="cas-prize${p.hot ? ' hot' : ''}">${ico(p.id, p.q)}<div class="cas-pz-t"><b>${it.name}</b><small>${p.hot ? '<em>目玉・ひとつだけ</em> ' : ''}${esc(it.desc || '')}</small></div>` +
       `<button class="cas-pzb${p.hot ? ' hot' : ''}" data-act="cs_prize" data-v="${p.id}"${ok ? '' : ' disabled'}>${done ? '交換済み' : `<img src="${casImg('sym_coin')}" alt="">${fmt(p.c)}`}</button></div>`;
   }).join('');
-  return `<div class="cas-pane">${casSay('madame', 'smile', '棚の目玉は、章が変わると入れ替えるよ。換えた品は店の蔵に送っておく')}<div class="cas-prizes">${rows}</div></div>`;
+  return `<div class="cas-pane">${casSay('madame', 'smile', 'ここにあるのは、よそじゃ手に入らない品ばかりさ。換えた品は店の蔵に送っておく')}<div class="cas-prizes">${rows}</div></div>`;
 }
 function casPrize(id) {
   const c = casSt(), p = casPrizes().find(x => x.id === id); if (!p) return;
@@ -26916,6 +26975,9 @@ const casBook = () => ({
   slot: ['スロット', `<p>台は3つ。港の台は1回に1・3・5枚。深海の台は1枚が4枚分、天空の竜の台は8枚分で、そろった時のコインも同じだけ増える(確率は同じ)。</p><p>1回に1・3・5枚入れて、レバーを引く。リールが回ったら、<b>ストップを押して1本ずつ止める</b>(どの順でもよい)。</p><p>そろう線: 1枚=真ん中の横一本/3枚=横三本/5枚=横三本と斜め二本。線の上に同じ絵柄が3つそろうと払い戻し(賭けた枚数×配当)。</p><table><tr><th>絵柄</th><th>役</th></tr><tr><td><img src="${casImg('sym_crown')}" alt="">王冠</td><td>プレミアBIG(×${SL_ROLE.crown.pay})+確変${SL_ROLE.crown.kaku}回。5枚賭けなら積立も丸ごと</td></tr><tr><td><img src="${casImg('sym_dragon')}" alt="">竜</td><td>BIG(×${SL_ROLE.dragon.pay})+確変${SL_ROLE.dragon.kaku}回</td></tr><tr><td><img src="${casImg('sym_seven')}" alt="">紋章</td><td>BAR(×${SL_ROLE.seven.pay})+確変${SL_ROLE.seven.kaku}回</td></tr>${['gem', 'sword', 'coin', 'potion'].map(k => `<tr><td><img src="${casImg('sym_' + k)}" alt="">${CAS_SYM_N[k]}</td><td>×${SL_ROLE[k].pay}</td></tr>`).join('')}<tr><td><img src="${casImg('sym_fish')}" alt="">魚</td><td>リプレイ(同じ枚数で、もう1回ただで回せる)</td></tr><tr><td><img src="${casImg('sym_bell')}" alt="">金の鈴</td><td>鈴が鳴って、無料の回転5回</td></tr></table><p><b>確変</b>: ボーナスのあとは確変。確変中は<b>はずれなし</b>(リプレイか小役か、竜のBIG)。どこで押してもそろう。確変中に竜がそろえば、またBIGで確変${SL_ROLE.dragon.kaku}回に戻る(連チャン)。</p><p><b>役はレバーを引いた時に決まっている。</b>ふだんは押した所から4コマまで滑ってそろう。それより遠いと取りこぼす。魚と薬は、どこで押してもそろう。</p><p><b>ランプ</b>: 上の羅針盤と両脇のランタンが灯ったら、王冠・竜・紋章のどれかがそろう番。光っている絵柄を狙って押す(ボーナスの絵柄は大きく滑ってくれる)。そろえるまでランプは消えない。</p><p><b>オート</b>: 10回・50回・ボーナスまで。止めるのも自動。ランプが灯ったらオートは止まる。</p><p><b>積立</b>: 賭けたコインの3%と、港の客が毎晩遊んだ分が足されて育つ。5枚賭けで王冠がそろうと丸ごともらえ、そのあと${CAS_POT0}枚から。</p><p>PC: スペース=レバー/ストップ、←↓→ または Z・X・C=左・中・右のストップ。</p>`],
   rl: ['ルーレット', `<p>アメリカ式。ポケットは 0・00・1〜36 の38。台にチップを置いて「回す」。盤に切り替わり、玉が止まった数字で決まる。置いたチップは、当たれば配当と一緒に戻る。</p><table><tr><th>賭け方</th><th>置く所</th><th>配当</th></tr><tr><td>一点</td><td>数字の上</td><td>35倍</td></tr><tr><td>二点</td><td>2つの数字の境目</td><td>17倍</td></tr><tr><td>三点</td><td>横一列の左の端</td><td>11倍</td></tr><tr><td>四点</td><td>4つの数字の角</td><td>8倍</td></tr><tr><td>五点</td><td>0・00 の下の線(0・00・1・2・3)</td><td>6倍</td></tr><tr><td>六点</td><td>左の端の、2列の境目</td><td>5倍</td></tr><tr><td>12の組・列</td><td>1st 12 など・2to1</td><td>2倍</td></tr><tr><td>赤黒・偶奇・前後半</td><td>外側の枠</td><td>1倍</td></tr></table><p>0 と 00 は赤でも黒でもない(外側の賭けは負け)。</p>`],
   bj: ['ブラックジャック', `<p>カードの合計を21に近づけ、ディーラーのジルより大きければ勝ち。21を超えたら負け(バスト)。</p><p>A は1か11。J・Q・K は10。</p><p><b>ブラックジャック</b>(最初の2枚で A と10の札)は1.5倍。</p><p>ヒット=もう1枚。スタンド=止める。ダブル=最初の2枚の時だけ、賭けを倍にして1枚だけ引く。スプリット=最初の2枚が同じ数の時、2つの手に分ける(1回だけ。A を分けたら1枚ずつ)。</p><p>ディーラーは17以上で止まる。引き分けは賭けが戻る。札は6組を混ぜて使う。</p>`],
+  pk: ['ドローポーカー', `<p>ジョーカー1枚を入れた53枚。5枚配られたら、残す札を押して1回だけ引き直す。ジョーカーはどの札にもなれる。賭けは1・5・20・50・100枚。</p><p>配当(賭けの何倍が戻るか): ロイヤル×250・ファイブカード×100・ストレートフラッシュ×50・フォーカード×20・フルハウス×7・フラッシュ×4・ストレート×3・スリーカード×2・ツーペア×1・Jより上のワンペア×1。</p><p>役が出たら、ダブルアップ(ハイ&ロー)に勝ち分を賭けられる。</p>`],
+  hl: ['ハイ&ロー', `<p>表の札より、次の札が上か下かを当てる。Aが一番上、2が一番下。当たるたびに倍(×2・×4・×8…)。いつでも降りて受け取れる。同じ数は引き分けで、もう一度。</p><p>5回続けて当てたら打ち止め(×32)。はずれたら、それまでの分はなくなる。</p>`],
+  bc: ['バカラ', `<p>プレイヤーとバンカーのどちらが9に近いかを当てる。札の数は、Aが1、10と絵札が0、合計の下1桁。3枚目を引くかは決まりどおりにディーラーが配る。</p><p>配当: プレイヤー×2・バンカー×1.95・タイ×9。タイの時、プレイヤーとバンカーへの賭けは戻る。</p>`],
 });
 function casBookView() {
   const k = CAS.book || 'cover';
@@ -26956,7 +27018,7 @@ function casSlotView() {
     `<i class="cas-lamp c" style="left:${pct(SLW.compass[0], SLW.w)};top:${pct(SLW.compass[1], SLW.h)}"></i><i class="cas-lamp l"></i><i class="cas-lamp r"></i>` +
     `<div class="cas-aim" id="casaim">${s.carry ? casAimTxt(s.carry) : ''}</div>${stops}` +
     `<button class="cas-lever" data-act="cs_spin" aria-label="レバー"><img src="${casImg('slot_lever' + SLW.k)}" alt="" id="caslever" draggable="false"></button></div></div>` +
-    `<div class="cas-ctrl"><div class="cas-kaku" id="caskaku"${s.kaku ? '' : ' hidden'}>確変 <b>${s.kaku}</b>回</div><div class="cas-msg" id="casmsg">${S.msg || casSlotIdleMsg()}</div><div class="cas-ceil" id="casceil">${s.kaku ? '' : `天井まで あと${Math.max(0, SL_CEIL - (s.ceil || 0))}回`}</div>` +
+    `<div class="cas-ctrl"><div class="cas-kaku" id="caskaku"${s.kaku ? '' : ' hidden'}>確変 <b>${s.kaku}</b>回</div><div class="cas-msg" id="casmsg">${S.msg || casSlotIdleMsg()}</div><div class="cas-ceil" id="casceil"></div>` +
     casMachH() +
     `<div class="cas-bets">${[1, 3, 5].map(n => `<button class="cas-cb${s.bet === n ? ' on' : ''}" data-act="cs_sbet" data-v="${n}"><b>${n * casMach().mul}枚</b><small>${n === 1 ? '真ん中1本' : n === 3 ? '横3本' : '5本・積立'}</small></button>`).join('')}</div>` +
     `<button class="cas-big hot" id="casspin" data-act="cs_spin"><b>レバー</b><small id="casspinsub">${casSpinSub()}</small></button>` +
@@ -27144,7 +27206,7 @@ function casSlotResult() {
   casAutoAfter({ big: res.big || res.bar, lamp: !!s.carry, lampNew: lampLater });
 }
 const SL_CEIL = 600;   // 天井: ボーナスなしでこの回数回すと、次は必ずBIG
-function casCeilPaint() { const s = casSt().slot, e = $('#casceil'); if (e) e.textContent = s.kaku ? '' : `天井まで あと${Math.max(0, SL_CEIL - (s.ceil || 0))}回`; }
+function casCeilPaint() { const e = $('#casceil'); if (e) e.textContent = ''; }   // 作者: 天井は残し、回数は画面に出さない
 function casKakuPaint() {
   const s = casSt().slot, k = $('#caskaku'), el = $('#casslot');
   if (k) { k.hidden = !s.kaku; k.innerHTML = `確変 <b>${s.kaku}</b>回`; }
@@ -27184,7 +27246,7 @@ const RL_DEG = 360 / 38;
 // 台(roulette_board・1024×1536)の升目の画素。roulette_layout.json と同じ
 const RL_OUT = { col1: [380, 1320, 560, 1410], col2: [560, 1320, 740, 1410], col3: [740, 1320, 920, 1410], dz1: [250, 240, 380, 600], dz2: [250, 600, 380, 960], dz3: [250, 960, 380, 1320], low: [120, 240, 250, 420], even: [120, 420, 250, 600], red: [120, 600, 250, 780], black: [120, 780, 250, 960], odd: [120, 960, 250, 1140], high: [120, 1140, 250, 1320] };
 const RL_PAY = { n: 35, sp: 17, st: 11, cr: 8, five: 6, sx: 5, dz: 2, col: 2, even: 1 };
-const RL_CHIPS = [[5, 'white'], [20, 'red'], [50, 'blue'], [200, 'green'], [500, 'black']];   // No.297: コイン1枚5G(20G の時のおよそ4倍)
+const RL_CHIPS = [[1, 'white'], [5, 'red'], [20, 'green'], [50, 'black'], [100, 'white']];   // No.302: 1・5・20・50・100枚(作者。100は金)   // No.297: コイン1枚5G(20G の時のおよそ4倍)
 const rlColor = n => n === '0' || n === '00' ? 'g' : RL_RED.has(+n) ? 'r' : 'k';
 const rlCell = n => { if (n === '0') return [515, 180]; if (n === '00') return [785, 180]; const v = +n - 1; return [380 + (v % 3) * 180 + 90, 240 + Math.floor(v / 3) * 90 + 45]; };
 // 賭けの中身: 当たる数字の一覧・配当・チップを置く位置(台の画素)
@@ -27233,7 +27295,7 @@ function rlKeyAt(x, y) {
   if (vr !== null) return 'sp:' + [N(vr, c), N(vr + 1, c)].join(',');
   return 'n:' + N(r, c);
 }
-function casRlState() { return CAS.rl || (CAS.rl = { phase: 'bet', chip: 5, bets: {}, last: null, rot: 0, ball: null, res: null, msg: '' }); }
+function casRlState() { return CAS.rl || (CAS.rl = { phase: 'bet', chip: 1, bets: {}, last: null, rot: 0, ball: null, res: null, msg: '' }); }
 const rlTot = R => Object.values(R.bets).reduce((a, b) => a + b, 0);
 function casRlView() {
   const R = casRlState(), c = casSt(), tot = rlTot(R);
@@ -27248,7 +27310,7 @@ function casRlView() {
   }
   return `<div class="cas-game cas-rlg"><div class="cas-stage"><div class="cas-board" id="casboard"><img src="${casImg('roulette_board')}" alt="ルーレットの台" draggable="false"><div class="cas-chipl" id="casbets"></div></div></div>` +
     `<div class="cas-ctrl"><div class="cas-msg" id="casmsg">${R.msg || 'チップを選んで、台に置く'}</div>` +
-    `<div class="cas-chips">${RL_CHIPS.map(([v, k]) => `<button class="cas-chip${R.chip === v ? ' on' : ''}" data-act="cs_chip" data-v="${v}"><img src="${casImg('chip_' + k)}" alt=""><b>${v}</b></button>`).join('')}</div>` +
+    `<div class="cas-chips">${RL_CHIPS.map(([v, k]) => `<button class="cas-chip${R.chip === v ? ' on' : ''}${v === 100 ? ' gold' : ''}" data-act="cs_chip" data-v="${v}"><img src="${casImg('chip_' + k)}" alt=""><b>${v}</b></button>`).join('')}</div>` +
     `<div class="cas-row"><button class="cas-cb" data-act="cs_rlclear"${tot ? '' : ' disabled'}><b>やめる</b><small>チップを戻す</small></button><button class="cas-cb" data-act="cs_rlagain"${R.last && !tot ? '' : ' disabled'}><b>同じ賭け</b><small>前と同じ</small></button></div>` +
     `<button class="cas-big hot" data-act="cs_rlspin"${tot ? '' : ' disabled'}><b>回す</b><small>${fmt(tot)}枚 賭けている</small></button>` +
     `<div class="cas-hist">${hist || '<small>出た目がここに並ぶ</small>'}</div></div></div>`;
@@ -27383,12 +27445,12 @@ function bjCardH(c, i, down, nw) {
   const nc = nw ? ' new' : '';
   if (down) return `<div class="cas-card${nc}" style="--i:${i}"><img src="${casImg('card_back')}" alt="伏せた札"></div>`;
   const red = c.s === 'heart' || c.s === 'diamond', R = c.r.toUpperCase();
-  if ('ajqk'.includes(c.r)) return `<div class="cas-card${nc}" style="--i:${i}"><img src="${casImg('card_' + c.s + '_' + c.r)}" alt="${BJ_SUIT_C[c.s]}${R}"></div>`;
+  if ('ajqk'.includes(c.r)) return `<div class="cas-card${nc}" style="--i:${i}"><img src="${casImg('card_' + c.s + '_' + c.r)}" alt="${BJ_SUIT_C[c.s]}${R}"><span class="cc-fc${red ? ' red' : ''}"><b>${R}</b><img src="${casImg('suit_' + c.s)}" alt=""></span></div>`;   // No.302(作者): 絵札は左上の丸に文字とマーク(重ねた時も左の端で読める・数字札と同じ並び)
   const n = +c.r, src = casImg('suit_' + c.s);
   const pips = BJ_PIPS[n].map(([x, y]) => `<img src="${src}" alt=""${y > 50 ? ' class="f"' : ''} style="left:${x}%;top:${y}%">`).join('');
   return `<div class="cas-card num${red ? ' red' : ''}${nc}" style="--i:${i};background-image:url(${casImg('card_face')})"><span class="cc-tl">${R}<img src="${casImg('suit_' + c.s)}" alt=""></span><span class="cc-pips n${n}">${pips}</span><span class="cc-br">${R}<img src="${casImg('suit_' + c.s)}" alt=""></span></div>`;
 }
-function casBjState() { if (!CAS.bj) sfx('cas_shuf2'); return CAS.bj || (CAS.bj = { bet: 20, state: 'bet', shoe: bjShoe(), d: [], hands: [], cur: 0, msg: '', face: 'normal' }); }
+function casBjState() { if (!CAS.bj) sfx('cas_shuf2'); return CAS.bj || (CAS.bj = { bet: 1, state: 'bet', shoe: bjShoe(), d: [], hands: [], cur: 0, msg: '', face: 'normal' }); }
 function bjDraw(B) { if (B.shoe.length < 52) { B.shoe = bjShoe(); B.msg = '札を混ぜ直しました'; sfx('cas_shuf1'); } return B.shoe.pop(); }
 function casBjView() {
   const B = casBjState(), c = casSt(), play = B.state === 'play';
@@ -27401,7 +27463,7 @@ function casBjView() {
     acts = `<div class="cas-row"><button class="cas-big hot" data-act="cs_bj" data-v="hit"><b>ヒット</b><small>もう1枚</small></button><button class="cas-big" data-act="cs_bj" data-v="stand"><b>スタンド</b><small>止める</small></button></div>` +
       `<div class="cas-row"><button class="cas-cb" data-act="cs_bj" data-v="double"${canD ? '' : ' disabled'}><b>ダブル</b><small>倍にして1枚</small></button><button class="cas-cb" data-act="cs_bj" data-v="split"${canS ? '' : ' disabled'}><b>スプリット</b><small>2つに分ける</small></button></div>`;
   } else {
-    acts = `<div class="cas-msg">賭ける枚数</div><div class="cas-chips">${RL_CHIPS.map(([n, k]) => `<button class="cas-chip${B.bet === n ? ' on' : ''}" data-act="cs_bjbet" data-v="${n}"><img src="${casImg('chip_' + k)}" alt=""><b>${n}</b></button>`).join('')}</div>` +
+    acts = `<div class="cas-msg">賭ける枚数</div><div class="cas-chips">${RL_CHIPS.map(([n, k]) => `<button class="cas-chip${B.bet === n ? ' on' : ''}${n === 100 ? ' gold' : ''}" data-act="cs_bjbet" data-v="${n}"><img src="${casImg('chip_' + k)}" alt=""><b>${n}</b></button>`).join('')}</div>` +
       `<button class="cas-big hot" data-act="cs_bj" data-v="deal"${c.coins >= B.bet && B.state === 'bet' ? '' : ' disabled'}><b>${B.d.length ? 'もう一勝負' : '配る'}</b><small>${B.bet}枚 賭ける</small></button>`;
   }
   return `<div class="cas-game cas-bjg"><div class="cas-stage"><div class="cas-felt"><img class="cas-dealer" src="${chURL('dealer', B.face)}" alt="ジル"><div class="cas-dbub">${esc(B.msg || 'お賭けください')}</div>${dh}<div class="cas-phands n${B.hands.length}">${ph}</div></div></div>` +
@@ -27478,6 +27540,7 @@ function casAct(a, v) {
     if (CAS.anim || (CAS.sl && CAS.sl.busy)) return;
     if (CAS.view === 'hall') { casinoClose(); return; }
     if (CAS.view === 'bj' && CAS.bj && CAS.bj.state !== 'bet') { toast('<div>勝負の途中です。最後まで</div>'); return; }
+    if ((CAS.view === 'pk' && CAS.pk && CAS.pk.state !== 'bet') || (CAS.view === 'hl' && CAS.hl && CAS.hl.state !== 'bet')) { toast('<div>勝負の途中です。最後まで</div>'); return; }
     if (CAS.view === 'rl') { casRlRefund(); if (CAS.rl) CAS.rl.phase = 'bet'; }
     casSlotStopLoop(); CAS.auto = null; CAS.view = 'hall'; CAS.book = null; sfx('tap'); casDraw(); return;
   }
@@ -27498,14 +27561,26 @@ function casAct(a, v) {
   if (a === 'cs_rlback') { casRlState().phase = 'bet'; sfx('tap'); casDraw(); return; }
   if (a === 'cs_bjbet') { casBjState().bet = +v; sfx('tap'); casDraw(); return; }
   if (a === 'cs_bj') { casBj(v); return; }
+  if (a === 'cs_pkbet') { if (casPkState().state === 'bet') { CAS.pk.bet = +v; sfx('tap'); casDraw(); } return; }
+  if (a === 'cs_pk') { casPk(v); return; }
+  if (a === 'cs_hlbet') { if (casHlState().state === 'bet') { CAS.hl.bet = +v; sfx('tap'); casDraw(); } return; }
+  if (a === 'cs_hl') { casHl(v); return; }
+  if (a === 'cs_bcbet') { if (casBcState().state === 'bet') { CAS.bc.bet = +v; sfx('tap'); casDraw(); } return; }
+  if (a === 'cs_bcside') { if (casBcState().state === 'bet') { CAS.bc.side = v; sfx('tap'); casDraw(); } return; }
+  if (a === 'cs_bc') { casBc(v); return; }
 }
 // ストップとレバーは、押した瞬間に効かせる(指を離すのを待たない)
 document.addEventListener('pointerdown', e => {
   if (!CAS.on) return;
   const b = e.target.closest && e.target.closest('#casscene [data-act="cs_stop"], #casscene .cas-lever');
-  if (!b) return;
+  if (!b) {   // No.302(作者): スマホは、台そのものをタップしても回る(PC のスペースキーと同じ)
+    const body = CAS.view === 'slot' && e.target.closest && e.target.closest('#casscene .cas-slot');
+    if (body) { e.preventDefault(); e.stopPropagation(); casSpin(); }
+    return;
+  }
   e.preventDefault(); e.stopPropagation();
-  if (b.dataset.act === 'cs_stop') casStopReel(+b.dataset.v); else casSpin();
+  if (b.dataset.act === 'cs_stop' && casSl() && !casSl().busy) casSpin();   // 止まっている時は、リールやSTOPを押しても回る
+  else if (b.dataset.act === 'cs_stop') casStopReel(+b.dataset.v); else casSpin();
 }, true);
 document.addEventListener('click', e => {
   if (!CAS.on) return;
@@ -27532,6 +27607,188 @@ zen smile 「夜の川にも、魚はおるでな。……この札を見せれ�
 (古い紹介状をもらった。港のクラブは毎晩開いている。夜に町の「施設」から行ける。)
 `);
 try { window.__cas = { storyHook, storyPlay, STORY, CAS, casSt, casinoOpen, casinoClose, casAct, casEnter, rlKeyAt, rlBet, bjTotal, casSpin, casStopReel, casRlSpin, casBj, casSl, slChoose, slSym, slLinesFor, slAligned, SL_ROLE, musicKey, casPrizes, IT }; } catch (e) { /* tests only */ }
+
+// ---- cascard.js ----
+// ---------- カードゲーム第2弾(No.302): ドローポーカー・ハイ&ロー・バカラ ----------
+// 決まりは「00_コインの経済圏_決まったこと」7。賭けは 1・5・20・50・100枚。札の絵は bjCardH(casino.js)を使う。
+const CC_BETS = [1, 5, 20, 50, 100];
+const CC_RV = r => r === 'a' ? 14 : r === 'j' ? 11 : r === 'q' ? 12 : r === 'k' ? 13 : +r;   // ポーカー・ハイ&ローの強さ(A が一番上)
+function ccDeck(joker) { const a = []; for (const s of BJ_SUITS) for (const r of BJ_RANKS) a.push({ s, r }); if (joker) a.push({ s: 'joker', r: 'joker' }); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function ccCardH(c, i, down, nw) {
+  if (c && c.r === 'joker' && !down) return `<div class="cas-card${nw ? ' new' : ''}" style="--i:${i}"><img src="${casImg('card_joker')}" alt="ジョーカー"></div>`;
+  return bjCardH(c, i, down, nw);
+}
+const ccBetRow = (cur, act) => `<div class="cas-chips cc-bets">${CC_BETS.map((n, i) => `<button class="cas-chip${cur === n ? ' on' : ''}${n === 100 ? ' gold' : ''}" data-act="${act}" data-v="${n}"><img src="${casImg('chip_' + ['white', 'red', 'green', 'black', 'white'][i])}" alt=""><b>${n}</b></button>`).join('')}</div>`;
+function ccWin(back, net) {
+  const c = casSt(); c.coins += back; if (net > 0) casWinRecord(net);
+  if (net > 0) { const big = net >= 50; sfx(big ? 'great' : 'cas_win'); casPopWin(back, big); if (big) casFlash('#fff2c0'); }
+  casRankCheck(); save(); casRefreshBar();
+}
+
+// ---------- ドローポーカー ----------
+const PK_ROLES = [   // [名前, 倍(戻り)]
+  ['ロイヤル', 250], ['ファイブカード', 100], ['ストレートフラッシュ', 50], ['フォーカード', 20], ['フルハウス', 7],
+  ['フラッシュ', 4], ['ストレート', 3], ['スリーカード', 2], ['ツーペア', 1], ['ワンペア(J以上)', 1],
+];
+function pkEval5(h) {   // ジョーカーなしの5枚 → PK_ROLES の番号(-1 = 役なし)
+  const v = h.map(c => CC_RV(c.r)).sort((a, b) => a - b), cnt = {};
+  for (const x of v) cnt[x] = (cnt[x] || 0) + 1;
+  const g = Object.values(cnt).sort((a, b) => b - a), fl = h.every(c => c.s === h[0].s);
+  const uniq = g.length === 5, st = uniq && (v[4] - v[0] === 4 || v.join() === '2,3,4,5,14');
+  if (g[0] === 5) return 1;
+  if (st && fl) return v[0] === 10 ? 0 : 2;
+  if (g[0] === 4) return 3;
+  if (g[0] === 3 && g[1] === 2) return 4;
+  if (fl) return 5; if (st) return 6; if (g[0] === 3) return 7;
+  if (g[0] === 2 && g[1] === 2) return 8;
+  if (g[0] === 2) { const p = +Object.keys(cnt).find(k => cnt[k] === 2); return p >= 11 ? 9 : -1; }
+  return -1;
+}
+function pkEval(h) {   // ジョーカーはどの札にもなれる(一番よい役)
+  const ji = h.findIndex(c => c.r === 'joker'); if (ji < 0) return pkEval5(h);
+  let best = -1;
+  for (const s of BJ_SUITS) for (const r of BJ_RANKS) { const t = h.slice(); t[ji] = { s, r }; const e = pkEval5(t); if (e >= 0 && (best < 0 || e < best)) best = e; }
+  // ファイブカード(同じ数4枚+ジョーカー)は、上の置き換えでは同じ札が2枚になるので数だけで見る
+  const rest = h.filter((_, i) => i !== ji).map(c => c.r); if (rest.every(r => r === rest[0])) best = 1;
+  return best;
+}
+function casPkState() { if (!CAS.pk) sfx('cas_shuf2'); return CAS.pk || (CAS.pk = { bet: 1, state: 'bet', hand: [], hold: [false, false, false, false, false], deck: null, role: -1, msg: '', face: 'normal', nw: -1 }); }
+function casPkView() {
+  const P = casPkState(), c = casSt();
+  const pay = PK_ROLES.map(([n, m], i) => `<li class="${P.role === i && P.state !== 'draw' ? 'won' : ''}"><span>${n}</span><b>×${m}</b></li>`).join('');
+  const cards = P.hand.map((cd, i) => `<button class="cc-slot${P.hold[i] ? ' hold' : ''}" data-act="cs_pk" data-v="h${i}"${P.state === 'draw' ? '' : ' disabled'}>${ccCardH(cd, i, false, P.nw === i || P.nw === 9)}<span class="cc-hold">残す</span></button>`).join('');
+  let acts;
+  if (P.state === 'draw') acts = `<div class="cas-msg">残す札を押して、引き直す</div><button class="cas-big hot" data-act="cs_pk" data-v="draw"><b>引き直す</b><small>${P.hold.filter(Boolean).length}枚 残す</small></button>`;
+  else if (P.state === 'win') acts = `<div class="cas-row"><button class="cas-big hot" data-act="cs_pk" data-v="dbl"><b>ダブルアップ</b><small>${fmt(P.won)}枚を賭けてハイ&ロー</small></button><button class="cas-big" data-act="cs_pk" data-v="take"><b>受け取る</b><small>${fmt(P.won)}枚</small></button></div>`;
+  else acts = `<div class="cas-msg">賭ける枚数</div>${ccBetRow(P.bet, 'cs_pkbet')}<button class="cas-big hot" data-act="cs_pk" data-v="deal"${c.coins >= P.bet ? '' : ' disabled'}><b>${P.hand.length ? 'もう一勝負' : '配る'}</b><small>${P.bet}枚 賭ける</small></button>`;
+  return `<div class="cas-game cas-bjg cas-pkg"><div class="cas-stage"><div class="cas-felt"><img class="cas-dealer" src="${chURL('dealer', P.face)}" alt="ジル"><div class="cas-dbub">${esc(P.msg || 'お賭けください')}</div><ul class="cas-blist cc-pay">${pay}</ul><div class="cc-row5">${cards}</div></div></div>` +
+    `<div class="cas-ctrl">${acts}</div></div>`;
+}
+async function casPk(a) {
+  const P = casPkState(), c = casSt(); if (CAS.anim) return;
+  if (a === 'deal') {
+    if (P.state !== 'bet' || c.coins < P.bet) return;
+    c.coins -= P.bet; c.used += P.bet; casRefreshBar();
+    P.deck = ccDeck(true); P.hand = []; P.hold = [false, false, false, false, false]; P.role = -1; P.face = 'normal'; P.msg = '配ります'; P.state = 'deal'; CAS.anim = true; CAS.fast = false;
+    sfx('cas_deal4');
+    for (let i = 0; i < 5; i++) { await casWait(i ? 230 : 180); P.hand.push(P.deck.pop()); P.nw = i; casDraw(); }
+    await casWait(200); CAS.anim = false;
+    const r = pkEval(P.hand); P.state = 'draw'; P.msg = r >= 0 ? `${PK_ROLES[r][0]}が見えています` : 'どれを残します?';
+    if (r >= 0) P.hold = pkAutoHold(P.hand); casDraw(); return;
+  }
+  if (P.state === 'draw' && a[0] === 'h') { const i = +a.slice(1); P.hold[i] = !P.hold[i]; P.nw = -1; sfx('tap'); casDraw(); return; }
+  if (a === 'draw' && P.state === 'draw') {
+    CAS.anim = true; P.state = 'deal'; P.msg = '……';
+    for (let i = 0; i < 5; i++) if (!P.hold[i]) { await casWait(200); P.hand[i] = P.deck.pop(); P.nw = i; sfx('cas_deal'); casDraw(); }
+    await casWait(300); CAS.anim = false;
+    const r = pkEval(P.hand); P.role = r;
+    if (r < 0) { P.state = 'bet'; P.face = 'smile'; P.msg = '役なし。わたしの勝ちです'; sfx('mg_miss'); save(); casDraw(); return; }
+    P.won = P.bet * PK_ROLES[r][1]; P.state = 'win'; P.face = r <= 3 ? 'surprise' : r <= 6 ? 'trouble' : 'normal';
+    P.msg = r <= 3 ? `${PK_ROLES[r][0]}……!` : `${PK_ROLES[r][0]}です`;
+    sfx(r <= 3 ? 'great' : 'cas_win'); if (r <= 3) casFlash('#fff2c0'); casDraw(); return;
+  }
+  if (P.state !== 'win') return;
+  if (a === 'take') { const n = P.won; P.state = 'bet'; P.msg = 'お受け取りを'; ccWin(n, n - P.bet); casDraw(); return; }
+  if (a === 'dbl') { P.state = 'bet'; P.msg = ''; hlStart(P.won, P.bet, 'pk'); return; }
+}
+function pkAutoHold(h) {   // 役が見えている時は、役に使う札を最初から残しておく(押し直せる)
+  const cnt = {}; h.forEach(c => { if (c.r !== 'joker') cnt[c.r] = (cnt[c.r] || 0) + 1; });
+  const r = pkEval(h); if (r <= 6) return h.map(() => true);   // ストレート以上は全部
+  return h.map(c => c.r === 'joker' || cnt[c.r] >= 2);
+}
+
+// ---------- ハイ&ロー(単独・ポーカーのダブルアップ) ----------
+const HL_MAX = 5;   // 5回連続で打ち止め(×32)
+function hlStart(stake, base, from) {
+  const H = CAS.hl = { stake, base, from, step: 0, deck: ccDeck(false), cur: null, next: null, state: 'guess', msg: '次の札は、上か下か', face: 'normal' };
+  H.cur = H.deck.pop(); CAS.view = 'hl'; sfx('cas_flip'); casDraw();
+}
+function casHlState() { return CAS.hl || (CAS.hl = { stake: 0, base: 1, bet: 1, from: 'hl', step: 0, state: 'bet', cur: null, next: null, msg: '', face: 'normal' }); }
+function casHlView() {
+  const H = casHlState(), c = casSt();
+  const ladder = Array.from({ length: HL_MAX }, (_, i) => `<li class="${i < H.step ? 'won' : ''}"><span>${i + 1}回目</span><b>×${2 ** (i + 1)}</b></li>`).join('');
+  const cards = `<div class="cc-row5 hl">${H.cur ? ccCardH(H.cur, 0, false, false) : ''}${H.cur ? (H.next ? ccCardH(H.next, 1, false, true) : bjCardH({ s: 'spade', r: 'a' }, 1, true, false)) : ''}</div>`;
+  let acts;
+  if (H.state === 'guess') acts = `<div class="cas-msg">いま ${fmt(H.stake)}枚${H.step ? `(${H.step}回 当てた)` : ''}</div><div class="cas-row"><button class="cas-big hot" data-act="cs_hl" data-v="hi"><b>ハイ</b><small>上</small></button><button class="cas-big hot" data-act="cs_hl" data-v="lo"><b>ロー</b><small>下</small></button></div>` +
+    (H.step ? `<button class="cas-cb" data-act="cs_hl" data-v="take"><b>降りる</b><small>${fmt(H.stake)}枚 受け取る</small></button>` : '');
+  else if (H.state === 'bet') acts = `<div class="cas-msg">賭ける枚数</div>${ccBetRow(H.bet, 'cs_hlbet')}<button class="cas-big hot" data-act="cs_hl" data-v="start"${c.coins >= H.bet ? '' : ' disabled'}><b>始める</b><small>${H.bet}枚 賭ける</small></button>`;
+  else acts = '';
+  return `<div class="cas-game cas-bjg cas-hlg"><div class="cas-stage"><div class="cas-felt"><img class="cas-dealer" src="${chURL('dealer', H.face)}" alt="ジル"><div class="cas-dbub">${esc(H.msg || 'ハイ&ロー。続けるほど倍になります')}</div><ul class="cas-blist cc-pay">${ladder}</ul>${cards}</div></div>` +
+    `<div class="cas-ctrl">${acts}</div></div>`;
+}
+async function casHl(a) {
+  const H = casHlState(), c = casSt(); if (CAS.anim) return;
+  if (a === 'start') {
+    if (H.state !== 'bet' || c.coins < H.bet) return;
+    c.coins -= H.bet; c.used += H.bet; casRefreshBar(); const b = H.bet; hlStart(b, b, 'hl'); CAS.hl.bet = b; return;
+  }
+  if (H.state !== 'guess') return;
+  if (a === 'take') return hlEnd(true);
+  if (a !== 'hi' && a !== 'lo') return;
+  CAS.anim = true; H.state = 'flip'; H.msg = a === 'hi' ? 'ハイ……' : 'ロー……'; casDraw();
+  await casWait(700); if (H.deck.length < 5) H.deck = ccDeck(false);
+  H.next = H.deck.pop(); sfx('cas_flip'); casDraw(); await casWait(500);
+  const x = CC_RV(H.cur.r), y = CC_RV(H.next.r);
+  if (x === y) { H.msg = '同じ数。もう一度'; sfx('tap'); }
+  else if ((y > x) === (a === 'hi')) {
+    H.step++; H.stake *= 2; sfx(H.step >= 3 ? 'great' : 'cas_win'); if (H.step >= 3) casFlash('#fff2c0');
+    H.face = H.step >= 3 ? 'surprise' : 'trouble'; H.msg = `当たり。${fmt(H.stake)}枚`;
+    if (H.step >= HL_MAX) { H.msg = `${HL_MAX}回連続……打ち止めです`; casDraw(); await casWait(900); CAS.anim = false; return hlEnd(true); }
+  } else { H.face = 'smile'; H.msg = 'はずれ。わたしの勝ちです'; sfx('mg_miss'); H.stake = 0; CAS.anim = false; return hlEnd(false); }
+  CAS.anim = false; H.cur = H.next; H.next = null; H.state = 'guess'; casDraw();
+}
+function hlEnd(take) {
+  const H = CAS.hl; H.state = 'bet';
+  if (take && H.stake) ccWin(H.stake, H.stake - H.base); else { save(); casRefreshBar(); }
+  const from = H.from; H.from = 'hl'; H.step = 0; H.next = null; H.bet = H.bet || 1;
+  if (from === 'pk') { CAS.pk.msg = take ? `${fmt(H.stake)}枚。お見事` : 'ダブルアップは、わたしの勝ちです'; CAS.pk.face = take ? 'trouble' : 'smile'; CAS.view = 'pk'; CAS.hl = null; }
+  casDraw();
+}
+
+// ---------- バカラ ----------
+const BC_PAY = { p: 2, b: 1.95, t: 9 }, BC_N = { p: 'プレイヤー', b: 'バンカー', t: 'タイ' };
+const bcV = r => r === 'a' ? 1 : (r === '10' || 'jqk'.includes(r)) ? 0 : +r;
+const bcT = h => h.reduce((s, c) => s + bcV(c.r), 0) % 10;
+function casBcState() { if (!CAS.bc) sfx('cas_shuf2'); return CAS.bc || (CAS.bc = { bet: 1, side: 'p', state: 'bet', shoe: bjShoe(), p: [], b: [], res: '', msg: '', face: 'normal', nw: '', sq: '' }); }
+function casBcView() {
+  const B = casBcState(), c = casSt(), show = B.p.length > 0;
+  const hand = (k, h, cls) => `<div class="cas-hand${cls || ''}${B.res === k ? ' cur' : ''}"><div class="cas-hlab">${BC_N[k]} ${show ? `<b>${bcT(h.filter((_, i) => B.sq !== k + i))}</b>` : ''}</div><div class="cas-cards">${h.map((cd, i) => `<div class="cc-sq${i === 2 ? ' third' : ''}${B.sq === k + i ? ' on' : ''}">${bjCardH(cd, i === 2 ? 0 : i, B.sq === k + i, B.nw === k + i)}</div>`).join('')}</div></div>`;
+  const sides = ['p', 'b', 't'].map(k => `<button class="cas-cb${B.side === k ? ' on' : ''}" data-act="cs_bcside" data-v="${k}"${B.state === 'bet' ? '' : ' disabled'}><b>${BC_N[k]}</b><small>×${BC_PAY[k]}</small></button>`).join('');
+  const acts = B.state === 'bet' ? `<div class="cas-row">${sides}</div>${ccBetRow(B.bet, 'cs_bcbet')}<button class="cas-big hot" data-act="cs_bc" data-v="deal"${c.coins >= B.bet ? '' : ' disabled'}><b>${show ? 'もう一勝負' : '配る'}</b><small>${BC_N[B.side]}に ${B.bet}枚</small></button>` : `<div class="cas-msg">${BC_N[B.side]}に ${B.bet}枚</div>`;
+  return `<div class="cas-game cas-bjg cas-bcg"><div class="cas-stage"><div class="cas-felt"><img class="cas-dealer" src="${chURL('dealer', B.face)}" alt="ジル"><div class="cas-dbub">${esc(B.msg || 'プレイヤーか、バンカーか')}</div>${hand('p', B.p, ' dealer')}<div class="cas-phands n1">${hand('b', B.b)}</div></div></div>` +
+    `<div class="cas-ctrl">${acts}</div></div>`;
+}
+async function casBc(a) {
+  const B = casBcState(), c = casSt(); if (CAS.anim || a !== 'deal' || B.state !== 'bet' || c.coins < B.bet) return;
+  c.coins -= B.bet; c.used += B.bet; casRefreshBar();
+  if (B.shoe.length < 30) { B.shoe = bjShoe(); sfx('cas_shuf1'); }
+  Object.assign(B, { p: [], b: [], res: '', sq: '', face: 'normal', msg: '配ります', state: 'deal' }); CAS.anim = true; CAS.fast = false;
+  sfx('cas_deal4');
+  for (const [j, k] of ['p', 'b', 'p', 'b'].entries()) { await casWait(j ? 480 : 180); B[k].push(B.shoe.pop()); B.nw = k + (B[k].length - 1); casDraw(); }
+  await casWait(400);
+  const pt = bcT(B.p), bt = bcT(B.b);
+  let p3 = null;
+  if (pt < 8 && bt < 8) {
+    if (pt <= 5) { p3 = B.shoe.pop(); await bcSqueeze(B, 'p', p3); }
+    const b0 = bcT(B.b), v = p3 ? bcV(p3.r) : -1;
+    const bDraw = !p3 ? b0 <= 5 : b0 <= 2 || (b0 === 3 && v !== 8) || (b0 === 4 && v >= 2 && v <= 7) || (b0 === 5 && v >= 4 && v <= 7) || (b0 === 6 && (v === 6 || v === 7));
+    if (bDraw) await bcSqueeze(B, 'b', B.shoe.pop());
+  }
+  const P = bcT(B.p), K = bcT(B.b); B.res = P > K ? 'p' : K > P ? 'b' : 't';
+  let back = 0;
+  if (B.res === B.side) back = Math.round(B.bet * BC_PAY[B.side]); else if (B.res === 't') back = B.bet;   // タイの時、プレイヤー・バンカーへの賭けは戻る
+  const net = back - B.bet; CAS.anim = false; B.state = 'bet';
+  B.msg = (B.res === 't' ? `タイ。${P}と${K}` : `${BC_N[B.res]}の勝ち。${Math.max(P, K)}対${Math.min(P, K)}`) + (net > 0 ? '……お見事' : net < 0 ? '' : '。お返しします');
+  B.face = net > 0 ? (B.res === 't' ? 'surprise' : 'trouble') : net < 0 ? 'smile' : 'normal';
+  if (net > 0) ccWin(back, net); else { if (back) c.coins += back; sfx(net < 0 ? 'mg_miss' : 'tap'); save(); casRefreshBar(); }
+  casDraw();
+}
+async function bcSqueeze(B, k, card) {   // 3枚目は伏せて置き、じわっとめくる(見せ場)
+  B[k].push(card); B.sq = k + (B[k].length - 1); B.nw = B.sq; B.msg = `${BC_N[k]}に3枚目……`; sfx('cas_deal'); casDraw();
+  await casWait(500); const el = CAS.el && CAS.el.querySelector('.cc-sq.on'); if (el) el.classList.add('peek');
+  await casWait(900); B.sq = ''; B.nw = ''; sfx('cas_flip'); casDraw(); await casWait(500);
+}
+try { Object.assign(window.__cas, { casPk, casHl, casBc, pkEval, casDraw, PK_ROLES }); } catch (e) {}
 
 // ---- onsen.js ----
 // ---------- 温泉(No.287・2026-11-13 作者): 宿屋の札。夜に一度、湯に入ると体力が全部戻り、住人どうしの会話を1本聞く ----------
