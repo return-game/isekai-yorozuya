@@ -14640,9 +14640,9 @@ function roarFeed(k) {
   r.g.gain.setTargetAtTime(0.34 + k * 0.3, t, 0.15); r.g2.gain.setTargetAtTime(0.03 + k * 0.045, t, 0.15); r.lp.frequency.setTargetAtTime(160 + k * 240, t, 0.2);
 }
 // No.283e: カジノの効果音(作者の音源。bgm/ の se_cas_*.mp3)。file:// でも鳴るよう audio 要素で鳴らす。読めない時(claude.ai など)は合成の音で代わりに鳴らす
-const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3', cas_ball: 'se_cas_ball.mp3' };   // No.289: 釣りの効果音(作者の音源)
-const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit', cas_ball: 'mg_tick' };
-const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
+const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3', cas_ball: 'se_cas_ball.mp3', mg_taiko_don: 'se_matsuri_don.mp3', mg_taiko_miss: 'se_matsuri_miss.mp3', mg_prep_cut: 'se_prep_cut.mp3', mg_prep_miss: 'se_prep_miss.mp3', mg_bow_pull: 'se_bow_pull.mp3', mg_bow_shot: 'se_bow_shot.mp3', mg_bow_hit: 'se_bow_hit.mp3', mg_oya_hit: 'se_oya_hit.mp3', mg_oya_metal: 'se_oya_metal.mp3', mg_flask_bub: 'se_flask_bubble.mp3', mg_pub_pour: 'se_pub_pour.mp3', mg_rune_decide: 'se_rune_decide.mp3', mg_magic_shot: 'se_magic_shot.mp3' };   // No.318: 祭りの太鼓(当たり=和太鼓でドン・ずれ=ビープ音3)   // No.289: 釣りの効果音(作者の音源)
+const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit', cas_ball: 'mg_tick', mg_taiko_don: 'mg_drum', mg_taiko_miss: 'mg_miss', mg_prep_cut: 'mg_zaku', mg_prep_miss: 'mg_miss', mg_bow_pull: 'mg_tap', mg_bow_shot: 'mg_whoosh', mg_bow_hit: 'mg_thunk', mg_oya_hit: 'anvil', mg_oya_metal: 'mg_tick', mg_flask_bub: 'mg_bubble', mg_pub_pour: 'mg_glug', mg_rune_decide: 'mg_tick', mg_magic_shot: 'mg_whoosh' };
+const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6, mg_flask_bub: 0.6, mg_pub_pour: 0.7 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
 const SE_NOW = {};
 function seReady(k) { const a = SE_EL[k]; return !!(a && !a._bad && a.readyState >= 2); }   // No.289: 音源ファイルが読めているか
 function seStop(k) { const n = SE_NOW[k]; if (!n || n.paused || n.ended) return; SE_NOW[k] = null; const v0 = n.volume, t0 = performance.now(); const iv = setInterval(() => { const q = (performance.now() - t0) / 250; if (q >= 1) { clearInterval(iv); n.pause(); return; } n.volume = Math.max(0, v0 * (1 - q)); }, 30); }
@@ -17427,7 +17427,7 @@ const MG2 = (() => {
   const SFX = {
     clock: n => snd('mg_clock', { n }), bubble: f => snd('mg_bubble', { f }), glug: f => snd('mg_glug', { f }), zaku: () => snd('mg_zaku'), plop: () => snd('mg_plop'), reel: f => snd('mg_reel', { f }), roar: k => snd('mg_roar', { k }), dial: () => snd('mg_dial'),
     tick: () => snd('mg_tick'), cue: () => snd('mg_cue'), go: () => snd('mg_go'), tap: () => snd('mg_tap'),
-    anvil: () => snd('anvil'), drum: () => snd('mg_drum'), rock: () => snd('mg_chop'), pluck: f => snd('mg_pluck', { f }),
+    anvil: () => snd('anvil'), drum: () => snd('mg_drum'), rock: () => snd('mg_chop'), pluck: f => snd('mg_pluck', { f }), don: () => snd('mg_taiko_don'), tmiss: () => snd('mg_taiko_miss'), cut: () => snd('mg_prep_cut'), flaskB: () => snd('mg_flask_bub'), pubP: () => snd('mg_pub_pour'), decide: () => snd('mg_rune_decide'), mshot: () => snd('mg_magic_shot'), oya: () => snd('mg_oya_hit'), oyaM: () => { snd('mg_oya_hit'); snd('mg_oya_metal'); }, bpull: () => snd('mg_bow_pull'), bshot: () => snd('mg_bow_shot'), bhit: () => snd('mg_bow_hit'), pmiss: () => snd('mg_prep_miss'),
     perfect: n => snd('mg_perfect', { n }), good: () => snd('mg_good'), miss: () => snd('mg_miss'), combo: n => snd('mg_combo', { n }),
     pour: () => snd('mg_pour'), note: f => snd('mg_note', { f }), trace: f => snd('mg_trace', { f }), whoosh: () => snd('mg_whoosh'), thunk: () => snd('mg_thunk'),
     crit: () => snd('crit'), ok: () => snd('good'), fail: () => snd('fail'), stamp: () => snd('mg_stamp'),
@@ -17581,7 +17581,7 @@ const MG2 = (() => {
   // ---------- judging ----------
   // a judge for timing games: ms off the mark → 'p' (ぴったり) / 'g' (よし) / 'm' (ずれ)
   const winP = () => D.crit * 1500, winG = () => D.ok * 1150;
-  function judgeMs(dt) { const a = Math.abs(dt); return a <= winP() ? 'p' : a <= winG() ? 'g' : 'm'; }
+  function judgeMs(dt, pk = 1) { const a = Math.abs(dt); return a <= winP() * pk ? 'p' : a <= winG() ? 'g' : 'm'; }
   // a run of marks: all ぴったり = 会心, at most one ずれ = 成功
   function fromMarks(m) { const miss = m.filter(x => x === 'm').length; return miss === 0 && m.every(x => x === 'p') ? 'crit' : miss <= 1 ? 'ok' : 'fail'; }
   const MARK = { p: ['ぴったり', C.gold], g: ['よし', C.line], m: ['ずれ', C.bad] };
@@ -17601,7 +17601,7 @@ const MG2 = (() => {
       cx.restore();
     }
   }
-  const feel = m => m === 'p' ? (SFX.perfect(0), buzz(20)) : m === 'g' ? (SFX.good(), buzz(12)) : (SFX.miss(), buzz(40));
+  const feel = (m, g) => g && g.fx && m in g.fx ? (g.fx[m] && g.fx[m](), buzz(m === 'p' ? 20 : m === 'g' ? 12 : 40)) : m === 'p' ? (SFX.perfect(0), buzz(20)) : m === 'g' ? (SFX.good(), buzz(12)) : (SFX.miss(), buzz(40));
   // shapes for the seal: a closed path through these corners (circle = many corners)
   function shapePts(k, cx0, cy0, R, rot) {
     const n = k === 'tri' ? 3 : k === 'square' ? 4 : k === 'star' ? 5 : 48, step = k === 'star' ? 2 : 1, V = [];
@@ -17630,15 +17630,15 @@ const MG2 = (() => {
   const LANE = {
     init(g, t) { const n = 4 + D.k; g.notes = []; let tt = t + 1300; for (let i = 0; i < n; i++) { g.notes.push({ t: tt, m: null, k: g.mats[i % g.mats.length] }); tt += pick([420, 560, 700]) / D.sp; } g.marks = []; },
     down(g, x, y, t, snd) { let best = null; for (const n of g.notes) if (!n.m && Math.abs(t - n.t) < 260 && (!best || Math.abs(t - n.t) < Math.abs(t - best.t))) best = n;
-      if (!best) { SFX.tap(); return null; } best.m = judgeMs(t - best.t); best.at = t; g.marks.push(best.m); best.m !== 'm' && snd(); feel(best.m); g.hitT = t; return best; },
-    step(g, t, onMiss) { for (const n of g.notes) if (!n.m && t - n.t > winG()) { n.m = 'm'; n.at = t; g.marks.push('m'); feel('m'); onMiss(n); }
+      if (!best) { SFX.tap(); return null; } best.m = judgeMs(t - best.t, g.pk || 1); best.at = t; g.marks.push(best.m); best.m !== 'm' && snd(); feel(best.m, g); g.hitT = t; return best; },
+    step(g, t, onMiss) { for (const n of g.notes) if (!n.m && t - n.t > winG()) { n.m = 'm'; n.at = t; g.marks.push('m'); feel('m', g); onMiss(n); }
       const last = g.notes[g.notes.length - 1]; if (last.m && t - last.at > 350) g.end(fromMarks(g.marks), g.marks.filter(m => m === 'm').length > 1 ? 'ずれが2つ以上' : ''); },
   };
   // hold to fill, let go on the gold mark; over = spilled; one top-up
   const FILL = {
     init(g) { g.L = .05; g.hold = null; g.c0 = rnd(.56, .76); g.rel = null; g.press = 0; g.bub = []; g.held = 0; },
     band(g, t) { return g.c0 + Math.sin(t / 1000 * Math.PI * 1.1) * .035; },
-    down(g, x, y, t) { if (g.press >= 2) return; if (g.press === 1 && !(g.rel && t - g.rel < 1100)) return; g.press++; g.hold = t; g.base = g.held; SFX.tap(); },
+    down(g, x, y, t) { if (g.press >= 2) return; if (g.press === 1 && !(g.rel && t - g.rel < 1100)) return; g.press++; g.hold = t; g.base = g.held; (g.G.downSnd || SFX.tap)(); },
     up(g, x, y, t) { if (g.hold == null) return; g.held = g.base + (t - g.hold) / 1000; g.hold = null; g.rel = t; const d = g.L - FILL.band(g, t), h = g.G.tip(g);
       if (d > D.ok * .9) { hitFx('m', h[0], h[1], 0); return g.end('fail', g.spillWord); }
       if (Math.abs(d) <= D.crit * .9) { hitFx('p', h[0], h[1], 1); return g.end('crit'); }
@@ -17711,9 +17711,9 @@ const MG2 = (() => {
     },
     down(g, x, y, t) {
       const life = SHOT.life(); let best = null, bd = 1e9;
-      g.aim = [x, y]; g.fireT = t;
+      g.aim = [x, y]; g.fireT = t; SFX.mshot();
       for (const q of g.tg) if (!q.m && t >= q.t && t - q.t <= life + 60) { const d = Math.hypot(q.x - x, q.y - y); if (d < SHOT.HIT && d < bd) { best = q; bd = d; } }
-      if (!best) { SFX.whoosh(); g.bolts.push({ x, y, t, hit: false }); return; }
+      if (!best) { g.bolts.push({ x, y, t, hit: false }); return; }
       const m = bd <= SHOT.PIN ? 'p' : 'g';
       best.m = m; best.at = t; g.marks.push(m); feel(m); g.bolts.push({ x: best.x, y: best.y, t, hit: true });
       pop(g, m, best.x, best.y - 40, t, best.x, best.y); burst(best.x, best.y, m === 'p' ? C.goldHi : '#bfe3ff', 14, 190); ring(best.x, best.y, m === 'p' ? C.gold : '#bfe3ff', 52, .34, 2.5);
@@ -17991,7 +17991,7 @@ const MG2 = (() => {
   // bg: the picture behind (blurred by the host), amb: what floats in the air, tip(g): where the action is (for sparks)
   const GAMES = [
     { id: 'A1', sk: '魔法陣', place: '工房・筆写', bg: 'bg_workshop', amb: 'mote', cmd: '灯せ!', name: '魔法陣に紋を灯す', hint: '回る光が金色の弧に来た瞬間にタップ。3回、毎回逆回り。1回入れば成功、3回とも金色で会心。',
-      init(g) { TURN.init(g); }, down: TURN.down, step: TURN.step, tip: g => [180 + Math.cos(rad(g.ang)) * 116, 250 + Math.sin(rad(g.ang)) * 116],
+      init(g) { TURN.init(g); }, down(g, x, y, t) { SFX.decide(); TURN.down(g, x, y, t); }, step: TURN.step, tip: g => [180 + Math.cos(rad(g.ang)) * 116, 250 + Math.sin(rad(g.ang)) * 116],
       draw(g, t) { const x = 180, y = 250, R = 116, lit = g.marks.filter(m => m.m !== 'm').length;
         // the circle turns slowly; lit runes make it glow
         cx.save(); cx.translate(x, y); cx.rotate(t / 9000);
@@ -18053,8 +18053,8 @@ const MG2 = (() => {
         dots([0,1],418,i=>g.marks[i]&&g.marks[i].m);
         pops(g, t); } },
     { id: 'A2', sk: '祭り太鼓', place: '村の祭り', bg: 'bg_town_2', amb: 'mote', cmd: '叩け!', name: '祭りの太鼓', hint: '右から流れてくる印が、太鼓の輪に重なった瞬間にタップ。ずれが1つまでなら成功、全部ぴったりで会心。',
-      init(g, t) { LANE.init(g, t); g.v = 230 * D.sp; g.hx = 74; }, tip: g => [g.hx, 250],
-      down(g, x, y, t) { const n = LANE.down(g, x, y, t, SFX.drum); if (n) pop(g, n.m, g.hx, 170, t, g.hx, 250); else g.hitT = t; },
+      init(g, t) { LANE.init(g, t); g.taiko = 1; g.fx = { m: SFX.tmiss, g: null }; g.v = 230 * D.sp; g.hx = 74; }, tip: g => [g.hx, 250],
+      down(g, x, y, t) { const n = LANE.down(g, x, y, t, SFX.don); if (n) pop(g, n.m, g.hx, 170, t, g.hx, 250); else g.hitT = t; },
       step(g, t) { LANE.step(g, t, n => pop(g, 'm', g.hx, 170, t, g.hx, 250)); },
       draw(g, t) { const y = 250, hit = g.hitT && t - g.hitT < 120, bump = hit ? 1 + .12 * (1 - (t - g.hitT) / 120) : 1;
         cx.fillStyle = 'rgba(10,10,14,.35)'; cx.fillRect(20, y - 34, 326, 68);
@@ -18073,8 +18073,8 @@ const MG2 = (() => {
         dots(g.notes, 390);
         pops(g, t); } },
     { id: 'A2', sk: '下ごしらえ', place: '工房・下ごしらえ', bg: 'bg_inn', amb: 'dust', cmd: '刻め!', name: '落ちてくる材料を刻む', hint: '上から落ちてくる材料が、金色の丸の中心に来た瞬間にタップ。ずれが1つまでなら成功、全部ぴったりで会心。',
-      init(g, t) { LANE.init(g, t); g.v = 200 * D.sp; g.hy = 330; g.cut = []; }, tip: g => [180, g.hy],
-      down(g, x, y, t) { const n = LANE.down(g, x, y, t, SFX.zaku); if (n) { pop(g, n.m, 180, g.hy - 60, t, 180, g.hy); if (n.m !== 'm') g.cut.push({ k: n.k, t }); } else g.hitT = t; },
+      init(g, t) { LANE.init(g, t); g.fx = { m: SFX.pmiss, g: null }; g.pk = 1.2; g.v = 200 * D.sp; g.hy = 330; g.cut = []; }, tip: g => [180, g.hy],
+      down(g, x, y, t) { const n = LANE.down(g, x, y, t, SFX.cut); if (n) { pop(g, n.m, 180, g.hy - 60, t, 180, g.hy); if (n.m !== 'm') g.cut.push({ k: n.k, t }); } else g.hitT = t; },
       step(g, t) { LANE.step(g, t, n => pop(g, 'm', 180, g.hy - 60, t, 180, g.hy)); },
       draw(g, t) { const hit = g.hitT && t - g.hitT < 120;
         // the board
@@ -18091,7 +18091,9 @@ const MG2 = (() => {
     { id: 'B1', sk: 'フラスコ', place: '工房・錬金', bg: 'bg_workshop_up', amb: 'mote', cmd: '沸かせ!', name: 'フラスコを沸かす', hint: '押している間だけ沸いて液が上がる。光る目盛りで離す。越えると吹きこぼれ。一度だけ、もう一度押して足せる。',
       init(g) { FILL.init(g); g.spillWord = '吹きこぼれた'; g.sn = 0; },
       // コポコポ: faster and higher as the flask fills
-      fillSnd(g, t) { if (t >= g.sn) { g.sn = t + 170 - g.L * 100 + rnd(-25, 25); SFX.bubble(300 + g.L * 520 + rnd(-50, 50)); } }, down: FILL.down, up: FILL.up, step: FILL.step, tip: g => [180, 352 - g.L * 190],
+      fillSnd() { }, downSnd: () => SFX.flaskB(), down: FILL.down,
+      up(g, x, y, t) { try { seStop('mg_flask_bub'); } catch (er) { /* no sound */ } return FILL.up(g, x, y, t); },
+      step(g, t, dt) { FILL.step(g, t, dt); if (g.over) { try { seStop('mg_flask_bub'); } catch (er) { /* no sound */ } } }, tip: g => [180, 352 - g.L * 190],
       draw(g, t) { const top = 92, bot = 352, yOf = l => bot - l * (bot - top - 70);
         const path = () => { cx.beginPath(); cx.moveTo(158, top); cx.lineTo(158, 190); cx.lineTo(92, 330); cx.quadraticCurveTo(84, bot, 108, bot); cx.lineTo(252, bot); cx.quadraticCurveTo(276, bot, 268, 330); cx.lineTo(202, 190); cx.lineTo(202, top); };
         cx.save(); path(); cx.fillStyle = 'rgba(10,10,14,.3)'; cx.fill(); cx.clip(); const wob = g.hold != null ? Math.sin(t / 60) * 3 : Math.sin(t / 300); const ly = yOf(g.L), gr = cx.createLinearGradient(0, ly, 0, bot); gr.addColorStop(0, '#ff8a96'); gr.addColorStop(1, '#b81e3a'); cx.fillStyle = gr;
@@ -18109,7 +18111,9 @@ const MG2 = (() => {
     { id: 'B1', sk: 'エール', place: '灯り亭', bg: 'bg_pub', amb: 'dust', cmd: '注げ!', name: 'エールを注ぐ', hint: '押している間だけジョッキに注がれる。泡の白い線が金色の線に重なったら離す。あふれたら失敗。一度だけ、注ぎ足せる。',
       init(g) { FILL.init(g); g.spillWord = 'あふれた'; g.sn = 0; },
       // トクトク: the pitch climbs as the mug fills
-      fillSnd(g, t) { if (t >= g.sn) { g.sn = t + 115 + rnd(-12, 12); SFX.glug(170 + g.L * 260); } }, down: FILL.down, up: FILL.up, step: FILL.step, tip: g => [170, 380 - g.L * 210],
+      fillSnd() { }, downSnd: () => SFX.pubP(), down: FILL.down,
+      up(g, x, y, t) { try { seStop('mg_pub_pour'); } catch (er) { /* no sound */ } return FILL.up(g, x, y, t); },
+      step(g, t, dt) { FILL.step(g, t, dt); if (g.over) { try { seStop('mg_pub_pour'); } catch (er) { /* no sound */ } } }, tip: g => [170, 380 - g.L * 210],
       draw(g, t) { const top = 170, bot = 380, yOf = l => bot - l * (bot - top), mx0 = 104, mx1 = 236;
         const pouring = g.hold != null, tilt = pouring ? .85 : .25;
         cx.save(); cx.translate(258, 112); cx.rotate(tilt); L(2.4); cx.beginPath(); cx.moveTo(-26, -60); cx.lineTo(-30, 30); cx.quadraticCurveTo(0, 46, 30, 30); cx.lineTo(26, -60); cx.lineTo(-26, -60); cx.stroke();
@@ -18134,10 +18138,10 @@ const MG2 = (() => {
     { id: 'B2', sk: '弓', place: '冒険者ギルド', bg: 'bg_guild', amb: 'dust', cmd: '引け!', name: '弓を引き絞る', hint: '押して引き絞り、矢の金色の印が弓の握りに重なった瞬間に離す。ぴったり合えば、的の中央の品に命中する。',
       init(g) { g.p = 0; g.hold = null; g.mark=rnd(112,152); g.tgt=(g.mark-24)/136; g.arrow = null; }, tip: g => [296, 230 + (g.arrow ? g.arrow.e * 260 : 0)],
       pAt(g, t) { const s = (t - g.hold) / 1000 * 1.10 * D.sp; const k = s % 2; return k < 1 ? k : 2 - k; },
-      down(g, x, y, t) { if (g.hold != null || g.arrow) return; g.hold = t; SFX.tap(); },
-      up(g, x, y, t) { if (g.hold == null) return; g.p = this.pAt(g, t); g.hold = null; const e = g.p - g.tgt; g.arrow = { t, e }; SFX.whoosh();
+      down(g, x, y, t) { if (g.hold != null || g.arrow) return; g.hold = t; SFX.bpull(); },
+      up(g, x, y, t) { if (g.hold == null) return; g.p = this.pAt(g, t); g.hold = null; const e = g.p - g.tgt; g.arrow = { t, e }; try { seStop('mg_bow_pull'); } catch (er) { /* no sound */ } SFX.bshot();
         const a = Math.abs(e), hit = a <= D.crit * 1.2302631579 ? 'crit' : a <= D.ok * 1.2302631579 ? 'ok' : 'fail';
-        setTimeout(() => { if (g.over) return; const h = this.tip(g); if (hit === 'fail') { feel('m'); hitFx('m', h[0], h[1], 0); } else { SFX.thunk(); buzz(18); hitFx(hit === 'crit' ? 'p' : 'g', h[0], h[1], 1); } g.end(hit, hit === 'fail' ? (e > 0 ? '強すぎた' : '弱すぎた') : ''); }, 280); },
+        setTimeout(() => { if (g.over) return; const h = this.tip(g); if (hit === 'fail') { feel('m'); hitFx('m', h[0], h[1], 0); } else { SFX.bhit(); buzz(18); hitFx(hit === 'crit' ? 'p' : 'g', h[0], h[1], 1); } g.end(hit, hit === 'fail' ? (e > 0 ? '強すぎた' : '弱すぎた') : ''); }, 280); },
       step(g, t) { if (g.hold != null) { g.p = this.pAt(g, t); if (t - g.hold > 5000) { g.hold = null; g.end('fail', '腕が疲れた'); } } else if (!g.arrow && t - g.t0 > 6000) g.end('fail', '引かなかった'); },
       draw(g, t) { const bx=64, by=230, tx=296, grip=bx+18, pull=g.arrow?g.p:(g.hold!=null?g.p:0), sx=bx-6-pull*136;
         const near=g.hold!=null&&Math.abs(g.p-g.tgt)<=D.ok*1.2302631579, perfect=g.hold!=null&&Math.abs(g.p-g.tgt)<=D.crit*1.2302631579;
@@ -18160,16 +18164,16 @@ const MG2 = (() => {
         }
       } },
     { id: 'C1', sk: '親方と打つ', place: '鍛冶場', bg: 'bg_smithy', amb: 'ember', cmd: '続け!', name: '親方の槌に続く', hint: '親方が2回打ってお手本を見せる。その拍のまま、あなたが4回続けて打つ。上の印が真ん中の金色に来た時。',
-      init(g, t) { g.iv = 60000 / (84 * D.sp); g.t1 = t + 600; g.n = 4 + (D.k > 1 ? 1 : 0); g.beats = []; for (let i = 0; i < 2 + g.n; i++) g.beats.push({ t: g.t1 + i * g.iv, pre: i < 2, m: null, ticked: false }); g.marks = []; g.slam = 0; g.shape = 0; g.spark = 0; },
+      init(g, t) { g.fx = { p: null, g: null }; g.iv = 60000 / (84 * D.sp); g.t1 = t + 600; g.n = 4 + (D.k > 1 ? 1 : 0); g.beats = []; for (let i = 0; i < 2 + g.n; i++) g.beats.push({ t: g.t1 + i * g.iv, pre: i < 2, m: null, ticked: false }); g.marks = []; g.slam = 0; g.shape = 0; g.spark = 0; },
       tip: () => [180, 290],
       down(g, x, y, t) { g.slam = t; let best = null; for (const b of g.beats) if (!b.pre && !b.m && Math.abs(t - b.t) < g.iv * .5 && (!best || Math.abs(t - b.t) < Math.abs(t - best.t))) best = b;
-        if (!best) { SFX.tap(); return; } best.m = judgeMs(t - best.t); best.at = t; g.marks.push(best.m); if (best.m !== 'm') { SFX.anvil(); g.shape++; g.spark = t; burst(196, 286, C.ember, 10, 220, { a: -Math.PI / 2, spread: 1.3 }); } feel(best.m); pop(g, best.m, 180, 196, t, 196, 286); },
-      step(g, t) { for (const b of g.beats) { if (!b.ticked && t >= b.t) { b.ticked = true; if (b.pre) { SFX.anvil(); g.mslam = t; g.spark = t; burst(164, 286, C.ember, 6, 160, { a: -Math.PI / 2, spread: 1.2 }); } } if (!b.pre && !b.m && t - b.t > winG() && t - b.t > g.iv * .35) { b.m = 'm'; b.at = t; g.marks.push('m'); feel('m'); pop(g, 'm', 180, 196, t, 180, 290); } }
+        if (!best) { SFX.tap(); return; } best.m = judgeMs(t - best.t); best.at = t; g.marks.push(best.m); if (best.m !== 'm') { SFX.oyaM(); g.shape++; g.spark = t; burst(196, 286, C.ember, 10, 220, { a: -Math.PI / 2, spread: 1.3 }); } feel(best.m, g); pop(g, best.m, 180, 196, t, 196, 286); },
+      step(g, t) { for (const b of g.beats) { if (!b.ticked && t >= b.t) { b.ticked = true; if (b.pre) { SFX.oya(); g.mslam = t; g.spark = t; burst(164, 286, C.ember, 6, 160, { a: -Math.PI / 2, spread: 1.2 }); } } if (!b.pre && !b.m && t - b.t > winG() && t - b.t > g.iv * .35) { b.m = 'm'; b.at = t; g.marks.push('m'); feel('m'); pop(g, 'm', 180, 196, t, 180, 290); } }
         const last = g.beats[g.beats.length - 1]; if (last.m && t - last.at > 350) g.end(fromMarks(g.marks), g.marks.filter(m => m === 'm').length > 1 ? 'ずれが2つ以上' : ''); },
       draw(g, t) { const ay = 300, cxn = 180;
         // the beat track: marks slide to the gold notch
-        const ty = 92; cx.fillStyle = 'rgba(10,10,14,.35)'; cx.fillRect(30, ty - 20, 300, 40); L(1.2, C.faint); cx.beginPath(); cx.moveTo(30, ty); cx.lineTo(330, ty); cx.stroke(); L(2.4, C.gold); glow(C.gold, 10); cx.beginPath(); cx.moveTo(180, ty - 16); cx.lineTo(180, ty + 16); cx.stroke(); noGlow();
-        for (const b of g.beats) { const x = 180 + (b.t - t) / g.iv * 90; if (x < 20 || x > 340) continue; if (b.m && t - b.at > 120) continue; const c = b.pre ? C.dim : b.m ? MARK[b.m][1] : C.line; L(2, c); b.pre ? poly([[x, ty - 9], [x + 9, ty], [x, ty + 9], [x - 9, ty]]) : circle(x, ty, 9); }
+        const ty = 92; cx.fillStyle = 'rgba(10,10,14,.35)'; cx.fillRect(30, ty - 20, 300, 40); L(1.2, C.faint); cx.beginPath(); cx.moveTo(30, ty); cx.lineTo(330, ty); cx.stroke(); { const hitR = g.slam && t - g.slam < 120; L(hitR ? 3.4 : 2.4, C.gold); glow(C.gold, hitR ? 24 : 8); circle(180, ty, 17); noGlow(); }
+        for (const b of g.beats) { const x = 180 + (b.t - t) / g.iv * 90; if (x < 20 || x > 340) continue; if (b.m && t - b.at > 120) continue; const c = b.pre ? C.dim : b.m ? MARK[b.m][1] : C.line; L(2, c); b.pre ? poly([[x, ty - 11], [x + 11, ty], [x, ty + 11], [x - 11, ty]]) : circle(x, ty, 12); }
         const mine = t >= g.beats[2].t - g.iv * .5; text(mine ? 'あなたの番' : '親方のお手本', 180, 60, 14, mine ? C.goldHi : C.dim, 'disp', 800, 4);
         const fg = cx.createRadialGradient(180, ay - 20, 10, 180, ay - 20, 120); fg.addColorStop(0, `rgba(255,140,60,${.22 + (t - g.spark < 200 ? .25 : 0)})`); fg.addColorStop(1, 'rgba(255,140,60,0)'); cx.fillStyle = fg; cx.fillRect(40, ay - 140, 280, 240);
         // anvil
