@@ -8823,7 +8823,7 @@ const FLOW = ['market', 'shop', 'work'];
 const ACT_N = { market: '朝市', shop: '営業', work: '工房' };
 function newGame() {
   G = {
-    v: 3, name: '万事屋', day: 1, slot: 0, phase: 'morning', act: 'market', plan: [], gold: 600, fame: 0, xp: 0, lv: 1, sp: 1,
+    v: 3, name: '万事屋', day: 1, slot: 0, phase: 'morning', act: 'market', plan: [], gold: 1000, fame: 0, xp: 0, lv: 1, sp: 1,
     skills: { smith: 0, alch: 0, cook: 0, scribe: 0 }, tools: { smith: 0, alch: 0, cook: 0, scribe: 0 },
     inv: {}, found: {}, made: {}, books: {}, stage: 0, built: {}, deliv: {}, reg: {}, regLast: {}, hidden: {}, rumors: {}, papers: {}, paperQ: [], sk: { root: 1 }, skResetFree: true, ms: 0,
     shop: 0, work: 0, orders: [], cust: [], ci: 0, stall: [], stallBook: null, report: null,
@@ -26762,16 +26762,52 @@ const casPot = () => Math.floor(casSt().pot);
 [
   ['cas_tidesword', '潮鳴りの剣', 'sword', 'mithril', 'wind', '港の夜の卓で、昔だれかが賭けた剣。振ると遠い潮の音がする。', 2],
   ['cas_starbow', '星降りの弓', 'bow', 'wood3', 'moon', '放った矢が星の尾を引く弓。クラブの奥の箱に眠っていた。', 3],
-].forEach(([id, n, sh, m, a, d, st]) => addItem(id, n, 'equip', { sh, m, s: 'cloth3', a, fx: ['spark'] }, { st, sub: '伝説', tier: 6, v: 9000, desc: d, gear: true, legend: true, nodex: true }));
-addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 'wind', fx: ['spark'] }, { st: 2, v: 2400, raw: true, sub: '伝説の素材', nodex: true, desc: '海竜の胸で千年脈打った石。竜の牙二本の代わりに、竜殺しの槍を打てる。' });
-addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 2400, raw: true, sub: '伝説の素材', nodex: true, desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
+].forEach(([id, n, sh, m, a, d, st]) => addItem(id, n, 'equip', { sh, m, s: 'cloth3', a, fx: ['spark'] }, { st, sub: '伝説', tier: 6, v: 9000, desc: d, gear: true, legend: true }));
+addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 'wind', fx: ['spark'] }, { st: 2, v: 2400, raw: true, sub: '伝説の素材', desc: '海竜の胸で千年脈打った石。竜の牙二本の代わりに、竜殺しの槍を打てる。' });
+addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 2400, raw: true, sub: '伝説の素材', desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
 addRec('lg_dragon', [['spear_adamant', 1], ['cas_seaheart', 1], ['crys_fire', 1]], 'smith', 19, 4, { id: 'r_lg_dragon_cas', book: 'b_legend' });
 addRec('lg_sage', [['staff_3', 1], ['crys_light', 1], ['crys_dark', 1], ['cas_starsand', 1]], 'smith', 19, 4, { id: 'r_lg_sage_cas', book: 'b_legend' });
 // No.309 カジノ限定のインゴット3品(作者 2026-11-15)。マネキンの一式の材料になる予定。売値は交換の枚数の約15%(換金の道にしない)。
 [['ingot_dragongold','竜金のインゴット','深紅がかった赤金の延べ棒。竜の巣の金を溶かしたと噂される。カジノでしか手に入らない。',2,75],
  ['ingot_seajade','深海翠のインゴット','深い翠の延べ棒。海の底の光を閉じこめたような色。カジノでしか手に入らない。',3,113],
  ['ingot_starplat','星白金のインゴット','白金に星の輝きが走る延べ棒。カジノでしか手に入らない最上の金属。',3,150],
-].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, sub: 'カジノ限定のインゴット', nodex: true, desc: d }));
+].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, sub: 'カジノ限定のインゴット', desc: d }));
+// No.312 カジノ限定のインゴットの一式 18品(作者 2026-11-15)。冒険者に装備させる武具で、シリーズ装備としてマネキンにも飾る。
+// 3金属とも Lv20・強さは同じ(集める順は、インゴットの枚数 100/150/200 の差で決まる)。作り方は伝説の武具と同じ形:
+// 「その金属のインゴット+アダマンタイトのインゴット+属性の結晶か革か布」。インゴットの数は 剣2・盾2・兜2・鎧4・籠手1・脚甲1。
+const CAS_SET_METAL = { dragongold: ['竜金', 'fire', '深紅の竜の血を思わせる'], seajade: ['深海翠', 'water', '波の紋が走る'], starplat: ['星白金', 'light', '星と月の光が散る'] };
+const CAS_SET_PART = [
+  // 部位, sub, インゴット数, 追加の素材, 作る時間
+  ['sword', '武器', 2, c => [['crys_' + c, 2]], 4],
+  ['shield', '防具', 2, c => [['crys_' + c, 2]], 4],
+  ['helmet', '防具', 2, () => [['cloth3', 2]], 4],
+  ['armor', '防具', 4, () => [['hide3', 2], ['cloth3', 1]], 4],
+  ['gauntlet', '防具', 1, () => [['hide3', 2]], 3],
+  ['boots', '防具', 1, () => [['hide3', 2]], 3],
+];
+const CAS_SET_NAME = {
+  dragongold: { sword: '竜血の黄金剣', shield: '紅金竜翼の盾', helmet: '紅金竜の騎士兜', armor: '真紅の竜翼金鎧', gauntlet: '紅金竜の籠手', boots: '紅金竜の脚甲' },
+  seajade: { sword: '海翡翠の波紋宝剣', shield: '海翡翠の紋章盾', helmet: '深海翡翠の三鰭王冠兜', armor: '海碧の波紋胸甲', gauntlet: '海翠の波紋籠手', boots: '海翡翠の装甲脚甲' },
+  starplat: { sword: '星月の白金長剣', shield: '星月紋の白金盾', helmet: '三日月冠の白金兜', armor: '白銀星月の星板鎧', gauntlet: '星月紋の白銀籠手', boots: '星輝く白銀の脚甲' },
+};
+const CAS_SET_DESC = { sword: '剣', shield: '盾', helmet: '兜', armor: '鎧', gauntlet: '籠手', boots: '脚甲' };
+Object.keys(CAS_SET_METAL).forEach(mk => {
+  const [mn, el, look] = CAS_SET_METAL[mk];
+  CAS_SET_PART.forEach(([k, sub, n, extra, time]) => {
+    const id = k + '_' + mk, name = CAS_SET_NAME[mk][k];
+    addItem(id, name, 'equip', { sh: k, m: 'gold', s: 'cloth3', a: 'ruby', fx: ['spark'] }, { st: 4, sub, tier: 6, desc: look + mn + 'の' + CAS_SET_DESC[k] + '。' + mn + 'のインゴットを打った一式の一つ。そろえてマネキンに飾れる。', gear: true, setof: mk });
+    const ins = [['ingot_' + mk, n], ['ingot_adamant', n]].concat(extra(el));
+    addRec(id, ins, 'smith', 20, time);
+    // data.js の computeValues はこの後で足した品に届かないので、同じ式でここで値段を入れる(No.296 の式)
+    IT[id].v = Math.max(2, Math.round(ins.reduce((a, [i, q]) => a + IT[i].v * q, 0) * (1 + PRICE_MARGIN) + time * priceWage(20) + 20 * 0.8));
+    if (['sword', 'shield', 'helmet', 'armor'].includes(k)) {
+      const bid = 'broken_' + id;
+      addItem(bid, '壊れた' + name, 'equip', { sh: k, m: 'rust', s: 'rust', a: 'rust', fx: ['crack'] }, { st: 4, sub: '要修理', tier: 6, broken: true, desc: '冒険で傷んだ' + name + '。' + mn + 'のインゴットで修理できる。' });
+      IT[bid].v = Math.max(3, Math.round(IT[id].v * 0.32));
+      addRec(id, [[bid, 1], ['ingot_' + mk, 1]], 'smith', 20, 1, { id: 'rep_' + id, repair: true });
+    }
+  });
+});
 const casCoinOf = id => IT[id] ? Math.ceil((IT[id].v || 0) * 1.25 / CAS_PRICE) : 0;   // No.297
 function casPrizes() {
   // 2026-11-15 作者: 店頭で買える品・まだ行けないダンジョンのレアは置かない(ダンジョンの値打ちを守る)。目玉4品は最初から全部並べる。
@@ -30165,7 +30201,7 @@ const TITLE_ART={"background": "data:image/webp;base64,UklGRkD3CQBXRUJQVlA4IDT3C
 // ベース版。見た目・ロゴ・背景の仕上げは Work と詰める。ゲーム名は TITLE_NAME の1か所で差し替える。
 const TITLE_NAME = 'Re:turn';
 const TITLE_SUB = '辺境の万事屋は、今日も灯りをともす';
-const TITLE_GOLD = [400, 600, 1000];
+const TITLE_GOLD = [500, 1000, 2000];
 const TITLE_BGM = 'title';   // タイトルの曲「灯のともる場所」(No.194 2026-10-31。TRACKS のキー)
 const TITLE = { on: false, el: null, cv: null, raf: 0, last: 0, view: 'top', pick: 1, newSlot: 0, G: null, done: null };
 const TITLE_SKIP = (() => { try { return /notitle/.test(location.hash); } catch (e) { return false; } })();
@@ -30210,7 +30246,7 @@ function titleHtml() {
   } else if (TITLE.view === 'new') {
     menu = `<div class="tt-h">はじめから:どのセーブに作りますか?</div><div class="tt-slots">` + [1, 2, 3].map(n => `<button class="btn tt-slot${TITLE.newSlot === n ? ' on' : ''}" data-tt="nslot" data-n="${n}"><b>セーブ${n}</b><span>${has[n - 1] ? esc(titleLabel(has[n - 1])) : 'あき'}</span></button>`).join('') + `</div>` +
       (TITLE.newSlot && has[TITLE.newSlot - 1] ? `<p class="tt-warn">セーブ${TITLE.newSlot}の店は消えて、最初からになります。</p>` : '') +
-      (TITLE.newSlot ? `<div class="tt-h">最初の元手は?</div><div class="tt-slots">` + TITLE_GOLD.map(g => `<button class="btn tt-gold" data-tt="gold" data-g="${g}"><b>${g}G</b><span>${g === 400 ? 'きびしめ' : g === 600 ? 'ふつう' : 'ゆったり'}</span></button>`).join('') + `</div>` : '') +
+      (TITLE.newSlot ? `<div class="tt-h">最初の元手は?</div><div class="tt-slots">` + TITLE_GOLD.map(g => `<button class="btn tt-gold" data-tt="gold" data-g="${g}"><b>${g}G</b><span>${g === 500 ? 'きびしめ' : g === 1000 ? 'ふつう' : 'ゆったり'}</span></button>`).join('') + `</div>` : '') +
       `<button class="btn ghost" data-tt="top">もどる</button>`;
   } else if (TITLE.view === 'set') {
     const sync = typeof SYNC !== 'undefined' && SYNC.on;
