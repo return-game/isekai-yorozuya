@@ -14642,6 +14642,10 @@ function roarFeed(k) {
 // No.283e: カジノの効果音(作者の音源。bgm/ の se_cas_*.mp3)。file:// でも鳴るよう audio 要素で鳴らす。読めない時(claude.ai など)は合成の音で代わりに鳴らす
 const SE_FILES = { cas_door: 'se_cas_gate.mp3', cas_lever: 'se_cas_lever.mp3', cas_stop: 'se_cas_stop.mp3', cas_bonusstop: 'se_cas_bonusstop.mp3', cas_replay: 'se_cas_replay.mp3', cas_role: 'se_cas_win.mp3', cas_bonus: 'se_cas_bonus.mp3', cas_chip: 'se_cas_chip.mp3', cas_deal4: 'se_cas_deal4.mp3', cas_deal: 'se_cas_deal.mp3', cas_flip: 'se_cas_flip.mp3', cas_shuf1: 'se_cas_shuf1.mp3', cas_shuf2: 'se_cas_shuf2.mp3', cas_roll: 'se_cas_roll.mp3', cas_drop: 'se_cas_drop.mp3', cas_reach: 'se_cas_reach.mp3', fs_land: 'se_fish_land.mp3', fs_thrash: 'se_fish_thrash.mp3', fs_line1: 'se_fish_line1.mp3', fs_line2: 'se_fish_line2.mp3', fs_line3: 'se_fish_line3.mp3', fs_catch: 'se_fish_catch.mp3', fs_cast: 'se_fish_cast.mp3', fs_bite: 'se_fish_bite.mp3', fs_card: 'se_fish_card.mp3', fs_big: 'se_fish_big.mp3', cas_ball: 'se_cas_ball.mp3', mg_taiko_don: 'se_matsuri_don.mp3', mg_taiko_miss: 'se_matsuri_miss.mp3', mg_prep_cut: 'se_prep_cut_A.mp3', mg_prep_cutB: 'se_prep_cut_B.mp3', mg_prep_cutC: 'se_prep_cut_C.mp3', mg_prep_miss: 'se_prep_miss.mp3', mg_bow_pull: 'se_bow_pull.mp3', mg_bow_shot: 'se_bow_shot.mp3', mg_bow_hit: 'se_bow_hit.mp3', mg_oya_hit: 'se_oya_hit.mp3', mg_oya_metal: 'se_oya_metal.mp3', mg_flask_bub: 'se_flask_bubble.mp3', mg_pub_pour: 'se_pub_pour.mp3', mg_rune_decide: 'se_rune_decide.mp3', mg_watch_decide: 'se_watch_decide.mp3', mg_wipe: 'se_wipe.mp3', mg_forge_stop: 'se_forge_stop.mp3', mg_magic_shot: 'se_magic_shot.mp3' };   // No.318: 祭りの太鼓(当たり=和太鼓でドン・ずれ=ビープ音3)   // No.289: 釣りの効果音(作者の音源)
 const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_stop_syn', cas_bonusstop: 'cas_stop_syn', cas_replay: 'mg_good', cas_role: 'cas_win', cas_bonus: 'cas_lamp', cas_chip: 'ar_bet', cas_deal4: 'mg_pluck', cas_deal: 'mg_pluck', cas_flip: 'mg_pluck', cas_shuf1: 'tab', cas_shuf2: 'tab', cas_roll: 'mg_whoosh', cas_drop: 'mg_tick', cas_reach: 'cas_reach_syn', fs_land: 'mg_plop', fs_thrash: 'mg_tap', fs_line1: 'mg_thunk', fs_line2: 'mg_bubble', fs_line3: 'mg_reel', fs_catch: 'mg_plop', fs_cast: 'mg_whoosh', fs_bite: 'mg_bubble', fs_card: 'good', fs_big: 'crit', cas_ball: 'mg_tick', mg_taiko_don: 'mg_drum', mg_taiko_miss: 'mg_miss', mg_prep_cut: 'mg_zaku', mg_prep_cutB: 'mg_zaku', mg_prep_cutC: 'mg_zaku', mg_prep_miss: 'mg_miss', mg_bow_pull: 'mg_tap', mg_bow_shot: 'mg_whoosh', mg_bow_hit: 'mg_thunk', mg_oya_hit: 'anvil', mg_oya_metal: 'mg_tick', mg_flask_bub: 'mg_bubble', mg_pub_pour: 'mg_glug', mg_rune_decide: 'mg_tick', mg_watch_decide: 'mg_tick', mg_wipe: 'mg_tick', mg_forge_stop: 'mg_tick', mg_magic_shot: 'mg_whoosh' };
+
+// No.334: 闘技場の斬る・打つ・躱す・必殺の音(作者の音源)
+Object.assign(SE_FILES, {ar_clang1: 'se_ar_clang1.mp3', ar_clang2: 'se_ar_clang2.mp3', ar_clang3: 'se_ar_clang3.mp3', ar_cut1: 'se_ar_cut1.mp3', ar_cut2: 'se_ar_cut2.mp3', ar_cut3: 'se_ar_cut3.mp3', ar_fin_axe: 'se_ar_fin_axe.mp3', ar_fin_combo: 'se_ar_fin_combo.mp3', ar_fin_punch: 'se_ar_fin_punch.mp3', ar_guard: 'se_ar_guard.mp3', ar_jump: 'se_ar_jump.mp3', ar_knife1: 'se_ar_knife1.mp3', ar_knife2: 'se_ar_knife2.mp3', ar_land: 'se_ar_land.mp3', ar_punchH1: 'se_ar_punchH1.mp3', ar_punchH2: 'se_ar_punchH2.mp3', ar_punchH3: 'se_ar_punchH3.mp3', ar_punchL: 'se_ar_punchL.mp3', ar_swish_k1: 'se_ar_swish_k1.mp3', ar_swish_k2: 'se_ar_swish_k2.mp3', ar_swish_p2: 'se_ar_swish_p2.mp3', ar_swish_p3: 'se_ar_swish_p3.mp3', ar_swish_s1: 'se_ar_swish_s1.mp3', ar_swish_s2: 'se_ar_swish_s2.mp3', ar_swish_s3: 'se_ar_swish_s3.mp3', ar_fire1: 'se_ar_fire1.mp3', ar_spear: 'se_ar_spear.mp3', ar_axe1: 'se_ar_axe1.mp3', ar_cheer: 'se_ar_cheer.mp3', ar_bang: 'se_ar_bang.mp3', ar_dodon: 'se_ar_dodon.mp3'});
+Object.assign(SE_ALT, {ar_clang1: 'ar_clash', ar_clang2: 'ar_clash', ar_clang3: 'ar_clash', ar_cut1: 'ar_hit', ar_cut2: 'ar_hit', ar_cut3: 'ar_hit', ar_fin_axe: 'ar_crit', ar_fin_combo: 'ar_crit', ar_fin_punch: 'ar_crit', ar_guard: 'ar_clash', ar_jump: 'mg_whoosh', ar_knife1: 'ar_hit', ar_knife2: 'ar_hit', ar_land: 'mg_good', ar_punchH1: 'ar_hit', ar_punchH2: 'ar_hit', ar_punchH3: 'ar_hit', ar_punchL: 'ar_hit', ar_swish_k1: 'mg_whoosh', ar_swish_k2: 'mg_whoosh', ar_swish_p2: 'mg_whoosh', ar_swish_p3: 'mg_whoosh', ar_swish_s1: 'mg_whoosh', ar_swish_s2: 'mg_whoosh', ar_swish_s3: 'mg_whoosh', ar_fire1: 'mg_magic_shot', ar_spear: 'ar_hit', ar_axe1: 'ar_hit', ar_cheer: 'ar_crowd', ar_bang: 'ar_gong', ar_dodon: 'rune'});
 const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
 const SE_NOW = {};
 function seReady(k) { const a = SE_EL[k]; return !!(a && !a._bad && a.readyState >= 2); }   // No.289: 音源ファイルが読めているか
@@ -26507,19 +26511,42 @@ function arFightView() {
 function arMid(t, cls) { const m = $('#armid'); if (!m) return; m.innerHTML = `<div class="ar-call ${cls || ''}">${t}</div>`; }
 const arAnim = (id, cls) => { const e = $(id); if (!e) return; e.classList.remove(cls); void e.offsetWidth; e.classList.add(cls); };
 // 一撃(ふつう・会心)。f=攻める側の絵の有無で動きを変える
+// No.334: 闘技場の音(作者の音源)。闘士ごとに武器(剣・ナイフ・拳・槌・槍・蹴り・魔法・弓)で音を分ける。同じ音が続けて鳴らないように選ぶ
+const AR_SW = { s: ['ar_swish_s1', 'ar_swish_s2', 'ar_swish_s3'], p: ['ar_swish_p2', 'ar_swish_p3'], k: ['ar_swish_k1', 'ar_swish_k2'] };
+const AR_WP = {
+  sword: { swing: AR_SW.s, hit: ['ar_cut1', 'ar_cut2', 'ar_cut3'], crit: ['ar_cut3'] },
+  twin: { swing: AR_SW.s, hit: ['ar_cut1', 'ar_cut2', 'ar_clang1', 'ar_clang2', 'ar_clang3'], crit: ['ar_cut3', 'ar_clang3'] },
+  shield: { swing: AR_SW.s, hit: ['ar_clang1', 'ar_clang2', 'ar_clang3', 'ar_cut2'], crit: ['ar_clang3', 'ar_cut3'] },
+  knife: { swing: AR_SW.s, hit: ['ar_knife1', 'ar_knife2'], crit: ['ar_knife2'] },
+  fist: { swing: AR_SW.p, hit: ['ar_punchL', 'ar_punchH1', 'ar_punchH2'], crit: ['ar_punchH3'] },
+  hammer: { swing: AR_SW.p, hit: ['ar_punchH1', 'ar_punchH2', 'ar_punchH3'], crit: ['ar_punchH3'] },
+  spear: { swing: AR_SW.s, hit: ['ar_spear'], crit: ['ar_spear', 'ar_knife2'] },
+  kick: { swing: AR_SW.k, hit: ['ar_punchL', 'ar_punchH2'], crit: ['ar_punchH1'] },
+  magic: { swing: ['ar_fire1'], hit: ['ar_punchL', 'ar_clang2'], crit: ['ar_clang3'] },
+  fsword: { swing: ['ar_swish_s1', 'ar_swish_s2'], hit: ['ar_cut1', 'ar_cut2', 'ar_cut3'], crit: ['ar_cut3'], fire: 1 },
+  great: { swing: ['ar_swish_s2', 'ar_swish_s3'], hit: ['ar_axe1', 'ar_cut3', 'ar_cut2'], crit: ['ar_axe1', 'ar_cut3'] },
+  axe: { swing: ['ar_swish_s3', 'ar_swish_p3'], hit: ['ar_axe1'], crit: ['ar_axe1', 'ar_punchH3'] },
+  club: { swing: AR_SW.p, hit: ['ar_punchH1', 'ar_punchH2', 'ar_punchL'], crit: ['ar_punchH3'] },
+  bow: { swing: ['mg_bow_shot'], hit: ['mg_bow_hit'], crit: ['mg_bow_hit'] },
+};
+const AR_WPN = { gald: 'great', sera: 'bow', loic: 'shield', tio: 'knife', milda: 'axe', rine: 'sword', bran: 'hammer', elm: 'sword', kai: 'twin', niko: 'knife', dolka: 'hammer', vera: 'sword', iris: 'sword', leona: 'great', nina: 'club', zeno: 'magic', karina: 'spear', vald: 'spear' };
+const AR_FIN = { great: 'ar_fin_combo', axe: 'ar_fin_axe', club: 'ar_fin_punch', hammer: 'ar_fin_punch', fist: 'ar_fin_punch', kick: 'ar_fin_punch', sword: 'ar_fin_combo', twin: 'ar_fin_combo', shield: 'ar_fin_axe', spear: 'ar_fin_axe', knife: 'ar_fin_combo', magic: 'ar_fin_axe', bow: 'ar_fin_axe' };
+const arWp = f => AR_WP[AR_WPN[f.id]] || AR_WP.sword;
+const arLast = {};
+function arSePick(list) { const key = list[0]; let k; do { k = list[Math.floor(Math.random() * list.length)]; } while (list.length > 1 && k === arLast[key]); arLast[key] = k; return k; }
 async function arStrike(e, b) {
   const a = e.a, d = 1 - a, sa = arHasSpr(b.f[a]), sd = arHasSpr(b.f[d]), bow = sa && ARS[b.f[a].id].bow;
   if (sa) { ARN.hold[a] = 1; arSet(a, 2); await arWait(e.k === 'crit' ? 260 : 170); arSet(a, 3); if (!bow) arAnim('#arsp' + a, 'step'); else arArrow(a, e.k === 'crit'); }
   else arAnim('#arfig' + a, 'lunge');
-  sfx(bow ? 'mg_whoosh' : 'mg_whoosh'); await arWait(bow ? 200 : 150);
+  sfx(arSePick(arWp(b.f[a]).swing)); await arWait(bow ? 200 : 150);
   if (e.k === 'miss') {
-    arPop(d, 'かわした', 'miss');
+    arPop(d, 'かわした', 'miss'); sfx('ar_jump'); setTimeout(() => sfx('ar_land'), 300);
     if (sd) { ARN.hold[d] = 1; arSet(d, 5); arAnim('#arsp' + d, 'hop'); } else arAnim('#arfig' + d, 'dodge');
   } else {
     if (sd) { ARN.hold[d] = 1; arSet(d, 4); arAnim('#arsp' + d, 'knock'); } else { arAnim('#arfig' + d, 'hit'); }
     if (!bow) arSlash(d, e.k === 'crit');
-    if (e.k === 'crit') { sfx('ar_crit'); arFlash('#fff'); arShake(14); arPop(d, `会心 ${e.dmg}`, 'crit'); if (!sd) { const im = $('#arimg' + d); if (im) im.src = arPic(b.f[d], 'surprise'); } }
-    else { sfx(Math.random() < 0.5 ? 'ar_clash' : 'ar_hit'); arShake(6); arPop(d, String(e.dmg), ''); if (!sd) { const im = $('#arimg' + d); if (im && e.hp[d] / arStat(b.f[d]).hp < 0.4) im.src = arPic(b.f[d], 'trouble'); } }
+    if (e.k === 'crit') { sfx('ar_crit'); sfx(arSePick(arWp(b.f[a]).crit)); arFlash('#fff'); arShake(14); arPop(d, `会心 ${e.dmg}`, 'crit'); if (!sd) { const im = $('#arimg' + d); if (im) im.src = arPic(b.f[d], 'surprise'); } }
+    else { sfx(arSePick(arWp(b.f[a]).hit)); arShake(6); arPop(d, String(e.dmg), ''); if (!sd) { const im = $('#arimg' + d); if (im && e.hp[d] / arStat(b.f[d]).hp < 0.4) im.src = arPic(b.f[d], 'trouble'); } }
     arHp(e.hp);
   }
   await arWait(e.k === 'crit' ? 520 : 300);
@@ -26530,13 +26557,13 @@ async function arStrike(e, b) {
 async function arFinish(e, b, w) {
   const l = 1 - w, sw = arHasSpr(b.f[w]), sl = arHasSpr(b.f[l]), bow = sw && ARS[b.f[w].id].bow;
   ARN.hold = [1, 1]; arIdle(false);
-  ARN.el.classList.add('ar-dim'); arCutin(w); sfx('rune'); sfx('ar_crowd');
+  ARN.el.classList.add('ar-dim'); arCutin(w); sfx('rune');
   G.arena = G.arena || {}; G.arena.sp = G.arena.sp || {}; G.arena.sp[b.f[w].id] = 1;   // 名鑑: 必殺技を見た
   if (sw) { arSet(w, 6); $('#arsp' + w) && $('#arsp' + w).classList.add('aura'); }
   await arWait(1250);
   if (sw) { arSet(w, 7); if (!bow) arAnim('#arsp' + w, 'dash'); else arArrow(w, true); } else arAnim('#arfig' + w, 'lunge');
   await arWait(bow ? 220 : 160);
-  sfx('ar_crit'); sfx('ar_gong'); arFlash('#fff'); arShake(22); if (!bow) arSlash(l, true); else arSlash(l, true);
+  sfx('ar_crit'); sfx(AR_FIN[AR_WPN[b.f[w].id]] || 'ar_fin_combo'); sfx('ar_bang'); sfx('ar_cheer'); arFlash('#fff'); arShake(22); if (!bow) arSlash(l, true); else arSlash(l, true);
   arPop(l, '必殺!', 'crit'); arHp(e.hp);
   if (sl) { arSet(l, 4); arAnim('#arsp' + l, 'knock'); } else arAnim('#arfig' + l, 'hit');
   await arWait(700);
@@ -26546,11 +26573,11 @@ async function arFinish(e, b, w) {
 async function arFight() {
   const R = ARN.run, b = R.bout; R.state = 'fight';
   const res = arSim(b.f[0], b.f[1], b.hp0);
-  ARN.anim = true; ARN.fast = false; arFightView(); sfx('ar_crowd');
+  ARN.anim = true; ARN.fast = false; try { sePreload(); } catch (x) { } arFightView(); sfx('ar_cheer');
   await arWait(500); arSay(0, b.f[0].in); sfx('tap'); await arWait(1500);
   arSay(1, b.f[1].in); sfx('tap'); await arWait(1500);
   [0, 1].forEach(i => { const s = $('#arsay' + i); if (s) s.classList.remove('show'); });
-  arMid('始め!', 'go'); sfx('ar_gong'); await arWait(900); arMid('');
+  arMid('始め!', 'go'); sfx('ar_gong'); sfx('ar_dodon'); await arWait(900); arMid('');
   const ev = res.ev, w = res.w, l = 1 - w;
   let fin = ev.length - 1; while (fin > 0 && ev[fin].k === 'miss') fin--;   // 決着の一撃(最後に当たった一撃)
   for (let k = 0; k < ev.length; k++) {
@@ -26563,7 +26590,7 @@ async function arFight() {
   await arWait(1500);
   arSay(w, b.f[w].win, 'smile'); if (arHasSpr(b.f[w])) arSet(w, 9); else { const fw = $('#arfig' + w); if (fw) fw.classList.add('win'); }
   { const fw = $('#arfig' + w); if (fw) fw.classList.add('win'); }
-  arMid(`${esc(b.f[w].n)} の勝ち!`, 'win'); sfx('ar_crowd'); await arWait(1500);
+  arMid(`${esc(b.f[w].n)} の勝ち!`, 'win'); await arWait(1500);
   ARN.anim = false;
   G.arena = Object.assign(G.arena || {}, { day: G.day }); G.arena.rec = G.arena.rec || {}; G.arena.rec[b.f[w].id] = (G.arena.rec[b.f[w].id] || 0) + 1;
   const hit = b.pick === w, stake = R.stake || 0;
@@ -26621,7 +26648,7 @@ function arNight() {
   $('#arsub').textContent = '今夜の興行・おしまい';
   S.innerHTML = `<div class="ar-win done"><div class="ar-wint">今夜の勝者</div><div class="ar-champ">${arHasSpr(f) ? `<img class="spr" src="${ARS_IMG[f.id][9]}" alt="">` : `<img src="${arPic(f, 'smile')}" alt="">`}</div><div class="ar-winpot" style="font-size:clamp(26px,5vw,40px)">${esc(f.n)}<small>「${esc(f.ni)}」</small></div><div class="ar-winsub">${esc(f.win)}</div></div>`;
   P.innerHTML = arMcH(`今夜の勝者は、${f.n}! ……さあ、拍手で送ってやりな。また明日おいで`) + `<div class="ar-acts"><button class="ar-go" data-act="arclose">席を立つ</button></div>`;
-  sfx('ar_win'); sfx('ar_crowd'); if (typeof confetti === 'function') confetti();
+  sfx('ar_win'); sfx('ar_cheer'); if (typeof confetti === 'function') confetti();
 }
 // ---------- 押した時 ----------
 function arAct(a, v) {
