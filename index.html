@@ -386,7 +386,7 @@ details[open] summary::after { content: '閉じる'; }
   .tab.on::before { top: 10px; bottom: 10px; left: 0; width: 2px; height: auto; margin: 0; }
   .tab .dot { position: static; }
   #side { display: block; flex: none; margin-top: 10px; }
-  #panel .orders-sec { display: none; }
+  #panel .orders-sec:not(.nightoffers) { display: none; }
   .main-col { padding-top: 18px; }
   #panel { padding-top: 6px; padding-right: 6px; }
   .actionbar { justify-content: flex-end; }
