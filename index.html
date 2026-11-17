@@ -3591,6 +3591,8 @@ body.btl-open{overflow:hidden}
 
 /* No.311 作者: 売れた時の吹き出し(チェックなどの絵)は PC・スマホとも出さない */
 .ss .ss-cust .emote { display: none !important; }
+/* No.344 PC幅の朝市: 品が多い時に下が切れず、品の欄の中でスクロールする */
+@media (min-width: 1600px) { #panel.fit > .stack > .counter-market { align-self: stretch; height: 100%; } #panel.fit .counter-market .market-products { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(217, 184, 116, .35) transparent; } }
 
 </style>
 <div id="app">
@@ -8133,7 +8135,7 @@ const SHADOW_N = ['小', '中', '大', '特大'];
 const FISH_D = [26, 36, 48, 58, 70, 82];   // how hard each tier is to follow in the minigame
 const FISH_W = [10, 8, 5, 3, 1.5, 0.45];  // how often each tier bites
 const FISH_PTS = [1, 2, 3, 5, 8, 20];     // points for landing one
-const FISH_CASTS = 10, BAIT_N = 10, BAIT_G = 50, BAIT_MAX = 3, FISH_DECAY = 0.04;
+const FISH_CASTS = 10, BAIT_N = 10, BAIT_G = 50, BAIT_MAX = 3, BAIT_ONE = 5, BAIT_PACKS = [1, 5, 10], FISH_DECAY = 0.04;
 const RODS = [{ n: '竹の竿', cap: 2 }, { n: '樫の竿', cap: 4, g: 800 }, { n: '竜骨の竿', cap: 5, g: 3000 }];
 const REELS = [{ n: '手巻き', bar: 0 }, { n: '真鍮のリール', bar: 12, g: 600 }, { n: '銀のリール', bar: 24, g: 2500 }];
 // the keeper of each spot speaks only for a new kind or a new record
@@ -8144,7 +8146,7 @@ const FISH_LINES = {
 };
 // the keeper's words in the hut: the first visit explains; later, a short hello
 const FISH_HELLO = {
-  river: { intro: 'どうじゃった、坊。ここがわしの小屋じゃ。餌は10匹で50G、来るたびに分けてやる。釣れたら、わしが買うてやるでな。', hi: ['今日の川は機嫌がええ。', '急がんでええ。川は逃げん。', '大物を狙うなら、奥の淵じゃ。'] },
+  river: { intro: 'どうじゃった、坊。ここがわしの小屋じゃ。餌はわしが分けてやる、1匹5Gじゃ。釣れたら、わしが買うてやるでな。', hi: ['今日の川は機嫌がええ。', '急がんでええ。川は逃げん。', '大物を狙うなら、奥の淵じゃ。'] },
   lake: { intro: 'ここがわたしの小屋です! 釣れた子は、わたしが買い取りますね。……お兄さんの釣った子なら、ちょっと高めに、なんて。', hi: ['あっ、お兄さん! 今日は沖が静かですよ。', '図鑑、どこまで埋まりました? ……わたしの方が、まだ詳しいですからね。', '夜の湖には、不思議な子が来るんです。……一緒に見たいなあ、なんて。'] },
   sea: { intro: 'ここが俺の小屋だ。釣ったら持ってこい、目方で買ってやる! いい竿が欲しけりゃ、稼いで買いな。', hi: ['防波堤の先は大物が来るぞ。', '潮がいい。今日は揚がるぜ。', 'いい竿が欲しけりゃ、稼いで買いな。'] },
 };
@@ -8155,6 +8157,7 @@ function fishState() {
   // No.343: 釣りポイントはなくした。たまっていた分は1ポイント2Gで1回だけGに替える
   if (s.pts > 0) { const g = Math.round(s.pts * 2); G.gold += g; s.ptsG = (s.ptsG || 0) + g; s.pts = 0; setTimeout(() => { try { toast(`<div>釣りポイントをなくしました。たまっていた分を ${fmt(g)}G に替えました</div>`); } catch (e) { } }, 800); }
   if (s.soldDay !== G.day) { s.sold = {}; s.soldDay = G.day; }
+  if (s.bait == null) s.bait = 0;   // No.345: 餌は持ち越し。買うのは作者の意志で(釣り場の「道具」から)
   return s;
 }
 const fishOpenSpots = () => FISH_SPOTS.filter(s => s.open());
@@ -8198,12 +8201,11 @@ function fishNextOld() {
 // No.343(2026-11-17 作者): 釣りはいつでも行ける。時間は進まず、冒険者の探索も進まない。餌は10匹50G(追加は1回の釣りで3回まで)
 function fishTrip(spot, back) {
   const st = fishState(); st.met = st.met || {};
-  G.gold -= BAIT_G;
-  G.fishing = { spot, sub: SPOT[spot].subs[0][0], casts: FISH_CASTS, buys: 0, bag: [], streak: 0, n: 0, intro: !st.met[spot], hello: Math.floor(Math.random() * 3), back };
+  G.fishing = { spot, sub: SPOT[spot].subs[0][0], casts: st.bait, buys: 0, bag: [], streak: 0, n: 0, intro: !st.met[spot], hello: Math.floor(Math.random() * 3), back };
   st.met[spot] = 1;
 }
 function fishGo(spot) {
-  if (!SPOT[spot] || !SPOT[spot].open() || G.act === 'fish' || G.tut >= 0 || !FLOW.includes(G.act) || G.gold < BAIT_G) return false;
+  if (!SPOT[spot] || !SPOT[spot].open() || G.act === 'fish' || G.tut >= 0 || !FLOW.includes(G.act)) return false;
   const back = { act: G.act, slot: G.slot, phase: G.phase };
   G.act = 'fish';
   fishTrip(spot, back);
@@ -8212,8 +8214,9 @@ function fishGo(spot) {
 // ほかの釣り場へ(時間は進まない。びくの魚は持ち帰り、餌は新しく買う)
 function fishGoNext(spot) {
   const f = G.fishing;
-  if (!SPOT[spot] || !SPOT[spot].open() || G.act !== 'fish' || G.tut >= 0 || !f || G.gold < BAIT_G) return false;
+  if (!SPOT[spot] || !SPOT[spot].open() || G.act !== 'fish' || G.tut >= 0 || !f) return false;
   for (const c of f.bag) invAdd(c.id, c.q, 1, true);
+  fishState().bait = f.casts;
   fishTrip(spot, f.back);
   return true;
 }
@@ -8221,14 +8224,15 @@ function fishNextSheet() {
   const f = G.fishing; if (!f) return;
   const spots = FISH_SPOTS.filter(x => x.open() && x.id !== f.spot);
   openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(G.slot)}</div><h2>ほかの釣り場へ行きますか？</h2>` +
-    `${f.bag.length ? `<p>びくの魚${f.bag.length}匹は、倉庫に持ち帰ります。</p>` : ''}<p class="sub">餌は新しく${FISH_CASTS}匹(${BAIT_G}G)。時間は進みません。</p><div class="btns" style="flex-direction:column">` +
-    spots.map((x, i) => `<button class="btn${i ? '' : ' pri'} big" data-act="fshnextgo" data-v="${x.id}"${G.gold >= BAIT_G ? '' : ' disabled'}${i ? '' : ' data-focus'}>${x.n}で釣る</button>`).join('') +
+    `${f.bag.length ? `<p>びくの魚${f.bag.length}匹は、倉庫に持ち帰ります。</p>` : ''}<p class="sub">餌${f.casts}匹は持ったまま移ります。時間は進みません。</p><div class="btns" style="flex-direction:column">` +
+    spots.map((x, i) => `<button class="btn${i ? '' : ' pri'} big" data-act="fshnextgo" data-v="${x.id}"${i ? '' : ' data-focus'}>${x.n}で釣る</button>`).join('') +
     `<button class="btn ghost big" data-act="sleepno">やめておく</button></div></div>`, { crumb: [SPOT[f.spot].n + 'の釣り場', 'ほかの釣り場'] });
 }
 // leaving the water: what is still in the creel goes home; the day moves on as usual
 function fishLeave() {
   const f = G.fishing;
   if (f) for (const c of f.bag) invAdd(c.id, c.q, 1, true);
+  if (f) fishState().bait = f.casts;   // No.345: 残った餌は持ち越す
   const b = f && f.back;
   G.fishing = null;
   if (b) { G.act = b.act; G.slot = b.slot; G.phase = b.phase; return 'back'; }
@@ -8238,10 +8242,11 @@ function fishLeave() {
   beginAct(FLOW[s + 1]);
   return 'next';
 }
-function fishBuyBait() {
-  const f = G.fishing, s = fishState(); if (!f || f.buys >= BAIT_MAX || G.gold < BAIT_G) return false;
-  G.gold -= BAIT_G; f.buys++; f.casts += BAIT_N; return true;
+function fishBuyBait(n) {
+  const f = G.fishing, s = fishState(); n = Math.max(1, n | 0); const g = n * BAIT_ONE; if (G.gold < g) return false;
+  G.gold -= g; s.bait += n; if (f) f.casts += n; save(); return true;
 }
+const fishBaitHave = () => G.fishing ? G.fishing.casts : fishState().bait;
 function fishSell(mode, i) {
   const f = G.fishing, s = fishState(); if (!f || !f.bag.length) return 0;
   const list = i == null ? f.bag.slice() : [f.bag[i]].filter(Boolean);
@@ -8294,7 +8299,7 @@ function fishMenu() {
   }).join('');
   const got = Object.keys(s.dex).length;
   const h = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">釣り</div><h2>釣り場</h2></div></div>` +
-    (at ? `<p class="note">いまは${SPOT[at.spot].n}で釣りをしている。</p>` : `<p class="note">釣り場へはいつでも行けます。時間は進まず、冒険者の探索も進みません。体力は使いません。餌は${FISH_CASTS}匹${BAIT_G}G。</p>`) +
+    (at ? `<p class="note">いまは${SPOT[at.spot].n}で釣りをしている。</p>` : `<p class="note">釣り場へはいつでも行けます。時間は進まず、冒険者の探索も進みません。体力は使いません。餌は1匹${BAIT_ONE}G。この画面の「道具」で買い、残りは持ち越します。</p>`) +
     `<div class="row" style="gap:12px;margin:6px 0"><span>図鑑 <b>${got}</b>/${FISH.length}</span><span>${RODS[s.rod].n}・${REELS[s.reel].n}</span></div>` +
     `<div class="chips fsh-tabs"><button class="chip${UI.fshView === 'dex' ? '' : ' on'}" data-act="fshview" data-v="spots">釣り場と道具</button><button class="chip${UI.fshView === 'dex' ? ' on' : ''}" data-act="fshview" data-v="dex">魚の図鑑 <span class="n">${got}/${FISH.length}</span></button></div>` +
     (UI.fshView === 'dex' ? fishDexHtml() : `<div class="rows">${spots}</div>` + fishGearHtml());
@@ -8318,13 +8323,14 @@ function fishGearHtml() {
   const s = fishState();
   const row = (kind, list, what) => { const cur = list[s[kind]], nx = list[s[kind] + 1];
     return `<div class="ri"><div style="min-width:0;flex:1"><b>${cur.n}</b><div class="sub">${what(cur)}</div></div>${nx ? `<button class="btn sm" data-act="fshgear" data-v="${kind}"${G.gold >= nx.g ? '' : ' disabled'}>${nx.n}を買う<small>(${fmt(nx.g)}G)</small></button>` : '<span class="sub">いちばん良い物</span>'}</div>`; };
-  return `<h3 style="margin-top:10px">道具(Gで買う)</h3><div class="rows">` +
+  const bait = `<div class="ri"><div style="min-width:0;flex:1"><b>餌</b><div class="sub">持っている餌 ${fishBaitHave()}匹(1匹${BAIT_ONE}G)</div></div><div class="row" style="gap:6px">` + BAIT_PACKS.map(n => `<button class="btn sm" data-act="fshbait" data-v="${n}"${G.gold >= n * BAIT_ONE ? '' : ' disabled'}>${n}匹<small>(${n * BAIT_ONE}G)</small></button>`).join('') + `</div></div>`;
+  return `<h3 style="margin-top:10px">道具(Gで買う)</h3><div class="rows">` + bait +
     row('rod', RODS, r => `掛かる魚の格 ${r.cap}まで`) + row('reel', REELS, r => r.bar ? `追うバーが太い(+${r.bar})` : 'ふつうのバー') + `</div>`;
 }
 function fishConfirm(spot) {
   const sp = SPOT[spot], nx = fishNext(); if (!sp || !nx) return;
   const where = G.act === 'market' ? '朝市' : G.act === 'shop' ? '店先' : '夜の工房';
-  openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(G.slot)}</div><h2>${fishSlotP(nx.slot)}の${sp.n}へ行きますか？</h2><p>餌${FISH_CASTS}匹を${BAIT_G}Gで買って行きます。時間は進まず、戻ればそのまま続きから。</p>${G.gold < BAIT_G ? '<p class="bad">お金が足りません。</p>' : ''}${G.act === 'work' && G.work ? `<p>体力があと${G.work}残っています。</p>` : ''}${G.act === 'shop' && sellableStock() ? `<p>売り物があと${sellableStock()}個あります。</p>` : ''}` +
+  openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(G.slot)}</div><h2>${fishSlotP(nx.slot)}の${sp.n}へ行きますか？</h2><p>持っている餌 ${fishState().bait}匹。時間は進まず、戻ればそのまま続きから。</p>${fishState().bait ? '' : '<p class="bad">餌がありません。釣り場の「道具」で買えます。</p>'}${G.act === 'work' && G.work ? `<p>体力があと${G.work}残っています。</p>` : ''}${G.act === 'shop' && sellableStock() ? `<p>売り物があと${sellableStock()}個あります。</p>` : ''}` +
     `<button class="btn pri big" data-act="fshgo" data-v="${spot}" data-ok="1" data-focus>釣りに行く</button><button class="btn ghost big" data-act="sleepno">やめておく</button></div>`, { crumb: [where, sp.n + 'の釣り場'] });
 }
 // the main panel while fishing
@@ -8336,10 +8342,10 @@ function vFishMain() {
   const bagSum = f.bag.reduce((a, c) => a + fishPrice(c.id, c.q), 0), bagPts = f.bag.reduce((a, c) => a + fishPtsFor(c.id, c.q), 0);
   const bag = f.bag.map((c, i) => `<div class="ri fsh-bagrow"><span>${ico(c.id, c.q, { size: 'sm' })}</span><div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${c.cm}cm・${QUAL[c.q].n}</span></div><div class="fsh-sell"><button class="btn sm" data-act="fshsell" data-i="${i}">売る</button><span class="price">${fmt(fishPrice(c.id, c.q))}G</span></div></div>`).join('');
   const shadows = pool.map(x => `<span class="fsh-sh${s.dex[x.id] ? ' got' : ''}">${s.dex[x.id] ? ico(x.id, 0, { size: 'xs' }) : '<i></i>'}<small>${s.dex[x.id] ? x.n : '影' + SHADOW_N[x.shadow]}</small>${fishLast(x.id) ? FISH_LAST_TAG : ''}</span>`).join('');
-  const nb = fishState(), canBait = f.buys < BAIT_MAX && G.gold >= BAIT_G;
+  const nb = fishState(), canBait = true;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
     `<div class="fsh-hut${hasBg ? '' : ' nobg'}"${hasBg ? ` style="background-image:url('${IMG_BASE}${hutBg}.webp')"` : ''}>${CH_FILES.has(`ch_${sp.ch}_normal`) ? `<img class="fsh-keeper" src="${chURL(sp.ch, f.intro ? 'smile' : 'normal')}" alt="${sp.who}">` : ''}<div class="fsh-bub"><b>${sp.who}</b>${f.intro ? FISH_HELLO[f.spot].intro : FISH_HELLO[f.spot].hi[f.hello || 0]}</div></div>` +
-    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= 3 ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm" data-act="fshbait"${canBait ? '' : ' disabled'}>餌を買い足す<small>(+${BAIT_N}匹・${BAIT_G}G・あと${BAIT_MAX - f.buys}回)</small></button><button class="btn sm ghost" data-act="fshmenu">図鑑と道具</button>${subs}<button class="btn sm ghost" data-act="fshnext">ほかの釣り場へ<small>(餌${BAIT_G}G)</small></button></div></div>` +
+    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= 3 ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm" data-act="fshbait">餌を買う</button><button class="btn sm ghost" data-act="fshmenu">図鑑と道具</button>${subs}<button class="btn sm ghost" data-act="fshnext">ほかの釣り場へ<small>(餌${BAIT_G}G)</small></button></div></div>` +
     `<div class="fsh-lower"><div class="card"><h3>びく(${f.bag.length}匹)</h3>${f.bag.length ? `<div class="rows">${bag}</div><div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn pri" data-act="fshsell">${sp.who}に全部売る(+${fmt(bagSum)}G)</button></div><p class="note">売らずに帰ると、倉庫に持ち帰る(冒険者の食事に使える)。同じ魚は売るほど少し安くなる(翌日に戻る)。</p>` : '<p class="note">まだ何も釣れていない。</p>'}</div>` +
     `<div class="card"><h3>いま釣れる魚</h3><div class="fsh-shs">${shadows}</div></div></div></div>`;
 }
@@ -8400,9 +8406,9 @@ const FISH_ACTS = {
     // 2026-10-27: 初めて着いた釣り場では、主と出会う場面 → 主がついてきて水辺で教える
     if (G.fishing.intro && STORY['fish_meet_' + d.v]) storyPlay('fish_meet_' + d.v, { spot: d.v });
   },
-  fshleave: d => { if (!d.ok && G.fishing && (G.fishing.casts > 0 || G.fishing.bag.length)) {
+  fshleave: d => { if (!d.ok && G.fishing && G.fishing.bag.length) {
       const nx = '戻る';
-      openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(G.slot)}</div><h2>釣りを終えますか？</h2>${G.fishing.casts ? `<p>餌があと${G.fishing.casts}投残っています。</p>` : ''}${G.fishing.bag.length ? `<p>びくの魚${G.fishing.bag.length}匹は、倉庫に持ち帰ります。</p>` : ''}<button class="btn pri big" data-act="fshleave" data-ok="1" data-focus>釣りを終えて${nx}</button><button class="btn ghost big" data-act="sleepno">まだ釣る</button></div>`, { crumb: ['釣りを終える'] }); sfx('tap'); return false; }
+      openSheet(`<div class="celebrate"><div class="kicker">${G.day}日目の${fishSlotN(G.slot)}</div><h2>釣りを終えますか？</h2>${G.fishing.casts ? `<p>残りの餌${G.fishing.casts}匹は持ち越します。</p>` : ''}${G.fishing.bag.length ? `<p>びくの魚${G.fishing.bag.length}匹は、倉庫に持ち帰ります。</p>` : ''}<button class="btn pri big" data-act="fshleave" data-ok="1" data-focus>釣りを終えて${nx}</button><button class="btn ghost big" data-act="sleepno">まだ釣る</button></div>`, { crumb: ['釣りを終える'] }); sfx('tap'); return false; }
     if (UI.sheet) closeSheet(true); fishSceneClose();
     const r = fishLeave(); UI.tab = 'main'; UI.shopView = null; sceneWalkers(); sfx('door');
     if (r === 'back') { }
@@ -8423,7 +8429,7 @@ const FISH_ACTS = {
   fshup: () => { fishSceneClose(); render(); const f = G.fishing; if (f && f.lordPend) { const sp = f.lordPend; f.lordPend = null; save(); storyPlay('fish_lord_' + sp); } },
   fshagain: d => { const g0 = UI.gauge; if (g0) cancelAnimationFrame(g0.raf); const v = $('#gveil'); if (v) v.remove(); UI.gauge = null; render(); fishCast(d.v); return false; },
   fshback: () => { closeGauge(); return false; },
-  fshbait: () => { if (fishBuyBait()) sfx('buy'); },
+  fshbait: d => { if (!d.v) { fishMenu(); return false; } if (fishBuyBait(+d.v)) { sfx('buy'); if (UI.sheet) fishMenu(); } },
   fshsell: d => { const n = fishSell('g', d.i); if (n) { sfx('coin'); flyCoins(1); } },
   fshgear: d => { if (fishGear(d.v)) { sfx('level'); fishMenu(); } return false; },
 };
@@ -8816,7 +8822,7 @@ function wpick(list, wf) {
 }
 const fmt = n => Math.round(n).toLocaleString('ja-JP');
 const season = () => Math.floor(((G ? G.day : 1) - 1) / 7) % 4;
-const rawAvail = it => it.raw && !it.mystery && it.st <= G.stage && (it.season === undefined || it.season === season());
+const rawAvail = it => it.raw && !it.mystery && !it.casOnly && it.st <= G.stage && (it.season === undefined || it.season === season());
 
 const TOD = ['morning', 'day', 'night'];
 const SLOT_N = ['朝', '昼', '夜'];
@@ -9514,7 +9520,7 @@ function makeSeller(c, cls) {
       let it;
       const rareP = G.built.port ? 0.16 : 0.06;
       if (G.stage < 4 && Math.random() < rareP) {
-        it = pick(ITEMS.filter(x => x.raw && !x.mystery && x.st === G.stage + 1 && (x.season === undefined || x.season === season())));
+        it = pick(ITEMS.filter(x => x.raw && !x.mystery && !x.casOnly && x.st === G.stage + 1 && (x.season === undefined || x.season === season())));
       } else it = wpick(raws, x => (x.st === G.stage ? 2.2 : 1) / (1 + x.v / 12) * (x.id === 'm_dheart' ? 0.3 : 1) * (x.season !== undefined ? 2.5 : 1) * genrePull(x));
       if (!it || lot.some(l => l.id === it.id)) continue;
       lot.push({ id: it.id, n: it.v > 30 ? ri(1, 2) : ri(2, 5) });
@@ -9606,7 +9612,7 @@ function storyChoose(c, i) {
     const x = Math.random(), qs = ['q_box', 'q_scroll', 'q_stone'].filter(id => IT[id].st <= G.stage);
     let got;
     if (x < 0.45) got = [pick(qs), 1];
-    else if (x < 0.75) { const rs = ITEMS.filter(it => it.raw && !it.mystery && it.st <= Math.min(4, G.stage + 1) && it.season === undefined && it.v >= 15); got = [pick(rs).id, 2]; }
+    else if (x < 0.75) { const rs = ITEMS.filter(it => it.raw && !it.mystery && !it.casOnly && it.st <= Math.min(4, G.stage + 1) && it.season === undefined && it.v >= 15); got = [pick(rs).id, 2]; }
     else got = ['j_torn', 1];
     invAdd(got[0], 0, got[1]); extra = `中身は… ${IT[got[0]].name}${got[1] > 1 ? '×' + got[1] : ''}`;
   } else if (ch.fx === 'scholar') { gainFame(3); gainXp(12); extra = '名声アップ'; const p = (PAPERS.some(x => x.shade === c.item && !(G.papers || {})[x.id]) || Math.random() < 0.4) ? paperRandom(c.name, 'この品、学院の古い紙に描かれていた形にそっくりなんです。写しをどうぞ。', x => x.shade === c.item) : null; if (p) extra += '・レシピの紙をもらった'; }
@@ -9923,7 +9929,7 @@ function genStall() {
   const minStock = {};
   [...neededRaws(true)].filter(id => rawAvail(IT[id])).forEach(id => { minStock[id] = need[id] || 0; });
   if (G.stage < 4 && (G.built.port || G.day % 3 === 0)) {   // No.212 (作者): 港ができるまでも、3日に1回は次の章の素材を1品
-    const nx = ITEMS.filter(x => x.raw && !x.mystery && x.st === G.stage + 1 && (x.season === undefined || x.season === season()));
+    const nx = ITEMS.filter(x => x.raw && !x.mystery && !x.casOnly && x.st === G.stage + 1 && (x.season === undefined || x.season === season()));
     if (nx.length) ids.add(pick(nx).id);
   }
   const price = it => {
@@ -9944,7 +9950,7 @@ function genStall() {
   // Haru's caravan (a reward for repaying the chief): next-chapter goods and the odd mystery item (No.213: 高い素材の代わりに次の章の素材をもう1品)
   if (G.loan && G.loan.ms >= 2 && (G.day % 3 !== 1)) {
     const car = [];
-    if (G.stage < 4) { const nx = shuffle(ITEMS.filter(x => x.raw && !x.mystery && x.st === G.stage + 1 && x.season === undefined && !ids.has(x.id))); car.push(...nx.slice(0, 2)); }
+    if (G.stage < 4) { const nx = shuffle(ITEMS.filter(x => x.raw && !x.mystery && !x.casOnly && x.st === G.stage + 1 && x.season === undefined && !ids.has(x.id))); car.push(...nx.slice(0, 2)); }
     if (Math.random() < 0.35) { const qs = ['q_box', 'q_scroll', 'q_stone'].filter(id => IT[id].st <= G.stage); if (qs.length) car.push(IT[pick(qs)]); }
     car.forEach(it => G.stall.push({ id: it.id, price: Math.round(price(it) * (it.mystery ? 1.6 : 1.1)), stock: it.v > 40 ? ri(1, 2) : ri(2, 4), min: 0, m: 'caravan' }));
   }
@@ -16479,6 +16485,7 @@ function dexHint(it) {
   if (it.relic) return '「謎の品」を鑑定すると見つかることがある。';
   if (it.mystery) return '旅人が遺跡で拾ったものを持ち込むことがある。' + (it.st > G.stage ? '(街がもっと発展してから)' : '');
   if (it.broken) return '冒険でボロボロになった武具を、冒険者が売りに来ることがある。' + (it.st > G.stage ? '(街がもっと発展してから)' : '');
+  if (it.casOnly) return 'カジノの景品の棚で、コインと交換できる。';   // No.344
   if (it.raw) return it.st > G.stage ? `街が「${STAGES[it.st].n}」まで発展すると、朝市や持ち込みで手に入るようになる。` : '朝市や、お客さんの持ち込みで手に入る。';
   const r = RC_BY_OUT[it.id];
   if (!r) return '入手方法はわからない。';
@@ -19931,7 +19938,7 @@ const DICT = [
   { k: 'fac', n: '施設で売る', t: ['建った鍛冶通り・診療所・宿屋・教会・冒険者ギルドでは、昼も夜も品物を売れる(街の「施設」から。ギルドは下の「ギルド」からも)。札は「売る・頼み事」の1つで、頼み事があれば上に出る。体力は使わない。', '品物は相場の9割。その施設の得意な品は、自分で作った物なら相場どおり(店で普通に売るのと同じ)。施設ごとに毎朝1種類、「お目当て」の品があり、自分で作った物なら出来を問わず1.5倍(1日1個まで)。注文や建設に使う予定の品も、施設では売れる(行に目印が出る)。素材は基準値の6割。仕入れは朝市と問屋だけ。', '冒険者ギルド・診療所・宿屋は、頼み事(大口の注文)をくれる。材料は自分で用意し(朝市で買う・工房で作る)、夜の工房でミニゲーム1回・体力1回分でまとめて作れる。代金は相場どおり。'] },
   { k: 'arena', n: '闘技場の勝ち抜き戦', t: ['闘技場ができると、ダリアの施設のページに「勝ち抜き戦」の札が出る。1日1回・体力は使わない。', '二人の闘士の、どちらかに賭ける。闘士には型があり、剛は技に、技は迅に、迅は剛に強い。勝ち残った闘士は、傷を負ったまま次の試合に出る。倍率は客の読みなので、相性と傷をよく見れば少し得をする。', '当てたら「まだ行く(もうけを全部、次の試合に乗せる)」か「もう帰る」。最大5試合。外れたら賭けた分はなくなる。賭けの上限は章で上がる(300G→600G→1000G)。'] },
   { k: 'adv', n: '冒険者ギルド', t: ['冒険者ギルドが建つと、下の「ギルド」(街の広場・施設からも入れる)で、エマに探索を依頼できる。札は「冒険」(最初に開く)・「名簿」(仲間の募集)・「売る・頼み事」。', '「冒険」の札の左の「行き先」には、推奨のランク・最奥のぬし・武具の目安・レア・噂が書いてある。右の冒険者を押すと、その場で武具・道具袋・食事・手当てができる。渡した武具と袋の品は、帰ってきても持ったまま(袋の品は倉庫から出るので、店では売れない)。行き先を選び、冒険者を1〜3人「選ぶ」と、下の帯から送り出せる。', '店で1ターン動くたび(接客1人・工房の作業1回・灯り亭の夕食)に、冒険者も1部屋進む。1日12ターンまで。魔物や宝箱、分かれ道に出会うと指示を待つ(急がなくてよい)。戦闘などは「おまかせ」にもできる。', '分かれ道とぬしの部屋の前では一息ついて、進む・休む・引き返すを選ぶ。元気が減るとけがをして帰ってくる。けがをした冒険者は、薬や料理で手当てすると早く治る。', '最後まで行くと、ぬしの奥の「封印された箱」が手に入る。中身はその場所でしか手に入らないレアで、夜の工房の「鑑定」で開ける。'] },
-  { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。いつでも行けて、時間は進まない(戻ればそのまま続き)。体力も使わない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。釣りの間は、冒険者の探索は進まない。', '餌は10匹50G。1回の釣りで3回まで買い足せる。竿(掛かる魚の格)・リール(緑の幅)は小屋でGで買う。', '釣った魚は、小屋の主に売るか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
+  { k: 'fish', n: '釣り', t: ['冒険者ギルドが建つと、下の「釣り」から釣り場へ行ける。いつでも行けて、時間は進まない(戻ればそのまま続き)。体力も使わない。', '水辺では、竿の向きを決めて長押しで力をため、離すと投げる(長く押すほど遠くへ)。影が寄ってきてつつき、浮きが沈んだらすぐ押す。掛かったら、押して巻く・離して緩める。針を緑の中に保つと寄ってくる。', '手前と奥で釣れる魚が変わる(川=浅瀬と淵、湖=岸と沖、海=浜と防波堤の先)。季節と時間帯で出る魚も変わる。続けて釣ると「時合い」で、珍しい魚が掛かりやすい。釣りの間は、冒険者の探索は進まない。', '餌は1匹5Gで、釣り場の「道具」で1・5・10匹ずつ買う。残った餌は次に持ち越す。竿(掛かる魚の格)・リール(緑の幅)は小屋でGで買う。', '釣った魚は、小屋の主に売るか、持ち帰る。持ち帰った魚は、冒険者ギルドの「食事」でゴズに渡すと、料理になって次の冒険にバフがつく(良い魚ほど良い料理)。'] },
   { k: 'loan', n: '出世払い', t: ['開店資金3000Gは村長の出世払い。利子も期限もない。返すのは街の「村長の家」から。返すたびに、節目のごほうび(増築の許可・新しい仕入れ先など)がある。'] },
   { k: 'collect', n: '集める・図鑑・レシピの紙', t: ['図鑑には見つけた品が載る。影絵の品は、まだ見つけていない物(タップすると手がかり)。節目ごとにスキルポイントが入る。', '品にはレア度(E〜S)と使い道の印がつく。倉庫では使い道で絞りこめる。', '秘伝のレシピの紙は、常連さん・建物・ぬしの寝床などで手に入る。破れた所は、探索のレアで読めるようになる。工房の「秘伝」で作る。', '季節限定の素材、常連さんの物語、探索のレア、謎の品の鑑定。図鑑をすべて埋めるのが最終目標。'] },
 ];
@@ -26817,7 +26824,7 @@ addRec('lg_sage', [['staff_3', 1], ['crys_light', 1], ['crys_dark', 1], ['cas_st
 [['ingot_dragongold','竜金のインゴット','深紅がかった赤金の延べ棒。竜の巣の金を溶かしたと噂される。カジノでしか手に入らない。',2,75],
  ['ingot_seajade','深海翠のインゴット','深い翠の延べ棒。海の底の光を閉じこめたような色。カジノでしか手に入らない。',3,113],
  ['ingot_starplat','星白金のインゴット','白金に星の輝きが走る延べ棒。カジノでしか手に入らない最上の金属。',3,150],
-].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, sub: 'カジノ限定のインゴット', desc: d }));
+].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, casOnly: true, sub: 'カジノ限定のインゴット', desc: d }));
 // No.312 カジノ限定のインゴットの一式 18品(作者 2026-11-15)。冒険者に装備させる武具で、シリーズ装備としてマネキンにも飾る。
 // 3金属とも Lv20・強さは同じ(集める順は、インゴットの枚数 100/150/200 の差で決まる)。作り方は伝説の武具と同じ形:
 // 「その金属のインゴット+アダマンタイトのインゴット+属性の結晶か革か布」。インゴットの数は 剣2・盾2・兜2・鎧4・籠手1・脚甲1。
