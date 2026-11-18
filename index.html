@@ -3591,8 +3591,40 @@ body.btl-open{overflow:hidden}
 
 /* No.311 作者: 売れた時の吹き出し(チェックなどの絵)は PC・スマホとも出さない */
 .ss .ss-cust .emote { display: none !important; }
+
 /* No.344 PC幅の朝市: 品が多い時に下が切れず、品の欄の中でスクロールする */
 @media (min-width: 1600px) { #panel.fit > .stack > .counter-market { align-self: stretch; height: 100%; } #panel.fit .counter-market .market-products { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(217, 184, 116, .35) transparent; } }
+/* ===== 2回目: 戦闘パズルの盤(No.346) ===== */
+.btl.pzmode .btst{aspect-ratio:auto;height:clamp(120px,19vh,200px);max-height:none}
+.btl.pzmode #btl-foe{width:auto;height:84%;top:54%}
+.btl.pzmode .btl-panel{gap:5px}
+.pz-who{display:flex;gap:5px}
+.pz-m{flex:1;min-width:0;display:flex;align-items:center;gap:4px;padding:3px 5px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;font:inherit;text-align:left;cursor:pointer}
+.pz-m .btchibi{width:34px;height:34px;flex:none}
+.pz-m span{display:flex;flex-direction:column;min-width:0}.pz-m b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pz-m small{font-size:10px;color:#b6bbc5;white-space:nowrap}
+.pz-m.sel{border-color:#f1d99e;background:rgba(241,217,158,.16);box-shadow:0 0 0 1px #f1d99e inset}
+.pz-m.used{opacity:.45;cursor:default}
+.pz-skrow:empty{display:none}
+.pz-skb{width:100%;display:flex;flex-direction:column;align-items:flex-start;border-left:4px solid var(--c,#fff)}
+.pz-skb.on{background:rgba(255,255,255,.16);box-shadow:0 0 10px var(--c,#fff)}
+.pz-skb small{font-size:10px;opacity:.8}
+.pz-wrap{position:relative;width:min(100%,calc(100dvh - 440px),520px);min-width:260px;aspect-ratio:1;margin:0 auto;border:18px solid transparent;border-image:url(img/pz_frame.webp) 32 / 18px stretch;box-sizing:border-box}
+.pz-b{position:absolute;inset:0;background-size:cover;background-position:center;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
+.pzc{position:absolute;width:calc(100% / 7);height:calc(100% / 7);transition:transform .22s ease-in,opacity .15s}
+.pzc img{width:100%;height:100%;display:block;pointer-events:none}
+.pzc.pick{background:rgba(255,240,180,.25);border-radius:20%;box-shadow:0 0 0 2px #f1d99e inset}
+.pzc.hint{animation:pzhint .5s ease-in-out 3}
+.pzc.glow img{transform:scale(1.12)}
+.pzc.gone{opacity:0;transform:scale(.4)}
+.pzc.nope{animation:pznope .3s}
+@keyframes pzhint{50%{background:rgba(255,255,255,.45);border-radius:20%}}
+@keyframes pznope{25%{transform:translateX(-8%)}75%{transform:translateX(8%)}}
+.pz-msg{min-height:1.4em;font-size:12px;text-align:center;color:#d8d2c4}
+.pz-msg.bad{color:#ec8b62}.pz-msg.chain{color:#f1d99e;font-weight:700;font-size:14px}
+.pz-tools{display:flex;flex-wrap:wrap;gap:5px}
+.pz-tools .btn{flex:1 1 0;min-width:72px;padding:5px 6px;display:flex;flex-direction:column;align-items:center}
+.pz-tools .btn small{font-size:10px;opacity:.8}
+.pz-tools .btn.on{box-shadow:0 0 0 2px #f1d99e inset}
 
 </style>
 <div id="app">
@@ -10454,10 +10486,23 @@ const forksOf = N => N <= 12 ? [Math.round(N / 2)] : N <= 24 ? [Math.round(N * 0
 // works better; quality adds a little.
 const WPN_BASE = { dagger: 0.1, sword: 0.14, spear: 0.14, axe: 0.15, hammer: 0.16, greatsword: 0.17, bow: 0.13, staff: 0.13 };
 const ARM_BASE = { shield: 0.12, helmet: 0.08, armor: 0.17, gauntlet: 0.07, boots: 0.07 };
-const gearKey = it => it.gk ? it.gk : it.id.startsWith('lg_') ? (it.icon.sh === 'spear' ? 'spear' : 'sword') : it.id.split('_')[0];
+// No.346(3.6): 形は絵の形(icon.sh)で見る。伝説の盾・鎧・杖、カジノの剣・弓、白熊のコートも正しい種類になる
+const ARM_SH = { shield: '盾', helmet: '兜', armor: '鎧', gauntlet: '籠手', boots: '脚甲' };
+const gearKey = it => it.gk ? it.gk : it.icon && (WPN_BASE[it.icon.sh] !== undefined || ARM_SH[it.icon.sh]) ? it.icon.sh : it.id.split('_')[0];
 function gearTier(it) { if (it.id.startsWith('lg_')) return 6; if (it.id.startsWith('bow_') || it.id.startsWith('staff_')) return [0, 1, 3, 4][it.tier || 0]; return it.tier || 0; }
-const isWeapon = it => it && it.cat === 'equip' && !it.broken && (it.sub === '武器' || it.sub === '属性武器' || it.id.startsWith('lg_') || it.gslot === 'w');
-const isArmor = it => it && it.cat === 'equip' && !it.broken && (it.sub === '防具' || it.gslot === 'a');
+const isWeapon = it => it && it.cat === 'equip' && !it.broken && (it.sub === '武器' || it.sub === '属性武器' || it.gslot === 'w' || (it.gear && !it.gslot && it.sub !== '防具' && WPN_BASE[gearKey(it)] !== undefined));
+const isArmor = it => it && it.cat === 'equip' && !it.broken && (it.sub === '防具' || it.gslot === 'a' || (it.gear && !it.gslot && it.sub !== '武器' && !!ARM_SH[gearKey(it)]));
+// No.346(3.7): 武器は2本(同じ種類は不可)・防具は3つ(同じ種類は不可)。古いセーブは wpn・arm だけ(残りは空)
+const WSL = ['wpn', 'wpn2'], ASL = ['arm', 'arm2', 'arm3'], GSL = WSL.concat(ASL);
+const slotsOf = k => k === 'wpn' ? WSL : k === 'arm' ? ASL : GSL;
+const slotKind = s => s.startsWith('wpn') ? 'wpn' : 'arm';
+const gearsOf = (m, k) => slotsOf(k).map(s => m[s]).filter(Boolean);
+// the slot a piece would take: the same kind is not allowed twice (it replaces that one), else the first empty slot, else null
+function slotFor(m, it, avoid) {
+  const k = isWeapon(it) ? 'wpn' : isArmor(it) ? 'arm' : null; if (!k) return null;
+  const same = slotsOf(k).find(s => s !== avoid && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(it));
+  return same || slotsOf(k).find(s => !m[s]) || null;
+}
 function gearFrac(it, q, a) {
   if (!it) return 0;
   const base = isWeapon(it) ? (WPN_BASE[gearKey(it)] || 0.13) : (ARM_BASE[gearKey(it)] || 0.08);
@@ -10699,7 +10744,7 @@ function advRecruit(cls, sex, name) {
 function advBench(id) {
   ensureRoster();
   const m = advById(id); if (!m || m.fixed || advOut(m)) return false;
-  for (const s of ['wpn', 'arm']) if (m[s]) unequipAdv(m.id, s);
+  for (const s of GSL) if (m[s]) unequipAdv(m.id, s);
   bagEmpty(m.id);   // No.242: 袋の品も倉庫へ
   G.roster = G.roster.filter(x => x !== m); G.bench.push(m);
   G.guildParty = (G.guildParty || []).filter(x => x !== m.id);
@@ -10734,9 +10779,11 @@ const wpnListOf = cls => (WPN_OF[cls] || []).map(k => WPN_KINDS[k]).join('・');
 const rankWields = (m, it) => !!it && gearTier(it) <= ((m && m.rk) || 0);
 const canWield = (m, it) => rankWields(m, it) && clsWields(m && m.cls, it);
 const wieldRank = it => Math.min(RANKS.length - 1, gearTier(it));
+// No.346: slot = 'wpn'・'wpn2'・'arm'・'arm2'・'arm3'。同じ種類の物を別の枠に持っていたら、それは倉庫へ戻す
 function equipAdv(mid, slot, id) {
-  const m = advById(mid); if (!m || advOut(m)) return false;
-  const ok = slot === 'wpn' ? isWeapon : isArmor; if (!ok(IT[id]) || spareCount(id) <= 0 || !canWield(m, IT[id])) return false;
+  const m = advById(mid); if (!m || advOut(m) || !GSL.includes(slot)) return false;
+  const ok = slotKind(slot) === 'wpn' ? isWeapon : isArmor; if (!ok(IT[id]) || spareCount(id) <= 0 || !canWield(m, IT[id])) return false;
+  for (const s of slotsOf(slotKind(slot))) if (s !== slot && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(IT[id])) unequipAdv(mid, s);
   unequipAdv(mid, slot);
   const q = takeBest(id, 1)[0]; m[slot] = gearCopy({ id, q });
   return true;
@@ -10749,15 +10796,25 @@ function unequipAdv(mid, slot) {
   if (g.dur < g.max * 0.5 && br) invAdd(br.id, 0, 1, true); else invAdd(g.id, g.q, 1, true);
   return true;
 }
-// equip the best spare pieces on whoever lacks them (or has something clearly worse)
+// equip the best pieces on each (No.346: 武器2本・防具3つ。種類が重ならない一番強い組み合わせ。今の物より1割以上よければ替える)
+const gearVal = (it, q) => isWeapon(it) ? wpnVal({ id: it.id, q }) : armVal({ id: it.id, q });
+// No.346: 聖剣は勇者の凱旋門とルカの物。「一番良い物」で冒険者に持たせない(Sランクの勇者が持って行き、凱旋門が建たなくなった)
+const NO_AUTO_GEAR = ['lg_holy'];
 function autoEquip(ids, a) {
   let n = 0;
   for (const id of ids) {
     const m = advById(id); if (!m || advOut(m)) continue;
-    for (const slot of ['wpn', 'arm']) {
-      const best = packList(slot, a).find(it => canWield(m, it)); if (!best) continue;
-      const cur = m[slot], f = gearFrac(best, bestOwnedQ(best.id), a), fc = cur ? gearFrac(IT[cur.id], cur.q, a) * (cur.dur > 0 ? 1 : 0) : -1;
-      if (f > fc + 0.02 && equipAdv(id, slot, best.id)) n++;
+    for (const k of ['wpn', 'arm']) {
+      const sl = slotsOf(k);
+      for (let pass = 0; pass < sl.length; pass++) {
+        // the weakest (or empty) slot, and the best spare piece of a kind the others don't have
+        const vs = sl.map(s => m[s] ? gearVal(IT[m[s].id], m[s].q) * (m[s].dur > 0 ? 1 : 0) : -1);
+        const lo = vs.indexOf(Math.min(...vs)), slot = sl[lo];
+        const kinds = sl.filter(s => s !== slot && m[s]).map(s => gearKey(IT[m[s].id]));
+        const best = packList(k, a).filter(it => canWield(m, it) && !kinds.includes(gearKey(it)) && !NO_AUTO_GEAR.includes(it.id)).sort((x, y) => gearVal(y, bestOwnedQ(y.id)) - gearVal(x, bestOwnedQ(x.id)))[0];
+        if (!best || gearVal(best, bestOwnedQ(best.id)) <= vs[lo] * 1.1) break;
+        if (equipAdv(id, slot, best.id)) n++; else break;
+      }
     }
   }
   return n;
@@ -10771,10 +10828,12 @@ function treatAdv(mid) {
   return it.id;
 }
 // the metal a place asks for: below it, the party takes extra damage (and Emma says so)
-const REQ_TIER = [0, 0, 1, 2, 3, 4, 5];
+// No.346(作者了承 2026-11-18): 求める金属を1つ下げた(戦いの式は FT.GEAR_UP=1)。森・坑道・ゴブリンは鉄より下がないので鉄のまま
+const REQ_TIER = [0, 0, 0, 1, 2, 3, 4];
 const reqTier = a => REQ_TIER[a.rk] || 0;
 const TIER_N = ['鉄', '銅', '銀', '金', 'ミスリル', 'アダマンタイト', '伝説'];
-function partyTier(ps) { if (!ps.length) return -1; return ps.reduce((t, m) => t + (m.wpn ? gearTier(IT[m.wpn.id]) : -1.5) + (m.arm ? gearTier(IT[m.arm.id]) : -1.5), 0) / (ps.length * 2); }
+const bestTier = (m, k) => Math.max(-1.5, ...gearsOf(m, k).filter(g => IT[g.id]).map(g => gearTier(IT[g.id])));
+function partyTier(ps) { if (!ps.length) return -1; return ps.reduce((t, m) => t + bestTier(m, 'wpn') + bestTier(m, 'arm'), 0) / (ps.length * 2); }
 const tierGap = (a, ps) => Math.max(0, reqTier(a) - partyTier(ps));
 
 // ---------- the expedition ----------
@@ -10797,11 +10856,14 @@ function planRooms(d, from = 1) {
     const k = wpick(Object.keys(W), x => W[x]);
     d.plan[i] = k === 'fight' ? { k, foe: dvFoe(a, d).k } : { k };
   }
+  // No.346: 中ボス = その場所で一番強い道中の敵。真ん中に近い一息のすぐ後の部屋に1体(負けたら、その一息に戻る)
+  if (from <= 1 && d.N > 3) { const mi = midRoom(d); if (mi > 0 && mi < d.N) d.plan[mi] = { k: 'fight', foe: DG[a.id].foes.map(x => MON[x[0]]).sort((x, y) => y.m - x.m)[0].k, mid: true }; }
 }
+function midRoom(d) { const f = d.forks.slice().sort((x, y) => Math.abs(x - d.N / 2) - Math.abs(y - d.N / 2))[0]; return f ? f + 1 : Math.round(d.N / 2); }
 // party: adventurer records (copied, so the guild's estimate can run on paper)
 function newDive(areaId, target, party, pack) {
   const a = AR[areaId];
-  const ps = party.map(m => ({ id: m.id, n: m.n, cls: m.cls, sex: m.sex, rk: m.rk, wpn: gearCopy(m.wpn), arm: gearCopy(m.arm), guest: m.guest, meal: (G.meals || {})[m.id] ? { ...G.meals[m.id] } : undefined }));
+  const ps = party.map(m => ({ id: m.id, n: m.n, cls: m.cls, sex: m.sex, rk: m.rk, wpn: gearCopy(m.wpn), wpn2: gearCopy(m.wpn2), arm: gearCopy(m.arm), arm2: gearCopy(m.arm2), arm3: gearCopy(m.arm3), guest: m.guest, meal: (G.meals || {})[m.id] ? { ...G.meals[m.id] } : undefined }));
   const prk = ps.reduce((t, m) => t + m.rk, 0) / Math.max(1, ps.length);
   const rm = G.dgRumor && G.dgRumor.area === a.id && G.dgRumor.until >= G.day ? G.dgRumor : null;
   const aim = RARE[target] && RARE[target].area === a.id ? target : null;
@@ -10812,6 +10874,7 @@ function newDive(areaId, target, party, pack) {
     haul: {}, log: [], pending: null, done: null, seq: 0, last: null, armed: true, broke: [],
     eff: { wpn: 0, arm: 0, heal: 0, snack: 0, buff: {}, avoid: [], tool: {}, fights: 0, kills: [], cmd: {} }, forks: forksOf(DG[a.id].rooms),
   };
+  d.php = ftPartyHP(ps.map(m => m.rk || 0));
   planRooms(d);
   return d;
 }
@@ -10828,7 +10891,7 @@ function flushShows(d) { if (!d) return; if (d.showQ && d.showQ.length) { d.show
 const AVOID_SAY = { p_night: '罠を見破った', p_anti: '毒を消した', smoke: '魔物から逃げきった', p_spd: '帰り道を急いだ' };
 // the colour of a blow by the metal of the weapon (鉄・銅・銀・金・ミスリル・アダマンタイト・伝説)
 const METAL_C = ['#e4e8f0', '#ff9a5a', '#cfe6ff', '#ffd75a', '#7ff0ff', '#ff7ad8', '#fff3a0'];
-function bestGear(d, slot) { let best = null, bf = -1; const a = AR[d.area]; for (const m of d.party) { const g = m[slot]; if (!g) continue; const f = gearFrac(IT[g.id], g.q, a); if (f > bf) { bf = f; best = g; } } return best; }
+function bestGear(d, slot) { let best = null, bf = -1; const a = AR[d.area]; for (const m of d.party) for (const g of gearsOf(m, slot)) { const f = gearFrac(IT[g.id], g.q, a); if (f > bf) { bf = f; best = g; } } return best; }
 function bagCount(d, pred) { return d.bag.reduce((t, b) => t + (pred(IT[b.id]) ? b.qs.length : 0), 0); }
 function dlog(d, text, cls) { d.log.push({ t: text, c: cls || '' }); if (d.log.length > 80) d.log.splice(0, d.log.length - 80); }
 function addHaul(d, id, n) { if (!IT[id] || n <= 0) return; if (Math.random() < mfx(d, 'haul')) n++; d.haul[id] = (d.haul[id] || 0) + n; }
@@ -10838,23 +10901,23 @@ const itName = g => g ? IT[g.id].name + (g.q ? `(${QUAL[g.q].n})` : '') : '';
 // how much of a blow the party's gear takes away (average over the members)
 function partyCut(d) {
   const a = AR[d.area]; let w = 0, r = 0;
-  for (const m of d.party) { w += m.wpn ? gearFrac(IT[m.wpn.id], m.wpn.q, a) : 0; r += m.arm ? gearFrac(IT[m.arm.id], m.arm.q, a) : 0; }
+  for (const m of d.party) { w += Math.max(0, ...gearsOf(m, 'wpn').map(g => gearFrac(IT[g.id], g.q, a))); const fs = gearsOf(m, 'arm').map(g => gearFrac(IT[g.id], g.q, a)).sort((x, y) => y - x); r += (fs[0] || 0) + 0.25 * ((fs[1] || 0) + (fs[2] || 0)); }
   const n = Math.max(1, d.party.length); return { wf: w / n, af: r / n };
 }
 // the raw blow of a monster before gear and commands
-function blow(d, foe, boss) {
-  const a = AR[d.area];
-  return 18 * gapMult(d) * foe.m * (1 + 0.25 * d.dl) * (boss ? BOSS_M / 2 : 1) * SPREAD[Math.min(3, d.party.length)] * (1 + 0.3 * tierGap(a, d.party));
-}
-function expFight(d, big) { const c = partyCut(d); return blow(d, big ? MON[DG[d.area].boss] : { m: 1 }, big) * (big ? 2 : 1) * (1 - Math.min(0.6, c.wf + c.af + mfx(d, big ? 'bossCut' : 'cut'))) * dragoonK(d); }
+// No.346: 「この戦いで元気がどれだけ減りそうか」(一行の HP の %)。言葉の目安と、おまかせの判断に使う
+function blow(d, foe, boss) { return fightLoss(d, foe, boss ? 'boss' : foe.mid ? 'mid' : 'norm'); }
+function expFight(d, big) { return blow(d, big ? MON[DG[d.area].boss] : { m: 1 }, big); }
 // wear on everyone's gear; a piece at 0 breaks (and goes home broken, if it can be mended)
-function wear(d, slot, n) {
-  for (const m of d.party) {
+// No.346(作者了承 2026-11-18): 武具が1人5か所(武器2・防具3)に増えた分だけ軽くする。武器は1本あたり 1/2、防具は1つあたり 1/3
+const WEAR_K = { wpn: 1 / 2, arm: 1 / 3 };
+function wear(d, kind, n) {
+  for (const m of d.party) for (const slot of slotsOf(kind)) {
     const g = m[slot]; if (!g || g.max >= 999) continue;
-    g.dur -= n;
+    g.dur = Math.round((g.dur - n * WEAR_K[kind]) * 1000) / 1000;
     if (g.dur <= 0) {
       d.broke.push({ who: m.n, id: g.id, br: IT['broken_' + g.id] ? 'broken_' + g.id : null }); m[slot] = null;
-      dlog(d, `${m.n}の${IT[g.id].name}が${slot === 'wpn' ? '折れて' : '壊れて'}しまった!`, 'bad');
+      dlog(d, `${m.n}の${IT[g.id].name}が${slotKind(slot) === 'wpn' ? '折れて' : '壊れて'}しまった!`, 'bad');
     }
   }
 }
@@ -10873,7 +10936,7 @@ function diveTurn0() {
 }
 // scenes that 「おまかせ」 may decide (the master of the place and a weakened party always ask)
 // v32: a fork is a breather (一息) now, so it always asks, like the master and a weakened party
-const minorPending = p => ['fight', 'trap', 'chest', 'secret'].includes(p.k) && !(p.k === 'fight' && p.boss) && !p.btl;
+const minorPending = p => ['fight', 'trap', 'chest', 'secret'].includes(p.k) && !(p.k === 'fight' && (p.boss || p.mid)) && !p.btl;
 const BREATH = ['fork', 'boss', 'low'];
 const isBreath = p => !!(p && BREATH.includes(p.k));
 function autoResolve(d) { let k = 0; while (d.pending && minorPending(d.pending) && k++ < 4) diveChoose(diveAuto(d)); }
@@ -10887,7 +10950,14 @@ function enterRoom(d) {
     dlog(d, `最奥の部屋。${boss.n}の気配がする……。`, 'warn');
     return;
   }
+  if (d.cleared && d.i <= d.cleared) { dlog(d, '来た道をもう一度進んだ。'); d.last = { k: 'walk' }; return; }
   if (d.forks.includes(d.i)) { forkRoom(d); return; }
+  const pm = d.plan && d.plan[d.i];
+  if (pm && pm.mid && !d.midBeat && MON[pm.foe]) {
+    d.next = null; const foe = MON[pm.foe];
+    d.pending = { k: 'fight', foe: foe.k, mid: true }; d.last = { k: 'fight', foe: foe.k, pre: true };
+    dlog(d, `手強い${foe.n}が道をふさいでいる!`, 'warn'); return;
+  }
   const pl = !d.next && d.plan && d.plan[d.i];
   let k = d.next || (pl && pl.k !== 'fork' ? pl.k : null);
   if (!k) { const W = ROOM_W(a); if (d.i === 1) { W.trap = 0; W.chest = 0; } k = wpick(Object.keys(W), x => W[x]); }
@@ -10980,64 +11050,20 @@ function snack(d) {
 // atk: normal / def: take less, find less / item: a bomb or potion from the bag / heal: drink first, then fight / flee
 const BUFF_FOR = (d, foe, boss) => Object.keys(BUFF).filter(id => BUFF[id].cut && bagHas(d, it => it.id === id) && (BUFF[id].when === 'big' || (BUFF[id].when === 'undead' && foe.undead)))
   .sort((x, y) => (BUFF[y].when === 'undead' && foe.undead ? 1 : 0) - (BUFF[x].when === 'undead' && foe.undead ? 1 : 0) || BUFF[y].cut - BUFF[x].cut)[0];
+// No.346: 道中の戦い(おまかせ)。敵の HP がなくなるまで、仲間が順に盤を解く(fight.js)。
+// mode: 'atk' おまかせ / 'sk' (si = 先に打ってスキルを使う仲間) / 'item' 道具を先に使う / 'heal' 先に薬を飲む / 'flee' 逃げる
 function resolveFight(d, mode, si) {
-  const p = d.pending, foe = MON[p.foe], boss = !!p.boss, a = AR[d.area];
-  // No.267: 道中のスキル。ミニゲームなしで「成功」の効果がその場で出る(回数はぬしと共通)
-  let sw = null, sb = null, sr = null;
-  if (mode === 'sk') { sw = d.party[si]; const s = BTL_SK[sw.cls]; sw.sku = (sw.sku || 0) + 1; sb = { lastMul: 1, aim: 0, elf: 0, loot: 0, bonus: [] }; const say = []; sr = btlSkDo(d, sb, sw, 1, boss, say); dlog(d, `${sw.n}の${s.n}! ${say.join('。')}`, 'good'); }
+  const p = d.pending; if (!p || p.k !== 'fight') return;
+  if (mode === 'def') mode = 'atk';
   d.eff.cmd[mode] = (d.eff.cmd[mode] || 0) + 1;
-  if (mode === 'heal') { drink(d, p); mode = 'atk'; }
-  if (mode === 'flee') {
-    const smoke = bagHas(d, it => it.id === 'smoke');
-    if (smoke || Math.random() < 0.72 + mfx(d, 'flee')) {
-      if (smoke) { bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke); }
-      d.pending = null; dlog(d, `${smoke ? '煙玉を投げて、' : ''}${foe.n}から逃げ出した。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true, post: true };
-      afterRoom(d); return;
-    }
-    dlog(d, `逃げようとしたが、${foe.n}に回り込まれた!`, 'hurt');
-  }
-  const c = partyCut(d); let cut = Math.min(0.6, c.wf + c.af + mfx(d, boss ? 'bossCut' : 'cut')); const notes = [];
-  if (foe.undead && hasTool(d, 'h_tear')) { cut = Math.min(0.85, cut + 0.4); notes.push('清めの涙が光って'); toolDid(d, 'h_tear'); }
-  let base = blow(d, foe, boss) * rnd(0.75, 1.25);
-  if (mode === 'def') { base *= 0.55; notes.push('守りを固めて'); }
-  if (mode === 'flee') base *= 0.7;
-  if (mode === 'item') {
-    const id = BUFF_FOR(d, foe, boss);
-    if (id && bagUse(d, id) !== null) { cut = Math.min(0.85, cut + BUFF[id].cut); notes.push(BUFF[id].say); d.eff.buff[id] = (d.eff.buff[id] || 0) + Math.round(base * BUFF[id].cut); showItem(d, id, `被害 −${Math.round(base * BUFF[id].cut)}`); }
-  }
-  const dmg = sr ? (sr.win ? 0 : Math.round(base * (1 - cut) * dragoonK(d) * sr.mul * sb.lastMul)) : Math.max(1, Math.round(base * (1 - cut) * dragoonK(d)));   // No.262: 竜騎士・No.267: スキル
-  d.eff.wpn += Math.round(base * c.wf); d.eff.arm += Math.round(base * c.af);
-  { const bw = bestGear(d, 'wpn'), ba = bestGear(d, 'arm'); if (bw && base * c.wf >= 0.5) showItem(d, bw.id, `${boss ? 'ぬしに' : ''}斬りこんだ・被害 −${Math.round(base * c.wf)}`, bw.q); if (ba && base * c.af >= 0.5) showItem(d, ba.id, `攻撃を受け止めた・被害 −${Math.round(base * c.af)}`, ba.q); d.wc = bw ? METAL_C[Math.min(6, gearTier(IT[bw.id]))] : null; }
-  d.hp -= dmg; d.eff.fights++;
-  wear(d, 'wpn', boss ? 2 : 1); wear(d, 'arm', boss ? 2 : 1);
-  const gn = c.wf + c.af > 0.18 ? '武具で被害を抑えた' : '';
-  if (boss) {
-    if (d.hp <= 0 && !lastStand(d)) { d.hp = 0; d.pending = null; dlog(d, `${foe.n}に挑んだが、力及ばなかった……。`, 'bad'); d.last = { k: 'boss', foe: foe.k, dmg, lost: true, post: true }; wipe(d); return; }
-    if (p.round < 2) {
-      d.pending = { k: 'fight', foe: foe.k, boss: true, round: 2 };
-      dlog(d, `${foe.n}と打ち合った。${notes.length ? notes.join('、') + '、' : ''}${gn ? gn + '。' : ''}元気 −${dmg}。まだ倒れない!`, 'fight');
-      d.last = { k: 'boss', foe: foe.k, dmg, post: true };
-      return;
-    }
-    d.pending = null; bossWin(d, dmg, notes, gn); return;
-  }
-  d.pending = null;
-  if (mode === 'flee') { dlog(d, `${foe.n}の一撃を受けながら逃げ出した。元気 −${dmg}`, 'hurt'); d.last = { k: 'fight', foe: foe.k, dmg, post: true }; afterRoom(d); return; }
-  const val = roomVal(d), drop = pick(itemList(foe.drops)); let n = 0;
-  const mult = mode === 'def' ? 0.75 : 1.1;
-  if (drop) { n = lootQty(drop, val * mult * (c.wf > 0.12 ? 1.1 : 0.9)); addHaul(d, drop, n); }
-  if (a.kind === 'hunt' && Math.random() < (mode === 'def' ? 0.4 : 0.6)) { const t = pick(a.main); addHaul(d, t, Math.max(1, lootQty(t, val * 0.5))); }
-  if (sb) {   // No.267: スキルの素材(鑑定・兜割り・竜の息吹・A・S)と精霊の守り人
-    const ds = itemList(foe.drops);
-    for (const [id, k] of sb.bonus) addHaul(d, id, k);
-    if (sb.aim && ds.length) addHaul(d, ds.slice().sort((x, y) => IT[y].v - IT[x].v)[0], 1);
-    for (let k = 0; k < sb.loot && ds.length; k++) addHaul(d, pick(ds), 1);
-    if (sb.elf && dmg > 0 && d.hp > 0) { const h = Math.min(DIVE_HP - d.hp, Math.round(dmg * sb.elf)); if (h > 0) { d.hp += h; dlog(d, `精霊の守り人の力で、元気が戻った。元気 +${h}`, 'good'); } }
-  }
-  d.eff.kills.push(foe.k);
-  dlog(d, `${foe.n}を倒した。${notes.length ? notes.join('、') + '、' : ''}${gn ? gn + '。' : ''}${dmg ? `元気 −${dmg}` : '無傷'}` + (n ? `。${IT[drop].name}×${n}` : ''), 'fight');
-  d.last = { k: 'fight', foe: foe.k, dmg, item: drop, n, post: true };
-  afterRoom(d);
+  if (mode === 'flee') { const r = fFlee(d); if (r.ok) return; mode = 'atk'; if (p.f && p.f.done) { fEnd(d); return; } }
+  const F = fBegin(d), foe = MON[p.foe], big = F.kind !== 'norm';
+  if (mode === 'heal') drink(d, p);
+  if (mode === 'item' || big) { const id = BUFF_FOR(d, foe, big); if (id) fUseBuff(d, id); }
+  if (F.done) { fEnd(d); return; }
+  const r = fAutoRun(d, mode === 'sk' ? { si } : {});
+  if (r === 'flee') { const f = fFlee(d); if (f.ok) return; fAutoRun(d, { noFlee: true }); }
+  fEnd(d);
 }
 function drink(d, p) {
   const pot = bestPotion(d); if (!pot) return 0;
@@ -11174,7 +11200,7 @@ function lastStand(d) {
   return true;
 }
 function afterRoom(d) {
-  if (d.hp <= 0 && !lastStand(d)) { d.hp = 0; wipe(d); return; }
+  if (d.hp <= 0 && !lastStand(d)) { d.hp = 0; fallBack(d, 'パーティーは倒れた……。', true); return; }
   if (d.hp > 55) d.armed = true;
   if (d.hp <= 40 && d.armed && d.st === 'go' && !d.pending) { d.armed = false; d.pending = { k: 'low' }; dlog(d, 'パーティーの足取りが重い。このまま進むのは危ないかもしれない。', 'warn'); }
 }
@@ -11192,7 +11218,7 @@ function stepHome(d) {
   if (d.back > 0 && Math.random() < 0.14) {
     const foe = dvFoe(AR[d.area], d);
     if (smoke) { bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke); dlog(d, `帰り道で${foe.n}に出くわしたが、煙玉で逃げきった。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true }; return; }
-    const c = partyCut(d), dmg = Math.max(1, Math.round(blow(d, foe, false) * rnd(0.75, 1.25) * (1 - Math.min(0.6, c.wf + c.af))));
+    const dmg = Math.max(1, Math.round(blow(d, foe, false) * 0.5 * rnd(0.75, 1.25)));
     d.hp -= dmg; wear(d, 'arm', 1); if (d.hp < 1) { d.eff.close = true; d.hp = 1; }
     dlog(d, `帰り道で${foe.n}に襲われた。元気 −${dmg}${d.eff.close ? '(命からがら逃げのびた)' : ''}`, 'fight');
     d.last = { k: 'fight', foe: foe.k, dmg, home: true }; return;
@@ -11208,7 +11234,7 @@ function wipe(d) {
   let left = ri(1, 2);
   for (const id of ids) { if (left <= 0) break; keep[id] = 1; left--; }
   d.kept = keep;
-  for (const m of d.party) for (const slot of ['wpn', 'arm']) { const g = m[slot]; if (g && g.max < 999) g.dur = Math.max(1, g.dur - Math.ceil(g.max * 0.35)); }
+  for (const m of d.party) for (const slot of GSL) { const g = m[slot]; if (g && g.max < 999) g.dur = Math.max(1, g.dur - Math.ceil(g.max * 0.35)); }
   dlog(d, `パーティーは力尽きた……。ギルドの救援隊に助け出された。${ids.length ? 'わずかな収穫だけは持ち帰れた。' : ''}`, 'bad');
   d.last = Object.assign(d.last || {}, { wiped: true });
 }
@@ -11221,7 +11247,7 @@ function arrive(d) {
 function diveSettle() {
   const d = G.dive; if (!d || !d.done) return null;
   const a = AR[d.area], rep = { area: d.area, rk: d.rk, res: d.done, beat: !!d.beat, items: [], gold: 0, fee: d.fee, eff: d.eff, deep: d.dl, room: Math.min(d.i, d.N), N: d.N, lost: [], day: G.day,
-    party: d.party.map(m => ({ id: m.id, n: m.n, cls: m.cls, sex: m.sex, rk: m.rk, wpn: m.wpn, arm: m.arm })), broke: d.broke, promo: [], hurt: [],
+    party: d.party.map(m => ({ id: m.id, n: m.n, cls: m.cls, sex: m.sex, rk: m.rk, wpn: m.wpn, wpn2: m.wpn2, arm: m.arm, arm2: m.arm2, arm3: m.arm3 })), broke: d.broke, promo: [], hurt: [],
     healId: d.eff.healId || (d.bag.find(b => isHeal(IT[b.id])) || {}).id, snackId: d.eff.snackId || (d.bag.find(b => isSnack(IT[b.id])) || {}).id, hadHeal: d.bag.some(b => isHeal(IT[b.id])) };
   const give = (id, n) => { const first = G.found[id] === undefined; invAdd(id, 0, n, true); rep.items.push({ id, n, first }); if (IT[id].seal) sealsAdd(id, n, d); };
   for (const b of d.broke) if (b.br) invAdd(b.br, 0, 1, true);
@@ -11246,9 +11272,9 @@ function diveSettle() {
   }
   // back to the roster: worn gear, experience, rank, and rest
   for (const p of d.party) {
-    if (p.guest) { for (const g of [p.wpn, p.arm]) if (g) invAdd(g.id, g.q, 1, true); continue; }
+    if (p.guest) { for (const g of GSL.map(s => p[s])) if (g) invAdd(g.id, g.q, 1, true); continue; }
     const m = advById(p.id); if (!m) continue;
-    m.wpn = p.wpn; m.arm = p.arm; m.trips = (m.trips || 0) + 1;
+    for (const s of GSL) m[s] = p[s] || null; m.trips = (m.trips || 0) + 1;
     if (d.done === 'home') {
       if (d.beat) m.wins = (m.wins || 0) + 1;
       m.xp = (m.xp || 0) + 1 + (d.beat ? 1 : 0) + Math.max(0, a.rk - m.rk) + d.dl;
@@ -11297,8 +11323,7 @@ function breathInfo(d) {
   const sec = []; for (let i = atStop + 1; i < Math.min(stop, d.N); i++) if (plan[i]) sec.push(plan[i]);
   const fights = sec.filter(x => x.k === 'fight'), traps = sec.filter(x => x.k === 'trap').length, chests = sec.filter(x => x.k === 'chest').length;
   // expected damage to the next stop (and the master, when it is next)
-  const c = partyCut(d), cut = 1 - Math.min(0.6, c.wf + c.af);
-  let E = fights.reduce((t, x) => t + blow(d, MON[x.foe] || { m: 1 }, false) * cut, 0) + traps * 9;
+  let E = fights.reduce((t, x) => t + blow(d, x.mid ? Object.assign({}, MON[x.foe], { mid: true }) : MON[x.foe] || { m: 1 }, false), 0) + traps * 9;
   const bossNext = stop >= d.N || d.pending && d.pending.k === 'boss';
   if (bossNext) E += expFight(d, true);
   const heal = d.bag.reduce((t, b) => t + (isHeal(IT[b.id]) ? b.qs.reduce((s2, q) => s2 + healOf(b.id, q), 0) : 0), 0) * 0.8;
@@ -11324,29 +11349,30 @@ function bestPotion(d) {
   hs.sort((x, y) => (x.h >= Math.min(need, 35) ? 0 : 1) - (y.h >= Math.min(need, 35) ? 0 : 1) || x.h - y.h);
   return hs.find(x => x.h >= Math.min(need, 45)) || hs[hs.length - 1];
 }
+const oddsWord = w => w >= 0.8 ? ['まだ余裕がある', 'ok'] : w >= 0.55 ? ['少し心配', 'mid'] : w >= 0.3 ? ['危ない', 'bad'] : ['かなり危ない', 'bad'];
 function riskWord(d, big, mult = 1) {
   const heal = big ? d.bag.reduce((t, b) => t + (isHeal(IT[b.id]) ? b.qs.reduce((s, q) => s + healOf(b.id, q), 0) : 0), 0) * 0.8 : 0;
   const E = expFight(d, big) * mult, r = (d.hp + heal) / Math.max(1, E);
   return r >= 3 ? ['まだ余裕がある', 'ok'] : r >= 1.8 ? ['少し心配', 'mid'] : r >= 1.05 ? ['危ない', 'bad'] : ['かなり危ない', 'bad'];
 }
-const hurtWord = (d, foe, boss, mult) => { const c = partyCut(d), e = blow(d, foe, boss) * mult * (1 - Math.min(0.6, c.wf + c.af)), r = e / Math.max(1, d.hp); return r < 0.18 ? ['被害 小', 'ok'] : r < 0.4 ? ['被害 中', 'mid'] : r < 0.85 ? ['被害 大', 'bad'] : ['命が危ない', 'bad']; };
+const hurtWord = (d, foe, boss, mult) => { const e = blow(d, foe, boss) * mult, r = e / Math.max(1, d.hp); return r < 0.18 ? ['被害 小', 'ok'] : r < 0.4 ? ['被害 中', 'mid'] : r < 0.85 ? ['被害 大', 'bad'] : ['命が危ない', 'bad']; };
 function diveOptions(d) {
   const p = d.pending; if (!p) return [];
   const pot = bestPotion(d), o = [];
   if (p.k === 'fight') {
     const foe = MON[p.foe], boss = !!p.boss, bf = BUFF_FOR(d, foe, boss);
     const [w1, c1] = hurtWord(d, foe, boss, 1), [w2, c2] = hurtWord(d, foe, boss, 0.55);
-    if (p.btl) return [{ k: 'battle', n: '戦いの続きへ', s: `${p.btl.t + 1}ターン目から`, c: 'ok' }];
-    // No.267: ぬしはミニゲームの戦いだけ(おまかせなし)。道中はミニゲームなし
-    if (boss) return [{ k: 'battle', n: `${foe.n}と戦う`, s: `${BTL_T(boss)}ターン・毎ターンのミニゲームは始まるまで分からない・スキルと薬が使える`, c: 'ok', man: 1 },
+    if (p.btl) return [{ k: 'battle', n: '戦いの続きへ', s: `${(p.f ? p.f.hands : 0) + 1}手目から`, c: 'ok' }];
+    // No.267/346: ぬしと中ボスはミニゲームの戦いだけ(おまかせなし)。道中はおまかせ
+    if (boss || p.mid) return [{ k: 'battle', n: `${foe.n}と戦う`, s: `盤を解いて戦う・仲間を選んで1人ずつ打つ・スキルと道具が使える`, c: 'ok', man: 1 },
       { k: 'back', n: '引き返す', s: `収穫を持ち帰る・帰り道 ${Math.max(1, Math.ceil(d.i / 4))}ターン` }];
-    o.push({ k: 'atk', n: '攻める', s: `${w1}・素材も取りやすい`, c: c1 });
-    o.push({ k: 'def', n: '守る', s: `${w2}・取れる素材は減る`, c: c2 });
+    o.push({ k: 'atk', n: 'おまかせで戦う', s: `${w1}・仲間が順に打つ`, c: c1 });
+    o.push({ k: 'battle', n: '自分で戦う', s: '盤を解いて戦う・仲間を選んで1人ずつ打つ', c: 'ok', man: 1 });   // 2回目(決まったこと 1): 道中もパズルを選べる
     d.party.forEach((m, i) => { const s = BTL_SK[m.cls], l = s ? btlSkLeft(m) : 0; if (l > 0) o.push({ k: 'sk' + i, n: `${m.n}の${s.n}`, s: `${s.d}・残り${l}(ぬしと共通)`, c: 'ok' }); });
     if (bf) o.push({ k: 'item', n: `${IT[bf].name}を使う`, s: `${BUFF[bf].when === 'undead' ? '亡者によく効く' : '大きく被害を減らす'}・残り${bagCount(d, it => it.id === bf)}`, c: 'ok' });
     if (pot && d.hp < DIVE_HP - 15) o.push({ k: 'heal', n: `${IT[pot.id].name}を飲んで戦う`, s: `元気 +${Math.min(DIVE_HP - d.hp, pot.h)}・残り${bagCount(d, isHeal)}本` });
     if (boss) o.push({ k: 'back', n: '引き返す', s: `収穫を持ち帰る・帰り道 ${Math.max(1, Math.ceil(d.i / 4))}ターン` });
-    else o.push({ k: 'flee', n: '逃げる', s: bagHas(d, it => it.id === 'smoke') ? '煙玉で確実に逃げる' : 'たいてい逃げられる・何も取れない' });
+    else o.push({ k: 'flee', n: '逃げる', s: bagHas(d, it => it.id === 'smoke') ? '煙玉で確実に逃げ、先へ進む' : 'たいてい逃げられる・一息の場所まで下がる' });
     return o;
   }
   if (p.k === 'trap') return [].concat(hasTool(d, 'rope') ? [{ k: 'rope', n: 'ロープで渡る', s: `確実に越えられる・ロープ 残り${bagCount(d, it => it.id === 'rope')}`, c: 'ok', tool: 'rope' }] : []).concat([{ k: 'disarm', n: '解除する', s: `うまくいけば部品が手に入る・成功 約${Math.round(Math.min(0.9, 0.55 + 0.05 * d.prk + 0.05 * (d.party.length - 1)) * 100)}%` }, { k: 'jump', n: '飛び越える', s: '失敗しても被害は軽め・成功 約74%' }, { k: 'around', n: '回り込む', s: '安全・1ターン余計にかかる' }]);
@@ -11359,7 +11385,7 @@ function diveOptions(d) {
   const potO = pot && d.hp < DIVE_HP - 10 ? [{ k: 'potion', id: pot.id, n: `${IT[pot.id].name}を使う`, s: `元気 +${Math.min(DIVE_HP - d.hp, pot.h)}・残り${bagCount(d, isHeal)}本` }] : [];
   if (p.k === 'fork') return p.ways.map((w, i) => ({ k: 'w' + i, n: `${FORK_SIDE[i]}の道へ進む`, s: mapId ? `地図: ${FORK[w.k].m}` : w.h, c: w.k === 'deep' ? 'mid' : mapId ? 'ok' : '', tool: mapId || undefined })).concat(potO, rest, [back]);
   o.push(...potO);
-  const [rw, rc] = riskWord(d, p.k === 'boss');
+  const [rw, rc] = p.k === 'boss' ? oddsWord(fightOdds(d, MON[p.foe], 'boss', 120)) : riskWord(d, false);
   if (p.k === 'boss') o.push({ k: 'push', n: `${MON[p.foe].n}に挑む`, s: rw, c: rc });
   else o.push({ k: 'push', n: '進む', s: rw, c: rc });
   o.push(...rest, back);
@@ -11371,8 +11397,8 @@ function diveChoose0(k) {
   const p = d.pending; d.seq++;
   if (p.k === 'fight') {
     if (p.btl) return k === 'battle' ? k : null;   // No.262: 手動の戦闘の途中は、戦闘の窓だけ
-    if (k === 'battle') { if (!p.boss) return null; btlStart(d); return k; }   // No.267: ミニゲームはぬしだけ
-    if (/^sk\d$/.test(k)) { const i = +k.slice(2), m = d.party[i]; if (p.boss || !m || !BTL_SK[m.cls] || btlSkLeft(m) <= 0) return null; resolveFight(d, 'sk', i); return k; }
+    if (k === 'battle') { btlStart(d); return k; }   // 2回目: ぬし・中ボスは必ず、道中は選べばパズル
+    if (/^sk\d$/.test(k)) { const i = +k.slice(2), m = d.party[i]; if (p.boss || p.mid || !m || !BTL_SK[m.cls] || btlSkLeft(m) <= 0) return null; resolveFight(d, 'sk', i); return k; }
     if (k === 'back') { d.pending = null; goHome(d, `${MON[p.foe].n}との戦いを切り上げ、引き返すことにした。`); d.last = { k: 'turn' }; return k; }
     if (!['atk', 'def', 'item', 'heal', 'flee'].includes(k)) return null;
     resolveFight(d, k); return k;
@@ -11412,7 +11438,7 @@ function diveAuto(d) {
   const kid = bestOf(d, KEY_EXTRA);
   if (p.k === 'chest') return kid && (p.hunch || KEY_EXTRA[kid] > 0 || d.hp <= 50) ? 'key' : d.hp > 50 ? (p.hunch ? 'care' : 'open') : 'leave';
   if (p.k === 'trap') return hasTool(d, 'rope') ? 'rope' : d.hp > 60 ? 'jump' : 'around';
-  if (isBreath(p) && !p.rested && d.hp < 60 && bagHas(d, isSnack)) return 'rest';
+  if (isBreath(p) && !p.rested && d.hp < 60) return 'rest';   // No.346: 一息では休んで立て直す(料理があればなお良い)
   if (p.k === 'fork') {
     const heal = d.bag.reduce((t, b) => t + (isHeal(IT[b.id]) ? b.qs.reduce((s, q) => s + healOf(b.id, q), 0) : 0), 0);
     const deep = p.ways.findIndex(w => w.k === 'deep'), spring = p.ways.findIndex(w => w.k === 'spring'), tre = p.ways.findIndex(w => w.k === 'treasure');
@@ -11422,15 +11448,15 @@ function diveAuto(d) {
     return 'w' + (tre >= 0 ? tre : spring >= 0 ? spring : 0);
   }
   if (p.k === 'fight') {
-    const foe = MON[p.foe], E = blow(d, foe, !!p.boss) * (1 - Math.min(0.6, partyCut(d).wf + partyCut(d).af));
-    if (p.boss && p.round === 2 && d.hp < E * 1.1 && !pot) return 'back';
-    if (pot && d.hp < E * 1.8 && d.hp < 70) return 'heal';
-    if (BUFF_FOR(d, foe, !!p.boss) && (p.boss || foe.m >= 1.05 || foe.undead)) return 'item';
-    if (!p.boss && d.hp < E * 1.2) return 'flee';
-    if (d.hp < E * 2.2) return 'def';
+    const foe = MON[p.foe], big = !!(p.boss || p.mid), E = blow(d, p.mid ? Object.assign({}, foe, { mid: true }) : foe, !!p.boss);
+    if (p.mid && !p.f && fightOdds(d, foe, 'mid', 80) < 0.3) return pot && d.hp < 70 ? 'heal' : 'back';
+    if (pot && d.hp < E * 1.5 && d.hp < 70) return 'heal';
+    if (!big && BUFF_FOR(d, foe, false) && foe.undead) return 'item';
+    if (!big && d.hp < E * 0.9) return 'flee';
     return 'atk';
   }
   if (p.k === 'low') return pot ? 'potion' : d.hp >= 30 ? 'push' : 'back';
+  if (p.k === 'boss') { const w = fightOdds(d, MON[p.foe], 'boss', 120); return w >= 0.35 ? 'push' : pot && d.hp < 75 ? 'potion' : !p.rested && d.hp < 90 ? 'rest' : 'back'; }   // No.346: 勝てそうなら挑む
   const E = expFight(d, p.k === 'boss'), heal = d.bag.reduce((t, b) => t + (isHeal(IT[b.id]) ? b.qs.reduce((s, q) => s + healOf(b.id, q), 0) : 0), 0);
   if (pot && d.hp < 60) return 'potion';
   return d.hp + heal * 0.8 > E * 1.3 ? 'push' : 'back';
@@ -11487,7 +11513,7 @@ function sendDive(areaId, target, ids, pk) {
   G.gold -= fee; if (G.today) G.today.bought += fee;
   const d = G.dive = newDive(areaId, target, ms, pack);
   // the members carry the real gear: the dive holds it while they are out
-  for (const m of ms) { m.wpn = null; m.arm = null; }
+  for (const m of ms) for (const s of GSL) m[s] = null;
   dlog(d, `${ms.map(m => m.n).join('・')}が${a.n}へ出発した。${d.aim ? `狙いは${G.found[d.aim] !== undefined ? IT[d.aim].name : '？？？'}。` : ''}`, 'home');
   const fed = ms.filter(m => (G.meals || {})[m.id]);
   if (fed.length) { dlog(d, `${fed.map(m => m.n + '(' + MEAL_B[G.meals[m.id].buff].n + ')').join('・')}は、${fed.length > 1 ? 'それぞれ' : ''}食べた料理の力を受けて出発した。`, 'good'); for (const m of fed) delete G.meals[m.id]; }
@@ -11635,28 +11661,25 @@ const btlSkLeft = m => Math.max(0, btlSkMax(m) - (m.sku || 0));
 function dragoonK(d) { if (!d.party.some(m => m.cls === 'dragoon')) return 1; const n = d.party.length; return n > 1 ? (n - 1) / n : 0.85; }
 const btlGrade = s => s >= 1 ? 2 : s >= 0.5 ? 1 : 0;   // 2 大成功 / 1 成功 / 0 失敗
 const BTL_GN = ['失敗', '成功', '大成功'];
-// a fight becomes a manual battle
+// a fight becomes a manual battle (No.346: 敵に HP。仲間が順に1手ずつ打ち、敵の HP がなくなるまで続く。数値は fight.js)
 function btlStart(d) {
   const p = d.pending; if (!p || p.k !== 'fight') return null;
-  if (p.btl) return p.btl;
-  const foe = MON[p.foe], boss = !!p.boss, rounds = boss ? (p.round === 2 ? 1 : 2) : 1;
-  const c = partyCut(d); let cut = Math.min(0.6, c.wf + c.af + mfx(d, boss ? 'bossCut' : 'cut')); const notes = [];
-  if (foe.undead && hasTool(d, 'h_tear')) { cut = Math.min(0.85, cut + 0.4); notes.push('清めの涙が光って'); toolDid(d, 'h_tear'); }
-  let base = 0; for (let r = 0; r < rounds; r++) base += blow(d, foe, boss) * rnd(0.75, 1.25);
-  const T = BTL_T(boss), wind = []; for (let i = 0; i < T + 1; i++) wind.push(wpick(BTL_WIND.map((w, j) => j), j => j === 0 && boss ? 2 : 1));
-  const xs = wind.slice(0, T).map(j => BTL_WIND[j].x), avg = xs.reduce((t, x) => t + x, 0) / T;
-  p.btl = { T, t: 0, rounds, base, cut, c: { wf: c.wf, af: c.af }, wind, avg, lastMul: 1, taken: 0, great: 0, ok: 0, def: 0, loot: 0, bonus: [], notes, elf: 0, aim: 0, win: false, done: false, log: [], hp0: d.hp };
+  if (p.btl && p.btl.v === 3) return p.btl;
+  delete p.btl; fBegin(d);
+  p.btl = { v: 3, taken: 0, done: false, log: [], bd: Array.from(pzNew()), used: [], item: -1 };   // 2回目: 盤(bd)・この回りで打った仲間(used)・道具を使った手(item)
   d.eff.cmd.battle = (d.eff.cmd.battle || 0) + 1;
-  dlog(d, `${foe.n}と正面から向き合った。`, 'warn');
+  dlog(d, `${MON[p.foe].n}と正面から向き合った。`, 'warn');
   return p.btl;
 }
-// what the window shows: the foe, its wind-up, the choices
+// what the window shows: the foe and its HP, whose turn it is, the choices
 function btlState(d) {
-  const p = d.pending; if (!p || !p.btl) return null; const b = p.btl, foe = MON[p.foe], a = AR[d.area];
-  const w = BTL_WIND[b.wind[b.t]], nx = b.t + 1 < b.T ? BTL_WIND[b.wind[b.t + 1]] : null;
+  const p = d.pending; if (!p || !p.btl) return null; if (p.btl.v !== 3) { delete p.btl; delete p.f; return null; }
+  const b = p.btl, F = fBegin(d), foe = MON[p.foe], a = AR[d.area];
   const sk = d.party.map((m, i) => { const s = BTL_SK[m.cls]; return s ? { i, who: m.n, cls: m.cls, n: s.n, d: s.d, left: btlSkLeft(m), max: btlSkMax(m), rk: m.rk } : null; }).filter(Boolean);
-  const pot = bestPotion(d);
-  return { foe, boss: !!p.boss, t: b.t, T: b.T, wind: w, next: nx, sk, hp: d.hp, pot: pot && d.hp < DIVE_HP - 10 ? { id: pot.id, h: Math.min(DIVE_HP - d.hp, pot.h), n: bagCount(d, isHeal) } : null, flee: true, done: b.done, win: b.win, a };
+  const pot = bestPotion(d), next = d.party[F.who % d.party.length];
+  if (b.used.length >= d.party.length) b.used = [];
+  const buffs = Object.keys(BUFF).filter(id => ['p_str', 'p_def', 'holy', 'bomb'].includes(id) && bagHas(d, it => it.id === id)).map(id => ({ id, n: bagCount(d, it => it.id === id) }));
+  return { used: b.used.slice(), bd: b.bd, buffs, itemOk: b.item !== F.hands, foe, boss: !!p.boss, mid: !!p.mid, sk, t: F.hands, T: 0, fhp: F.fhp / F.fmax, next: next ? next.n : '', hp: d.hp, pot: pot && d.hp < DIVE_HP - 10 ? { id: pot.id, h: Math.min(DIVE_HP - d.hp, pot.h), n: bagCount(d, isHeal) } : null, flee: true, done: b.done, win: F.win, a };
 }
 // the damage the foe's blow of this turn would do at multiplier 1
 function btlTurnBase(d, b) { return b.base / b.T * (1 - b.cut) * dragoonK(d); }   // No.267: 予備動作をなくし、ターンの重さは均等
@@ -11690,78 +11713,466 @@ function btlSkDo(d, b, who, g, boss, say) {
   return { mul, win, cutT };
 }
 // one choice of the turn. act: 'atk' | 'def' | 'sk' (with i = party index); score 0..1 from the minigame
+// No.346: 攻め = ダメージ ×0.7/1/1.3(失敗/成功/大成功)・受け = ダメージ ×0.5 で敵の一撃 ×0.7/0.5/0.3・スキル = その仲間が打つ
 function btlAct(d, act, score, i) {
-  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, foe = MON[p.foe], a = AR[d.area], boss = !!p.boss;
-  const g = btlGrade(score || 0), say = []; let mul = 1, win = false, cutT = 0, cut = '', sk = null, who = null;
-  if (g === 2) b.great++; else if (g === 1) b.ok++;
-  if (act === 'def') { mul = [0.7, 0.5, 0.3][g]; b.def++; say.push(['身を守りきれなかった', '攻撃を受け流した', '完全に受け流した!'][g]); }
-  else if (act === 'sk') {
-    who = d.party[i]; sk = who && BTL_SK[who.cls]; if (!sk || btlSkLeft(who) <= 0) return null;
-    who.sku = (who.sku || 0) + 1; cut = sk.n;
-    ({ mul, win, cutT } = btlSkDo(d, b, who, g, boss, say));
-  } else { mul = [0.95, 0.8, 0.6][g]; say.push(['攻撃は浅かった', '攻撃が決まった', '会心の一撃!'][g]); if (d.party.some(m => m.cls === 'dragoon') && d.party.length === 1) say.push('竜も続けて爪を振るった'); }
-  b.log.push({ t: b.t, act, g, who: who ? who.n : '', sk: cut });
-  let dmg = 0;
-  if (win) { b.win = true; b.done = true; }
-  else {
-    dmg = Math.round(btlTurnBase(d, b) * mul * b.lastMul);
-    if (dmg > 0) { d.hp -= dmg; b.taken += dmg; }
-    say.push(dmg > 0 ? `${foe.n}の反撃。元気 −${dmg}` : `${foe.n}の攻撃は届かなかった`);
-    b.t++;
-    if (cutT && b.t < b.T) { b.T--; say.push('戦いが1ターン早く終わる'); }
-    if (d.hp <= 0) { if (!lastStand(d)) { b.done = true; b.lost = true; } else say.push('世界樹の樹液が命をつないだ'); }
-    if (!b.done && b.t >= b.T) { b.done = true; b.win = true; }
-  }
-  return { g, gn: BTL_GN[g], say, dmg, cut, cc: sk ? sk.c : '', done: b.done, win: b.win, lost: !!b.lost };
+  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, foe = MON[p.foe];
+  const g = btlGrade(score || 0);
+  let o;
+  if (act === 'sk') { const m = d.party[i]; if (!m || !BTL_SK[m.cls] || btlSkLeft(m) <= 0) return null; o = { sk: true, g, who: i }; }
+  else if (act === 'def') o = { g, gm: 0.5, hitMul: [0.7, 0.5, 0.3][g] };
+  else o = { g, gm: [0.7, 1, 1.3][g] };
+  const r = fHand(d, o), F = p.f, say = [];
+  if (!r.sk) say.push(`${r.m.n}の番。` + (act === 'def' ? ['身を守りきれなかった', '攻撃を受け流した', '完全に受け流した!'][g] : ['攻撃は浅かった', '攻撃が決まった', '会心の一撃!'][g]));
+  say.push(...r.say);
+  if (!r.win || r.dmg) say.push(`${foe.n}に ${r.dmg} のダメージ(残り ${Math.max(0, Math.round(F.fhp))})`);
+  if (r.heal) say.push(`♥ で元気 +${r.heal}`);
+  if (!F.done) say.push(r.hit > 0 ? `${foe.n}の反撃。元気 −${r.hit}` : `${foe.n}の攻撃は守りの壁が止めた`);
+  b.taken = F.taken; b.done = F.done;
+  b.log.push({ t: F.hands, act, g, who: r.m.n, sk: r.sk ? r.sk.n : '' });
+  return { g, gn: BTL_GN[g], say, dmg: r.hit, cut: r.sk ? r.sk.n : '', cc: r.sk ? r.sk.c : '', done: F.done, win: F.win, lost: F.lost };
+}
+
+// ===== 2回目: パズルの盤で戦う(決まったこと 1・2・2.5) =====
+// 仲間を1人選び(この回りでまだ打っていない人から)、盤を1回動かす。消えた印がそのままその手の結果になる(fight.js の fHand に hand で渡す)。
+// スキルは「この手で使う」を押してから動かす(ミニゲームはないので成功扱い)。勇者の紫電一閃は盤を動かさずに決着。
+function btlPzMove(d, i, a, c, sk) {
+  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, F = p.f, foe = MON[p.foe];
+  const m = d.party[i]; if (!m || b.used.includes(i)) return null;
+  const bd = Uint8Array.from(b.bd), r = pzPlay(bd, a, c); if (!r) return null;
+  b.bd = r.board;
+  const useSk = sk && BTL_SK[m.cls] && btlSkLeft(m) > 0;
+  const o = fHand(d, { sk: useSk, g: 1, who: i, hand: { cnt: r.cnt, chains: r.chains } });
+  b.used.push(i); if (b.used.length >= d.party.length) b.used = [];
+  return btlPzSay(d, o, r, useSk);
+}
+function btlPzHero(d, i) {
+  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, m = d.party[i];
+  if (!m || m.cls !== 'hero' || btlSkLeft(m) <= 0 || b.used.includes(i)) return null;
+  const o = fHand(d, { sk: true, g: 1, who: i, hand: { cnt: [0, 0, 0, 0, 0], chains: 1 } });
+  b.used.push(i); if (b.used.length >= d.party.length) b.used = [];
+  return btlPzSay(d, o, null, true);
+}
+function btlPzSay(d, o, r, sk) {
+  const p = d.pending, b = p.btl, F = p.f, foe = MON[p.foe], say = [];
+  say.push(...o.say);
+  if (!o.win || o.dmg) say.push(`${foe.n}に ${o.dmg} のダメージ`);
+  if (o.heal) say.push(`♥ 元気 +${o.heal}`);
+  if (!F.done) say.push(o.hit > 0 ? `${foe.n}の反撃 元気 −${o.hit}` : `${foe.n}の攻撃は守りの壁が止めた`);
+  b.taken = F.taken; b.done = F.done;
+  b.log.push({ t: F.hands, who: o.m.n, sk: o.sk ? o.sk.n : '', n: r ? r.total : 0, ch: r ? r.chains : 0 });
+  return { r, say, dmg: o.dmg, hit: o.hit, heal: o.heal, chains: r ? r.chains : 0, cut: o.sk ? o.sk.n : '', cc: o.sk ? o.sk.c : '', who: o.m, done: F.done, win: F.win, lost: F.lost };
+}
+// 道具(1手に1つまで・手番は減らない)。爆薬は盤の3×3を吹き飛ばす(敵は打ち返さない)
+function btlPzItem(d, id, cell, i) {
+  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, F = p.f;
+  if (b.item === F.hands || !bagHas(d, it => it.id === id)) return null;
+  if (id !== 'bomb') { if (!fUseBuff(d, id)) return null; b.item = F.hands; return { id, say: [BUFF[id].say] }; }
+  if (bagUse(d, 'bomb') === null) return null;
+  const bd = Uint8Array.from(b.bd), r = pzBomb(bd, cell); b.bd = Array.from(bd);
+  const m = d.party[i] || d.party[0], h = ftHand({ atk: 0 }, memSpec(m), { hand: { cnt: r.cnt, chains: r.chains }, dmgMul: F.dmgK });
+  F.fhp -= h.dmg; b.item = F.hands; F.buffs.push('bomb'); d.eff.buff.bomb = (d.eff.buff.bomb || 0) + 1; showItem(d, 'bomb', '爆薬で盤を吹き飛ばした');
+  if (F.fhp <= 0) { F.fhp = 0; F.done = true; F.win = true; b.done = true; }
+  return { id, r, dmg: Math.round(h.dmg), say: [`爆薬! ${MON[p.foe].n}に ${Math.round(h.dmg)} のダメージ`], done: F.done, win: F.win };
 }
 function btlDrink(d) { const p = d.pending; if (!p || !p.btl || p.btl.done) return 0; return drink(d, p); }
-// flee: the same odds as the quick command; the turn's blow lands on a failure
+// flee (No.346): 一息の場所まで下がる(ぬし・中ボスからは必ず)。煙玉なら戻されない。道中で失敗すると一撃を受けて続く
 function btlFlee(d) {
-  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, foe = MON[p.foe];
-  if (p.boss) { b.done = true; b.fled = true; b.back = true; return { ok: true, back: true }; }   // No.267: ぬしは引き返す
-  const smoke = bagHas(d, it => it.id === 'smoke');
-  if (smoke || Math.random() < 0.72 + mfx(d, 'flee')) { if (smoke) { bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke); } b.done = true; b.fled = true; return { ok: true, smoke: !!smoke }; }
-  const dmg = Math.round(btlTurnBase(d, b) * 0.7); d.hp -= dmg; b.taken += dmg; b.t++;
-  if (d.hp <= 0 && !lastStand(d)) { b.done = true; b.lost = true; }
-  if (!b.done && b.t >= b.T) { b.done = true; b.win = true; }
-  return { ok: false, dmg };
+  const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl;
+  const r = fFlee(d);
+  if (r.ok) { b.done = true; b.fled = true; return { ok: true, smoke: r.smoke, back: r.back, gone: true }; }
+  b.taken = p.f.taken; b.done = p.f.done;
+  return { ok: false, dmg: r.dmg };
 }
 // the end: loot, wear and the log, the same bookkeeping as resolveFight
 function btlEnd(d) {
-  const p = d.pending; if (!p || !p.btl || !p.btl.done) return null; const b = p.btl, foe = MON[p.foe], boss = !!p.boss, a = AR[d.area];
-  d.seq++; d.eff.fights++;
-  const c = b.c; d.eff.wpn += Math.round(b.base * c.wf); d.eff.arm += Math.round(b.base * c.af);
-  wear(d, 'wpn', (boss ? 2 : 1) * b.rounds); wear(d, 'arm', (boss ? 2 : 1) * b.rounds);
-  const out = { got: [], heal: 0, fled: !!b.fled, lost: !!b.lost, win: !!b.win };
-  if (b.elf && b.taken > 0 && d.hp > 0) { const h = Math.min(DIVE_HP - d.hp, Math.round(b.taken * b.elf)); if (h > 0) { d.hp += h; out.heal = h; dlog(d, `精霊の守り人の力で、元気が戻った。元気 +${h}`, 'good'); } }
-  const notes = b.notes.length ? b.notes.join('、') + '、' : '';
-  if (b.back) { d.pending = null; goHome(d, `${foe.n}との戦いを切り上げ、引き返すことにした。${b.taken ? `元気 −${b.taken}` : ''}`); d.last = { k: 'turn' }; return out; }
-  if (b.fled) { d.pending = null; dlog(d, `${foe.n}から逃げ出した。${b.taken ? `元気 −${b.taken}` : ''}`, b.taken ? 'hurt' : 'good'); d.last = { k: 'walk', foe: foe.k, flee: true, post: true }; afterRoom(d); return out; }
-  if (b.lost) {
-    d.pending = null; d.hp = 0;
-    if (boss) { dlog(d, `${foe.n}に挑んだが、力及ばなかった……。`, 'bad'); d.last = { k: 'boss', foe: foe.k, dmg: b.taken, lost: true, post: true }; wipe(d); return out; }
-    dlog(d, `${foe.n}との戦いで倒れた……。`, 'bad'); d.last = { k: 'fight', foe: foe.k, dmg: b.taken, post: true }; afterRoom(d); return out;
+  const p = d.pending; if (!p || !p.btl || !p.btl.done || !p.f) return null;
+  d.seq++;
+  return fEnd(d);
+}
+
+// ---- pzboard.js ----
+// ===== 戦闘のパズルの盤(No.346・2026-11-18) — 決まったこと: claude/00_戦闘システム_決まったこと 2・2.5 =====
+// 7×7・5つの印(0 ♠攻撃 1 ♣サブ攻撃 2 ♥回復 3 ♦G 4 ★防御)。隣どうしを入れ替え、同じ印が縦横に4つ以上つながると消える(形は問わない)。
+// 消えた所へ上から落ち、空いた所はランダムに埋まる。消える限り連鎖する。消せない入れ替えはできない。消せる所がなければ配り直す。
+// DOM は使わない(おまかせの計算・試験・2回目の画面が同じ物を使う)。
+const PZ_W = 7, PZ_H = 7, PZ_N = PZ_W * PZ_H, PZ_C = 5, PZ_MIN = 4;
+const PZ_SYM = ['♠', '♣', '♥', '♦', '★'];
+const pzRnd = () => Math.floor(Math.random() * PZ_C);
+// the group of cell i (same mark, side by side); returns the cells
+function pzGroup(b, i, seen) {
+  const c = b[i], out = [i], st = [i]; seen = seen || new Uint8Array(PZ_N); seen[i] = 1;
+  while (st.length) {
+    const k = st.pop(), x = k % PZ_W, y = (k / PZ_W) | 0;
+    const nb = [x > 0 ? k - 1 : -1, x < PZ_W - 1 ? k + 1 : -1, y > 0 ? k - PZ_W : -1, y < PZ_H - 1 ? k + PZ_W : -1];
+    for (const n of nb) if (n >= 0 && !seen[n] && b[n] === c) { seen[n] = 1; out.push(n); st.push(n); }
   }
-  // a win: extra finds from the minigames — each 大成功 and the 竜の息吹 add one; 鑑定 brings the best part
-  const before = Object.assign({}, d.haul);
-  for (const [id, n] of b.bonus) addHaul(d, id, n);
-  const drops = itemList(foe.drops);
-  if (b.aim && drops.length) { const top = drops.slice().sort((x, y) => IT[y].v - IT[x].v)[0]; addHaul(d, top, b.aim >= 2 ? 1 : 0); if (b.aim < 2) addHaul(d, pick(drops), 1); }
-  const extra = b.great + b.loot; if (extra > 0 && drops.length) for (let k = 0; k < extra; k++) addHaul(d, pick(drops), 1);
+  return out;
+}
+// every group of 4 or more on the board
+function pzGroups(b) {
+  const seen = new Uint8Array(PZ_N), gs = [];
+  for (let i = 0; i < PZ_N; i++) if (!seen[i]) { const g = pzGroup(b, i, seen); if (g.length >= PZ_MIN) gs.push(g); }
+  return gs;
+}
+const pzAdj = (i, j) => j >= 0 && j < PZ_N && (Math.abs(i - j) === PZ_W || (Math.abs(i - j) === 1 && ((i / PZ_W) | 0) === ((j / PZ_W) | 0)));
+// would swapping i and j make a group of 4 at i or j? (the board is left as it was)
+function pzMakes(b, i, j) {
+  if (b[i] === b[j]) return false;
+  let t = b[i]; b[i] = b[j]; b[j] = t;
+  const ok = pzGroup(b, i).length >= PZ_MIN || pzGroup(b, j).length >= PZ_MIN;
+  t = b[i]; b[i] = b[j]; b[j] = t;
+  return ok;
+}
+// all the swaps that clear something: [i, j] with j = right or below of i
+function pzMoves(b) {
+  const out = [];
+  for (let i = 0; i < PZ_N; i++) {
+    if (i % PZ_W < PZ_W - 1 && pzMakes(b, i, i + 1)) out.push([i, i + 1]);
+    if (i + PZ_W < PZ_N && pzMakes(b, i, i + PZ_W)) out.push([i, i + PZ_W]);
+  }
+  return out;
+}
+// a fresh deal: nothing clears by itself, and there is at least one move
+function pzNew() {
+  for (let k = 0; k < 200; k++) {
+    const b = new Uint8Array(PZ_N); for (let i = 0; i < PZ_N; i++) b[i] = pzRnd();
+    for (let r = 0; r < 30; r++) { const gs = pzGroups(b); if (!gs.length) break; for (const g of gs) b[g[(Math.random() * g.length) | 0]] = pzRnd(); }
+    if (!pzGroups(b).length && pzMoves(b).length) return b;
+  }
+  return pzNew();
+}
+// swap i and j and let everything fall. Returns null if the swap clears nothing (the board is unchanged).
+// { cnt: cleared per mark, total, chains, steps: [{ cells, marks, fall }] , redeal } — steps are for the picture (2回目)
+// fall: keep the survivors of each column at the bottom, new marks on top. st.board = the board after, st.drop = rows each cell fell (2回目の絵)
+function pzFall(b, gone, st) {
+  const drop = new Int8Array(PZ_N);
+  for (let x = 0; x < PZ_W; x++) {
+    const col = []; for (let y = PZ_H - 1; y >= 0; y--) { const k = y * PZ_W + x; if (!gone[k]) col.push([b[k], y]); }
+    const g = PZ_H - col.length;
+    for (let y = PZ_H - 1, n = 0; y >= 0; y--, n++) { const k = y * PZ_W + x; if (n < col.length) { b[k] = col[n][0]; drop[k] = y - col[n][1]; } else { b[k] = pzRnd(); drop[k] = g; } }
+  }
+  if (st) { st.board = Array.from(b); st.drop = Array.from(drop); }
+}
+// the chains after the first clear (used by the bomb): cnt, chains, steps added to r
+function pzChain(b, r) {
+  for (;;) {
+    const gs = pzGroups(b); if (!gs.length) break;
+    r.chains++;
+    const gone = new Uint8Array(PZ_N), cells = [];
+    for (const g of gs) for (const k of g) { gone[k] = 1; r.cnt[b[k]]++; r.total++; cells.push(k); }
+    r.steps.push({ cells, marks: cells.map(k => b[k]) }); pzFall(b, gone, r.steps[r.steps.length - 1]);
+  }
+  if (!pzMoves(b).length) { b.set(pzNew()); r.redeal = true; r.board = Array.from(b); }
+  return r;
+}
+// 爆薬(決まったこと 3.5【案】): the 3×3 around cell c is blown away, then whatever clears by itself chains on
+function pzBomb(b, c) {
+  const cx = c % PZ_W, cy = (c / PZ_W) | 0, gone = new Uint8Array(PZ_N), cells = [], r = { cnt: [0, 0, 0, 0, 0], total: 0, chains: 1, steps: [], redeal: false };
+  for (let y = cy - 1; y <= cy + 1; y++) for (let x = cx - 1; x <= cx + 1; x++) if (x >= 0 && x < PZ_W && y >= 0 && y < PZ_H) { const k = y * PZ_W + x; gone[k] = 1; cells.push(k); r.cnt[b[k]]++; r.total++; }
+  r.steps.push({ cells, marks: cells.map(k => b[k]) }); pzFall(b, gone, r.steps[0]);
+  return pzChain(b, r);
+}
+function pzPlay(b, i, j) {
+  if (!pzAdj(i, j) || !pzMakes(b, i, j)) return null;
+  let t = b[i]; b[i] = b[j]; b[j] = t;
+  const cnt = [0, 0, 0, 0, 0], steps = []; let chains = 0, total = 0;
+  for (;;) {
+    const gs = pzGroups(b); if (!gs.length) break;
+    chains++;
+    const gone = new Uint8Array(PZ_N), cells = [];
+    for (const g of gs) for (const k of g) { gone[k] = 1; cnt[b[k]]++; total++; cells.push(k); }
+    steps.push({ cells, marks: cells.map(k => b[k]) });
+    pzFall(b, gone, steps[steps.length - 1]);
+  }
+  let redeal = false;
+  if (!pzMoves(b).length) { b.set(pzNew()); redeal = true; }
+  return { cnt, total, chains, steps, redeal, board: Array.from(b) };
+}
+// ヒント: one move that clears something
+function pzHint(b) { const m = pzMoves(b); return m.length ? m[(Math.random() * m.length) | 0] : null; }
+// the cells the first clear of a swap would take (to judge a move without letting it fall)
+function pzFirst(b, i, j) {
+  let t = b[i]; b[i] = b[j]; b[j] = t;
+  const gi = pzGroup(b, i), gj = pzGroup(b, j), out = [0, 0, 0, 0, 0];
+  if (gi.length >= PZ_MIN) out[b[i]] += gi.length;
+  if (gj.length >= PZ_MIN && !gj.includes(i)) out[b[j]] += gj.length;
+  t = b[i]; b[i] = b[j]; b[j] = t;
+  return out;
+}
+// a plain player: usually the biggest first clear (♠♣ a little preferred), sometimes whatever is in sight
+const PZ_SKILL = 0.6;
+function pzAutoMove(b) {
+  const ms = pzMoves(b); if (!ms.length) return null;
+  if (Math.random() >= PZ_SKILL) return ms[(Math.random() * ms.length) | 0];
+  let best = null, bv = -1;
+  for (const m of ms) { const f = pzFirst(b, m[0], m[1]); const v = f[0] * 1.3 + f[1] * 1.3 + f[2] + f[3] + f[4] + Math.random() * 0.5; if (v > bv) { bv = v; best = m; } }
+  return best;
+}
+// おまかせの1手: hands drawn from a pool of real plays (a plain player on running boards), so the quick
+// fights and the guild's estimate stay fast and follow the same board
+let PZ_POOL = null;
+function pzPool() {
+  if (PZ_POOL) return PZ_POOL;
+  const pool = []; let b = pzNew();
+  for (let k = 0; k < 1500; k++) { if (k % 12 === 0) b = pzNew(); const m = pzAutoMove(b); const r = pzPlay(b, m[0], m[1]); pool.push({ cnt: r.cnt, chains: r.chains }); }
+  return PZ_POOL = pool;
+}
+const pzSample = () => { const p = pzPool(); return p[(Math.random() * p.length) | 0]; };
+// the average hand (for words like 「まだ余裕がある」)
+let PZ_AVG = null;
+function pzAvg() {
+  if (PZ_AVG) return PZ_AVG;
+  const p = pzPool(), c = [0, 0, 0, 0, 0]; let ch = 0;
+  for (const h of p) { for (let k = 0; k < 5; k++) c[k] += h.cnt[k]; ch += 1 + 0.5 * (h.chains - 1); }
+  return PZ_AVG = { cnt: c.map(x => x / p.length), chainK: ch / p.length };
+}
+
+// ---- fight.js ----
+// ===== 戦闘の数値(No.346・2026-11-18) — 決まったこと: claude/00_戦闘システム_決まったこと 3.5〜3.7 =====
+// 敵に HP と攻撃。こちらは一行の HP(d.hp は「一行の HP の %」のまま=回復の % がそのまま効く)。
+// 1手 = 仲間の1人が盤を1回動かす → 消えた印でダメージ・回復・守り → 敵が1回打つ。仲間は順番に打つ。
+// おまかせは、ふつうの人が盤を解いた1手(pzSample)を同じ式に入れる。手動(今はぬし・中ボスのミニゲーム)も同じ式。
+// 格が1つ上がるごとに全部 ×1.5(敵の HP と攻撃・冒険者の攻撃と HP・武器・防具)。
+const FT = {
+  WK: 5.25,          // 武器: ♠♣ 1個あたり 5.25 × 種類 × 1.5^武具の格
+  AK: 6.75,          // 防具: ★ 1個あたり 6.75 × 種類 × 1.5^武具の格 × ARM_K(3つの和)
+  ARM_K: 1.15,       // 3.7: 防具は3つ。1つあたりの係数(試し回し: ぬしで 防具なし33%・兜1つ51%・兜籠手脚甲78%・鎧盾兜89%)
+  HEART: 1.5,        // ♥ 1個の回復(F)× 1.5^ランク
+  FOE_HP: 90, FOE_ATK: 25,
+  // [HP, 攻撃] の倍率。No.346: 防具が3つになり★の守りを持ち越すので、ぬし・中ボスの攻撃を ×1.5、道中の敵は ×0.7 に当て直した
+  // No.346 速さの直し(作者了承 2026-11-18・記録の6): 中ボスは HP も攻撃も軽く(ぬしの前に元気を削りすぎていた)・道中の敵も少し軽く。ぬしは変えない(ゴブリンだけ BOSS_OF)。ぬしを軽くしても速さは変わらなかった
+  NORM: [0.75, 0.5], MID: [1.7, 0.8], BOSS: [3.2, 1.4], EARLY: [3.5, 1.5], EARLY_MID: [1.2, 0.5], BOSS2: [3.2, 1.4],   // BOSS2 = 狼・泉のぬし(序盤から HP が2.6倍に跳ねないように間に置く)   // EARLY = 森・坑道・ゴブリン
+  // No.350(作者 2026-11-18「直して」): 狼から先のぬしは全部同じ倍率(前は 狼・泉 4.75/1.9・火山から先 6/2.25 で、溶岩ゴーレムから急に強くなっていた)。
+  // 作者用メニューの3人(騎士・魔法使い・エルフ・求められる金属)で、鎧盾兜 88〜94%・兜籠手脚甲 81〜91%(8か所・各600回)
+  EARLY_IDS: ['forest', 'mine', 'goblin'],
+  BOSS_OF: { goblin: [0.85, 0.9] },   // No.346(作者了承 2026-11-18): ゴブリンのぬしだけ少し弱く(序盤の足止めが一番長かった)。[HP, 攻撃] に掛ける
+  PARTY: [1, 1, 1.2, 1.4],   // 一行の HP = 平均 × 人数の倍率
+  DL: 0.15,
+  GEAR_UP: 1,        // 武具の格に足す。1 = 求める金属を1つ下げた(作者了承 2026-11-18・REQ_TIER と一緒に下げた)          // 奥の道(深さ)1段ごとに敵の HP と攻撃 +15%
+};
+const ftK = n => Math.pow(1.5, n);
+// ---- 一手(純粋な計算: 盤の結果 → ダメージ・回復・守り・敵の一撃) ----
+// F: { atk, lastMul, dmgK, cutK, hitK, wall }   mem: { rk, w: [♠の武器, ♣の武器], a: 防具の和 }
+// ★の守りは「壁」としてたまり、使い切るまで次の一撃から引く(No.346: 持ち越さないと★が0の手が多く、防具が効かない)
+function ftHand(F, mem, o) {
+  o = o || {}; const h = o.hand || pzSample(), rkK = ftK(mem.rk), chK = 1 + 0.5 * (h.chains - 1);
+  const tot = h.cnt[0] + h.cnt[1] + h.cnt[2] + h.cnt[3] + h.cnt[4];
+  const dmg = (tot * rkK + h.cnt[0] * (mem.w[0] || 0) + h.cnt[1] * (mem.w[1] || 0)) * chK * (o.dmgMul ?? 1) * (F.dmgK || 1);
+  const heal = h.cnt[2] * FT.HEART * rkK;
+  const block = h.cnt[4] * (mem.a || 0);
+  let raw = F.atk * (F.lastMul ?? 1) * (o.hitMul ?? 1) * (F.hitK ?? 1);
+  F.wall = (F.wall || 0) + block; const used = Math.min(F.wall, raw); F.wall -= used; raw -= used;
+  const hit = raw * (1 - (F.cutK || 0));
+  return { h, dmg, heal, block, used, hit, gold: h.cnt[3], chains: h.chains };
+}
+// the foe: HP and blow at the place's 格 (m = MON の m)
+function ftFoe(t, m, kind, early, dl, area) {
+  const x = kind === 'boss' ? (early ? FT.EARLY : t === 2 ? FT.BOSS2 : FT.BOSS) : kind === 'mid' ? (early ? FT.EARLY_MID : FT.MID) : FT.NORM, k = ftK(t) * m * (1 + FT.DL * (dl || 0));
+  const y = (kind === 'boss' && FT.BOSS_OF[area]) || [1, 1];
+  return { hp: FT.FOE_HP * k * x[0] * y[0], atk: FT.FOE_ATK * k * x[1] * y[1] };
+}
+const ftMemHP = rk => 100 * ftK(rk);
+const ftPartyHP = rks => rks.length ? rks.reduce((t, r) => t + ftMemHP(r), 0) / rks.length * FT.PARTY[Math.min(3, rks.length)] : 100;
+// 3.5 の読み替え: スキルの効き(g = 0 失敗 / 1 成功 / 2 大成功。おまかせは 1)
+// returns { dmgMul, hitMul, win, lastMul, elf, aim, loot }
+function ftSkill(cls, g, ctx) {
+  const ok = g > 0, r = { dmgMul: 1, hitMul: 1, win: false, lastMul: 1, elf: 0, aim: 0, loot: 0 };
+  if (cls === 'hero') { if (ctx.dragon) r.dmgMul = 3; else r.win = true; }
+  else if (cls === 'mage') { if (!ctx.big && ctx.rk >= ctx.t) { if (ok) r.win = true; else r.dmgMul = 2; } else r.dmgMul = ok ? 2 : 1.5; }
+  else if (cls === 'hunter') r.hitMul = ok ? 0 : 0.5;
+  else if (cls === 'dragoon') { r.hitMul = ok ? 0 : 0.4; r.loot = ok ? 1 : 0; }
+  else if (cls === 'knight') r.hitMul = ctx.n > 1 ? (ok ? 0 : 0.5) : (ok ? 0.5 : 0.75);
+  else if (cls === 'rookie') { r.hitMul = ok ? 0.5 : 0.75; r.aim = ok ? 2 : 1; }
+  else if (cls === 'warrior') r.lastMul = ok ? 0.7 : 0.85;
+  else if (cls === 'dwarf') r.dmgMul = ok ? 2 : 1.5;
+  else if (cls === 'elf') r.elf = ok ? 0.5 : 0.25;
+  return r;
+}
+
+// ---- 品の値(表_戦闘の数値) ----
+const gearGrade = it => gearTier(it) + 1;   // 武具の格 = 金属+1(鉄1〜アダマンタイト6・伝説7)
+function wpnVal(g) {
+  const it = g && IT[g.id]; if (!it) return 0;
+  return FT.WK * (WPN_BASE[gearKey(it)] || 0.13) / 0.14 * ftK(gearGrade(it) + FT.GEAR_UP) * Math.pow(1.1, g.q || 0) * (it.sub === '属性武器' ? 1.1 : 1);
+}
+function armVal(g) {
+  const it = g && IT[g.id]; if (!it) return 0;
+  return FT.AK * FT.ARM_K * (ARM_BASE[gearKey(it)] || 0.08) / 0.12 * ftK(gearGrade(it) + FT.GEAR_UP) * Math.pow(1.1, g.q || 0);
+}
+function memSpec(m) {
+  const ws = WSL.map(s => m[s]).filter(g => g && IT[g.id]).map(wpnVal);
+  return { rk: m.rk || 0, cls: m.cls, w: [ws[0] || 0, ws[1] || 0], a: ASL.map(s => m[s]).filter(g => g && IT[g.id]).reduce((t, g) => t + armVal(g), 0) };
+}
+const partyHP = d => d.php || ftPartyHP(d.party.map(m => m.rk || 0));
+const fightKind = p => p.boss ? 'boss' : p.mid ? 'mid' : 'norm';
+const fightStats = (d, foe, kind) => ftFoe(AR[d.area].rk, foe.m, kind, FT.EARLY_IDS.includes(d.area), d.dl, d.area);
+// a quick guess of what a fight costs (% of the party's HP) — for the words on the buttons and the leader's choices
+function fightLoss(d, foe, kind) {
+  const av = pzAvg(), tot = av.cnt.reduce((t, x) => t + x, 0), ms = d.party.map(memSpec), n = Math.max(1, ms.length);
+  const dmg = ms.reduce((t, m) => t + (tot * ftK(m.rk) + av.cnt[0] * m.w[0] + av.cnt[1] * m.w[1]) * av.chainK, 0) / n;
+  const blk = ms.reduce((t, m) => t + av.cnt[4] * m.a, 0) / n, heal = ms.reduce((t, m) => t + av.cnt[2] * FT.HEART * ftK(m.rk), 0) / n;
+  const st = fightStats(d, foe, kind), hands = st.hp / Math.max(1, dmg), hits = Math.max(0, hands - 0.6);
+  const cut = Math.min(0.6, mfx(d, kind === 'boss' ? 'bossCut' : 'cut')), hit = Math.max(st.atk * 0.15, st.atk - blk) * (1 - cut) * (foe.undead && hasTool(d, 'h_tear') ? 0.6 : 1);
+  return Math.max(0, (hits * hit - hands * heal) / partyHP(d) * 100);
+}
+// the odds of a big fight from here (ぬし・中ボス): the same hands, skills once each, the potions in the bag
+function fightOdds(d, foe, kind, n) {
+  n = n || 150; const ms = d.party.map(m => Object.assign(memSpec(m), { sk: BTL_SK[m.cls] ? btlSkLeft(m) : 0 })), php = partyHP(d), a = AR[d.area];
+  const pots = d.bag.filter(b => isHeal(IT[b.id])).flatMap(b => b.qs.map(q => healOf(b.id, q))).sort((x, y) => y - x);
+  const st = fightStats(d, foe, kind), cut = Math.min(0.6, mfx(d, kind === 'boss' ? 'bossCut' : 'cut'));
+  let win = 0;
+  for (let k = 0; k < n; k++) {
+    const F = { atk: st.atk, lastMul: 1, wall: 0, cutK: cut, hitK: foe.undead && hasTool(d, 'h_tear') ? 0.6 : 1 }, sk = ms.map(m => m.sk), pl = pots.slice();
+    let hp = d.hp, fhp = st.hp, res = 0;
+    for (let h = 0; h < 60; h++) {
+      const i = h % ms.length, m = ms[i]; let s = null;
+      if (hp < 45 && pl.length) hp = Math.min(100, hp + pl.shift());
+      if (sk[i] > 0 && (m.cls !== 'hero' || kind === 'boss')) { sk[i]--; s = ftSkill(m.cls, 1, { big: true, dragon: foe.k === 'elderDragon', rk: m.rk, t: a.rk, n: ms.length }); if (s.win) { res = 1; break; } if (s.lastMul < 1) F.lastMul *= s.lastMul; }
+      const r = ftHand(F, m, { dmgMul: s ? s.dmgMul : 1, hitMul: s ? s.hitMul : 1 });
+      fhp -= r.dmg; if (fhp <= 0) { res = 1; break; }
+      hp = Math.min(100, hp + r.heal / php * 100) - r.hit / php * 100; if (hp <= 0) break;
+    }
+    win += res;
+  }
+  return win / n;
+}
+// ---- 戦いの始まり・1手・終わり(おまかせと手動で共通。状態は pending.f) ----
+function fBegin(d) {
+  const p = d.pending; if (p.f && p.f.v === 2) return p.f;
+  const foe = MON[p.foe], kind = fightKind(p), st = fightStats(d, foe, kind);
+  const F = p.f = { v: 2, kind, fhp: st.hp, fmax: st.hp, atk: st.atk, lastMul: 1, dmgK: 1, hitK: 1, wall: 0, holy: 0,
+    cutK: Math.min(0.6, mfx(d, kind === 'boss' ? 'bossCut' : 'cut')), who: 0, hands: 0, taken: 0, wdealt: 0, blocked: 0,
+    elf: 0, aim: 0, loot: 0, bonus: [], great: 0, notes: [], buffs: [], done: false, win: false, lost: false, fled: false };
+  if (foe.undead && hasTool(d, 'h_tear')) { F.hitK = 0.6; F.notes.push('清めの涙が光って'); toolDid(d, 'h_tear'); }
+  return F;
+}
+// 3.5 の道具: 力の薬 = 与えるダメージ ×1.2・守りの薬 = 受ける被害 −20%・聖水 = 亡者に ×2・爆薬 = 3×3 を消す一撃(おまかせは平均の1手ぶん)
+function fUseBuff(d, id) {
+  const p = d.pending, F = p.f, foe = MON[p.foe]; if (!id || bagUse(d, id) === null) return false;
+  if (id === 'p_str') F.dmgK *= 1.2; else if (id === 'p_def') F.cutK = Math.min(0.8, F.cutK + 0.2); else if (id === 'holy') F.holy = 1;
+  else if (id === 'bomb') { const r = ftHand({ atk: 0 }, memSpec(d.party[0]), { hand: { cnt: [2, 2, 1, 2, 2], chains: 1 } }); F.fhp -= r.dmg; }
+  F.buffs.push(id); F.notes.push(BUFF[id].say); d.eff.buff[id] = (d.eff.buff[id] || 0) + 1;
+  showItem(d, id, { p_str: '与えるダメージ ×1.2', p_def: '受ける被害 −20%', holy: '亡者に2倍のダメージ', bomb: '爆薬で敵を吹き飛ばした' }[id] || '');
+  if (F.fhp <= 0) { F.done = true; F.win = true; }
+  return true;
+}
+// one hand: the member whose turn it is moves the board. o = { sk: スキルを使う, g: 0〜2(手動の出来・おまかせは1), gm: ダメージの倍率, hitMul, who }
+function fHand(d, o) {
+  o = o || {}; const p = d.pending, F = fBegin(d), foe = MON[p.foe], a = AR[d.area], big = F.kind !== 'norm';
+  if (o.who !== undefined) F.who = o.who;
+  const m = d.party[F.who % d.party.length]; F.who++; F.hands++;
+  const g = o.g ?? 1, say = []; let sk = null, s = null;
+  if (o.sk && BTL_SK[m.cls] && btlSkLeft(m) > 0) {
+    m.sku = (m.sku || 0) + 1; sk = BTL_SK[m.cls];
+    s = ftSkill(m.cls, g, { big, dragon: foe.k === 'elderDragon', rk: m.rk || 0, t: a.rk, n: d.party.length });
+    if (s.lastMul < 1) F.lastMul *= s.lastMul;
+    F.elf = Math.max(F.elf, s.elf); F.aim += s.aim; F.loot += s.loot;
+    say.push(`${m.n}の${sk.n}!` + (s.win ? (foe.k === 'elderDragon' ? '' : ' 一撃で決着がついた') : ''));
+    if (m.cls === 'dwarf' && g) {   // 兜割り: 防具の敵は壊れた防具・硬い敵は素材(今のまま)
+      if (BTL_ARMORED.includes(foe.k)) { const id = 'broken_' + pick(['shield', 'helmet', 'armor']) + '_' + BTL_BMETAL[Math.min(5, a.rk)]; if (IT[id]) { F.bonus.push([id, 1]); say.push(`敵の防具が割れて落ちた(${IT[id].name})`); } }
+      else if (BTL_HARD.includes(foe.k)) { const id = pick(itemList(foe.drops)); if (id) { F.bonus.push([id, 1]); say.push(`硬い部位を割り取った(${IT[id].name})`); } }
+    }
+    if (g && (m.rk || 0) >= 5) {   // A・S の付加価値(No.261)
+      const id = pick(itemList(foe.drops)); if (id) F.bonus.push([id, 1]);
+      if (m.rk >= 6 && Math.random() < 0.45) { const top = itemList(foe.drops).sort((x, y) => IT[y].v - IT[x].v)[0]; if (top) F.bonus.push([top, 1]); }
+    }
+    if (s.win) { F.fhp = 0; F.done = true; F.win = true; return { m, sk, g, say, dmg: 0, hit: 0, heal: 0, chains: 0, win: true }; }
+  }
+  if (g === 2) F.great++;
+  const mem = memSpec(m), php = partyHP(d);
+  const r = ftHand(F, mem, { hand: o.hand, dmgMul: (o.gm ?? 1) * (s ? s.dmgMul : 1) * (F.holy && foe.undead ? 2 : 1), hitMul: (o.hitMul ?? 1) * (s ? s.hitMul : 1) });
+  const wp = r.h.cnt[0] * mem.w[0] + r.h.cnt[1] * mem.w[1], bp = (r.h.cnt.reduce((t, x) => t + x, 0)) * ftK(mem.rk);
+  F.wdealt += r.dmg * wp / Math.max(1, wp + bp); F.blocked += r.used / php * 100;
+  F.fhp -= r.dmg;
+  const out = { m, sk, g, say, dmg: Math.round(r.dmg), chains: r.chains, hit: 0, heal: 0 };
+  if (r.chains > 1) say.push(`${r.chains}連鎖!`);
+  if (F.fhp <= 0) { F.fhp = 0; F.done = true; F.win = true; out.win = true; return out; }
+  const hp0 = d.hp; d.hp = Math.min(DIVE_HP, d.hp + Math.round(r.heal / php * 100)); out.heal = d.hp - hp0;
+  const hit = Math.round(r.hit / php * 100); d.hp -= hit; F.taken += hit; out.hit = hit;
+  if (d.hp <= 0) { if (lastStand(d)) say.push('世界樹の樹液が命をつないだ'); else { d.hp = 0; F.done = true; F.lost = true; out.lost = true; } }
+  return out;
+}
+// おまかせ: 冒険者が自分で戦う。ぬし・中ボスではスキルを使い、危なければ薬を飲む。道中では、危なければ逃げる
+function fAutoRun(d, o) {
+  o = o || {}; const p = d.pending, F = fBegin(d), foe = MON[p.foe], big = F.kind !== 'norm';
+  if (o.si !== undefined) F.who = o.si;
+  let first = true;
+  while (!F.done && F.hands < 60) {
+    if (d.hp < (big ? 45 : 30) && bestPotion(d)) drink(d, p);
+    const m = d.party[F.who % d.party.length];
+    const sk = first && o.si !== undefined ? true : big && BTL_SK[m.cls] && btlSkLeft(m) > 0 && (F.kind === 'boss' ? true : m.cls !== 'hero' && d.hp < 50);   // 中ボスでは、危ない時だけ(ぬしの分を残す)
+    if (!big && !o.noFlee && d.hp < 20 && F.fhp > F.fmax * 0.4) return 'flee';
+    fHand(d, { sk });
+    first = false;
+  }
+  if (!F.done) { F.done = true; F.lost = true; }
+  return null;
+}
+// 1.5(作者 2026-11-18): 負けた時は選ばせない。1度目の敗北 = 退却(直前の一息・なければ入口まで戻る)。2度目の敗北 = 撤退(そのまま帰る)。
+// 撤退でも、それまでに手に入れた物は全部持ち帰る(ぬしの素材は手に入らない)。逃げた時は一息まで下がるだけで、敗北に数えない。
+// 戻る間の部屋は倒した後なので、歩く時間だけかかる
+function fallBack(d, why, lost) {
+  d.pending = null; d.next = null; d.wait = 0; d.restPend = null;
+  if (lost) { d.hp = Math.max(d.hp, 10); d.losses = (d.losses || 0) + 1; }
+  if (lost && d.losses >= 2) {
+    d.armed = false;
+    goHome(d, why + '撤退した。ここまでの収穫を抱えて、ギルドへ引き揚げる。');
+    d.last = { k: 'turn', withdraw: true }; return;
+  }
+  const camp = Math.max(0, ...d.forks.filter(i => i < d.i));
+  d.cleared = Math.max(d.cleared || 0, d.i - 1);
+  d.i = camp; d.falls = (d.falls || 0) + 1;
+  dlog(d, why + (lost ? '退却した。' : '') + (camp ? '一息の場所まで下がった。' : '入口まで下がった。') + (lost ? '(次に敗れたら撤退)' : ''), lost ? 'bad' : 'hurt');
+  d.pending = { k: 'low', fell: 1 }; d.armed = false;
+  d.last = { k: 'rest' };
+}
+// the end of a fight: loot, wear, the log (auto and manual)
+function fEnd(d) {
+  const p = d.pending, F = p.f, foe = MON[p.foe], a = AR[d.area], big = F.kind !== 'norm';
+  d.eff.fights++; d.eff.wpn += Math.round(F.wdealt); d.eff.arm += Math.round(F.blocked);
+  wear(d, 'wpn', big ? 2 : 1); wear(d, 'arm', big ? 2 : 1);
+  { const bw = bestGear(d, 'wpn'), ba = bestGear(d, 'arm'); if (bw && F.wdealt >= 1) showItem(d, bw.id, `${foe.n}に斬りこんだ`, bw.q); if (ba && F.blocked >= 1) showItem(d, ba.id, `守りの壁・被害 −${Math.round(F.blocked)}`, ba.q); }
+  const out = { got: [], heal: 0, fled: F.fled, lost: F.lost, win: F.win, taken: F.taken };
+  if (F.elf && F.taken > 0 && d.hp > 0) { const h = Math.min(DIVE_HP - d.hp, Math.round(F.taken * F.elf)); if (h > 0) { d.hp += h; out.heal = h; dlog(d, `精霊の守り人の力で、元気が戻った。元気 +${h}`, 'good'); } }
+  const notes = F.notes.length ? F.notes.join('、') + '、' : '';
+  if (F.lost) {
+    if (F.kind === 'boss') d.last = { k: 'boss', foe: foe.k, dmg: F.taken, lost: true, post: true };
+    fallBack(d, `${foe.n}に敗れた……。`, true); return out;
+  }
+  const before = Object.assign({}, d.haul), drops = itemList(foe.drops);
+  for (const [id, n] of F.bonus) addHaul(d, id, n);
+  if (F.aim && drops.length) { const top = drops.slice().sort((x, y) => IT[y].v - IT[x].v)[0]; addHaul(d, top, F.aim >= 2 ? 1 : 0); if (F.aim < 2) addHaul(d, pick(drops), 1); }
+  const extra = F.great + F.loot; if (extra > 0 && drops.length) for (let k = 0; k < extra; k++) addHaul(d, pick(drops), 1);
   d.pending = null;
-  if (boss) { bossWin(d, b.taken, b.notes, b.c.wf + b.c.af > 0.18 ? '武具で被害を抑えた' : ''); }
+  if (F.kind === 'boss') { bossWin(d, F.taken, F.notes, ''); }
   else {
-    const val = roomVal(d), drop = pick(drops); let n = 0;
-    const mult = b.def > 0 ? 0.85 : 1.1;
-    if (drop) { n = lootQty(drop, val * mult * (c.wf > 0.12 ? 1.1 : 0.9)); addHaul(d, drop, n); }
+    const val = roomVal(d) * (F.kind === 'mid' ? 3 : 1), drop = pick(drops); let n = 0;
+    if (drop) { n = lootQty(drop, val * 1.1); addHaul(d, drop, n); }
     if (a.kind === 'hunt' && Math.random() < 0.6) { const t = pick(a.main); addHaul(d, t, Math.max(1, lootQty(t, val * 0.5))); }
+    if (F.kind === 'mid') d.midBeat = true;
     d.eff.kills.push(foe.k);
-    dlog(d, `${foe.n}を倒した。${notes}元気 −${b.taken}` + (n ? `。${IT[drop].name}×${n}` : ''), 'fight');
-    d.last = { k: 'fight', foe: foe.k, dmg: b.taken, item: drop, n, post: true };
+    dlog(d, `${F.kind === 'mid' ? '手強い' : ''}${foe.n}を倒した。${notes}${F.taken ? `元気 −${F.taken}` : '無傷'}` + (n ? `。${IT[drop].name}×${n}` : ''), F.kind === 'mid' ? 'great' : 'fight');
+    d.last = { k: 'fight', foe: foe.k, dmg: F.taken, item: drop, n, post: true };
     afterRoom(d);
   }
   for (const id in d.haul) { const n = d.haul[id] - (before[id] || 0); if (n > 0) out.got.push([id, n]); }
   return out;
+}
+// 逃げる: 煙玉なら確実に逃げて先へ(戻されない)。道中はたいてい逃げられ、一息まで下がる。ぬし・中ボスからは必ず下がれる
+function fFlee(d) {
+  const p = d.pending, foe = MON[p.foe], big = !!(p.boss || p.mid);
+  const smoke = bagHas(d, it => it.id === 'smoke');
+  if (smoke) {
+    bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke);
+    if (big) { d.pending = p.boss ? { k: 'boss', foe: p.foe } : { k: 'fight', foe: p.foe, mid: true }; dlog(d, `煙玉を投げて、${foe.n}から間合いを取った。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true }; return { ok: true, smoke: true, stay: true }; }
+    d.pending = null; dlog(d, `煙玉を投げて、${foe.n}から逃げ出した。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true, post: true }; afterRoom(d); return { ok: true, smoke: true };
+  }
+  if (big || Math.random() < 0.72 + mfx(d, 'flee')) { fallBack(d, `${foe.n}から逃げ出した。`, false); return { ok: true, back: true }; }
+  // caught: the foe strikes once, the fight goes on
+  const F = fBegin(d), php = partyHP(d), hit = Math.round(F.atk * F.lastMul * F.hitK * (1 - F.cutK) * 0.7 / php * 100);
+  d.hp -= hit; F.taken += hit;
+  if (d.hp <= 0 && !lastStand(d)) { d.hp = 0; F.done = true; F.lost = true; }
+  return { ok: false, dmg: hit };
 }
 
 // ---- skicons.js ----
@@ -14653,6 +15064,11 @@ const SE_ALT = { cas_door: 'door', cas_lever: 'cas_lever_syn', cas_stop: 'cas_st
 // No.334: 闘技場の斬る・打つ・躱す・必殺の音(作者の音源)
 Object.assign(SE_FILES, {ar_clang1: 'se_ar_clang1.mp3', ar_clang2: 'se_ar_clang2.mp3', ar_clang3: 'se_ar_clang3.mp3', ar_cut1: 'se_ar_cut1.mp3', ar_cut2: 'se_ar_cut2.mp3', ar_cut3: 'se_ar_cut3.mp3', ar_fin_axe: 'se_ar_fin_axe.mp3', ar_fin_combo: 'se_ar_fin_combo.mp3', ar_fin_punch: 'se_ar_fin_punch.mp3', ar_guard: 'se_ar_guard.mp3', ar_jump: 'se_ar_jump.mp3', ar_knife1: 'se_ar_knife1.mp3', ar_knife2: 'se_ar_knife2.mp3', ar_land: 'se_ar_land.mp3', ar_punchH1: 'se_ar_punchH1.mp3', ar_punchH2: 'se_ar_punchH2.mp3', ar_punchH3: 'se_ar_punchH3.mp3', ar_punchL: 'se_ar_punchL.mp3', ar_swish_k1: 'se_ar_swish_k1.mp3', ar_swish_k2: 'se_ar_swish_k2.mp3', ar_swish_p2: 'se_ar_swish_p2.mp3', ar_swish_p3: 'se_ar_swish_p3.mp3', ar_swish_s1: 'se_ar_swish_s1.mp3', ar_swish_s2: 'se_ar_swish_s2.mp3', ar_swish_s3: 'se_ar_swish_s3.mp3', ar_fire1: 'se_ar_fire1.mp3', ar_spear: 'se_ar_spear.mp3', ar_axe1: 'se_ar_axe1.mp3', ar_cheer: 'se_ar_cheer.mp3', ar_bang: 'se_ar_bang.mp3', ar_dodon: 'se_ar_dodon.mp3'});
 Object.assign(SE_ALT, {ar_clang1: 'ar_clash', ar_clang2: 'ar_clash', ar_clang3: 'ar_clash', ar_cut1: 'ar_hit', ar_cut2: 'ar_hit', ar_cut3: 'ar_hit', ar_fin_axe: 'ar_crit', ar_fin_combo: 'ar_crit', ar_fin_punch: 'ar_crit', ar_guard: 'ar_clash', ar_jump: 'mg_whoosh', ar_knife1: 'ar_hit', ar_knife2: 'ar_hit', ar_land: 'mg_good', ar_punchH1: 'ar_hit', ar_punchH2: 'ar_hit', ar_punchH3: 'ar_hit', ar_punchL: 'ar_hit', ar_swish_k1: 'mg_whoosh', ar_swish_k2: 'mg_whoosh', ar_swish_p2: 'mg_whoosh', ar_swish_p3: 'mg_whoosh', ar_swish_s1: 'mg_whoosh', ar_swish_s2: 'mg_whoosh', ar_swish_s3: 'mg_whoosh', ar_fire1: 'mg_magic_shot', ar_spear: 'ar_hit', ar_axe1: 'ar_hit', ar_cheer: 'ar_crowd', ar_bang: 'ar_gong', ar_dodon: 'rune'});
+// No.350: 戦闘パズルの音と、ぬし・中ボスの攻撃の音(作者の音源。bgm/ の se_pz_*・se_mon_*。頭と後ろの無音を切り、音量をそろえてある)
+Object.assign(SE_FILES, { pz_open: 'se_pz_open.mp3', pz_swap: 'se_pz_swap.mp3', pz_nope: 'se_pz_nope.mp3', pz_clear: 'se_pz_clear.mp3', pz_chain: 'se_pz_chain.mp3', pz_hit1: 'se_pz_hit1.mp3', pz_hit2: 'se_pz_hit2.mp3', pz_skill: 'se_pz_skill.mp3', pz_hero: 'se_pz_hero.mp3', pz_bomb: 'se_pz_bomb.mp3', pz_win: 'se_pz_win.mp3',
+  mon_slime: 'se_mon_slime.mp3', mon_goblin1: 'se_mon_goblin1.mp3', mon_goblin2: 'se_mon_goblin2.mp3', mon_goblin3: 'se_mon_goblin3.mp3', mon_wyv1: 'se_mon_wyv1.mp3', mon_wyv2: 'se_mon_wyv2.mp3', mon_dragon: 'se_mon_dragon.mp3', mon_wing: 'se_mon_wing.mp3', mon_stomp: 'se_mon_stomp.mp3', mon_tentacle: 'se_mon_tentacle.mp3' });
+Object.assign(SE_ALT, { pz_open: 'tab', pz_swap: 'tap', pz_nope: 'mg_miss', pz_clear: 'mg_zaku', pz_chain: 'mg_combo', pz_hit1: 'hit', pz_hit2: 'ar_crit', pz_skill: 'good', pz_hero: 'great', pz_bomb: 'mg_thunk', pz_win: 'great',
+  mon_slime: 'hit', mon_goblin1: 'hit', mon_goblin2: 'hit', mon_goblin3: 'hit', mon_wyv1: 'hit', mon_wyv2: 'hit', mon_dragon: 'hit', mon_wing: 'hit', mon_stomp: 'hit', mon_tentacle: 'hit' });
 const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
 const SE_NOW = {};
 function seReady(k) { const a = SE_EL[k]; return !!(a && !a._bad && a.readyState >= 2); }   // No.289: 音源ファイルが読めているか
@@ -17069,6 +17485,10 @@ function devSheet() {
     h += `<div class="sec"><h2>港のクラブ(No.283)</h2><p class="note">第3章・港あり・紹介状あり・コイン1000枚・夜にして、クラブへ。</p><div class="btns"><button class="btn" data-act="devcas">クラブへ</button></div></div>`;
     h += `<div class="sec"><h2>釣りの練習</h2><p class="note">釣り場6か所が全部開き、主にも会い、竜骨の竿を持った状態で釣り場へ。</p><div class="btns">` +
       FISH_SPOTS.map(sp => `<button class="btn" data-act="devfish" data-v="${sp.id}">${sp.n}へ</button>`).join('') + `</div></div>` +
+      `<div class="sec"><h2>戦闘パズル(No.346)</h2><p class="note">騎士・魔法使い・エルフ(その場所の格のランク)に、求められる金属の武器2本と防具3つ、回復薬1。盤の戦いまで進めて開く。練習用の店なので保存しない。</p>` +
+      `<div class="chips">` + [['norm', '道中'], ['mid', '中ボス'], ['boss', 'ぬし']].map(([v, n]) => `<button class="chip${(UI.devPzK || 'boss') === v ? ' on' : ''}" data-act="devpzk" data-v="${v}">${n}</button>`).join('') + `</div>` +
+      `<div class="chips">` + [['top', '鎧・盾・兜'], ['light', '兜・籠手・脚甲'], ['none', '防具なし']].map(([v, n]) => `<button class="chip${(UI.devPzA || 'top') === v ? ' on' : ''}" data-act="devpza" data-v="${v}">${n}</button>`).join('') + `</div>` +
+      `<div class="btns">` + Object.keys(DG).filter(id => AR[id]).map(id => `<button class="btn" data-act="devpz" data-v="${id}">${AR[id].n}</button>`).join('') + `</div></div>` +
       `<div class="sec"><h2>章</h2><div class="btns">` + STAGES.map((s, i) => `<button class="btn${i === st ? ' pri' : ''}" data-act="devst" data-v="${i}">${i + 1} ${s.short}</button>`).join('') +
       `</div><p class="note">選んだ章の前までの建物は建った状態・それまでの物語は見たことになる。</p></div>` +
       `<div class="sec"><h2>季節</h2><div class="btns">` + SEASONS.map((s, i) => `<button class="btn${i === se ? ' pri' : ''}" data-act="devse" data-v="${i}">${s.n}</button>`).join('') + `</div></div>` +
@@ -17089,6 +17509,34 @@ function devStage(n) {
   const stv = storyState(); for (const id in STORY) { const d = STORY[id]; let p = false; try { p = !!(d.past && d.past()) || (d.ch != null && d.ch < n); } catch (e) { p = false; } if (p) stv.seen[id] = 0; }
   stv.q = [];
 }
+// No.346: 作者用メニューから戦闘パズルを触る。その場所の格のランクの3人に、求められる金属の武具を着せて、選んだ戦いまで進めて盤を開く
+function devPz(area, kind, armSet) {
+  const a = AR[area]; if (!a) return false;
+  G.tut = -1; G.dive = null; G.roster = G.roster || [];
+  const rk = Math.min(6, a.rk), t = REQ_TIER[Math.min(REQ_TIER.length - 1, a.rk)];
+  const pickGear = (m, key) => Object.values(IT).filter(it => (isWeapon(it) || isArmor(it)) && gearKey(it) === key && !it.id.startsWith('lg_') && canWield(m, it))
+    .sort((x, y) => Math.abs(gearTier(x) - t) - Math.abs(gearTier(y) - t) || gearTier(x) - gearTier(y))[0];
+  const arms = armSet === 'none' ? [] : armSet === 'light' ? ['helmet', 'gauntlet', 'boots'] : ['armor', 'shield', 'helmet'];
+  const ms = ['knight', 'mage', 'elf'].map(cls => {
+    const m = makeAdv(rk, cls); m.id = 'devpz_' + cls; G.roster = G.roster.filter(x => x.id !== m.id); G.roster.push(m);
+    WPN_OF[cls].slice(0, 2).forEach((k, i) => { const it = pickGear(m, k); if (it) m[WSL[i]] = gearCopy({ id: it.id, q: 0 }); });
+    arms.forEach((k, i) => { const it = pickGear(m, k); if (it) m[ASL[i]] = gearCopy({ id: it.id, q: 0 }); });
+    return m;
+  });
+  const d = G.dive = newDive(area, '', ms, { bag: [{ id: 'p_heal', qs: [0] }] });
+  for (let k = 0; k < 400 && !d.done; k++) {
+    const p = d.pending;
+    if (p) {
+      if (p.k === 'fight' && fightKind(p) === kind) break;
+      if (p.k === 'boss') { diveChoose('push'); continue; }
+      if (p.k === 'fight') { const hp = d.hp, bag = JSON.stringify(d.bag); diveChoose('atk'); d.hp = hp; d.bag = JSON.parse(bag); d.losses = 0; continue; }
+      diveChoose(diveAuto(d) === 'back' ? (diveOptions(d).find(o => o.k !== 'back') || {}).k : diveAuto(d));
+    } else { d.today = 0; d.day = G.day; diveTurn(); }
+    d.hp = DIVE_HP;
+  }
+  const p = d.pending; if (!p || p.k !== 'fight' || fightKind(p) !== kind) { G.dive = null; return false; }
+  d.hp = DIVE_HP; closeSheet(true); diveChoose('battle'); btlOpen(); return true;
+}
 const DEV_ACTS = {
   devmenu: () => { devSheet(); return false; },
   devv: d => { UI.devView = d.v; devSheet(); return false; },
@@ -17096,6 +17544,9 @@ const DEV_ACTS = {
   devse: d => { G.day = 1 + 7 * (+d.v) + 28 * Math.floor((G.day - 1) / 28); toast(`<div>${SEASONS[+d.v].n}にした</div>`); devSheet(); return false; },
   devbuild: () => { for (const b of BUILDINGS) if (b.st <= G.stage) G.built[b.id] = 1; toast('<div>建物を建てた</div>'); devSheet(); return false; },
   devgold: () => { G.gold += 10000; devSheet(); return false; },
+  devpzk: d => { UI.devPzK = d.v; devSheet(); return false; },
+  devpza: d => { UI.devPzA = d.v; devSheet(); return false; },
+  devpz: d => { if (!devPz(d.v, UI.devPzK || 'boss', UI.devPzA || 'top')) toast('<div>戦いまで進めなかった。もう一度押して下さい</div>'); return false; },
   devscene: d => { closeSheet(true); storyView(d.v); return false; },
   devcas: () => { G.tut = -1; if (G.stage < 2) devStage(2); G.built.port = 1; const c = casSt(); c.invite = 1; c.coins += 1000; G.act = 'work'; G.phase = 'night'; DEV.on && closeSheet(true); render(); casinoOpen(); return false; },
   devfish: d => { G.tut = -1; if (G.stage < 2) devStage(2); G.built.guild = 1; G.built.port = 1; const s = fishState(); s.met = { river: 1, lake: 1, sea: 1 }; s.rod = RODS.length - 1;
@@ -19976,7 +20427,7 @@ const DEC_HEAD = {
   fight: ['戦闘', ''],
 };
 const advFace = (m, size = 'xs') => portrait({ cls: m.cls, sex: m.sex, name: m.n, reg: m.reg }, size);
-const durBar = g => g && g.max < 999 ? `<span class="durbar" title="耐久 ${g.dur}/${g.max}"><i class="${g.dur / g.max < 0.25 ? 'low' : g.dur / g.max < 0.5 ? 'mid' : ''}" style="width:${Math.round(Math.max(0, g.dur) / g.max * 100)}%"></i></span>` : '';
+const durBar = g => g && g.max < 999 ? `<span class="durbar" title="耐久 ${Math.ceil(g.dur)}/${g.max}"><i class="${g.dur / g.max < 0.25 ? 'low' : g.dur / g.max < 0.5 ? 'mid' : ''}" style="width:${Math.round(Math.max(0, g.dur) / g.max * 100)}%"></i></span>` : '';
 const partyFaces = d => `<span class="pfaces">${d.party.map(m => advFace(m)).join('')}</span>`;
 const daysWord = a => { const n = daysOf(a); return n <= 1 ? '日帰り' : n + '日がかり'; };
 const restingToday = d => d.day === G.day && d.today >= diveCap() && !d.pending && !d.done;
@@ -20205,7 +20656,7 @@ function diveViewHtml() {
     routeBar(d) + showRow(d, 'big') +
     `<p class="note" style="font-size:12px">接客1人・工房の作業1回・灯り亭の夕食で、冒険者も1ターン進む(1日${diveCap()}ターンまで)。道のりは自動で進み、魔物や宝箱に<b>遭遇</b>するとあなたの指示を待つ。分かれ道とぬしの部屋の前では<b>一息</b>ついて、進むか・休むか・引き返すかを決める。最奥の${MON[dg.boss].n}の奥に、封印された箱が眠っている。</p>` +
     `<label class="dvauto"><input type="checkbox" data-act="dvauto"${G.diveMinorAuto ? ' checked' : ''}><span>${AUTO_TXT}</span></label>` +
-    `<div class="dvgrid"><div><div class="sub">パーティー</div>${d.party.map(m => `<div class="pmem">${advFace(m, 'sm')}<div><b>${m.n}</b>${rankTag(m.rk)}<div class="ins">${[m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">武具なし</span>'}${d.bag.filter(b => b.who === m.id && b.qs.length).map(b => `<span class="in bagin">${ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 })}</span>`).join('')}</div></div></div>`).join('')}</div>` +
+    `<div class="dvgrid"><div><div class="sub">パーティー</div>${d.party.map(m => `<div class="pmem">${advFace(m, 'sm')}<div><b>${m.n}</b>${rankTag(m.rk)}<div class="ins">${gearsOf(m).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">武具なし</span>'}${d.bag.filter(b => b.who === m.id && b.qs.length).map(b => `<span class="in bagin">${ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 })}</span>`).join('')}</div></div></div>`).join('')}</div>` +
     `<div><div class="sub">道具袋</div><div class="ins">${bag}</div></div><div><div class="sub">収穫</div><div class="ins">${haulIcons(d.haul, 12)}${d.gold ? `<span class="in price">${d.gold}G</span>` : ''}</div></div></div>` +
     `<div class="dvlog">${d.log.slice().reverse().map(l => `<div class="lg ${l.c}">${esc(l.t)}</div>`).join('')}</div></div>`;
 }
@@ -20213,11 +20664,11 @@ function diveViewHtml() {
 const CMD_N = { rest: '一息で休む', cut: '隠し通路', atk: '攻める', def: '守る', item: '道具', heal: '回復して戦う', flee: '逃げる', disarm: '罠の解除', jump: '飛び越え', around: '回り道', open: '宝箱を開ける', care: '慎重に開ける', leave: '宝箱を見送る', fork: '分かれ道' };
 function effLines(rep) {
   const e = rep.eff, out = [];
-  const gear = (rep.party || []).flatMap(m => [m.wpn, m.arm].filter(Boolean).map(g => [g, m]));
+  const gear = (rep.party || []).flatMap(m => gearsOf(m).map(g => [g, m]));
   const w = gear.find(([g]) => isWeapon(IT[g.id])), ar = gear.find(([g]) => isArmor(IT[g.id]));
   // クラウド: the protection said as potions the player knows (回復薬 1本 = healOf('p_heal'))
   const asPot = n => { const k = n / Math.max(1, healOf('p_heal', 0)); return k >= 0.75 ? `・<b class="good">回復薬 約${Math.round(k)}本分</b>` : k >= 0.3 ? '・<b class="good">回復薬 約半分</b>' : ''; };
-  if (w && e.wpn) out.push([w[0], `${w[1].n}の${itName(w[0])}などの武器が、魔物の攻撃を先に断ち切った(被害 約−${e.wpn}${asPot(e.wpn)})`]);
+  if (w && e.wpn) out.push([w[0], `${w[1].n}の${itName(w[0])}などの武器が、魔物を斬り伏せた(武器のダメージ 約${fmt(e.wpn)})`]);
   if (ar && e.arm) out.push([ar[0], `${ar[1].n}の${itName(ar[0])}などの防具が、攻撃と罠から身を守った(被害 約−${e.arm}${asPot(e.arm)})`]);
   if (e.heal) out.push([{ id: rep.healId || 'p_heal' }, `持たせた薬で、危ない場面を立て直した(元気 +${e.heal})`]);
   if (e.snack) out.push([{ id: rep.snackId || 'ration' }, `休むたびに料理を食べて、元気を取り戻した(元気 +${e.snack})`]);
@@ -20253,7 +20704,7 @@ function diveReportBody(rep) {
   if (ef.length) h += `<div class="sub" style="margin-top:10px">効いた品</div><div class="effs">${ef.map(([g, t]) => `<div class="eff">${ico(g.id, g.q, { size: 'xs' })}<span>${t}</span></div>`).join('')}</div>`;
   const cmds = Object.entries(rep.eff.cmd || {}).filter(([k]) => CMD_N[k]);
   if (cmds.length) h += `<p class="note" style="font-size:12px;margin-top:6px">出した指示: ${cmds.map(([k, n]) => `${CMD_N[k]}×${n}`).join('・')}</p>`;
-  if (!ok) h += `<p class="note" style="margin-top:8px">${(rep.party || []).some(m => !m.wpn && !m.arm) ? '武具を渡すと、戦いの被害がぐっと減る。' : ''}${!rep.hadHeal ? '回復薬があれば、危ない場面で立て直せる。' : '危ないと言われたら、守るか逃げるか、引き返すのも手だ。'}</p>`;
+  if (!ok) h += `<p class="note" style="margin-top:8px">${(rep.party || []).some(m => !gearsOf(m).length) ? '武具を渡すと、戦いがぐっと楽になる。' : ''}${!rep.hadHeal ? '回復薬があれば、危ない場面で立て直せる。' : '危ないと言われたら、守るか逃げるか、引き返すのも手だ。'}</p>`;
   return h;
 }
 function diveReportHtml(rep) {
@@ -20285,7 +20736,7 @@ function packPreview(gq) {
 const gqParty = gq => (gq.party || []).map(advById).filter(m => m && advReady(m));
 function diveEstimateCached(gq) {
   const ps = gqParty(gq);
-  const key = JSON.stringify([gq.area, gq.target, ps.map(m => [m.id, m.rk, m.wpn, m.arm, advBag(m), (G.meals || {})[m.id]]), G.day]);
+  const key = JSON.stringify([gq.area, gq.target, ps.map(m => [m.id, m.rk, GSL.map(s => m[s]), advBag(m), (G.meals || {})[m.id]]), G.day]);
   if (UI.dvEst && UI.dvEst.key === key) return UI.dvEst.e;
   const e = diveEstimate(gq.area, gq.target, ps, packPreview(gq), 140);
   UI.dvEst = { key, e }; return e;
@@ -20300,17 +20751,18 @@ function advJob(m) {
 // the place gear is judged against: the chosen place, or the hardest one open
 const gqArea = gq => (gq && gq.area && AR[gq.area]) || AREAS.filter(areaOpen).slice(-1)[0] || AR.forest;
 // ▲: the warehouse holds a clearly better piece this adventurer can wear
-function gearBetter(m, slot, a) {
-  const best = packList(slot, a).find(it => canWield(m, it)); if (!best) return false;
-  const cur = m[slot], f = gearFrac(best, bestOwnedQ(best.id), a), fc = cur ? gearFrac(IT[cur.id], cur.q, a) * (cur.dur > 0 ? 1 : 0) : -1;
-  return f > fc + 0.02;
+function gearBetter(m, slot, a) {   // No.346: その種類(武器/防具)の一番弱い枠を、倉庫の品で1割以上強くできるか
+  const sl = slotsOf(slotKind(slot)), vs = sl.map(s => m[s] ? gearVal(IT[m[s].id], m[s].q) * (m[s].dur > 0 ? 1 : 0) : -1);
+  const lo = vs.indexOf(Math.min(...vs)), kinds = sl.filter((s, i) => i !== lo && m[s]).map(s => gearKey(IT[m[s].id]));
+  const best = packList(slotKind(slot), a).filter(it => canWield(m, it) && !kinds.includes(gearKey(it))).sort((x, y) => gearVal(y, bestOwnedQ(y.id)) - gearVal(x, bestOwnedQ(x.id)))[0];
+  return !!best && gearVal(best, bestOwnedQ(best.id)) > vs[lo] * 1.1;
 }
 const UP_MARK = '<i class="gup" aria-label="倉庫にもっと良い品がある" title="倉庫にもっと良い品がある">▲</i>';
 function advRow(m, gq) {
   const a = gqArea(gq), out = advOut(m), hurt = advHurt(m), sel = (gq.party || []).includes(m.id), open = gq.open === m.id && !out, ml = mealOf(m.id);
   const st = !out && !hurt && gq.area && AR[gq.area] && !diveRankOk(AR[gq.area], m) ? `<span class="tag hurt">ランク不足</span>` : out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
-  const gearS = ['wpn', 'arm'].map(slot => { const g = m[slot], up = !out && gearBetter(m, slot, a) ? UP_MARK : '';
-    return g ? `<span class="in gsm">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}${up}</span>` : `<span class="in gsm none">${slot === 'wpn' ? '武器なし' : '防具なし'}${up}</span>`; }).join('');
+  const gearS = ['wpn', 'arm'].map(k => { const gs = gearsOf(m, k), up = !out && gearBetter(m, k, a) ? UP_MARK : '';
+    return gs.length ? gs.map((g, i) => `<span class="in gsm">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}${i === gs.length - 1 ? up : ''}</span>`).join('') : `<span class="in gsm none">${k === 'wpn' ? '武器なし' : '防具なし'}${up}</span>`; }).join('');
   const bag = advBag(m).filter(b => b.qs.length), bagS = bag.length ? bag.map(b => `<span class="in gsm">${ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 })}</span>`).join('') : '<span class="sub gsm-e">袋は空</span>';
   const mealS = ml ? `<span class="tag ok">${MEAL_B[ml.buff].n}</span>` : '';
   const pick = !out && !hurt ? `<button class="btn sm${sel ? ' pri' : ''}" data-act="dvmem" data-v="${m.id}" aria-pressed="${sel}">${sel ? '同行' : '選ぶ'}</button>` : '';
@@ -20326,8 +20778,10 @@ function advRow(m, gq) {
 function advEditor(m, gq, a) {
   const e = gq.edit || 'wpn', hurt = advHurt(m), ml = mealOf(m.id);
   const slot = (k, inner, lab, cls = '') => `<button class="gslot${cls}${e === k ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="${k}" aria-label="${lab}">${inner}</button>`;
-  const gear = ['wpn', 'arm'].map(k => { const g = m[k], n = k === 'wpn' ? '武器' : '防具', up = gearBetter(m, k, a) ? UP_MARK : '';
-    return slot(k, g ? ico(g.id, g.q, { size: 'xs' }) + durBar(g) + up : `<span>${n}</span>${up}`, n, g ? '' : ' empty'); }).join('');
+  // No.346: 武器2本・防具3つ(同じ種類は1つまで)。▲は倉庫にもっと良い品がある枠
+  const gear = GSL.map(k => { const g = m[k], n = slotKind(k) === 'wpn' ? '武器' : '防具', up = k === slotsOf(slotKind(k))[0] && gearBetter(m, k, a) ? UP_MARK : '';
+    return slot(k, g ? ico(g.id, g.q, { size: 'xs' }) + durBar(g) + up : `<span>${n}</span>${up}`, n, g ? '' : ' empty'); }).join('') +
+    `<button class="btn sm" data-act="dvautoeq" data-v="${m.id}" title="武器2本・防具3つを、倉庫の一番良い組み合わせにする">一番良い物</button>`;
   const bag = advBag(m), n = bagSlots(m);
   let bs = ''; for (let i = 0; i < n; i++) { const b = bag[i]; bs += slot('bag', b ? ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 }) : '<span>袋</span>', '道具袋', ' bslot' + (b ? '' : ' empty')); }
   const meal = slot('meal', ml ? `<span class="gmeal">${pubIcon(PUB_BY[ml.dish])}</span>` : '<span>食事</span>', '食事', ' gmealslot' + (ml ? '' : ' empty'));
@@ -20355,12 +20809,13 @@ function bagEditor(a, m) {
   return h + `</div>`;
 }
 function gearEditor(m, slot, a) {
-  const list = packList(slot, a).sort((x, y) => canWield(m, y) - canWield(m, x)).slice(0, 12), cur = m[slot];
-  return `<div class="gedit"><div class="row between"><span class="sub">${m.n}の${slot === 'wpn' ? '武器' : '防具'}を選ぶ(ランク${RANKS[m.rk || 0].n}は${TIER_N[Math.min(6, m.rk || 0)]}まで持てる${slot === 'wpn' && WPN_OF[m.cls] ? `・${(CLASSES.find(x => x.k === m.cls) || {}).n || ''}は${wpnListOf(m.cls)}` : ''})</span></div>` +
-    (cur ? `<div class="row between" style="margin:4px 0"><span class="in">${ico(cur.id, cur.q, { size: 'xs' })}${itName(cur)} 耐久 ${cur.dur}/${cur.max >= 999 ? '∞' : cur.max}</span><button class="btn sm" data-act="dvunq" data-id="${m.id}" data-v="${slot}">外して倉庫へ</button></div>` : '') +
+  if (!GSL.includes(slot)) slot = 'wpn';
+  const kind = slotKind(slot), list = packList(kind, a).sort((x, y) => canWield(m, y) - canWield(m, x)).slice(0, 12), cur = m[slot];
+  return `<div class="gedit"><div class="row between"><span class="sub">${m.n}の${kind === 'wpn' ? '武器(2本まで・同じ種類は1本)' : '防具(3つまで・同じ種類は1つ)'}を選ぶ(ランク${RANKS[m.rk || 0].n}は${TIER_N[Math.min(6, m.rk || 0)]}まで持てる${kind === 'wpn' && WPN_OF[m.cls] ? `・${(CLASSES.find(x => x.k === m.cls) || {}).n || ''}は${wpnListOf(m.cls)}` : ''})</span></div>` +
+    (cur ? `<div class="row between" style="margin:4px 0"><span class="in">${ico(cur.id, cur.q, { size: 'xs' })}${itName(cur)} 耐久 ${Math.ceil(cur.dur)}/${cur.max >= 999 ? '∞' : cur.max}</span><button class="btn sm" data-act="dvunq" data-id="${m.id}" data-v="${slot}">外して倉庫へ</button></div>` : '') +
     (list.length ? `<div class="gpick">` + list.map(it => { const [w, c] = GEAR_WORD(gearFrac(it, bestOwnedQ(it.id), a)), lock = !canWield(m, it);
       return `<button class="cell sm${lock ? ' locked' : ''}" data-act="dveq" data-id="${m.id}" data-k="${slot}" data-v="${it.id}"${lock ? ' disabled' : ''}>${ico(it.id, bestOwnedQ(it.id))}<span class="lb">${it.name}<br>${lock ? `<b class="bad">${!clsWields(m.cls, it) ? wpnUsers(it).join('・') + '向け' : `ランク${RANKS[wieldRank(it)].n}から`}</b>` : `<b class="${c}">${w}</b>`}</span></button>`; }).join('') + `</div>`
-      : `<p class="note" style="margin:0;font-size:12px">${slot === 'wpn' ? '渡せる武器がない。工房で剣や斧を作ろう。' : '渡せる防具がない。盾や鎧があると罠にも強い。'}</p>`) +
+      : `<p class="note" style="margin:0;font-size:12px">${kind === 'wpn' ? '渡せる武器がない。工房で剣や斧を作ろう。' : '渡せる防具がない。盾や鎧があると罠にも強い。'}</p>`) +
     (cur && cur.dur < cur.max * 0.5 && IT['broken_' + cur.id] ? '<p class="note" style="font-size:11.5px;margin:4px 0 0">耐久が半分を切った品は、外すと「壊れた品」として戻る(インゴットで修理できる)。</p>' : '') + `</div>`;
 }
 // 食事: the fish list right here (no sheet). The dish's buff lasts for the next trip only
@@ -20435,7 +20890,7 @@ function gqCarry(id) {
   const gq = gqState(), it = IT[id]; if (!it) return;
   const ros = ensureRoster().filter(m => !advOut(m)), order = gq.party.map(advById).filter(Boolean).concat(ros.filter(m => !gq.party.includes(m.id)));
   if (packable(it)) { const m = order.find(x => bagPut(x.id, id)); if (m) { gq.open = m.id; gq.edit = 'bag'; toast(`<div>${it.name}を${m.n}の道具袋に入れた</div>`); save(); } else toast(`<div>${it.name}を入れられる袋がない</div>`); }
-  else if (isWeapon(it) || isArmor(it)) { const m = order.find(x => canWield(x, it)) || order[0]; if (m) { gq.open = m.id; gq.edit = isWeapon(it) ? 'wpn' : 'arm'; } }
+  else if (isWeapon(it) || isArmor(it)) { const m = order.find(x => canWield(x, it)) || order[0]; if (m) { gq.open = m.id; gq.edit = slotFor(m, it) || (isWeapon(it) ? 'wpn' : 'arm'); } }
 }
 // 狙うレア: the rares of the place, as silhouettes until found. Aiming makes one a little likelier, never sure.
 function aimPicker(gq, a) {
@@ -20496,6 +20951,7 @@ const DIVE_ACTS = {
   gopen(d) { const g = gqState(); g.open = g.open === d.v ? null : d.v; if (g.open) g.edit = g.edit || 'wpn'; gqDraw(); sfx('tap'); return true; },
   dvslot(d) { const g = gqState(); g.open = d.id; g.edit = d.v; gqDraw(); sfx('tap'); return true; },
   dveq(d) { if (equipAdv(d.id, d.k, d.v)) sfx('buy'); gqDraw(); save(); return true; },
+  dvautoeq(d) { const m = advById(d.v); if (m && autoEquip([m.id], gqArea(gqState()) || AR.forest)) sfx('buy'); gqDraw(); save(); return true; },
   dvunq(d) { if (unequipAdv(d.id, d.v)) sfx('tap'); gqDraw(); save(); return true; },
   dvtreat(d) { const id = treatAdv(d.v); if (id) { sfx('good'); toast(`<div>${IT[id].name}で手当てした。療養が1日短くなった</div>`); } else toast('<div>手当てに使える薬や料理がない</div>'); gqDraw(); save(); return true; },
   dvbagtab(d) { UI.bagTab = d.v; gqDraw(); sfx('tap'); return true; },
@@ -20537,7 +20993,7 @@ const clsName = k => (CLASSES.find(x => x.k === k) || {}).n || '';
 function rosRow(m, benched) {
   const out = advOut(m), hurt = advHurt(m);
   const st = benched ? '<span class="tag">預けている</span>' : out ? '<span class="tag out">探索中</span>' : hurt ? `<span class="tag hurt">療養 あと${hurt}日</span>` : '<span class="tag ok">待機中</span>';
-  const gear = benched ? '' : [m.wpn, m.arm].filter(Boolean).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">装備なし</span>';
+  const gear = benched ? '' : gearsOf(m).map(g => `<span class="in">${ico(g.id, g.q, { size: 'xs' })}${durBar(g)}</span>`).join('') || '<span class="sub">装備なし</span>';
   const can = WPN_OF[m.cls] ? `<div class="sub" style="font-size:11.5px">持てる武器: ${wpnListOf(m.cls)}・防具はどれでも</div>` : '';
   const full = rosterCount() >= ROSTER_CAP();
   const btn = benched ? `<button class="btn sm" data-act="rosback" data-id="${m.id}"${full ? ' disabled' : ''}>名簿に戻す</button>`
@@ -21112,15 +21568,16 @@ function btlPanel(h) { const p = document.getElementById('btl-panel'); if (p) { 
 function btlOpen() {
   const d = G.dive; if (!d || !d.pending || !d.pending.btl) return false;
   BTLU.kind = 'fight'; btlShow(true); const s = btlState(d);
-  document.getElementById('btl-name').textContent = s.foe.n + (s.boss ? '(ぬし)' : '');
-  BTLMG.foe(s.foe.k, false); btlPick();
+  document.getElementById('btl-name').textContent = s.foe.n + (s.boss ? '(ぬし)' : s.mid ? '(中ボス)' : '');
+  BTLMG.foe(s.foe.k, false); pzOpen(d); btlPick();
   return true;
 }
 function btlPick() {
   const d = G.dive, s = d && btlState(d); if (!s) return btlClose();
   if (s.done) return btlFinish();
-  BTLU.busy = false; btlMe(d); BTLMG.hp((s.T - s.t) / s.T);
-  document.getElementById('btl-turn').textContent = `ターン ${s.t + 1}/${s.T}`;
+  if (PZU.on) return pzPick(d, s);
+  BTLU.busy = false; btlMe(d); BTLMG.hp(s.fhp);
+  document.getElementById('btl-turn').textContent = `${s.t + 1}手目・${s.next}の番`;   // No.346: 敵の HP がなくなるまで
   BTLMG.idle('');   // No.267: 予備動作の表示はなくした
   const party = d.party;
   let h = `<div class="btl-q">どうする?</div><div class="btl-acts">` +
@@ -21130,12 +21587,13 @@ function btlPick() {
     h += `<button class="btn btsk" data-bt="sk" data-i="${k.i}"${k.left ? '' : ' disabled'}>${btlChibi(m, 0)}<span><b>${esc(k.who)}: ${k.n}</b><small>${k.d}</small></span><em>${k.left ? `残り${k.left}` : 'もう使えない'}</em></button>`;
   }
   if (s.pot) h += `<button class="btn heal" data-bt="pot"><b>${IT[s.pot.id].name}を飲む</b><small>元気 +${s.pot.h}・残り${s.pot.n}本・ターンは進まない</small></button>`;
-  if (s.flee) h += s.boss ? `<button class="btn" data-bt="flee"><b>引き返す</b><small>戦いを切り上げて帰る・収穫は持ち帰る</small></button>` : `<button class="btn" data-bt="flee"><b>逃げる</b><small>${bagHas(d, it => it.id === 'smoke') ? '煙玉で確実に逃げる' : 'たいてい逃げられる・何も取れない'}</small></button>`;
+  if (s.flee) h += `<button class="btn" data-bt="flee"><b>逃げる</b><small>${bagHas(d, it => it.id === 'smoke') ? '煙玉で間合いを取る(戻されない)' : s.boss || s.mid ? '一息の場所まで下がる・そこで回復するか帰るかを選べる' : 'たいてい逃げられる・一息の場所まで下がる'}</small></button>`;
   btlPanel(h + `</div>`);
 }
 function btlClick(e) {
   const b = e.target.closest('[data-bt]'); if (!b || b.disabled) return;
   let k = b.dataset.bt; const d = G.dive;
+  if (PZU.on && k.startsWith('pz') && pzClick(b, k, d)) return;
   if (k === 'close') { btlClose(); return; }
   if (k === 'next') { if (BTLU.kind === 'fight') btlPick(); return; }
   if (k === 'end') { btlFinish(); return; }
@@ -21143,7 +21601,7 @@ function btlClick(e) {
   if (k === 'pot') { if (btlDrink(d)) { sfx('good'); btlPick(); } return; }
   if (k === 'flee') {
     BTLU.busy = true; const r = btlFlee(d); if (!r) return;
-    if (r.ok) { sfx('tap'); btlPanel(`<div class="btl-res"><p>${r.back ? '戦いを切り上げ、引き返すことにした。' : `${r.smoke ? '煙玉を投げて、' : ''}逃げ出した。`}</p></div><div class="btl-acts"><button class="btn pri" data-bt="end"><b>戦いを終える</b></button></div>`); return; }
+    if (r.ok) { sfx('tap'); btlPanel(`<div class="btl-res"><p>${r.back ? '戦いを切り上げ、一息の場所まで下がった。' : `${r.smoke ? '煙玉を投げて、' : ''}逃げ出した。`}</p></div><div class="btl-acts"><button class="btn pri" data-bt="end"><b>戦いを終える</b></button></div>`); return; }
     BTLMG.ouch('−' + r.dmg); btlMe(d); sfx('fail');
     btlPanel(`<div class="btl-res"><p>逃げようとしたが、回り込まれた! 元気 −${r.dmg}</p></div><div class="btl-acts"><button class="btn pri" data-bt="${d.pending.btl.done ? 'end' : 'next'}"><b>${d.pending.btl.done ? '戦いを終える' : '次のターンへ'}</b></button></div>`); return;
   }
@@ -21165,7 +21623,7 @@ function btlAfter(k, i, score) {
   sfx(r.g === 2 ? 'great' : r.g ? 'good' : 'fail');
   setTimeout(() => {
     if (r.dmg > 0) { BTLMG.ouch('−' + r.dmg); sfx('hit'); } else if (!r.lost && !(r.win && r.done && !r.say.some(x => x.includes('届かなかった')))) BTLMG.pop(BTLMG.W() / 2, BTLMG.H() * 0.8, '無傷', 'big');
-    btlMe(d); const b = d.pending && d.pending.btl; if (b) BTLMG.hp(b.done ? 0 : (b.T - b.t) / b.T);
+    btlMe(d); const b = d.pending && d.pending.f; if (b) BTLMG.hp(b.win ? 0 : b.fhp / b.fmax);
     const pose = m ? btlChibi(m, r.g ? 9 : 4) : '';
     btlPanel(`<div class="btl-res"><div class="btgrade g${r.g}">${pose}<b>${r.gn}</b></div>${r.say.map(x => `<p>${esc(x)}</p>`).join('')}</div>` +
       `<div class="btl-acts"><button class="btn pri" data-bt="${r.done ? 'end' : 'next'}"><b>${r.done ? (r.lost ? '……' : '戦いを終える') : '次のターンへ'}</b></button></div>`);
@@ -21173,10 +21631,11 @@ function btlAfter(k, i, score) {
 }
 function btlFinish() {
   const d = G.dive; if (!d || !d.pending || !d.pending.btl) return btlClose();
+  const wasPz = PZU.on; pzOff();
   const foe = MON[d.pending.foe], b = d.pending.btl, o = btlEnd(d); if (!o) return btlClose();
   flushShows(d); if (d.last && d.wc) { d.last.wc = d.wc; d.wc = null; }
   BTLMG.idle(`<h2 class="${o.lost ? 'r1' : o.fled ? 'r2' : 'r3'}">${o.lost ? '力尽きた' : o.fled ? '逃げきった' : '勝利!'}</h2>`);
-  if (o.win) sfx('great');
+  if (o.win) sfx(wasPz ? 'pz_win' : 'great');
   const got = o.got.map(([id, n]) => `<span class="btgot">${ico(id, 0, { size: 'xs' })}${IT[id].name}×${n}</span>`).join('');
   btlPanel(`<div class="btl-res">${o.lost ? `<p>${esc(foe.n)}に敗れた……。</p>` : o.fled ? `<p>${esc(foe.n)}から逃げきった。</p>` : `<p><b>${esc(foe.n)}</b>を倒した。受けた被害 ${b.taken}</p>`}` +
     (o.heal ? `<p class="good">精霊の守り人: 元気 +${o.heal}</p>` : '') + (got ? `<div class="btgots">${got}</div>` : '') + `</div>` +
@@ -21202,12 +21661,146 @@ function btlOpenMini(kind) {
   return true;
 }
 function btlClose() {
-  btlShow(false); BTLU.busy = false;
+  pzOff(); btlShow(false); BTLU.busy = false;
   const dv = G.dive;
   if (dv && dv.pending && G.diveMinorAuto && minorPending(dv.pending)) { let k = 0; while (dv.pending && minorPending(dv.pending) && k++ < 4) diveChoose(diveAuto(dv)); }
   if (typeof save === 'function') try { save(); } catch (e) { }
   render();
   if (dv && dv.pending && !dv.done) openDecision();
+}
+
+// ===== 2回目: パズルの盤(決まったこと 1・2・2.5・6) =====
+// 戦闘の窓の下半分を盤にする。仲間を選ぶ → 隣どうしを入れ替える(なぞる・2回押す)→ 消えて落ちる絵 → その手の結果 → 敵の反撃。
+// 絵: assets/pz の pz_gem0〜4(♠青・♣緑・♥赤・♦金・★白銀)と光る版 pz_gem0g〜4g・枠 pz_frame・下地 pz_bg_<DG の theme>。
+const PZU = { on: false, sel: -1, sk: false, a: -1, anim: false, bomb: false, tok: 0, drag: null };
+const pzGem = (n, g) => `${IMG_BASE}pz_gem${n}${g ? 'g' : ''}.webp`;
+const pzWait = ms => new Promise(r => setTimeout(r, ms));
+function pzOpen(d) {
+  PZU.on = true; PZU.tok++; PZU.a = -1; PZU.anim = false; PZU.bomb = false; PZU.sk = false; PZU.sel = -1;
+  btlRoot().classList.add('pzmode'); sfx('pz_open');
+  G.pzTut = (G.pzTut || 0) + 1;
+}
+function pzOff() { if (!PZU.on) return; PZU.on = false; PZU.tok++; PZU.anim = false; const r = document.getElementById('btl'); if (r) r.classList.remove('pzmode'); }
+function pzFirstFree(d, s) { for (let i = 0; i < d.party.length; i++) if (!s.used.includes(i)) return i; return 0; }
+// the controls and the board (the board is drawn only when it is missing or after a move)
+function pzPick(d, s) {
+  BTLU.busy = false; btlMe(d); BTLMG.hp(s.fhp); BTLMG.idle('');
+  document.getElementById('btl-turn').textContent = `${s.t + 1}手目`;
+  if (PZU.sel < 0 || s.used.includes(PZU.sel) || PZU.sel >= d.party.length) { PZU.sel = pzFirstFree(d, s); PZU.sk = false; }
+  const theme = (DG[d.area] && DG[d.area].theme) || 'forest';
+  btlPanel(`<div class="pz-who" id="pz-who"></div><div class="pz-skrow" id="pz-sk"></div>` +
+    `<div class="pz-wrap"><div class="pz-b" id="pz-b" style="background-image:url(${IMG_BASE}pz_bg_${theme}.webp)"></div></div>` +
+    `<div class="pz-msg" id="pz-msg"></div><div class="pz-tools" id="pz-tools"></div>`);
+  pzCtl(d, s); pzDraw(s.bd); pzBind();
+  pzMsg(G.pzTut <= 2 && s.t === 0 ? '攻撃の順番は好きに選べます。盤面を見て、使いたいキャラから選んで下さい' : '');
+}
+function pzMsg(t, cls) { const e = document.getElementById('pz-msg'); if (e) { e.textContent = t || ''; e.className = 'pz-msg' + (cls ? ' ' + cls : ''); } }
+function pzCtl(d, s) {
+  s = s || btlState(d); if (!s) return;
+  const who = document.getElementById('pz-who'), sk = document.getElementById('pz-sk'), tl = document.getElementById('pz-tools'); if (!who) return;
+  who.innerHTML = d.party.map((m, i) => { const u = s.used.includes(i), w = memSpec(m);
+    return `<button class="pz-m${i === PZU.sel ? ' sel' : ''}${u ? ' used' : ''}" data-bt="pzsel" data-i="${i}"${u ? ' disabled' : ''}>${btlChibi(m, 0)}<span><b>${esc(m.n)}</b><small>${u ? '打った' : `♠${Math.round(w.w[0])} ♣${Math.round(w.w[1])} ★${Math.round(w.a)}`}</small></span></button>`; }).join('');
+  const m = d.party[PZU.sel], k = m && s.sk.find(x => x.i === PZU.sel);
+  sk.innerHTML = !k ? '' : k.cls === 'hero' ? `<button class="btn pz-skb" data-bt="pzhero"${k.left ? '' : ' disabled'} style="--c:${BTL_SK.hero.c}"><b>${k.n}を放つ</b><small>${k.left ? `盤を動かさずに決着・残り${k.left}` : 'もう使えない'}</small></button>`
+    : `<button class="btn pz-skb${PZU.sk ? ' on' : ''}" data-bt="pzsk"${k.left ? '' : ' disabled'} style="--c:${BTL_SK[k.cls].c}"><b>${PZU.sk ? '✔ ' : ''}この手で${k.n}</b><small>${k.left ? `${k.d}・残り${k.left}` : 'もう使えない'}</small></button>`;
+  let h = `<button class="btn" data-bt="pzhint"><b>ヒント</b></button>`;
+  if (s.pot) h += `<button class="btn heal" data-bt="pot"><b>${IT[s.pot.id].name}</b><small>元気 +${s.pot.h}・${s.pot.n}本</small></button>`;
+  for (const b of s.buffs) h += `<button class="btn${PZU.bomb && b.id === 'bomb' ? ' on' : ''}" data-bt="pzitem" data-id="${b.id}"${s.itemOk ? '' : ' disabled'}><b>${BUFF[b.id].n}</b><small>${b.id === 'bomb' ? '盤の3×3を吹き飛ばす' : b.id === 'p_str' ? '与えるダメージ ×1.2' : b.id === 'p_def' ? '受ける被害 −20%' : '亡者に2倍'}・${b.n}</small></button>`;
+  if (s.flee) h += `<button class="btn" data-bt="flee"><b>逃げる</b></button>`;
+  tl.innerHTML = h;
+}
+function pzDraw(bd, drop, glow) {
+  const el = document.getElementById('pz-b'); if (!el) return;
+  let h = '';
+  for (let k = 0; k < PZ_N; k++) { const x = k % PZ_W, y = (k / PZ_W) | 0, g = glow && glow.includes(k);
+    h += `<i class="pzc${k === PZU.a ? ' pick' : ''}${g ? ' glow' : ''}" data-c="${k}" style="left:${x * 100 / PZ_W}%;top:${y * 100 / PZ_H}%${drop && drop[k] ? `;transform:translateY(${-drop[k] * 100}%);transition:none` : ''}"><img src="${pzGem(bd[k], g)}" alt="${PZ_SYM[bd[k]]}" draggable="false"></i>`; }
+  el.innerHTML = h;
+  if (drop) { void el.offsetWidth; el.querySelectorAll('.pzc').forEach(c => { c.style.transition = ''; c.style.transform = ''; }); }
+}
+function pzBind() {
+  const el = document.getElementById('pz-b'); if (!el || el._pz) return; el._pz = 1;
+  const cellAt = e => { const r = el.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * PZ_W), y = Math.floor((e.clientY - r.top) / r.height * PZ_H); return x >= 0 && x < PZ_W && y >= 0 && y < PZ_H ? y * PZ_W + x : -1; };
+  el.addEventListener('pointerdown', e => { if (PZU.anim) return; const c = cellAt(e); if (c < 0) return; e.preventDefault(); PZU.drag = { c, x: e.clientX, y: e.clientY, moved: false }; try { el.setPointerCapture(e.pointerId); } catch (er) { } });
+  el.addEventListener('pointermove', e => {
+    const g = PZU.drag; if (!g || g.moved || PZU.anim || PZU.bomb) return;
+    const r = el.getBoundingClientRect(), cs = r.width / PZ_W, dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < cs * 0.4) return;
+    g.moved = true; const x = g.c % PZ_W, y = (g.c / PZ_W) | 0;
+    const t = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? (x < PZ_W - 1 ? g.c + 1 : -1) : (x > 0 ? g.c - 1 : -1)) : (dy > 0 ? (y < PZ_H - 1 ? g.c + PZ_W : -1) : (y > 0 ? g.c - PZ_W : -1));
+    if (t >= 0) { PZU.a = -1; pzTry(g.c, t); }
+  });
+  const up = e => { const g = PZU.drag; PZU.drag = null; if (!g || g.moved || PZU.anim) return; pzTap(g.c); };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', () => { PZU.drag = null; });
+}
+function pzTap(c) {
+  const d = G.dive; if (!d) return;
+  if (PZU.bomb) { PZU.bomb = false; pzBomb2(d, c); return; }
+  if (PZU.a >= 0 && PZU.a !== c && pzAdj(PZU.a, c)) { const a = PZU.a; PZU.a = -1; pzTry(a, c); return; }
+  PZU.a = PZU.a === c ? -1 : c; sfx('tap');
+  document.querySelectorAll('#pz-b .pzc').forEach(e => e.classList.toggle('pick', +e.dataset.c === PZU.a));
+}
+// a move: the numbers are settled at once (battle.js), then the picture catches up
+async function pzTry(a, c) {
+  const d = G.dive, p = d && d.pending; if (!p || !p.btl || PZU.anim) return;
+  const before = p.btl.bd.slice();
+  if (!pzMakes(Uint8Array.from(before), a, c)) { sfx('pz_nope'); pzMsg('そこを入れ替えても消えない', 'bad'); const e = document.querySelector(`#pz-b .pzc[data-c="${a}"]`); if (e) { e.classList.remove('nope'); void e.offsetWidth; e.classList.add('nope'); } return; }
+  const r = btlPzMove(d, PZU.sel, a, c, PZU.sk); if (!r) return;
+  PZU.anim = true; PZU.sk = false; const tok = PZU.tok;
+  const sw = before.slice(); [sw[a], sw[c]] = [sw[c], sw[a]]; sfx('pz_swap'); pzDraw(sw); pzMsg('');
+  if (r.cut) { BTLMG.cutin(r.cut + '!', r.cc); sfx('pz_skill'); }
+  await pzSteps(r.r, tok); if (tok !== PZU.tok) return;
+  await pzHit(d, r, tok);
+}
+async function pzSteps(r, tok) {
+  for (let k = 0; k < r.steps.length; k++) {
+    const st = r.steps[k]; await pzWait(110); if (tok !== PZU.tok) return;
+    document.querySelectorAll('#pz-b .pzc').forEach(e => { if (st.cells.includes(+e.dataset.c)) e.classList.add('glow'); });
+    for (const c of st.cells) { const e = document.querySelector(`#pz-b .pzc[data-c="${c}"] img`); if (e) e.src = pzGem(st.marks[st.cells.indexOf(c)], 1); }
+    sfx(k ? 'pz_chain' : 'pz_clear'); if (k) pzMsg(`${k + 1}連鎖!`, 'chain');
+    await pzWait(300); if (tok !== PZU.tok) return;
+    document.querySelectorAll('#pz-b .pzc.glow').forEach(e => e.classList.add('gone'));
+    await pzWait(150); if (tok !== PZU.tok) return;
+    pzDraw(st.board, st.drop); await pzWait(240);
+  }
+  if (r.redeal) { await pzWait(200); if (tok !== PZU.tok) return; pzMsg('消せる所がなくなった。配り直し', 'chain'); pzDraw(r.board); }
+}
+// No.350: ぬし・中ボスの攻撃の音(作者の音源)。合う音がない敵と道中の敵は、今までの音
+const PZ_FOE_SE = { slimeKing: ['mon_slime'], goblinChief: ['mon_goblin1', 'mon_goblin2', 'mon_goblin3'], goblinArcher: ['mon_goblin1', 'mon_goblin2', 'mon_goblin3'], goblin: ['mon_goblin1', 'mon_goblin2', 'mon_goblin3'],
+  rockGolem: ['mon_stomp'], crystGolem: ['mon_stomp'], lavaGolem: ['mon_stomp'], ancientGolem: ['mon_stomp'], guardian: ['mon_stomp'], salamander: ['mon_dragon'],
+  wyvern: ['mon_wing'], wyvernLord: ['mon_wyv1', 'mon_wyv2'], elderDragon: ['mon_dragon'], rootWarden: ['mon_tentacle'], sprout: ['mon_tentacle'] };
+function pzFoeSe(d) { const p = d.pending, F = p && p.f; if (!F || F.kind === 'norm') return 'hit'; const l = PZ_FOE_SE[p.foe]; return l ? pick(l) : 'hit'; }
+async function pzHit(d, r, tok) {
+  const W = BTLMG.W(), H = BTLMG.H(), F = d.pending && d.pending.f;
+  if (r.dmg > 0) { BTLMG.hitFx(r.chains > 1); BTLMG.pop(W / 2, H * 0.3, '−' + r.dmg, 'big'); sfx(r.chains > 1 ? 'pz_hit2' : 'pz_hit1'); }
+  if (F) BTLMG.hp(F.win ? 0 : F.fhp / F.fmax);
+  if (r.heal) BTLMG.pop(W * 0.25, H * 0.75, '♥+' + r.heal, 'good');
+  await pzWait(450); if (tok !== PZU.tok) return;
+  if (!r.done || r.lost) { if (r.hit > 0) { BTLMG.ouch('−' + r.hit); sfx(pzFoeSe(d)); } else BTLMG.pop(W / 2, H * 0.8, '守りの壁', 'big'); }
+  btlMe(d); pzMsg(r.say.slice(-2).join(' / '));
+  await pzWait(r.done ? 700 : 350); if (tok !== PZU.tok) return;
+  PZU.anim = false;
+  if (r.done) { btlFinish(); return; }
+  const s = btlState(d); PZU.sel = pzFirstFree(d, s); pzCtl(d, s);
+}
+async function pzBomb2(d, c) {
+  const p = d.pending, before = p.btl.bd.slice(), r = btlPzItem(d, 'bomb', c, PZU.sel); if (!r) return;
+  PZU.anim = true; const tok = PZU.tok; sfx('pz_bomb'); pzDraw(before);
+  await pzSteps(r.r, tok); if (tok !== PZU.tok) return;
+  await pzHit(d, { dmg: r.dmg, chains: r.r.chains, heal: 0, hit: 0, done: r.done, lost: false, say: r.say }, tok);
+}
+function pzClick(b, k, d) {
+  if (PZU.anim) return true;
+  const s = btlState(d); if (!s) return true;
+  if (k === 'pzsel') { PZU.sel = +b.dataset.i; PZU.sk = false; sfx('tap'); pzCtl(d, s); return true; }
+  if (k === 'pzsk') { PZU.sk = !PZU.sk; sfx('tap'); pzCtl(d, s); pzMsg(PZU.sk ? '盤を動かすと、その手でスキルが出る' : ''); return true; }
+  if (k === 'pzhero') { const r = btlPzHero(d, PZU.sel); if (!r) return true; PZU.anim = true; const tok = PZU.tok; BTLMG.cutin(r.cut + '!', r.cc); sfx('pz_hero'); pzHit(d, r, tok); return true; }
+  if (k === 'pzhint') { const m = pzHint(Uint8Array.from(s.bd)); if (!m) return true; sfx('tap'); document.querySelectorAll('#pz-b .pzc').forEach(e => e.classList.toggle('hint', m.includes(+e.dataset.c))); setTimeout(() => document.querySelectorAll('#pz-b .pzc.hint').forEach(e => e.classList.remove('hint')), 1600); return true; }
+  if (k === 'pzitem') {
+    const id = b.dataset.id;
+    if (id === 'bomb') { PZU.bomb = !PZU.bomb; sfx('tap'); pzCtl(d, s); pzMsg(PZU.bomb ? '吹き飛ばす所を押して下さい(そこを中心に3×3)' : ''); return true; }
+    const r = btlPzItem(d, id); if (!r) return true; sfx('good'); pzMsg(r.say.join('')); pzCtl(d); return true;
+  }
+  return false;
 }
 
 // ---- tut.js ----
@@ -30638,7 +31231,7 @@ function boot(local, fresh) {
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
     recCenter, zones, startGauge, centerTag, recWidth, buyStall, buyBook, autoNeeds, paperCheck, paperState, grantPaper, paperRandom, papersOwned, PAPERS, PAPER, paperSrcMet, paperSrcSt, isWeapon, isArmor, isRing, SKN, SKM, SK_TOTAL, pk, shelfSize, skLearn, skWhy, skReset, skResetCost, skSync, skMigrate, skAutoLearn, spSources, spTotal, spFree, spSpent, graceUse, graceLeft, diveCap, skHas, sellTo, buyFrom, acceptOrder, convertToOrder, openShop, closeShop, sleep, nextCust, upgradeShop, learnSkill, craftTime, completion, xpNeed, autoQuality,
     hotNow, pickHot, ateToday, FACS, FAC, facGoods, facSell, facPrice, facOpen, WORK_BASE, eatGain, EAT_MULT, askCall, diveNotify, closeSheet, failCraft, rollQuality, qualOdds, gaugeHit, orderPick, orderQualMult, orderReward, returnQuests, AREAS, AR, rankMax, guildOpen, questFee, questOdds, expectQty, areaOpen, areaBonus, beginAct, endAct, workMax, custCount, sellBold, boldOdds, haggle, sellHot, hotOdds, hotPrice, HOT_MAX, buyAt, buyOdds, buyPrice, BUY_MIN, BUY_MAX, sellBase, sellQty, sellPrice, fairPrice, mktMult, eat, edibles, staminaOf, dine, buyTonya, tonyaList, shopBand, shopClosed, CLOSE_AT,
-    save, invAdd, invTake, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
+    save, invAdd, invTake, advOut, REQ_TIER, GSL, WPN_OF, gearKey, gearTier, fightOdds, fightLoss, partyHP, FT, wpnVal, armVal, memSpec, pzNew, pzPlay, pzMoves, pzHint, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
     shelfAuto, shelfPut, shelfClean, makeCustomer, shelfGenre, counterCraft, counterCraftWhy, nightLeft, hotShelfId, onShelf, repay, loanLeft, storyChoose, shoppingList, buyList, reservedNeeds, migrate, fixLoaded, TREND, LOAN_MS,
     CH_BOSS, bossCleared, chBoss, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
@@ -30646,7 +31239,7 @@ function boot(local, fresh) {
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
     cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, ringFx, orderCap, genStall, makeHotCust, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
     RARE, RARES_OF, RARE_T, rareW, rareEV, rareOdds, drawRare, appraiseDraw, itemGrade, itemUses, breathInfo, haulK, isBreath, sealP2, divePlanMigrate, itemSheet, RARE_LIST, lastStand, trapRoom, goHome, sealsAdd, healOf,
-    btlStart, btlAct, btlSkDo, btlEnd, btlState, btlFlee, btlOpen, btlOpenMini, BTLMG, BTLU, BTL_SK, btlSkMax, dragoonK, diveRankOk, resolveTrapMan, resolveChestMan,   // No.262
+    btlStart, btlAct, btlSkDo, btlEnd, btlState, btlFlee, btlOpen, btlOpenMini, BTLMG, BTLU, PZU, pzHint, btlPzMove, btlPzItem, devPz, BTL_SK, btlSkMax, dragoonK, diveRankOk, resolveTrapMan, resolveChestMan,   // No.262
   };
 }
 if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
