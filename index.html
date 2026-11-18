@@ -8204,12 +8204,13 @@ function fishPool(spot, sub, slot) {
   return FISH.filter(f => f.spot === spot && (!sub || f.sub === sub) && seaHas(f, sea) && (!f.times || f.times.includes(slot)));
 }
 function fishRoll(spot, sub, slot, streak) {
-  const cap = RODS[fishState().rod].cap;
+  const cap = RODS[fishState().rod].cap + pk('bigcap');   // No.351 大物の勘
   const pool = fishPool(spot, sub, slot).filter(f => f.tier <= cap);
   if (!pool.length) return FISH_BY.fsh_funa;
-  const boost = streak >= 3 ? 1 + 0.5 * Math.min(streak - 2, 4) : 1;   // 時合い: a run of catches brings the rare ones
-  return wpick(pool, f => FISH_W[f.tier] * (fishX(f).w || 1) * (f.tier >= 3 || fishX(f).w ? boost : 1));
+  const th = fishJiaiN(), boost = streak >= th ? 1 + 0.5 * Math.min(streak - th + 1, 4) : 1;   // 時合い: a run of catches brings the rare ones
+  return wpick(pool, f => FISH_W[f.tier] * (fishX(f).w || 1) * (f.tier >= 3 || fishX(f).w ? boost : 1) * (f.lord && pk('lordsense') ? 3 : 1));   // No.351 ぬしの気配
 }
+const fishJiaiN = () => pk('jiai') ? 2 : 3;   // No.351 時合い(スキル): 2匹から
 // the size of a catch: perfect pulls it toward the top of its range
 function fishSize(f, hit) {
   const [a, b] = f.cm; let k = Math.pow(Math.random(), 1.6);
@@ -8217,7 +8218,7 @@ function fishSize(f, hit) {
   return Math.round((a + (b - a) * k) * 10) / 10;
 }
 const fishQual = (f, cm) => { const k = (cm - f.cm[0]) / (f.cm[1] - f.cm[0]); return k > 0.9 ? 3 : k > 0.7 ? 2 : k > 0.4 ? 1 : 0; };
-const fishPrice = (id, q) => { const s = fishState(), n = s.sold[id] || 0; return Math.max(1, Math.round(IT[id].v * QUAL[q].mult * Math.max(0.5, 1 - FISH_DECAY * n))); };
+const fishPrice = (id, q) => { const s = fishState(), n = s.sold[id] || 0; return Math.max(1, Math.round(IT[id].v * QUAL[q].mult * Math.max(0.5, 1 - FISH_DECAY * n) * (1 + pk('fishsell')))); };   // No.351 目利きの魚屋
 const fishPtsFor = (id, q) => Math.max(1, Math.round(IT[id].v * QUAL[q].mult / 3));
 // ---------- the day: going fishing takes the next part of the day ----------
 // where the day would go next, and what going fishing gives up
@@ -8275,7 +8276,9 @@ function fishLeave() {
   return 'next';
 }
 function fishBuyBait(n) {
-  const f = G.fishing, s = fishState(); n = Math.max(1, n | 0); const g = n * BAIT_ONE; if (G.gold < g) return false;
+  const f = G.fishing, s = fishState();
+  if (n < 0) { n = Math.max(1, -n | 0); const c = casSt(); if (!pk('baitcoin') || c.coins < n) return false; c.coins -= n; s.bait += n; if (f) f.casts += n; save(); return true; }   // No.351 餌のつけ: 1匹=コイン1枚
+  n = Math.max(1, n | 0); const g = n * BAIT_ONE; if (G.gold < g) return false;
   G.gold -= g; s.bait += n; if (f) f.casts += n; save(); return true;
 }
 const fishBaitHave = () => G.fishing ? G.fishing.casts : fishState().bait;
@@ -8355,7 +8358,8 @@ function fishGearHtml() {
   const s = fishState();
   const row = (kind, list, what) => { const cur = list[s[kind]], nx = list[s[kind] + 1];
     return `<div class="ri"><div style="min-width:0;flex:1"><b>${cur.n}</b><div class="sub">${what(cur)}</div></div>${nx ? `<button class="btn sm" data-act="fshgear" data-v="${kind}"${G.gold >= nx.g ? '' : ' disabled'}>${nx.n}を買う<small>(${fmt(nx.g)}G)</small></button>` : '<span class="sub">いちばん良い物</span>'}</div>`; };
-  const bait = `<div class="ri"><div style="min-width:0;flex:1"><b>餌</b><div class="sub">持っている餌 ${fishBaitHave()}匹(1匹${BAIT_ONE}G)</div></div><div class="row" style="gap:6px">` + BAIT_PACKS.map(n => `<button class="btn sm" data-act="fshbait" data-v="${n}"${G.gold >= n * BAIT_ONE ? '' : ' disabled'}>${n}匹<small>(${n * BAIT_ONE}G)</small></button>`).join('') + `</div></div>`;
+  const bait = `<div class="ri"><div style="min-width:0;flex:1"><b>餌</b><div class="sub">持っている餌 ${fishBaitHave()}匹(1匹${BAIT_ONE}G)</div></div><div class="row" style="gap:6px">` + BAIT_PACKS.map(n => `<button class="btn sm" data-act="fshbait" data-v="${n}"${G.gold >= n * BAIT_ONE ? '' : ' disabled'}>${n}匹<small>(${n * BAIT_ONE}G)</small></button>`).join('') + `</div></div>` +
+    (pk('baitcoin') ? `<div class="ri"><div style="min-width:0;flex:1"><b>餌(コインで)</b><div class="sub">餌のつけ・1匹コイン1枚・持っているコイン ${fmt(casSt().coins || 0)}枚</div></div><div class="row" style="gap:6px">` + BAIT_PACKS.map(n => `<button class="btn sm" data-act="fshbait" data-v="${-n}"${(casSt().coins || 0) >= n ? '' : ' disabled'}>${n}匹<small>(${n}枚)</small></button>`).join('') + `</div></div>` : '');
   return `<h3 style="margin-top:10px">道具(Gで買う)</h3><div class="rows">` + bait +
     row('rod', RODS, r => `掛かる魚の格 ${r.cap}まで`) + row('reel', REELS, r => r.bar ? `追うバーが太い(+${r.bar})` : 'ふつうのバー') + `</div>`;
 }
@@ -8377,7 +8381,7 @@ function vFishMain() {
   const nb = fishState(), canBait = true;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
     `<div class="fsh-hut${hasBg ? '' : ' nobg'}"${hasBg ? ` style="background-image:url('${IMG_BASE}${hutBg}.webp')"` : ''}>${CH_FILES.has(`ch_${sp.ch}_normal`) ? `<img class="fsh-keeper" src="${chURL(sp.ch, f.intro ? 'smile' : 'normal')}" alt="${sp.who}">` : ''}<div class="fsh-bub"><b>${sp.who}</b>${f.intro ? FISH_HELLO[f.spot].intro : FISH_HELLO[f.spot].hi[f.hello || 0]}</div></div>` +
-    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= 3 ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm ghost" data-act="fshmenu">図鑑・道具・餌</button>${subs}<button class="btn sm ghost" data-act="fshnext">ほかの釣り場へ</button></div></div>` +
+    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= fishJiaiN() ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm ghost" data-act="fshmenu">図鑑・道具・餌</button>${subs}<button class="btn sm ghost" data-act="fshnext">ほかの釣り場へ</button></div></div>` +
     `<div class="fsh-lower"><div class="card"><h3>びく(${f.bag.length}匹)</h3>${f.bag.length ? `<div class="rows">${bag}</div><div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn pri" data-act="fshsell">${sp.who}に全部売る(+${fmt(bagSum)}G)</button></div><p class="note">売らずに帰ると、倉庫に持ち帰る(冒険者の食事に使える)。同じ魚は売るほど少し安くなる(翌日に戻る)。</p>` : '<p class="note">まだ何も釣れていない。</p>'}</div>` +
     `<div class="card"><h3>いま釣れる魚</h3><div class="fsh-shs">${shadows}</div></div></div></div>`;
 }
@@ -8390,7 +8394,7 @@ function fishCast(sub) {
   const g = UI.gauge = { fish: { id: fi.id, sub }, mg: 'mg2', started: false, stopped: false, raf: 0 };
   const v = document.createElement('div'); v.className = 'veil'; v.id = 'gveil';
   v.innerHTML = `<div class="gwrap mgwrap mg-rand" role="dialog" aria-modal="true" aria-label="釣り">` +
-    `<div class="ghead mghead"><div class="mgt"><div class="sub">釣り・${sp.n}の${sn}</div><h2>影 ${SHADOW_N[fi.shadow]}</h2></div></div>` +
+    `<div class="ghead mghead"><div class="mgt"><div class="sub">釣り・${sp.n}の${sn}</div><h2>影 ${SHADOW_N[fi.shadow]}${fi.lord && pk('lordsense') ? ' <em class="okc">ぬしの気配!</em>' : fi.tier >= 3 && pk('bigeye') ? ' <em class="okc">大物</em>' : ''}</h2></div></div>` +
     `<div class="gstage mgstage mg2stage" id="mgstage"><canvas id="mg2cv"></canvas><div class="mgready" id="mgready"><span>タップでスタート</span></div><div class="gfx" id="gfx"></div></div>` +
     `<div class="mghow" id="mghow">水面に${SHADOW_N[fi.shadow]}きい影が見える。餌を1つ使う。</div>` +
     `<div class="gfoot" id="gfoot"><button class="btn pri big" data-act="mgbtn" id="gstop">投げる</button><button class="mgcancel" data-act="gclose" id="gcancel">やめる<small>(餌は減らない)</small></button></div></div>`;
@@ -8401,9 +8405,9 @@ function fishCast(sub) {
 }
 function fishPlay(g) {
   const f = G.fishing, fi = FISH_BY[g.fish.id], sp = SPOT[f.spot];
-  f.casts = Math.max(0, f.casts - 1); save();
+  if (Math.random() < pk('baitkeep')) g.baitKept = 1; else f.casts = Math.max(0, f.casts - 1); save();   // No.351 餌持ち
   const game = MG2.GAMES.find(x => x.sk === '釣り');
-  return MG2.play({ game, out: fi.n, mats: [], items: { [fi.n]: itemIconURL(fi.id) }, fish: fishMG(fi), bar: REELS[fishState().reel].bar, place: sp.place, title: '釣り',
+  return MG2.play({ game, out: fi.n, mats: [], items: { [fi.n]: itemIconURL(fi.id) }, fish: fishMG(fi), bar: REELS[fishState().reel].bar + pk('fishbar'), place: sp.place, title: '釣り',
     words: { crit: '大物だ!', ok: '釣れた!', fail: '逃げられた…' }, D: MG2.DIFF.normal,
     bg: s => BG_FILES.has(sp.bg) ? `${IMG_BASE}${sp.bg}.webp` : BG_FILES.has(sp.bg0) ? `${IMG_BASE}${sp.bg0}.webp` : BG_FILES.has(s) ? `${IMG_BASE}${s}.webp` : '',
     resultSfx: true, endDelay: 900, onEnd: (hit, why) => mg2End(g, hit, why) });
@@ -8412,7 +8416,7 @@ function fishEnd(g, hit) {
   const foot = $('#gfoot'); if (!foot) return;
   const f = G.fishing; if (!f) return;
   let res = null;
-  if (hit === 'fail') f.streak = 0; else res = g.res = fishCatch(g.fish.id, hit);
+  if (hit === 'fail') { if (pk('jiai') && f.streak >= fishJiaiN() && !f.jsave) f.jsave = 1; else { f.streak = 0; f.jsave = 0; } } else res = g.res = fishCatch(g.fish.id, hit);
   save();
   const sp = SPOT[f.spot];
   const again = sp.subs.map(([k, n]) => `<button class="btn${res ? '' : ' pri'}" data-act="fshagain" data-v="${k}"${f.casts > 0 ? '' : ' disabled'}>${n}にもう一度</button>`).join('');
@@ -8864,7 +8868,7 @@ function newGame() {
   G = {
     v: 3, name: '万事屋', day: 1, slot: 0, phase: 'morning', act: 'market', plan: [], gold: 1000, fame: 0, xp: 0, lv: 1, sp: 1,
     skills: { smith: 0, alch: 0, cook: 0, scribe: 0 }, tools: { smith: 0, alch: 0, cook: 0, scribe: 0 },
-    inv: {}, found: {}, made: {}, books: {}, stage: 0, built: {}, deliv: {}, reg: {}, regLast: {}, hidden: {}, rumors: {}, papers: {}, paperQ: [], sk: { root: 1 }, skResetFree: true, ms: 0,
+    inv: {}, found: {}, made: {}, books: {}, stage: 0, built: {}, deliv: {}, reg: {}, regLast: {}, hidden: {}, rumors: {}, papers: {}, paperQ: [], sk: { root: 1 }, skResetFree: true, skVer: 2, ms: 0,
     shop: 0, work: 0, orders: [], cust: [], ci: 0, stall: [], stallBook: null, report: null,
     event: null, soldGear: [], stats: { sold: 0, earned: 0, crafted: 0, bought: 0, orders: 0, best: 0 },
     ended: false, sound: true, music: true, vol: { m: 0.5, s: 0.7 }, seenStage: 0, lastSaved: 0, newBookStage: -1, tut: 0, gspeed: 'slow',
@@ -9004,7 +9008,13 @@ function hasInputs(r, times = 1) { return r.ins.every(([id, q]) => invCount(id) 
 // 体力: the day's energy for the workshop. Food and potions top it up.
 // v34 (14.4): it starts at 8 (was 15); the shop's extensions and the chief's permit still add to it.
 const WORK_BASE = 8;
-function workMax() { return (window.__workBase || WORK_BASE) + G.shop * 3 + (G.loan && G.loan.ms >= 1 ? 2 : 0) + pk('stam'); }
+function workMax() {
+  const w = (window.__workBase || WORK_BASE) + G.shop * 3 + (G.loan && G.loan.ms >= 1 ? 2 : 0) + pk('stam') + (pk('pump') && G.pumpDay === G.day ? 2 : 0);
+  return pk('glow') && onAfterglow() ? Math.round(w * 1.3) : w;   // No.351 湯上がりの冴え: 温泉に入った次の日は3割増し
+}
+const onAfterglow = () => !!(G.onsen && (G.onsen.bathed === G.day - 1 || G.onsen.prev === G.day - 1));
+// No.351 最後のひと踏ん張り: 体力が足りない作業も、一晩に1回だけ(体力が1以上残っていれば)
+const workOk = t => G.work >= t || (pk('gasp') > 0 && !G.gaspN && G.work >= 1 && G.act === 'work');
 const workPerSlot = workMax;
 const STAMINA_ITEMS = { r_honeyball: 3, rx_springpotion: 8, rx_worldelixir: 99, rx_thunderpotion: 12, rx_hornelixir: 99, p_heal: 3, p_heal2: 6, p_heal3: 10, elixir: 99, p_mana: 4, sz_elixir: 5, sz_juice: 3, h_time: 99, h_gapple: 99 };
 function staminaOf(it) {
@@ -9024,7 +9034,7 @@ const ateToday = id => { if (window.__eatAny || G.ateDay !== G.day) return false
 // what eating gives back in the workshop (the dive's healing still uses staminaOf as before)
 // v34 (14.4): with 体力 8, a meal counts for a little more (×1.5) and dinner gives 8 (was 5) — test/sim3.py
 const EAT_MULT = 1.5;
-const eatGain = (it, q) => { const s = staminaOf(it); return s >= 99 ? 99 : Math.round(s * (window.__eatMult || EAT_MULT) * (1 + pk('eat'))) + (q || 0); };
+const eatGain = (it, q) => { const s = staminaOf(it); return s >= 99 ? 99 : Math.round(s * (window.__eatMult || EAT_MULT) * (1 + pk('eat')) * (q >= 1 ? 1 + pk('tongue') : 1) * (it.cat === 'food' && RC_BY_OUT[it.id] ? 1 + pk('ownfood') : 1)) + (q || 0); };   // No.351 舌が肥える・職人の食卓
 function eat(id) {
   const it = IT[id], base = staminaOf(it); if (!base || spareCount(id) <= 0 || G.work >= workMax() || ateToday(id)) return 0;
   if (G.ateDay !== G.day) { G.ateDay = G.day; G.ate = []; }
@@ -9089,7 +9099,7 @@ function qualOdds(r, auto) {
 const autoOdds = r => qualOdds(r, true);
 function drawQuality(o) { const x = Math.random(); if (x < o.p3) return 3; if (x < o.p3 + o.p2) return 2; if (x < o.p3 + o.p2 + o.p1) return 1; return 0; }
 // 会心: 良品以上が確定(くじを2回引いて良い方、最低でも良品)
-function rollQuality(r, crit, auto) { const o = qualOdds(r, auto); const q = drawQuality(o); return crit ? Math.max(1, q, drawQuality(o)) : q; }
+function rollQuality(r, crit, auto) { const o = qualOdds(r, auto); const q = drawQuality(o); return crit ? Math.max(1, q, drawQuality(o), pk('forge') ? drawQuality(o) : 0) : q; }   // No.351 名工の炉: 会心は3回引く
 // v33 (設計メモ 5章): おまかせ always makes 普通. 良品・上質・傑作 come only from the minigames.
 // v36: 熟練の手 (keystone) lets おまかせ make a 良品 now and then (half the minigame's chance of 良品)
 const autoQuality = r => pk('master') && Math.random() < qualOdds(r).p1 * 0.5 ? 1 : 0;
@@ -9097,7 +9107,8 @@ const autoQuality = r => pk('master') && Math.random() < qualOdds(r).p1 * 0.5 ? 
 const FAIL_LOSS = 0.06;
 function failCraft(r) {
   if (G.work < 1 || !hasInputs(r)) return null;
-  G.work -= 1; G.focus = 0;
+  const grit = Math.random() < pk('grit');   // No.351 踏ん張り: 失敗しても体力が減らない
+  if (!grit) G.work -= 1; G.focus = 0;
   gainXp(1); playerTurn();
   if (Math.random() < FAIL_LOSS) {
     for (const [id, n] of r.ins) if (id !== 'k_oldsword') invTake(id, n);   // v40: the broken sword is never lost to a failure
@@ -9105,7 +9116,7 @@ function failCraft(r) {
     invAdd(j, 0, 1);
     return { fail: true, lost: true, id: j, q: 0, n: 1, first };
   }
-  return { fail: true, lost: false, id: r.out, q: 0, n: 0 };
+  return { fail: true, lost: false, id: r.out, q: 0, n: 0, grit };
 }
 function craftXp(r, q) {
   const it = IT[r.out] || { tier: 0 };
@@ -9138,6 +9149,7 @@ const HOT_MULT = 1.4;
 const HOT_LINES = ['噂を聞いて来たんだ。「{item}」、まだあるかい?', '「{item}」が要るんだ。今日はどこも品薄でね。', '急ぎで「{item}」を探してる。少し高くても構わない。'];
 // 集中: every 3 会心 at the gauge (a failure resets it) gives back a little stamina
 const FOCUS_N = 3;
+const focusN = () => pk('streak') ? 4 : FOCUS_N;
 // crafted materials (ingots, charcoal, parchment, ink) have no quality; finished goods used as
 // ingredients pass their quality on, so a better input never makes the result worth less
 const noQual = id => IT[id] && (IT[id].cat === 'mat' || IT[id].raw);
@@ -9148,11 +9160,11 @@ function inheritQ(r) {
 }
 function doCraft(r, q, auto, crit, pre) {
   const t = craftTime(r);
-  if (G.work < t || !hasInputs(r)) return null;
+  if ((auto ? G.work < t : !workOk(t)) || !hasInputs(r)) return null;
   const floorQ = r.appraise ? 0 : inheritQ(r), drawn = q;
   q = noQual(r.out) ? 0 : Math.max(q, floorQ);
   for (const [id, n] of r.ins) invTake(id, n);
-  G.work -= t;
+  let gasp = false; if (G.work < t) { G.gaspN = 1; G.work = 0; gasp = true; } else G.work -= t;
   G.made[r.id] = (G.made[r.id] || 0) + 1;
   G.stats.crafted++;
   let out = r.out, n = r.n;
@@ -9166,12 +9178,19 @@ function doCraft(r, q, auto, crit, pre) {
   }
   const first = G.found[out] === undefined;
   invAdd(out, q, n);
+  // No.351 会心の二つ取り: 会心で作ると同じ品がもう1つ(一晩に1回。3回では稼ぎが強すぎた・sim3)
+  let twin = 0; if (crit && !auto && !r.appraise && pk('twin') && (G.twinN || 0) < 1 && !String(out).startsWith('lg_')) { invAdd(out, q, n); G.twinN = (G.twinN || 0) + 1; twin = n; }
   if (out === 'lg_holy') storyPlay('c5_forge');   // v44: 聖剣を打つ
   gainXp(craftXp(r, q) * (auto ? 0.8 : 1) + (first ? 8 : 0));
   let refill = 0;
-  if (!auto && !r.appraise && crit) { G.focus = (G.focus || 0) + 1; if (G.focus >= FOCUS_N - pk('focus')) { G.focus = 0; refill = Math.min(1, workMax() - G.work); G.work += refill; } }
+  // No.351 好調: 手で作った成功が4回続くと体力が戻る(I=1・II=2)。好調がない時は、今までの集中(会心3回で1)
+  if (!auto && !r.appraise) {
+    const sN = pk('streak');
+    if (sN) { G.focus = (G.focus || 0) + 1; if (G.focus >= 4) { G.focus = 0; refill = Math.max(0, Math.min(sN, workMax() - G.work)); G.work += refill; } }
+    else if (crit) { G.focus = (G.focus || 0) + 1; if (G.focus >= FOCUS_N) { G.focus = 0; refill = Math.max(0, Math.min(1, workMax() - G.work)); G.work += refill; } }
+  }
   if (!auto) playerTurn();
-  return { id: out, q, n, first, refill, crit: !!crit, focus: G.focus || 0, inherit: q > drawn && !noQual(out), plain: noQual(out), opened };
+  return { id: out, q, n: n + twin, twin, gasp, first, refill, crit: !!crit, focus: G.focus || 0, inherit: q > drawn && !noQual(out), plain: noQual(out), opened };
 }
 // v33: each piece made by おまかせ is a turn, like the minigame (the party takes a step). When the party
 // stops to ask for a decision on the way, the batch stops there so the player notices (res.stopped).
@@ -9684,7 +9703,7 @@ function nextCust() {
   const c = G.cust[G.ci];
   if (c) {
     const r = c.result || {};
-    G.clock = (G.clock || OPEN_AT) + (c.hotx ? 20 : r.kind === 'sold' ? 55 : r.kind === 'bought' ? 60 : r.kind === 'order' ? 60 : r.kind === 'story' ? 65 : 40) + ri(0, 10) - pk('clock');
+    G.clock = (G.clock || OPEN_AT) + (c.hotx ? 20 : r.kind === 'sold' ? 55 : r.kind === 'bought' ? 60 : r.kind === 'order' ? 60 : r.kind === 'story' ? 65 : 40) + ri(0, 10) - pk('clock') - (pk('arfame') && G.arena && G.arena.fameDay === G.day ? 10 : 0);   // No.351 闘技場の評判
     const was = G.phase; G.phase = G.clock >= 18 * 60 ? 'night' : G.clock >= 15 * 60 ? 'evening' : 'day';
     if (was !== G.phase) FX.push({ t: 'band', band: shopBand() });
     playerTurn();
@@ -9712,6 +9731,12 @@ const sellQty = (c, q) => Math.min(c.qty || 1, invCount(c.want, q));
 const sellPrice = (c, q) => Math.max(1, Math.round(sellBase(c, q)));
 // 強気: better work lets you ask more, and the better it is the more people will pay
 const BOLD = [0, 1.15, 1.25, 1.35], QTOL = [1, 1.08, 1.16, 1.24];
+// No.351 看板の張り: 昼の店で強気が3回決まると、その夜の体力の最大+2
+function boldPump() {
+  if (G.boldDay !== G.day) { G.boldDay = G.day; G.boldN = 0; }
+  G.boldN++;
+  if (G.boldN === 3 && pk('pump') && G.pumpDay !== G.day) { G.pumpDay = G.day; if (typeof toast === 'function') setTimeout(() => toast('<div><div class="t1">看板の張り</div>強気が3回決まった。今夜の体力の最大 +2</div>'), 900); }
+}
 const boldPrice = (c, q) => Math.max(1, Math.round(sellBase(c, q) * (BOLD[q] + pk('boldx'))));
 function boldOdds(c, q) {
   if (q < 1) return 0;
@@ -9739,7 +9764,7 @@ function sellTo(c, q) { if (!c || c.done || sellQty(c, q) <= 0) return null; ret
 function sellBold(c, q) {
   if (!c || c.done || q < 1 || sellQty(c, q) <= 0 || (c.boldTried || []).includes(q)) return null;
   c.boldTried = (c.boldTried || []).concat(q);
-  if (Math.random() < boldOdds(c, q)) return completeSale(c, q, boldPrice(c, q), 'joy', true);
+  if (Math.random() < boldOdds(c, q)) { boldPump(); return completeSale(c, q, boldPrice(c, q), 'joy', true); }
   G.combo = 0;
   // v36: 強気の看板 (keystone): a refusal still sells at the going rate +10%
   if (pk('boldsafe')) { const r = completeSale(c, q, Math.max(1, Math.round(sellBase(c, q) * 1.1)), 'ok', false); if (r) r.safe = true; return r; }
@@ -10073,7 +10098,7 @@ const inWork = () => G.act === 'work';
 function beginAct(a) {
   G.act = a; G.slot = FLOW.indexOf(a); G.phase = TOD[G.slot];
   if (a === 'shop') openShop();
-  else if (a === 'work') { G.work = Math.max(0, workMax() - (G.owe || 0)); G.owe = 0; G.focus = 0; G.graceN = 0; if (G.tut < 0) pickHot(); }
+  else if (a === 'work') { G.work = Math.max(0, workMax() - (G.owe || 0)); G.owe = 0; G.focus = 0; G.graceN = 0; G.gaspN = 0; G.twinN = 0; if (G.tut < 0) pickHot(); }
   return true;
 }
 // finish the current part of the day and move on to the next (after the workshop: sleep)
@@ -10521,7 +10546,7 @@ const BUFF = {
   p_spd: { n: '俊足の薬', when: 'home' },
 };
 const isHeal = it => it && HEAL_IDS.includes(it.id);
-const isSnack = it => it && it.cat === 'food' && staminaOf(it) > 0;
+const isSnack = it => it && ((it.cat === 'food' && staminaOf(it) > 0) || (it.fish && !String(it.id).startsWith('fsh_lord') && pk('fishfood') > 0));   // No.351 釣り飯
 // No.195 (2026-10-31 作者): 指輪・首飾りは格で効き目が上がる。今より弱くなる物はない(鉄・銅は前のまま)。
 // 何個持っても、罠と中身は一番良いものが効き、首飾りの「まだ見つけていない品」はそれに足して効く
 // trap: 罠つきの確率(指輪なし 0.35) / extra: 中身のくじ +n / more: さらに+1の確率 / unseen: まだ見つけていない品の出やすさ(ふだん1.5)
@@ -10538,7 +10563,7 @@ function ringFx(d) {
 const isRing = it => it && it.cat === 'equip' && (it.sub === '装飾' || it.gslot === 'r');
 const HEAL_FIX = { r_honeyball: 30 };
 function healOf(id, q) { const it = IT[id]; const s = staminaOf(it); if (HEAL_FIX[id]) return HEAL_FIX[id]; return Math.min(DIVE_HP, s >= 99 ? DIVE_HP : Math.round(s * 8 + 4 * (q || 0))); }
-function snackOf(id, q) { const it = IT[id]; return Math.min(30, Math.round(8 + staminaOf(it) * 1.8 + 3 * (q || 0))); }
+function snackOf(id, q) { const it = IT[id], s = it && it.fish ? Math.min(12, 1 + Math.floor(it.v / 8)) : staminaOf(it); return Math.min(30, Math.round(8 + s * 1.8 + 3 * (q || 0))); }
 // ---------- what a carried item does out there ----------
 // One table read by the bag picker, the item page, the choices and the report, so the words always match.
 // sc: the scenes it works in, t: what it does, keep: works while carried (comes home unless the party falls),
@@ -10879,6 +10904,8 @@ function newDive(areaId, target, party, pack) {
   return d;
 }
 function bagHas(d, pred) { return d.bag.find(b => b.qs.length && pred(IT[b.id])); }
+// No.351 道具の節約: 戦闘の道具(薬・爆薬・煙玉・力の薬など)は、使っても減らないことがある
+function bagUseB(d, id) { const b = d.bag.find(x => x.id === id && x.qs.length); if (!b) return null; if (Math.random() < pk('itemsave')) { d.eff.saved = (d.eff.saved || 0) + 1; dlog(d, `${IT[id].name}は減らなかった(道具の節約)`, 'good'); return b.qs[0]; } return b.qs.shift(); }
 function bagUse(d, id) { const b = d.bag.find(x => x.id === id && x.qs.length); if (!b) return null; const q = b.qs.shift(); return q; }
 const hasTool = (d, id) => !!bagHas(d, it => it.id === id);
 const bestOf = (d, tbl) => Object.keys(tbl).filter(id => hasTool(d, id)).sort((x, y) => tbl[y] - tbl[x])[0];
@@ -10914,7 +10941,7 @@ const WEAR_K = { wpn: 1 / 2, arm: 1 / 3 };
 function wear(d, kind, n) {
   for (const m of d.party) for (const slot of slotsOf(kind)) {
     const g = m[slot]; if (!g || g.max >= 999) continue;
-    g.dur = Math.round((g.dur - n * WEAR_K[kind]) * 1000) / 1000;
+    g.dur = Math.round((g.dur - n * WEAR_K[kind] * (pk('care') && RC_BY_OUT[g.id] ? 0.5 : 1)) * 1000) / 1000;   // No.351 手入れの心得
     if (g.dur <= 0) {
       d.broke.push({ who: m.n, id: g.id, br: IT['broken_' + g.id] ? 'broken_' + g.id : null }); m[slot] = null;
       dlog(d, `${m.n}の${IT[g.id].name}が${slotKind(slot) === 'wpn' ? '折れて' : '壊れて'}しまった!`, 'bad');
@@ -11067,7 +11094,7 @@ function resolveFight(d, mode, si) {
 }
 function drink(d, p) {
   const pot = bestPotion(d); if (!pot) return 0;
-  bagUse(d, pot.id); const h = Math.min(DIVE_HP - d.hp, pot.h); d.hp += h; d.eff.heal += h; d.eff.healId = pot.id; showItem(d, pot.id, `元気 +${h}`, pot.q);
+  bagUseB(d, pot.id); const h = Math.min(DIVE_HP - d.hp, pot.h); d.hp += h; d.eff.heal += h; d.eff.healId = pot.id; showItem(d, pot.id, `元気 +${h}`, pot.q);
   dlog(d, `${IT[pot.id].name}${pot.q ? `(${QUAL[pot.q].n})` : ''}を飲んだ。元気 +${h}`, 'good');
   return h;
 }
@@ -11217,7 +11244,7 @@ function stepHome(d) {
   const smoke = bagHas(d, it => it.id === 'smoke');
   if (d.back > 0 && Math.random() < 0.14) {
     const foe = dvFoe(AR[d.area], d);
-    if (smoke) { bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke); dlog(d, `帰り道で${foe.n}に出くわしたが、煙玉で逃げきった。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true }; return; }
+    if (smoke) { bagUseB(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke); dlog(d, `帰り道で${foe.n}に出くわしたが、煙玉で逃げきった。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true }; return; }
     const dmg = Math.max(1, Math.round(blow(d, foe, false) * 0.5 * rnd(0.75, 1.25)));
     d.hp -= dmg; wear(d, 'arm', 1); if (d.hp < 1) { d.eff.close = true; d.hp = 1; }
     dlog(d, `帰り道で${foe.n}に襲われた。元気 −${dmg}${d.eff.close ? '(命からがら逃げのびた)' : ''}`, 'fight');
@@ -11767,7 +11794,7 @@ function btlPzItem(d, id, cell, i) {
   const p = d.pending; if (!p || !p.btl || p.btl.done) return null; const b = p.btl, F = p.f;
   if (b.item === F.hands || !bagHas(d, it => it.id === id)) return null;
   if (id !== 'bomb') { if (!fUseBuff(d, id)) return null; b.item = F.hands; return { id, say: [BUFF[id].say] }; }
-  if (bagUse(d, 'bomb') === null) return null;
+  if (bagUseB(d, 'bomb') === null) return null;
   const bd = Uint8Array.from(b.bd), r = pzBomb(bd, cell); b.bd = Array.from(bd);
   const m = d.party[i] || d.party[0], h = ftHand({ atk: 0 }, memSpec(m), { hand: { cnt: r.cnt, chains: r.chains }, dmgMul: F.dmgK });
   F.fhp -= h.dmg; b.item = F.hands; F.buffs.push('bomb'); d.eff.buff.bomb = (d.eff.buff.bomb || 0) + 1; showItem(d, 'bomb', '爆薬で盤を吹き飛ばした');
@@ -12048,7 +12075,7 @@ function fBegin(d) {
 }
 // 3.5 の道具: 力の薬 = 与えるダメージ ×1.2・守りの薬 = 受ける被害 −20%・聖水 = 亡者に ×2・爆薬 = 3×3 を消す一撃(おまかせは平均の1手ぶん)
 function fUseBuff(d, id) {
-  const p = d.pending, F = p.f, foe = MON[p.foe]; if (!id || bagUse(d, id) === null) return false;
+  const p = d.pending, F = p.f, foe = MON[p.foe]; if (!id || bagUseB(d, id) === null) return false;
   if (id === 'p_str') F.dmgK *= 1.2; else if (id === 'p_def') F.cutK = Math.min(0.8, F.cutK + 0.2); else if (id === 'holy') F.holy = 1;
   else if (id === 'bomb') { const r = ftHand({ atk: 0 }, memSpec(d.party[0]), { hand: { cnt: [2, 2, 1, 2, 2], chains: 1 } }); F.fhp -= r.dmg; }
   F.buffs.push(id); F.notes.push(BUFF[id].say); d.eff.buff[id] = (d.eff.buff[id] || 0) + 1;
@@ -12088,7 +12115,9 @@ function fHand(d, o) {
   if (r.chains > 1) say.push(`${r.chains}連鎖!`);
   if (F.fhp <= 0) { F.fhp = 0; F.done = true; F.win = true; out.win = true; return out; }
   const hp0 = d.hp; d.hp = Math.min(DIVE_HP, d.hp + Math.round(r.heal / php * 100)); out.heal = d.hp - hp0;
-  const hit = Math.round(r.hit / php * 100); d.hp -= hit; F.taken += hit; out.hit = hit;
+  const pre = pk('first') > 0 && F.hands === 1 && F.kind !== 'norm';   // No.351 先制の一手: 中ボス・ぬしの最初の1手は打ち返さない
+  if (pre) say.push('先制の一手! 敵は打ち返せない');
+  const hit = pre ? 0 : Math.round(r.hit / php * 100); d.hp -= hit; F.taken += hit; out.hit = hit;
   if (d.hp <= 0) { if (lastStand(d)) say.push('世界樹の樹液が命をつないだ'); else { d.hp = 0; F.done = true; F.lost = true; out.lost = true; } }
   return out;
 }
@@ -12114,7 +12143,7 @@ function fAutoRun(d, o) {
 function fallBack(d, why, lost) {
   d.pending = null; d.next = null; d.wait = 0; d.restPend = null;
   if (lost) { d.hp = Math.max(d.hp, 10); d.losses = (d.losses || 0) + 1; }
-  if (lost && d.losses >= 2) {
+  if (lost && d.losses >= 2 + pk('retreat')) {   // No.351 退き際: 退却が2度まで
     d.armed = false;
     goHome(d, why + '撤退した。ここまでの収穫を抱えて、ギルドへ引き揚げる。');
     d.last = { k: 'turn', withdraw: true }; return;
@@ -12122,7 +12151,7 @@ function fallBack(d, why, lost) {
   const camp = Math.max(0, ...d.forks.filter(i => i < d.i));
   d.cleared = Math.max(d.cleared || 0, d.i - 1);
   d.i = camp; d.falls = (d.falls || 0) + 1;
-  dlog(d, why + (lost ? '退却した。' : '') + (camp ? '一息の場所まで下がった。' : '入口まで下がった。') + (lost ? '(次に敗れたら撤退)' : ''), lost ? 'bad' : 'hurt');
+  dlog(d, why + (lost ? '退却した。' : '') + (camp ? '一息の場所まで下がった。' : '入口まで下がった。') + (lost && d.losses >= 1 + pk('retreat') ? '(次に敗れたら撤退)' : ''), lost ? 'bad' : 'hurt');
   d.pending = { k: 'low', fell: 1 }; d.armed = false;
   d.last = { k: 'rest' };
 }
@@ -12163,7 +12192,7 @@ function fFlee(d) {
   const p = d.pending, foe = MON[p.foe], big = !!(p.boss || p.mid);
   const smoke = bagHas(d, it => it.id === 'smoke');
   if (smoke) {
-    bagUse(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke);
+    bagUseB(d, 'smoke'); d.eff.avoid.push('smoke'); showItem(d, 'smoke', AVOID_SAY.smoke);
     if (big) { d.pending = p.boss ? { k: 'boss', foe: p.foe } : { k: 'fight', foe: p.foe, mid: true }; dlog(d, `煙玉を投げて、${foe.n}から間合いを取った。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true }; return { ok: true, smoke: true, stay: true }; }
     d.pending = null; dlog(d, `煙玉を投げて、${foe.n}から逃げ出した。`, 'good'); d.last = { k: 'walk', foe: foe.k, flee: true, post: true }; afterRoom(d); return { ok: true, smoke: true };
   }
@@ -12226,15 +12255,16 @@ const SKI = {
 };
 // node id -> icon (a "tier" shows as small dots under the icon: I, II, III …)
 const SKI_OF = {
-  root: 'star', c0: 'hand', sm1: 'anvil', sm2: 'anvil', sm3: 'anvil', al1: 'flask', al2: 'flask', al3: 'flask', co1: 'pot', co2: 'pot', co3: 'pot', sc1: 'quill', sc2: 'quill', sc3: 'quill',
-  c_crit: 'spark', c_grace: 'shield', c_fast: 'bolt', c_grace2: 'shield', c_key: 'furnace', c_ks: 'gem',
-  t1: 'bubble', t2: 'tag', t6: 'person', t3: 'shelf', t5: 'flame', t4: 'shelf', t7: 'bell', t_key: 'sign', t_ks: 'coin',
-  e1: 'basket', e2: 'scales', e4: 'basket', e3: 'eye', e5: 'chart', e_key: 'lens', e_ks: 'scroll',
-  a1: 'pack', a2: 'tent', a3: 'door', a4: 'pouch', a5: 'chest', a6: 'target', a_key: 'wind', a_ks: 'sun',
-  b1: 'heart', b2: 'heart', b3: 'bowl', b4: 'heart', b5: 'moon', b6: 'heart', b_key: 'drop', b7: 'heart', b_ks: 'cutlery',
-  j_ct: 'medal', j_te: 'percent', j_ea: 'map', j_ab: 'compass', j_cb: 'hourglass',
+  root: 'star',
+  b1: 'heart', b2: 'heart', b4: 'heart', bg1: 'spark', bg2: 'spark', b_ks: 'flame', b3: 'bowl', b5: 'cutlery', b_key: 'drop', bf1: 'shield', bf2: 'shield',
+  c0: 'hand', c1: 'hand', c_crit: 'spark', ctw: 'gem', c_grace: 'shield', c_grace2: 'shield', c_key: 'furnace', c_ks: 'anvil', e3: 'eye', e_key: 'lens', e_ks: 'scroll',
+  a1: 'pack', a3: 'door', a5: 'chest', a6: 'target', a4: 'pouch', ai1: 'flask', ai2: 'flask', af: 'bolt', a2: 'tent', ar: 'compass', a_key: 'wind', a_ks: 'sun',
+  f1: 'hook', f2: 'hook', fj: 'hourglass', fe: 'eye', fb: 'target', f_ks: 'moon', f3: 'basket', f4: 'basket', fs: 'scales',
+  x1: 'bell', x2: 'shield', x3: 'medal', x4: 'flag', x5: 'coin', x6: 'coin', x7: 'percent', x8: 'tag', x_ks: 'sun',
+  t1: 'bubble', tb2: 'bubble', t5: 'flame', t_ks: 'coin', t3: 'shelf', t4: 'shelf', t7: 'bell', t6: 'person', t_key: 'sign', e1: 'basket', e2: 'scales',
+  j_bc: 'pot', j_ca: 'anvil', j_af: 'cutlery', j_fx: 'hook', j_xt: 'medal', j_tb: 'sign',
 };
-const SKI_ROAD = { craft: 'anvil', trade: 'coin', eye: 'eye', adv: 'flag', body: 'heart', join: 'star' };
+const SKI_ROAD = { craft: 'anvil', trade: 'sign', eye: 'eye', adv: 'flag', body: 'heart', fish: 'hook', cas: 'coin', join: 'star' };
 // tier from the name (… I / II / III / IV / V)
 const skiTier = n => { const m = / (I{1,3}|IV|V)$/.exec(n || ''); return m ? ({ I: 1, II: 2, III: 3, IV: 4, V: 5 })[m[1]] : 0; };
 // a stand-alone icon as an <svg> (list rows, the sheet)
@@ -12243,85 +12273,102 @@ const skRoadIcon = (br, cls) => `<svg class="ski ${cls || ''}" viewBox="0 0 24 2
 
 // ---- skills.js ----
 // ---------- v36: スキル盤 (設計メモ 3章・16章) ----------
-// Five roads from the centre (職人・商い・目利き・冒険・体), joined by five crossing nodes. A node opens when one of
+// No.351: six roads from the centre (体力・工房・冒険者探索・釣り・カジノ闘技場・店舗経営), joined by six crossing nodes. A node opens when one of
 // its `req` is learned. Points: one per level after Lv1 + やり込み (a rare found for the first time, a master
 // beaten for the first time, a regular's whole story, each 図鑑 milestone ×2, the first 傑作 of each craft).
 // The effects are summed by pk(key) and read by the engine, the minigames and the dive.
 // Every effect is worded so it fits any minigame (and the easy gauge too).
 const SK_BR = {
-  craft: { n: '職人の道', a: -90, c: '#e9b65c', d: 'ミニゲームの判定・品質・会心・作業の速さ' },
-  trade: { n: '商いの道', a: -18, c: '#f08a6c', d: '売り値・強気・棚・特需・常連' },
-  eye: { n: '目利きの道', a: 54, c: '#9b8cf0', d: '仕入れ・買い取り・鑑定・秘伝のレシピ' },
-  adv: { n: '冒険の道', a: 126, c: '#62c4a8', d: '探索の収穫・レア・道具袋・帰り道' },
-  body: { n: '体の道', a: 198, c: '#7fb4f0', d: '体力の最大・食事・夕食' },
+  body: { n: '体力の道', a: -90, c: '#7fb4f0', d: '体力の最大・食事・失敗の踏ん張り・温泉' },
+  craft: { n: '工房の道', a: -30, c: '#e9b65c', d: 'ミニゲームの判定・会心・余裕・鑑定' },
+  adv: { n: '冒険者探索の道', a: 30, c: '#62c4a8', d: '探索の収穫・レア・道具袋・退却・帰り道' },
+  fish: { n: '釣りの道', a: 90, c: '#5fb3d9', d: '追うバー・餌・大物・ぬし魚' },
+  cas: { n: 'カジノ・闘技場の道', a: 150, c: '#d98fd0', d: '闘技場の読みと保険・コインの両替・景品' },
+  trade: { n: '店舗経営の道', a: 210, c: '#f08a6c', d: '強気・棚・特需・常連・仕入れ・買い取り' },
   join: { n: '合流', a: 0, c: '#d9b874', d: 'ふたつの道が出会う所' },
 };
 // id, road, name, cost, req (any one), fx, words, place on the board (depth, lane), key = a rare to offer, ks = keystone
+// No.351(2026-11-19): 六つの道に作り変えた。決まりは「00_スキル盤の作り変え_決まったこと」7
+const SK_ALL = ['sk_smith', 'sk_alch', 'sk_cook', 'sk_scribe'];
+const skAll = v => Object.fromEntries(SK_ALL.map(k => [k, v]));
 const SKN = [
-  ['root', 'join', '店主の心得', 0, [], {}, 'ここから五つの道がのびる。', 0, 0],
-  // 職人の道
-  ['c0', 'craft', '器用な手', 1, ['root'], { sk_smith: 1, sk_alch: 1, sk_cook: 1, sk_scribe: 1 }, 'すべての製作の判定が少し広がり、良い品が出やすくなる。', 1, 0],
-  ['sm1', 'craft', '鍛冶の腕 I', 1, ['c0'], { sk_smith: 2 }, '鍛冶の判定が広がり、良い品が出やすくなる。', 2, -1.5],
-  ['sm2', 'craft', '鍛冶の腕 II', 2, ['sm1'], { sk_smith: 3 }, '鍛冶の判定がさらに広がる。', 3, -1.9],
-  ['sm3', 'craft', '鍛冶の腕 III', 2, ['sm2'], { sk_smith: 4 }, '鍛冶の判定がもっと広がり、作業が速くなる。', 4, -2.2],
-  ['al1', 'craft', '錬金の腕 I', 1, ['c0'], { sk_alch: 2 }, '錬金の判定が広がり、良い品が出やすくなる。', 2, -0.5],
-  ['al2', 'craft', '錬金の腕 II', 2, ['al1'], { sk_alch: 3 }, '錬金の判定がさらに広がる。', 3, -0.65],
-  ['al3', 'craft', '錬金の腕 III', 2, ['al2'], { sk_alch: 4 }, '錬金の判定がもっと広がり、作業が速くなる。', 4, -0.75],
-  ['co1', 'craft', '調理の腕 I', 1, ['c0'], { sk_cook: 2 }, '調理の判定が広がり、良い品が出やすくなる。', 2, 0.5],
-  ['co2', 'craft', '調理の腕 II', 2, ['co1'], { sk_cook: 3 }, '調理の判定がさらに広がる。', 3, 0.65],
-  ['co3', 'craft', '調理の腕 III', 2, ['co2'], { sk_cook: 4 }, '調理の判定がもっと広がり、作業が速くなる。', 4, 0.75],
-  ['sc1', 'craft', '筆写の腕 I', 1, ['c0'], { sk_scribe: 2 }, '筆写・魔道具の判定が広がり、良い品が出やすくなる。', 2, 1.5],
-  ['sc2', 'craft', '筆写の腕 II', 2, ['sc1'], { sk_scribe: 3 }, '筆写・魔道具の判定がさらに広がる。', 3, 1.9],
-  ['sc3', 'craft', '筆写の腕 III', 2, ['sc2'], { sk_scribe: 4 }, '筆写・魔道具の判定がもっと広がり、作業が速くなる。', 4, 2.2],
-  ['c_crit', 'craft', '会心の目', 2, ['sm3', 'al3'], { crit: 0.15 }, 'どのミニゲームでも、会心(金色)の幅が広がる。', 5, -1],
-  ['c_grace', 'craft', '一度の余裕', 2, ['co3', 'sc3'], { grace: 1 }, 'ミニゲームで失敗しても、一晩に1回だけ成功にしてくれる。', 5, 1],
-  ['c_fast', 'craft', '手早さ', 2, ['c_crit'], { fast: 1 }, '作業3以上のレシピが、作業1つ少なくできる。', 6, -1],
-  ['c_grace2', 'craft', '二度の余裕', 2, ['c_grace'], { grace: 1 }, '「一度の余裕」が一晩に2回になる。', 6, 1],
-  ['c_key', 'craft', '名工の炉', 2, ['c_fast', 'c_grace2'], { sk_smith: 1, sk_alch: 1, sk_cook: 1, sk_scribe: 1, crit: 0.1 }, '炉の火を強くする。すべての判定と会心の幅が広がる。', 7, 0, 'r_lavacore'],
-  ['c_ks', 'craft', '熟練の手', 3, ['c_key'], { master: 1 }, 'おまかせで作っても、ときどき良品ができるようになる。', 8, 0, null, 1],
-  // 商いの道
-  ['t1', 'trade', '口上手', 1, ['root'], { bold: 0.08 }, '「強気で売る」が決まりやすくなる。', 1, 0],
-  ['t2', 'trade', '名物の品', 1, ['t1'], { shelfb: 0.05 }, '陳列棚の品が、少し高く売れる(+5%)。', 2, -0.6],
-  ['t6', 'trade', '常連の信頼', 1, ['t1'], { regpay: 0.15 }, '常連さんの頼みの報酬が増える。', 2, 0.6],
-  ['t3', 'trade', '棚の工夫 I', 1, ['t2'], { shelf: 1 }, '陳列棚が1枠増える。', 3, -0.6],
-  ['t5', 'trade', '特需の読み', 2, ['t6'], { hot: 0.15 }, '特需の品がもっと高く売れる(4割高 → 5割5分高)。', 3, 0.6],
-  ['t4', 'trade', '棚の工夫 II', 2, ['t3'], { shelf: 1 }, '陳列棚がもう1枠増える。', 4, -0.6],
-  ['t7', 'trade', 'おもてなし', 2, ['t5'], { clock: 4 }, '接客が手早くなり、1日に会えるお客さんが増える。', 4, 0.6],
-  ['t_key', 'trade', '黄金の看板', 2, ['t4', 't7'], { fame: 0.15 }, '竜の財宝で看板を飾る。名声が上がりやすくなる。', 5, 0, 'r_hoard'],
-  ['t_ks', 'trade', '強気の看板', 3, ['t_key'], { boldsafe: 1 }, '「強気で売る」を断られても、相場の1割増しで買ってもらえる。', 6, 0, null, 1],
-  // 目利きの道
-  ['e1', 'eye', '仕入れ上手 I', 1, ['root'], { buy: 0.04 }, '朝市と問屋の仕入れ値が少し安くなる(翌朝から)。', 1, 0],
-  ['e2', 'eye', '買い取り上手', 1, ['e1'], { haggle: 0.12 }, '持ち込みの「値切る」が決まりやすくなる。', 2, -0.6],
-  ['e4', 'eye', '仕入れ上手 II', 2, ['e1'], { buy: 0.04 }, '仕入れ値がもう少し安くなる。', 2, 0.6],
-  ['e3', 'eye', '鑑定の目', 2, ['e2'], { shadow: 1 }, '影合わせで影が長く見え、考える時間も延びる。', 3, -0.6],
-  ['e5', 'eye', '相場読み', 2, ['e4'], { sell: 0.04 }, 'どの品も少し高く売れる。', 3, 0.6],
-  ['e_key', 'eye', '真贋の目', 2, ['e3'], { truth: 1 }, '月の雫で目を清める。影合わせで、まちがいの絵がひとつ消える(月影の鏡と重なる)。', 4, -0.6, 'r_moondrop'],
-  ['e_ks', 'eye', '秘伝の勘', 3, ['e_key', 'e5'], { paper: 1 }, '破れたレシピの紙の影の品が、どこで取れるか分かる。レシピの紙が手に入りやすくなる。', 5, 0, null, 1],
-  // 冒険の道
-  ['a1', 'adv', '道中の目', 1, ['root'], { haul: 0.15 }, '探索の道中の収穫が増える。', 1, 0],
-  ['a2', 'adv', '野営の知恵', 1, ['a1'], { camp: 8 }, '野営で元気がもっと戻る。', 2, -0.6],
-  ['a3', 'adv', '隠し部屋の勘', 1, ['a1'], { secret: 0.06 }, '隠し部屋・隠し通路が見つかりやすくなる。', 2, 0.6],
-  ['a4', 'adv', '袋の工夫', 2, ['a2'], { bag: 1 }, '冒険者の道具袋が1枠増える。', 3, -0.6],
-  ['a5', 'adv', '宝の勘', 2, ['a3'], { seal2: 0.1 }, 'ぬしの奥で、封印された箱が2つ出やすくなる。', 3, 0.6],
-  ['a6', 'adv', '狙いの冴え', 2, ['a5'], { aim: 0.5 }, '狙ったレアがもっと出やすくなる(1.5倍 → 2倍)。', 4, 0.6],
-  ['a_key', 'adv', '風の足', 2, ['a4', 'a6'], { homeh: 1 }, '飛竜の風切り羽をお守りに。帰り道がいつも半分になる。', 5, 0, 'r_windfeather'],
+  ['root', 'join', '店主の心得', 0, [], {}, 'ここから六つの道がのびる。', 0, 0],
+  // 体力の道
+  ['b1', 'body', '朝の体操', 1, ['root'], { stam: 2 }, '体力の最大が2増える。', 1, 0],
+  ['b2', 'body', '丈夫な体', 2, ['b1'], { stam: 3 }, '体力の最大が3増える。', 2, -1],
+  ['b4', 'body', '底力', 3, ['b2'], { stam: 4 }, '体力の最大が4増える。', 3, -1.5],
+  ['bg1', 'body', '好調 I', 1, ['b2'], { streak: 1 }, '手で作った成功(ミニゲーム)が4回続くと、体力が1戻る。おまかせは数えない。', 3, -0.5],
+  ['bg2', 'body', '好調 II', 2, ['bg1'], { streak: 1 }, '4回続くと、体力が2戻る。', 4, -0.5],
+  ['b_ks', 'body', '最後のひと踏ん張り', 3, ['b4', 'bg2'], { gasp: 1 }, '体力が足りない作業も、一晩に1回だけ作れる(体力は0になる)。', 5, -1, null, 1],
+  ['b3', 'body', '舌が肥える', 1, ['b1'], { tongue: 0.5 }, '良品以上の料理・薬を食べると、体力の戻りが1.5倍。', 2, 0.2],
+  ['b5', 'body', 'もう一皿', 2, ['b3'], { kinds: 1 }, '1日に食べられる品が1種類増える(3→4種類)。', 3, 0.5],
+  ['b_key', 'body', '湯上がりの冴え', 2, ['b5'], { glow: 1 }, '泉の雫を湯に落とす。温泉に入った次の日、体力の最大が3割増える。', 4, 0.5, 'r_springdrop'],
+  ['bf1', 'body', '踏ん張り I', 1, ['b1'], { grit: 0.4 }, 'ミニゲームで失敗しても、ときどき(4割)体力が減らない。', 2, 1.3],
+  ['bf2', 'body', '踏ん張り II', 2, ['bf1'], { grit: 0.6 }, '失敗しても、体力が減らない。', 3, 1.5],
+  // 工房の道
+  ['c0', 'craft', '器用な手 I', 1, ['root'], skAll(2), 'すべての製作の判定が広がり、良い品が出やすくなる。', 1, 0],
+  ['c1', 'craft', '器用な手 II', 2, ['c0'], Object.assign(skAll(3), { fast: 1 }), '判定がさらに広がる。作業3以上のレシピが、作業1つ少なくできる。', 2, -0.9],
+  ['c_crit', 'craft', '会心の目', 1, ['c0'], { crit: 0.25 }, 'どのミニゲームでも、会心(金色)の幅が広がる。', 2, 0.1],
+  ['ctw', 'craft', '会心の二つ取り', 2, ['c_crit'], { twin: 1 }, '会心で作ると、同じ品がもう1つできる(一晩に1回)。', 3, 0.1],
+  ['c_grace', 'craft', '一度の余裕', 1, ['c0'], { grace: 1 }, 'ミニゲームで失敗しても、一晩に1回だけ成功にしてくれる。', 2, 1.1],
+  ['c_grace2', 'craft', '三度の余裕', 2, ['c_grace'], { grace: 2 }, '「余裕」が一晩に3回になる。', 3, 1.3],
+  ['c_key', 'craft', '名工の炉', 2, ['c1', 'ctw'], { forge: 1 }, '溶岩の心核で炉を強くする。会心で作ると、品質のくじを3回引いて一番良い物になる。', 4, -0.4, 'r_lavacore'],
+  ['c_ks', 'craft', '熟練の手', 3, ['c_key'], { master: 1 }, 'おまかせで作っても、ときどき良品ができるようになる。', 5, -0.4, null, 1],
+  ['e3', 'craft', '鑑定の目', 1, ['root'], { shadow: 1 }, '影合わせで影が長く見え、考える時間も延びる。', 1.2, -1.5],
+  ['e_key', 'craft', '真贋の目', 2, ['e3'], { truth: 1 }, '月の雫で目を清める。影合わせで、まちがいの絵がひとつ消える(月影の鏡と重なる)。', 2.2, -2, 'r_moondrop'],
+  ['e_ks', 'craft', '秘伝の勘', 2, ['e_key'], { paper: 1 }, '破れたレシピの紙の影の品が、どこで取れるか分かる。レシピの紙が手に入りやすくなる。', 3.2, -2.2],
+  // 冒険者探索の道(攻撃・防御の力は足さない)
+  ['a1', 'adv', '道中の目', 1, ['root'], { haul: 0.15 }, '探索の道中の収穫が増える(+15%)。', 1, -0.7],
+  ['a3', 'adv', '隠し部屋の勘', 1, ['a1'], { secret: 0.1 }, '隠し部屋・隠し通路が見つかりやすくなる。', 2, -1.4],
+  ['a5', 'adv', '宝の勘', 2, ['a3'], { seal2: 0.2 }, 'ぬしの奥で、封印された箱が2つ出やすくなる。', 3, -1.6],
+  ['a6', 'adv', '狙いの冴え', 2, ['a5'], { aim: 0.5 }, '狙ったレアがもっと出やすくなる(1.5倍 → 2倍)。', 4, -1.4],
+  ['a4', 'adv', '袋の工夫', 1, ['root'], { bag: 1 }, '冒険者の道具袋が1枠増える。', 1, 0.7],
+  ['ai1', 'adv', '道具の節約 I', 1, ['a4'], { itemsave: 0.2 }, '戦闘の道具(薬・爆薬・煙玉など)を使っても、2割で減らない。', 2, -0.3],
+  ['ai2', 'adv', '道具の節約 II', 2, ['ai1'], { itemsave: 0.3 }, '5割で減らない。', 3, -0.5],
+  ['af', 'adv', '先制の一手', 2, ['ai1'], { first: 1 }, '中ボス・ぬしの戦いで、最初の1手だけ敵が打ち返さない。', 3, 0.5],
+  ['a2', 'adv', '野営の知恵', 1, ['a4'], { camp: 10, rest: 10 }, '野営と「休む」で、元気がもう10戻る。', 2, 1.2],
+  ['ar', 'adv', '退き際', 2, ['a2'], { retreat: 1 }, '負けて退却するのが、1回の探索で2度までになる(3度目で撤退)。', 3, 1.5],
+  ['a_key', 'adv', '風の足', 2, ['a6', 'ar'], { homeh: 1 }, '飛竜の風切り羽をお守りに。帰り道がいつも半分になる。', 5, 0, 'r_windfeather'],
   ['a_ks', 'adv', '長い一日', 3, ['a_key'], { daycap: 4 }, '冒険者が1日に進めるターンが12から16に増える。', 6, 0, null, 1],
-  // 体の道
-  ['b1', 'body', '体力 I', 1, ['root'], { stam: 1 }, '体力の最大が1増える。', 1, 0],
-  ['b2', 'body', '体力 II', 1, ['b1'], { stam: 1 }, '体力の最大が1増える。', 2, -0.6],
-  ['b3', 'body', '食べ上手', 1, ['b1'], { eat: 0.25 }, '工房で食べた料理や薬で、体力がもっと戻る。', 2, 0.6],
-  ['b4', 'body', '体力 III', 2, ['b2'], { stam: 1 }, '体力の最大が1増える。', 3, -0.6],
-  ['b5', 'body', '夜ふかし', 1, ['b3'], { dinner: 3 }, '灯り亭の夕食で、体力がもっと戻る。', 3, 0.6],
-  ['b6', 'body', '体力 IV', 2, ['b4'], { stam: 2 }, '体力の最大が2増える。', 4, -0.6],
-  ['b_key', 'body', '泉の加護', 2, ['b6', 'b5'], { stam: 2 }, '泉の雫を飲みほす。体力の最大が2増える。', 5, 0, 'r_springdrop'],
-  ['b7', 'body', '体力 V', 3, ['b_key'], { stam: 2 }, '体力の最大が2増える。', 6, 0],
-  ['b_ks', 'body', 'もう一皿', 3, ['b7'], { kinds: 1 }, '1日に食べられる品が1種類増える(3→4種類)。', 7, 0, null, 1],
-  // 合流 (between two roads)
-  ['j_ct', 'join', '自慢の品', 2, ['c_crit', 't3'], { goodsell: 0.06 }, '職人と商いの合流。良品以上の品が少し高く売れる。', 4.6, 0, null, 0, ['craft', 'trade']],
-  ['j_te', 'join', '値付けの妙', 2, ['t5', 'e4'], { boldx: 0.05 }, '商いと目利きの合流。「強気で売る」の値段が上がる。', 3.8, 0, null, 0, ['trade', 'eye']],
-  ['j_ea', 'join', '宝の地図読み', 2, ['e3', 'a5'], { newrare: 0.2 }, '目利きと冒険の合流。まだ持っていないレアが、もっと出やすくなる。', 3.8, 0, null, 0, ['eye', 'adv']],
-  ['j_ab', 'join', '旅の支度', 2, ['a4', 'b4'], { rest: 10 }, '冒険と体の合流。一息の「休む」で元気がもっと戻る。', 3.8, 0, null, 0, ['adv', 'body']],
-  ['j_cb', 'join', '集中の極意', 2, ['c_grace', 'b4'], { focus: 1 }, '体と職人の合流。会心2回で体力が1戻る(3回 → 2回)。', 4.6, 0, null, 0, ['body', 'craft']],
+  // 釣りの道
+  ['f1', 'fish', '釣り人の手 I', 1, ['root'], { fishbar: 6 }, '釣りの追うバーが太くなる(+6)。', 1, -0.9],
+  ['f2', 'fish', '釣り人の手 II', 2, ['f1'], { fishbar: 6 }, 'さらに太くなる(+12。リールと重なる)。', 2, -1.5],
+  ['fj', 'fish', '時合い', 2, ['f1'], { jiai: 1 }, '時合いが2匹続けば始まる(ふだんは3匹)。時合いの間は、1度外しても切れない。', 2, -0.5],
+  ['fe', 'fish', '魚影の目', 1, ['root'], { bigeye: 1 }, '大物(格3以上)の影が光って見え、「大物」と分かる。', 1, 0.1],
+  ['fb', 'fish', '大物の勘', 2, ['fe'], { bigcap: 1 }, '竿の格より1つ上の魚も掛かる。', 2, 0.5],
+  ['f_ks', 'fish', 'ぬしの気配', 3, ['fb', 'fj'], { lordsense: 1 }, 'ぬし魚が掛かりやすくなり(3倍)、掛かる時は「ぬしの気配」と知らせが出る。', 3, 0, null, 1],
+  ['f3', 'fish', '餌持ち I', 1, ['root'], { baitkeep: 0.3 }, '投げても、ときどき(3割)餌が減らない。', 1, 1.1],
+  ['f4', 'fish', '餌持ち II', 2, ['f3'], { baitkeep: 0.2 }, '2回に1回、餌が減らない。', 2, 1.5],
+  ['fs', 'fish', '目利きの魚屋', 2, ['f3'], { fishsell: 0.2 }, 'その場で売る魚が2割高い。', 3, 1.4],
+  // カジノ・闘技場の道(当たりの確率は変えない)
+  ['x1', 'cas', '観客の耳', 1, ['root'], { arread: 1 }, '闘技場で、客の読み(倍率)が甘い闘士に「狙い目」と出る。', 1, -0.7],
+  ['x2', 'cas', '負けの保険', 2, ['x1'], { arins: 1 }, '闘技場で、一晩に1回、外れても賭け金の半分が戻る。', 2, -1.4],
+  ['x3', 'cas', '勝ち抜きの祝儀', 1, ['x1'], { arfive: 1 }, '闘技場で5戦勝ち抜いて受け取ると、最初の賭け金と同じ額の祝儀が出る。', 2, -0.55],
+  ['x4', 'cas', '闘技場の常連', 2, ['x3'], { arcap: 1 }, '闘技場で一晩に賭けられる額が2倍になる。', 3, -0.5],
+  ['x5', 'cas', '両替の顔 I', 1, ['root'], { xchg: 5 }, 'コインを買うと、100枚ごとに5枚おまけ。', 1, 0.7],
+  ['x6', 'cas', '両替の顔 II', 2, ['x5'], { xchg: 5 }, '100枚ごとに10枚おまけ。', 2, 1.4],
+  ['x7', 'cas', '卓の礼儀', 2, ['x5'], { tablegrace: 1 }, 'カードの卓(ブラックジャック・ポーカー・ハイ&ロー・バカラ)で、一晩に1回、負けた賭けが戻る。', 2, 0.55],
+  ['x8', 'cas', '景品の目', 2, ['x6'], { prizecut: 1 }, '景品の棚の品が、一晩に1つだけ1割引。', 3, 1.5],
+  ['x_ks', 'cas', '夜の顔役', 3, ['x2', 'x8'], { tip: 1 }, '毎晩はじめてクラブに入ると、ロザから心づけのコイン(章×5枚)。', 4, 0, null, 1],
+  // 店舗経営の道
+  ['t1', 'trade', '口上手', 1, ['root'], { bold: 0.08 }, '「強気で売る」が決まりやすくなる。', 1, -1.1],
+  ['tb2', 'trade', '強気 II', 2, ['t1'], { boldx: 0.08 }, '「強気で売る」の値段が上がる。', 2, -2],
+  ['t5', 'trade', '特需の読み', 2, ['t1'], { hot: 0.15 }, '特需の品がもっと高く売れる(4割高 → 5割5分高)。', 2, -0.8],
+  ['t_ks', 'trade', '強気の看板', 3, ['tb2', 't5'], { boldsafe: 1 }, '「強気で売る」を断られても、相場の1割増しで買ってもらえる。', 3, -1.3, null, 1],
+  ['t3', 'trade', '棚の工夫 I', 1, ['root'], { shelf: 1 }, '陳列棚が1枠増える。', 1, -0.1],
+  ['t4', 'trade', '棚の工夫 II', 2, ['t3'], { shelf: 1 }, '陳列棚がもう1枠増える。', 2, 0.25],
+  ['t7', 'trade', 'おもてなし', 2, ['t3'], { clock: 4 }, '接客が手早くなり、1日に会えるお客さんが増える。', 3, 0.3],
+  ['t6', 'trade', '常連の信頼', 1, ['root'], { regpay: 0.3 }, '常連さんの頼みの報酬が3割増える。', 1, 0.9],
+  ['t_key', 'trade', '黄金の看板', 2, ['t7', 't6'], { fame: 0.15 }, '竜の財宝で看板を飾る。名声が上がりやすくなる。', 4, 0.6, 'r_hoard'],
+  ['e1', 'trade', '仕入れ上手', 1, ['root'], { buy: 0.1 }, '朝市と問屋の仕入れ値が1割安くなる(翌朝から)。', 1.5, 1.6],
+  ['e2', 'trade', '買い取り上手', 1, ['e1'], { haggle: 0.12 }, '持ち込みの「値切る」が決まりやすくなる。', 2.5, 1.6],
+  // 合流(両どなりの道の節から開く)
+  ['j_bc', 'join', '職人の食卓', 2, ['b3', 'c0'], { ownfood: 0.5 }, '体力と工房の合流。工房で作れる料理(自分で作った料理)を食べると、体力の戻りが1.5倍。', 5, 0, null, 0, ['body', 'craft']],
+  ['j_ca', 'join', '手入れの心得', 2, ['c_grace', 'a4'], { care: 1 }, '工房と探索の合流。工房で作れる武具(自分の店の武具)を持たせると、傷みが半分。', 5, 0, null, 0, ['craft', 'adv']],
+  ['j_af', 'join', '釣り飯', 2, ['a2', 'f1'], { fishfood: 1 }, '探索と釣りの合流。釣った魚(ぬし魚のほか)を道具袋に入れ、休む時・野営の携行食にできる。', 5, 0, null, 0, ['adv', 'fish']],
+  ['j_fx', 'join', '餌のつけ', 2, ['f3', 'x5'], { baitcoin: 1 }, '釣りとカジノの合流。釣りの餌をコインでも買える(1匹=1枚)。', 5, 0, null, 0, ['fish', 'cas']],
+  ['j_xt', 'join', '闘技場の評判', 2, ['x1', 't1'], { arfame: 1 }, 'カジノ・闘技場と店舗の合流。闘技場で勝ち抜いた次の日、店のお客さんが増える。', 5, 0, null, 0, ['cas', 'trade']],
+  ['j_tb', 'join', '看板の張り', 2, ['t1', 'b1'], { pump: 1 }, '店舗と体力の合流。昼の店で「強気で売る」が3回決まると、その夜の体力の最大+2。', 5, 0, null, 0, ['trade', 'body']],
 ].map(([id, br, n, cost, req, fx, t, d, l, key, ks, pair]) => ({ id, br, n, cost, req, fx, t, d, l, key: key || null, ks: !!ks, pair: pair || null }));
 const SKM = {}; SKN.forEach(s => SKM[s.id] = s);
 const SK_TOTAL = SKN.reduce((t, s) => t + s.cost, 0);
@@ -12342,7 +12389,23 @@ function spSources() {
     { k: 'master', n: '初めての傑作', v: crafts, d: '鍛冶・錬金・調理・筆写それぞれ1' },
     // v46: 肩書でスキルポイント (each title after the first). 自動プレイでは エンディングまでに +10(肩書11個)
     { k: 'title', n: '肩書', v: Math.max(0, Object.keys(G.titles || {}).length - 1), d: '肩書が変わるたびに1' },
+    // No.351: 釣り・カジノ・闘技場・温泉からも入る
+    { k: 'fish', n: '釣り', v: spFish(), d: '魚の図鑑 25・50・75・100匹で1ずつ・ぬし魚(川・湖・海)を初めて釣るたびに1' },
+    { k: 'cas', n: 'カジノの会員', v: spCas(), d: '銀の会員で2・金の会員で3' },
+    { k: 'arena', n: '闘技場', v: spArena(), d: '3連勝で1・5連勝(勝ち抜き)で2' },
+    { k: 'onsen', n: '温泉の話', v: spOnsen(), d: '湯の話を聞いた数が 1/4・1/2・全部で1ずつ' },
   ];
+}
+function spFish() {
+  const s = G.fsh; if (!s || !s.dex) return 0;
+  const n = Object.keys(s.dex).length;
+  return [25, 50, 75, 100].filter(k => n >= k).length + ['fsh_lord_river', 'fsh_lord_lake', 'fsh_lord_sea'].filter(id => s.dex[id]).length;
+}
+function spCas() { if (!G.casino || typeof casRankI !== 'function') return 0; const i = casRankI(); return (i >= 1 ? 2 : 0) + (i >= 2 ? 3 : 0); }
+function spArena() { const b = (G.arena && G.arena.best) || 0; return (b >= 3 ? 1 : 0) + (b >= 5 ? 2 : 0); }
+function spOnsen() {
+  const h = (G.onsen && G.onsen.heard) || 0, all = typeof ON_TALK !== 'undefined' ? ON_TALK.filter(c => !c.usual).length : 0; if (!h || !all) return 0;
+  return [0.25, 0.5, 1].filter(k => h >= Math.ceil(all * k)).length;
 }
 const spTotal = () => spSources().reduce((t, s) => t + s.v, 0);
 const spSpent = () => Object.keys(G.sk || {}).reduce((t, id) => t + (SKM[id] ? SKM[id].cost : 0), 0);
@@ -12389,24 +12452,22 @@ function skReset() {
   G.gold -= c; G.sk = { root: 1 }; G.skResetFree = false; skSync();
   return true;
 }
-// the old four skills (0-10 each) become nodes: 器用な手, then the craft's I/II/III by how far it had gone
+// the old four skills (0-10 each): No.351 から、盤を新しく始めて振り直し1回無料
 function skMigrate() {
   if (G.sk) return;
-  const old = Object.assign({ smith: 0, alch: 0, cook: 0, scribe: 0 }, G.skills || {});
-  G.sk = { root: 1 };
-  const free = () => spFree();
-  const any = Object.values(old).some(v => v > 0);
-  if (any && free() >= 1) G.sk.c0 = 1;
-  const pre = { smith: 'sm', alch: 'al', cook: 'co', scribe: 'sc' }, need = [3, 6, 10];
-  for (let lv = 0; lv < 3; lv++) for (const k of Object.keys(pre)) {
-    const id = pre[k] + (lv + 1);
-    if (old[k] >= need[lv] && (lv === 0 || G.sk[pre[k] + lv]) && free() >= SKM[id].cost) G.sk[id] = 1;
-  }
-  G.skResetFree = true;
+  G.sk = { root: 1 }; G.skResetFree = true; G.skVer = 2;
   skSync();
 }
+// No.351: 六つの道に作り変えた。前の節は全部消して、ポイントを全部戻す。振り直しは1回無料に戻す。鍵を開けたレアは開いたまま(鍵の節の id は同じ)
+const SK_VER = 2;
+function skMigrate6() {
+  if (!G.sk || G.skVer === SK_VER) return;
+  const had = Object.keys(G.sk).filter(id => id !== 'root').length;
+  G.sk = { root: 1 }; G.skResetFree = true; G.skVer = SK_VER; skSync();
+  if (had && G.tut < 0) setTimeout(() => { try { toast(`<div><div class="t1">スキル盤が新しくなりました</div>六つの道に作り変えました。習得していた節は戻し、ポイントを全部返しました(鍵を開けたレアは開いたまま)。店主のスキル盤で選び直して下さい</div>`, 'lv', 7000); } catch (e) { /* 起動の途中 */ } }, 800);
+}
 // the bot (and nothing else) spends its points along a fixed road: 体力 first, then the crafts
-const SK_BOT = ['b1', 'c0', 'b2', 'sm1', 'al1', 'b3', 'b4', 'co1', 'sc1', 't1', 'b5', 'b6', 'sm2', 'al2', 'co2', 'sc2', 'e1', 'a1', 'b_key', 'b7', 'sm3', 'al3', 'co3', 'sc3', 'c_crit', 'c_grace', 't2', 't3', 't6', 't5', 'e4', 'e5', 'a2', 'a4', 'j_cb', 'b_ks', 'c_fast', 'c_grace2', 'c_key', 'c_ks', 't4', 't7', 't_key', 't_ks', 'a3', 'a5', 'a6', 'a_key', 'a_ks', 'e2', 'e3', 'e_key', 'e_ks', 'j_ct', 'j_te', 'j_ea', 'j_ab'];
+const SK_BOT = ['b1', 'b2', 'c0', 'bf1', 'b3', 'bg1', 'c_crit', 'b5', 'c_grace', 't1', 'bf2', 'bg2', 'b4', 'c1', 'ctw', 'j_bc', 'j_tb', 't3', 'a4', 'a1', 'e1', 'b_key', 'c_grace2', 'b_ks', 'c_key', 'c_ks', 't6', 't5', 'tb2', 'e3', 'e_key', 'e_ks', 't4', 't7', 't_key', 't_ks', 'a2', 'ai1', 'a3', 'a5', 'a6', 'ar', 'a_key', 'a_ks', 'af', 'ai2', 'j_ca', 'e2', 'f1', 'fe', 'f3', 'fb', 'fj', 'f2', 'f4', 'fs', 'f_ks', 'j_af', 'x1', 'x5', 'x3', 'x2', 'x4', 'x6', 'x7', 'x8', 'x_ks', 'j_fx', 'j_xt'];
 function skAutoLearn() { let n = 0; for (let k = 0; k < 80; k++) { const id = SK_BOT.find(x => !skHas(x) && !skWhy(SKM[x])); if (!id) break; skLearn(id); n++; } return n; }
 // 一度の余裕: a failed minigame turns into a success (once or twice a night)
 const graceLeft = () => Math.max(0, pk('grace') - (G.graceN || 0));
@@ -12419,13 +12480,13 @@ function skPos(s) {
   let a;
   if (s.br === 'join') { const [b1, b2] = s.pair; let x = SK_BR[b1].a, y = SK_BR[b2].a; if (y < x) y += 360; if (y - x > 180) x += 360; a = (x + y) / 2; }
   else a = SK_BR[s.br].a;
-  const r = a * Math.PI / 180, R = 58, W = 44;
-  return [Math.cos(r) * s.d * R - Math.sin(r) * s.l * W, Math.sin(r) * s.d * R + Math.cos(r) * s.l * W];
+  const r = a * Math.PI / 180, R = 58, W = 44, dd = s.br === 'join' ? s.d : s.d + 1;
+  return [Math.cos(r) * dd * R - Math.sin(r) * s.l * W, Math.sin(r) * dd * R + Math.cos(r) * s.l * W];
 }
 function skState(s) { const w = skWhy(s); return w === 'learned' ? 'on' : !w ? 'can' : skOpen() && skReachable(s) ? 'near' : 'off'; }
 function skBoard() {
   const pts = SKN.map(s => [s, skPos(s)]);
-  const lab = Object.entries(SK_BR).filter(([k]) => k !== 'join').map(([k, b]) => { const r = b.a * Math.PI / 180, d = k === 'craft' ? 9.1 : k === 'body' ? 8 : 7.1; return [k, b, Math.cos(r) * d * 58, Math.sin(r) * d * 58]; });
+  const lab = Object.entries(SK_BR).filter(([k]) => k !== 'join').map(([k, b]) => { const r = b.a * Math.PI / 180, d = Math.max(...SKN.filter(s => s.br === k).map(s => s.d)) + 2.6; return [k, b, Math.cos(r) * d * 58, Math.sin(r) * d * 58]; });
   const xs = pts.map(p => p[1][0]).concat(lab.map(l => l[2] - 40), lab.map(l => l[2] + 40)), ys = pts.map(p => p[1][1]).concat(lab.map(l => l[3] - 38), lab.map(l => l[3] + 8));
   const Rm = Math.max(...pts.map(p => Math.hypot(p[1][0], p[1][1]))) + 10;   // クラウド: the magic circle under the board, as big as the board (the board grows to show all of it)
   xs.push(-Rm - 56, Rm + 56); ys.push(-Rm - 56, Rm + 56);
@@ -12473,7 +12534,7 @@ function vSkills() {
   const free = spFree(), all = SKN.length - 1, got = Object.keys(G.sk || {}).length - 1;
   let h = `<div class="sec" data-sec="スキル盤"><h2>スキル盤<span class="aside">${got}/${all}節・残り <b class="price">${free}</b> ポイント</span></h2>`;
   if (!skOpen()) return h + `<p class="note">Lv${SK_OPEN_LV}になると、スキル盤が開く。</p></div>`;
-  h += `<p class="note" style="font-size:12.5px">真ん中から五つの道がのびている。習得した節のとなりから選べる。◆は鍵の節(探索のレアをひとつ差し出す)、⬢は遊び方が変わる要の節。</p>`;
+  h += `<p class="note" style="font-size:12.5px">真ん中から六つの道がのびている。習得した節のとなりから選べる。◆は鍵の節(探索のレアをひとつ差し出す)、⬢は遊び方が変わる要の節。</p>`;
   const view = UI.skView || 'board';   // v54q: スマホも盤から
   h += `<div class="chips"><button class="chip${view === 'board' ? ' on' : ''}" data-act="skview" data-v="board">盤で見る</button><button class="chip${view === 'list' ? ' on' : ''}" data-act="skview" data-v="list">道ごとに見る</button><button class="chip" data-act="skpts">ポイントの入り方</button></div>`;
   h += view === 'board' ? skBoard() + `<p class="note" style="font-size:11.5px">節をタップすると説明と「習得」。</p>` : skList();
@@ -12491,7 +12552,7 @@ function skSheet(id) {
 }
 function skPtsSheet() {
   const xs = spSources();
-  openSheet(`${xBtn}<h2>スキルポイントの入り方</h2><p class="note">レベルのほかに、やり込むほどポイントが増える。全部集めれば、盤の節をほとんど取れる(盤は全部で${SK_TOTAL}ポイント)。</p><div class="rows">` +
+  openSheet(`${xBtn}<h2>スキルポイントの入り方</h2><p class="note">レベルのほかに、やり込むほどポイントが増える。全部集めれば、盤の節を全部取れる(盤は全部で${SK_TOTAL}ポイント)。</p><div class="rows">` +
     xs.map(x => `<div class="ri" style="grid-template-columns:minmax(0,1fr) auto"><div><div class="t">${x.n}</div><div class="sub">${x.d}</div></div><b class="num">${x.v}</b></div>`).join('') +
     `<div class="ri" style="grid-template-columns:minmax(0,1fr) auto"><div class="t">合計(使った ${spSpent()})</div><b class="num price">${spTotal()}</b></div></div>`, { crumb: ['店主', 'スキル盤', 'ポイント'] });
 }
@@ -16238,7 +16299,7 @@ function vWork(off) {
     h += `<div class="cfold-bar">${innerWidth <= 560 ? '' : '<p class="note cfold">上の鍛冶・錬金などを押すと、レシピの一覧が閉じる。</p>'}${innerWidth <= 560 ? `<button class="btn sm ghost${UI.onlyOk ? ' on' : ''}" data-act="onlyok" aria-pressed="${!!UI.onlyOk}">作れるだけ</button>` : ''}${sortChips}</div>`; }
   if (!recs.length) h += `<p class="note">${UI.craftCat === 'appraise' ? '鑑定できる品がない。お客さんが「謎の品」を持ち込むことがある。探索でぬしの奥まで行くと「封印された箱」が手に入り、ここで開けられる。' : UI.onlyOk ? '今ある素材で作れるものはない。' : 'まだ覚えたレシピがない。'}</p>`;
   const card = r => {
-    const ok = hasInputs(r) && G.work >= craftTime(r), ms = mastery(r), nr = nrank(r);
+    const ok = hasInputs(r) && workOk(craftTime(r)), ms = mastery(r), nr = nrank(r);
     return `<button class="rec${ok ? '' : ' no'}" data-act="rec" data-id="${r.id}">${recIcon(r)}<span style="min-width:0"><span class="t">${recName(r)}${r.n > 1 ? `<span class="sub">×${r.n}</span>` : ''}${nr === 2 ? '<span class="qtag need">建設</span>' : nr === 1 ? '<span class="qtag ord">注文</span>' : ''}${r.out === hotId ? '<span class="qtag hot">特需</span>' : ''}${isMend(r) ? '<span class="qtag rep">修理</span>' : ''}</span><span class="ins">` +
       r.ins.map(([id, q]) => `<span class="in${invCount(id) < q ? ' lack' : ''}">${ico(id, null, { size: 'xs', sil: G.found[id] === undefined })}${invCount(id)}/${q}</span>`).join('') + `</span>${recMoney(r)}</span>` +
       `<span class="tb">作業${craftTime(r)}${ms ? `<br><span class="stars">${'★'.repeat(ms)}</span>` : ''}</span></button>`;
@@ -16913,7 +16974,7 @@ function recipeSheet(rid, nav) {
   const r = RC[rid]; if (!r) return;
   UI.sheetCur = { t: 'rec', id: rid };
   const f = G.found[r.out];
-  const ok = hasInputs(r) && G.work >= craftTime(r);
+  const ok = hasInputs(r) && workOk(craftTime(r));
   const made = G.made[r.id] || 0, ms = mastery(r), mx = maxCraftable(r);
   const n = Math.max(1, Math.min(UI.batchN[rid] || 1, mx)); UI.batchN[rid] = n;   // 2026-10-29 作者: おまかせは1個から(全部作ってしまわないように)
   let h = `${xBtn}<div class="lead">${r.appraise ? ico(r.appraise, null, { size: 'lg' }) : ico(r.out, f === undefined ? null : f, { size: 'lg', sil: f === undefined && !r.repair })}` +
@@ -16942,7 +17003,7 @@ function recipeSheet(rid, nav) {
         `<button class="btn" data-act="auto" data-id="${rid}"${mx ? '' : ' disabled'}>${mx ? n : 0}個 おまかせで作る</button></div>`;
     } else h += `<p class="note" style="font-size:12.5px">一度${mgOn(r) ? 'ミニゲーム' : 'ゲージ'}で作ると、おまかせ(普通の品)で量産できるようになる。</p>`;
   }
-  if (!ok) h += `<p class="note bad">${!inWork() ? '工房で作れるのは夜(店を閉めてから)。' : G.work < craftTime(r) ? '今夜の作業力が足りない。' : '素材が足りない。'}</p>`;
+  if (!ok) h += `<p class="note bad">${!inWork() ? '工房で作れるのは夜(店を閉めてから)。' : !workOk(craftTime(r)) ? '今夜の作業力が足りない。' : '素材が足りない。'}</p>`;
   h += `</div>`;
   openSheet(h, { nav: nav || (UI.sheetHist && UI.sheetHist.length), cur: UI.sheetCur, crumb: recCrumb(r) });
   UI.sheetRec = rid;
@@ -16953,7 +17014,7 @@ function recipeSheet(rid, nav) {
 const GSPEED = { smith: 0.98, alch: 0.7, cook: 0.5, scribe: 0.48 }; // 1.2x of v24
 function gaugeMult() { return G.tut >= 0 ? 0.6 : G.gspeed === 'normal' ? 1 : 0.72; }
 function startGauge(rid) {
-  const r = RC[rid]; if (!r || !hasInputs(r) || G.work < craftTime(r)) return;
+  const r = RC[rid]; if (!r || !hasInputs(r) || !workOk(craftTime(r))) return;
   closeSheet(true);
   UI.gauge = { r, z: zones(r), pos: 0, dir: 1, started: false, stopped: false, base: recCenter(r), center: recCenter(r), raf: 0 };
   const v = document.createElement('div'); v.className = 'veil'; v.id = 'gveil';
@@ -16972,7 +17033,7 @@ function startGauge(rid) {
 }
 function focusPips() {
   const f = G.focus || 0;
-  return `<div class="gfocus" id="gfocus" title="会心を${FOCUS_N}回ためると体力が1戻る(失敗でリセット)">集中${Array.from({ length: FOCUS_N }, (_, i) => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</div>`;
+  return `<div class="gfocus" id="gfocus" title="${pk('streak') ? `手で作った成功が4回続くと体力が${pk('streak')}戻る(失敗でリセット)` : `会心を${FOCUS_N}回ためると体力が1戻る(失敗でリセット)`}">${pk('streak') ? '好調' : '集中'}${Array.from({ length: focusN() }, (_, i) => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</div>`;
 }
 function gaugeTap() {
   const g = UI.gauge; if (!g || g.stopped) return;
@@ -17039,7 +17100,7 @@ function showGaugeResult(res, why) {
   const g = UI.gauge; if (!g) return;
   const r = g.r, foot = $('#gfoot'); if (!foot || !res) { closeGauge(); return; }
   const lbl = res.fail ? '失敗…' : res.plain ? '完成!' : QUAL[res.q].n + (res.q === 3 ? '!!' : res.q >= 1 ? '!' : '');
-  const again = hasInputs(r) && G.work >= craftTime(r);
+  const again = hasInputs(r) && workOk(craftTime(r));
   const failMsg = res.fail ? (res.lost ? `<div class="bad">素材がだめになってしまった…</div><div>${IT[res.id].name}${res.first ? ' <span class="qtag q3">新発見</span>' : ''}</div>` : `<div>体力-1。素材は無事だ。もう一度挑もう。</div>`) : '';
   const whyL = res.fail && why ? `<div class="sub">${why}</div>` : '';
   foot.innerHTML = `<div class="gres"><div class="pop">${ico(res.id, res.fail ? null : res.q, { size: 'xl', sil: res.fail && !res.lost })}</div>${res.crit ? '<div class="gcrit">会心!</div>' : ''}<div class="qbig ${res.fail ? 'fail' : 'q' + res.q}">${lbl}</div>${whyL}${failMsg}${res.fail ? '' : `<div>${IT[res.id].name}${res.n > 1 ? ' ×' + res.n : ''}${res.first ? ' <span class="qtag q3">新発見</span>' : ''}</div>${res.inherit ? '<div class="okc" style="font-size:12.5px">材料の品質を引き継いだ</div>' : ''}`}${res.fail ? '' : `<div class="gval">1個 約<span class="price">${fmt(Math.round(fairPrice(IT[res.id], res.q)))}G</span>${res.q ? `(普通の${QUAL[res.q].mult}倍)` : res.plain ? '(素材なので品質はない)' : ''}${hotNow(res.id) || (G.hot && G.hot.id === res.id && G.hot.day === G.day + 1) ? '・明日は特需で4割高' : ''}</div>`}${res.refill ? '<div class="grefill">集中!体力+1</div>' : ''}<div class="sub">残りの体力 ${G.work}</div>` +
@@ -19063,7 +19124,7 @@ const mgRand = r => !r.appraise && G.mgMode !== 'craft' && !(G.mgMode == null &&
 function startCraftGame(rid) {
   const r = RC[rid]; if (!r) return;
   if (!mgOn(r)) { if (r.appraise) return appraiseNow(rid); return startGauge(rid); }   // v54k: 修理もミニゲームで(鍛冶)
-  if (!hasInputs(r) || G.work < (r.appraise ? 1 : craftTime(r))) return;
+  if (!hasInputs(r) || !workOk(r.appraise ? 1 : craftTime(r))) return;
   if (mgRand(r)) return startRandGame(r);
   closeSheet(true);
   const P = mgParams(r), M = MG[r.craft], first = !(G.mgSeen || {})[r.craft];
@@ -19297,6 +19358,7 @@ function craftResolve(g, hit, pos, top) {
   // v36: 一度の余裕 — a miss becomes a success once (or twice) a night
   if (hit === 'fail' && G.tut < 0 && graceUse()) { hit = 'ok'; g.why = '余裕で持ち直した(一度の余裕)'; }
   const res = hit === 'fail' ? failCraft(g.r) : doCraft(g.r, rollQuality(g.r, hit === 'crit', false), false, hit === 'crit');
+  if (res && !g.why) g.why = res.grit ? '踏ん張った。体力は減らない(踏ん張り)' : res.twin ? `会心で、同じ品がもう${res.twin}つできた(会心の二つ取り)` : res.gasp ? '最後のひと踏ん張りで作りきった' : g.why;   // No.351
   const q = res && !res.fail ? res.q : -1;
   if (g.mg !== 'mg2') gaugeBurst(hit, pos, noQual(g.r.out), top); // mg2 has its own 判子 and sparks
   if (hit === 'crit') { sfx('crit'); if (navigator.vibrate && !mgCalm()) try { navigator.vibrate([18, 40, 28]); } catch (e) { } }
@@ -21890,12 +21952,12 @@ const TUT = [
     text: () => isPhone() ? 'レベルが上がって、スキルポイントが入りましたね。下のバーの「ホーム」から「店主」を開いてみましょう。' : 'レベルが上がって、スキルポイントが入りましたね。「店主」を開いてみましょう。',
     skip: () => !skOpen() || skHas('b1') || spFree() < 1, done: () => UI.tab === 'owner' },
   { day: 1, at: 'work', any: true, sel: () => UI.sheet ? '#veil [data-act=sklearn]' : UI.tab !== 'owner' ? tabSel('owner') : '[data-act=sknode][data-id=b1]',
-    text: () => UI.sheet ? '「習得」を押しましょう。' : 'これがスキル盤です。真ん中から五つの道がのびていて、習得した節のとなりから選べます。まずは「体の道」の「体力 I」をタップしましょう。',
+    text: () => UI.sheet ? '「習得」を押しましょう。' : 'これがスキル盤です。真ん中から六つの道がのびていて、習得した節のとなりから選べます。まずは「体の道」の「朝の体操」をタップしましょう。',
     skip: () => !skOpen() || (spFree() < 1 && !skHas('b1')), done: () => skHas('b1') },
   { day: 1, at: 'work', any: true, sel: () => UI.tab === 'owner' ? '[data-act=skpts]' : '#daytag', next: 'なるほど', ex: 'smile', skip: () => !skHas('b1'),
-    text: '体力の最大が1増えました! スキルポイントは、レベルが上がる・肩書が変わる・探索で珍しい物を初めて見つける・常連さんの物語を見届ける、などで入ります。くわしくは「ポイントの入り方」で見られますよ。' },
+    text: '体力の最大が2増えました! スキルポイントは、レベルが上がる・肩書が変わる・探索で珍しい物を初めて見つける・常連さんの物語を見届ける、などで入ります。くわしくは「ポイントの入り方」で見られますよ。' },
   { day: 1, at: 'work', any: true, sel: () => UI.tab === 'owner' ? '.sec[data-sec=スキル盤] h2' : '#daytag', next: 'わかった', ex: 'smile', skip: () => !skHas('b1'),
-    text: 'ほかにも、ミニゲームや品質の「職人の道」、売り値や常連さんの「商いの道」、仕入れや鑑定の「目利きの道」、探索の「冒険の道」があります。どれを伸ばすかは、お好みでどうぞ。' },
+    text: 'ほかにも、ミニゲームの「工房の道」、売り値や常連さんの「店舗経営の道」、探索の「冒険者探索の道」、「釣りの道」、「カジノ・闘技場の道」があります。どれを伸ばすかは、お好みでどうぞ。' },
   { day: 1, at: 'work', sel: '#fab .btn', text: '今夜はここまでにしましょう。ほかにすることがなければ、いちばん下のボタンで眠れば、翌朝です。', ex: 'smile',
     done: () => G.day >= 2 },
   { day: 2, at: 'market', sel: () => UI.sheet ? '#veil [data-act=regpay]' : (matchMedia('(min-width: 960px)').matches ? '#side' : '#panel') + ' [data-act=deliver]',
@@ -26927,7 +26989,7 @@ const AR_MC = {
   cash: ['賢い客だ。またおいで', '勝ち逃げも、立派な腕さ'],
 };
 const arPick = a => a[Math.floor(Math.random() * a.length)];
-const arCap = () => [300, 300, 300, 600, 1000][Math.min(4, G.stage)];   // 1日に賭けられる上限(章で)
+const arCap = () => [300, 300, 300, 600, 1000][Math.min(4, G.stage)] * (pk('arcap') ? 2 : 1);   // No.351 闘技場の常連: 2倍   // 1日に賭けられる上限(章で)
 const arIsNight = () => G.act === 'work' || G.phase === 'night';   // No.223 (作者): 闘技場は夜だけ
 const arDone = () => !!(G.arena && G.arena.endDay === G.day);   // No.222: 今夜の興行が終わったか(5試合目まで見た・席を立った)
 const arLeft = () => Math.max(0, arCap() - (G.arena && G.arena.sday === G.day ? G.arena.spent || 0 : 0));   // 今夜まだ賭けられる額
@@ -27026,7 +27088,7 @@ function arFighterCard(i) {
     `<div class="ar-cardin"><div class="ar-nm">${arTyBadge(f.ty)}<b>${esc(f.n)}</b><small>「${esc(f.ni)}」</small></div>` +
     `<div class="ar-hp"><i style="width:${Math.round(hp / st.hp * 100)}%"></i></div><div class="ar-sub">${hp < st.hp ? `傷あり・体力 ${Math.round(hp / st.hp * 100)}%` : '体力 十分'}${b.wins[i] ? `・今夜${b.wins[i]}勝` : i === 0 && ARN.run.round === 0 ? '' : ''}</div>` +
     `<div class="ar-sub">${edge}${rec ? `<span class="ar-rec">通算${rec}勝</span>` : ''}</div>` +
-    `<div class="ar-odds">倍率 <b>×${b.m[i].toFixed(1)}</b></div></div></button>`;
+    `<div class="ar-odds">倍率 <b>×${b.m[i].toFixed(1)}</b>${pk('arread') && (i ? 1 - b.p : b.p) * b.m[i] >= 1.15 ? ' <span class="ar-edge up">狙い目</span>' : ''}</div></div></button>`;
 }
 function arBetView(first) {
   const R = ARN.run, b = R.bout, P = $('#arpanel'), S = $('#arstage'); R.state = 'bet';
@@ -27200,7 +27262,11 @@ async function arFight() {
   if (R.n >= AR_MAX) { G.arena.champ = G.arena.champ || {}; G.arena.champ[b.f[w].id] = (G.arena.champ[b.f[w].id] || 0) + 1; }
   if (!stake) { R.state = 'watched'; save(); sfx(hit ? 'good' : 'hit'); arWatched(hit); }
   else if (hit) { R.pot = Math.min(R.cbet * 15, Math.round(stake * b.m[b.pick])); R.round++; R.state = 'won'; G.arenaRun = { day: G.day, pot: R.pot }; G.arena.best = Math.max(G.arena.best || 0, R.round); save(); sfx('ar_win'); arDecide(false); }
-  else { R.pot = 0; R.round = 0; R.state = 'lost'; G.arenaRun = null; save(); sfx('ar_lose'); arLost(stake); }
+  else {
+    // No.351 負けの保険: 一晩に1回、外れても賭け金の半分が戻る
+    if (pk('arins') && G.arena.insDay !== G.day && R.cbet > 0) { const back = Math.round(R.cbet / 2); G.arena.insDay = G.day; G.gold += back; setTimeout(() => toast(`<div>負けの保険: 賭け金の半分 ${fmt(back)}G が戻った</div>`), 1200); }
+    R.pot = 0; R.round = 0; R.state = 'lost'; G.arenaRun = null; save(); sfx('ar_lose'); arLost(stake);
+  }
 }
 // ---------- 結果(No.222: 興行は5試合目まで続く) ----------
 const arMcH = (txt, ex) => `<div class="ar-mc"><img src="${chURL('dahlia', ex || 'smile')}" alt="ダリア"><div><b>ダリア</b><p>${esc(txt)}</p></div></div>`;
@@ -27222,7 +27288,9 @@ function arDecide() {
   flyCoins(1);
 }
 function arCash(five) {
-  const R = ARN.run, got = R.pot; if (!got) return;
+  const R = ARN.run; let got = R.pot; if (!got) return;
+  if (five && pk('arfive')) got += R.cbet;   // No.351 勝ち抜きの祝儀
+  if (five) { G.arena = G.arena || {}; G.arena.fameDay = G.day + 1; }   // No.351 闘技場の評判(次の日)
   G.gold += got; G.stats.earned += Math.max(0, got - R.cbet); if (G.today) G.today.earned += Math.max(0, got - R.cbet);
   G.arena = Object.assign(G.arena || {}, {}); G.arena.wins = (G.arena.wins || 0) + 1; if (five) G.arena.five = (G.arena.five || 0) + 1;
   G.arenaRun = null; const rd = R.round; R.pot = 0; R.round = 0; R.state = 'cashed'; save();
@@ -27532,7 +27600,10 @@ function casinoOpen() {
 function casEnter() {
   if (CAS.on) return;
   const c = casSt();
-  if (c.lastNight !== G.day) { c.lastNight = G.day; c.nights++; }
+  if (c.lastNight !== G.day) {
+    c.lastNight = G.day; c.nights++;
+    if (pk('tip')) { const t = ((G.stage || 0) + 1) * 5; c.coins += t; setTimeout(() => toast(`<div>ロザ「今夜の心づけだよ」コイン +${t}枚(夜の顔役)</div>`), 700); }   // No.351 夜の顔役
+  }
   const el = document.createElement('div'); el.id = 'casscene'; el.className = 'ar-scene cas-scene';
   el.innerHTML = `<div class="ar-bg cas-bg" id="casbg" style="background-image:url(${IMG_BASE}bg_club_in.webp)"></div><div class="ar-vig"></div>` +
     `<div class="cas-top"><div class="cas-where"><b>港のクラブ</b><small id="cassub"></small></div><div class="cas-bar" id="casbar"></div><button class="cas-x" data-act="cs_back" id="casx">帰る</button></div>` +
@@ -27634,22 +27705,31 @@ function casHallView() {
 function casBuyView() {
   const opts = [50, 100, 500, 1000, 5000];
   return `<div class="cas-pane">${casSay('madame', 'normal', `コインは一枚${CAS_PRICE}G。……一度コインにしたら、Gには戻らないよ`)}` +
-    `<div class="cas-buys">${opts.map(n => `<button class="cas-mb" data-act="cs_buy" data-v="${n}"${G.gold >= n * CAS_PRICE ? '' : ' disabled'}><img src="${casImg('sym_coin')}" alt=""><span><b>${fmt(n)}枚</b><small>${fmt(n * CAS_PRICE)}G</small></span></button>`).join('')}</div>` +
+    `<div class="cas-buys">${opts.map(n => `<button class="cas-mb" data-act="cs_buy" data-v="${n}"${G.gold >= n * CAS_PRICE ? '' : ' disabled'}><img src="${casImg('sym_coin')}" alt=""><span><b>${fmt(n)}枚${casXchg(n) ? `<em>+${fmt(casXchg(n))}</em>` : ''}</b><small>${fmt(n * CAS_PRICE)}G</small></span></button>`).join('')}</div>` +
     `<p class="cas-rec">所持金 ${fmt(G.gold)}G・コイン ${fmt(casSt().coins)}枚</p></div>`;
+}
+// No.351 両替の顔(100枚ごとのおまけ)・景品の目(一晩に1つ1割引)・卓の礼儀(一晩に1回、負けた賭けが戻る)
+const casXchg = n => Math.floor(n / 100) * pk('xchg');
+const casPrizeCut = () => pk('prizecut') > 0 && casSt().cutDay !== G.day;
+const casPrizeCost = p => casPrizeCut() ? Math.ceil(p.c * 0.9) : p.c;
+function casTableGrace(n) {
+  const c = casSt(); if (!pk('tablegrace') || c.tgDay === G.day || !(n > 0)) return 0;
+  c.tgDay = G.day; c.coins += n; setTimeout(() => toast(`<div>卓の礼儀: 負けた賭け ${fmt(n)}枚が戻った</div>`), 500); return n;
 }
 function casPrizeView() {
   const c = casSt();
   const rows = casPrizes().map(p => {
-    const it = IT[p.id], done = p.once && c.got[p.id], ok = !done && c.coins >= p.c;
+    const it = IT[p.id], done = p.once && c.got[p.id], cost = casPrizeCost(p), ok = !done && c.coins >= cost;
     return `<div class="cas-prize${p.hot ? ' hot' : ''}">${ico(p.id, p.q)}<div class="cas-pz-t"><b>${it.name}</b><small>${p.hot ? '<em>目玉・ひとつだけ</em> ' : ''}${esc(it.desc || '')}</small></div>` +
-      `<button class="cas-pzb${p.hot ? ' hot' : ''}" data-act="cs_prize" data-v="${p.id}"${ok ? '' : ' disabled'}>${done ? '交換済み' : `<img src="${casImg('sym_coin')}" alt="">${fmt(p.c)}`}</button></div>`;
+      `<button class="cas-pzb${p.hot ? ' hot' : ''}" data-act="cs_prize" data-v="${p.id}"${ok ? '' : ' disabled'}>${done ? '交換済み' : `<img src="${casImg('sym_coin')}" alt="">${fmt(cost)}`}</button></div>`;
   }).join('');
   return `<div class="cas-pane">${casSay('madame', 'smile', 'ここにあるのは、よそじゃ手に入らない品ばかりさ。換えた品は店の蔵に送っておく')}<div class="cas-prizes">${rows}</div></div>`;
 }
 function casPrize(id) {
   const c = casSt(), p = casPrizes().find(x => x.id === id); if (!p) return;
-  if ((p.once && c.got[id]) || c.coins < p.c) return;
-  c.coins -= p.c; if (p.once) c.got[id] = 1;
+  const cost = casPrizeCost(p); if ((p.once && c.got[id]) || c.coins < cost) return;
+  if (cost < p.c) c.cutDay = G.day;
+  c.coins -= cost; if (p.once) c.got[id] = 1;
   invAdd(id, p.q, 1); sfx('found'); toast(`<div>${IT[id].name}と交換した(蔵へ)</div>`);
   save(); casDraw();
 }
@@ -28204,7 +28284,7 @@ async function casBjSettle() {
     const got = Math.floor(h.bet * r); back += got; net += got - h.bet;
     h.res = r === 2.5 ? `ブラックジャック +${fmt(got - h.bet)}` : r === 2 ? `勝ち +${fmt(h.bet)}` : r === 1 ? '引き分け' : '負け';
   }
-  c.coins += back; if (net > 0) casWinRecord(net);
+  c.coins += back; if (net > 0) casWinRecord(net); else if (net < 0) casTableGrace(-net);
   B.state = 'bet'; CAS.anim = false;
   const pBJ = B.hands.length === 1 && bjBJ(B.hands[0].c);
   B.face = net > 0 ? (pBJ ? 'surprise' : 'trouble') : net < 0 ? 'smile' : 'normal';
@@ -28235,7 +28315,7 @@ function casAct(a, v) {
   if (CAS.anim) return;
   if (a === 'cs_mach') { const s = casSt().slot, i = +v, S = casSl(); if (!SL_MACH[i] || SL_MACH[i].rank > casRankI() || (S && S.busy) || ((s.kaku || s.carry || s.free || s.replay) && i !== casMachI())) return; casAutoSet('off'); s.mach = i; CAS.sl = null; sfx('tap'); save(); casDraw(); return; }
   if (a === 'cs_go') { CAS.view = v; if (v === 'book') CAS.book = null; if (v === 'slot') CAS.sl = null; sfx('tap'); casDraw(); return; }
-  if (a === 'cs_buy') { const n = +v, g = n * CAS_PRICE; if (G.gold < g) return; G.gold -= g; casSt().coins += n; sfx('ar_bet'); save(); casDraw(); casPopWin(n); return; }
+  if (a === 'cs_buy') { const n = +v, g = n * CAS_PRICE; if (G.gold < g) return; G.gold -= g; casSt().coins += n + casXchg(n); sfx('ar_bet'); save(); casDraw(); casPopWin(n); return; }
   if (a === 'cs_prize') { casPrize(v); return; }
   if (a === 'cs_book') { CAS.book = v; sfx('tab'); casDraw(); return; }
   if (a === 'cs_auto') { casAutoSet(v); return; }
@@ -28368,7 +28448,7 @@ async function casPk(a) {
     for (let i = 0; i < 5; i++) if (!P.hold[i]) { await casWait(200); P.hand[i] = P.deck.pop(); P.nw = i; sfx('cas_deal'); casDraw(); }
     await casWait(300); CAS.anim = false;
     const r = pkEval(P.hand); P.role = r;
-    if (r < 0) { P.state = 'bet'; P.face = 'smile'; P.msg = '役なし。わたしの勝ちです'; sfx('mg_miss'); save(); casDraw(); return; }
+    if (r < 0) { casTableGrace(P.bet); P.state = 'bet'; P.face = 'smile'; P.msg = '役なし。わたしの勝ちです'; sfx('mg_miss'); save(); casDraw(); return; }
     P.won = P.bet * PK_ROLES[r][1]; P.state = 'win'; P.face = r <= 3 ? 'surprise' : r <= 6 ? 'trouble' : 'normal';
     P.msg = r <= 3 ? `${PK_ROLES[r][0]}……!` : `${PK_ROLES[r][0]}です`;
     sfx(r <= 3 ? 'great' : 'cas_win'); if (r <= 3) casFlash('#fff2c0'); casDraw(); return;
@@ -28420,7 +28500,7 @@ async function casHl(a) {
     H.step++; H.stake *= 2; sfx(H.step >= 3 ? 'great' : 'cas_win'); if (H.step >= 3) casFlash('#fff2c0');
     H.face = H.step >= 3 ? 'surprise' : 'trouble'; H.msg = `当たり。${fmt(H.stake)}枚`;
     if (H.step >= HL_MAX) { H.msg = `${HL_MAX}回連続……打ち止めです`; casDraw(); await casWait(900); CAS.anim = false; return hlEnd(true); }
-  } else { H.face = 'smile'; H.msg = 'はずれ。わたしの勝ちです'; sfx('mg_miss'); H.stake = 0; CAS.anim = false; return hlEnd(false); }
+  } else { H.face = 'smile'; H.msg = 'はずれ。わたしの勝ちです'; sfx('mg_miss'); H.stake = 0; casTableGrace(H.base); CAS.anim = false; return hlEnd(false); }
   CAS.anim = false; H.cur = H.next; H.next = null; H.state = 'guess'; casDraw();
 }
 function hlEnd(take) {
@@ -28466,7 +28546,7 @@ async function casBc(a) {
   const net = back - B.bet; CAS.anim = false; B.state = 'bet';
   B.msg = (B.res === 't' ? `タイ。${P}と${K}` : `${BC_N[B.res]}の勝ち。${Math.max(P, K)}対${Math.min(P, K)}`) + (net > 0 ? '……お見事' : net < 0 ? '' : '。お返しします');
   B.face = net > 0 ? (B.res === 't' ? 'surprise' : 'trouble') : net < 0 ? 'smile' : 'normal';
-  if (net > 0) ccWin(back, net); else { if (back) c.coins += back; sfx(net < 0 ? 'mg_miss' : 'tap'); save(); casRefreshBar(); }
+  if (net > 0) ccWin(back, net); else { if (back) c.coins += back; if (net < 0) casTableGrace(-net); sfx(net < 0 ? 'mg_miss' : 'tap'); save(); casRefreshBar(); }
   casDraw();
 }
 async function bcSqueeze(B, k, card) {   // 3枚目は伏せて置き、じわっとめくる(見せ場)
@@ -28594,7 +28674,7 @@ const onTonight = () => { const s = G.onsen; return s && s.tonight && s.tonight.
 function onBath() {
   if (onWhy() || UI.story) return;
   const s = onSt(), before = G.work;
-  G.gold -= onPrice(); s.bathed = G.day; G.work = workMax();   // 作者: 全回復。工房の前でも後でも
+  G.gold -= onPrice(); if (s.bathed !== G.day) s.prev = s.bathed; s.bathed = G.day; G.work = workMax();   // 作者: 全回復。工房の前でも後でも
   const gain = G.work - before;
   const c = onPick(onKinds(), s.last);
   s.tonight = null;
@@ -31043,6 +31123,7 @@ function fixLoaded() {
   titleCheck(true);
   checkStage();   // v39: the chapter rule changed (buildings + boss); an old save may already qualify
   skMigrate();   // v36: the old four skills become nodes on the skill board
+  skMigrate6();   // No.351: 六つの道に作り変えた
   if (G.rumors) { for (const rid of Object.keys(G.rumors)) { const r = RC[rid]; if (r && r.hidden && PAPER[r.out] && !G.hidden[rid]) grantPaper(r.out, '旅人の噂', '噂で聞いた材料を書き留めておいた紙。'); } G.rumors = {}; }
   if (!G.mkt || G.trend === undefined) initMarket();
   if (!G.today) G.today = { earned: 0, sold: 0, orders: 0, bought: 0, fame0: G.fame };
@@ -31226,6 +31307,7 @@ function boot(local, fresh) {
   window.addEventListener('pagehide', saveNow);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveNow(); });
   window.__game = {
+    skMigrate6, casSt, skSheet, workOk, isSnack, snackOf, bagUseB, fishPrice, arCap, casTableGrace, casXchg, casPrizeCost, onAfterglow, focusN, boldPump, skBoard, skList, SKM,
     get G() { return G; },
     jobResolve, fishRiverReady, SYNC, syncAll, act, render, sceneDraw, sceneWalkers, SCENE, IT, RC, RC_BY_OUT, RECIPES, ITEMS, BUILDINGS, STAGES, METALS, SHOP_LV, FX, UI,
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
