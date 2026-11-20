@@ -1030,6 +1030,7 @@ details[open] summary::after { content: '閉じる'; }
 .gmem .tag.ok { background: rgba(95, 210, 154, .15); color: #9fe0cf; } .gmem .tag.hurt { background: rgba(224, 96, 78, .18); color: #ffaaa0; } .gmem .tag.out { background: rgba(157, 140, 255, .18); color: #c8bdff; }
 .gslot { appearance: none; display: grid; justify-items: center; align-content: center; min-width: 36px; height: 36px; padding: 2px 4px; border-radius: 9px; border: 1px solid var(--line); background: rgba(0, 0, 0, .25); color: var(--mute); font: 600 10.5px var(--f-ui); cursor: pointer; }
 .gslot.empty { border-style: dashed; }
+.gslot.locked { border-style: dotted; opacity: .45; font-size: 11px; color: var(--ink-dim, #999); cursor: default; }   /* No.352 */
 .gslot.on { border-color: var(--brass-hi); box-shadow: 0 0 0 1px var(--brass-hi); }
 .gslot .ic.xs { width: 22px; height: 22px; }
 .gmem .gedit { grid-column: 1 / -1; }
@@ -10519,14 +10520,17 @@ const isWeapon = it => it && it.cat === 'equip' && !it.broken && (it.sub === '�
 const isArmor = it => it && it.cat === 'equip' && !it.broken && (it.sub === '防具' || it.gslot === 'a' || (it.gear && !it.gslot && it.sub !== '武器' && !!ARM_SH[gearKey(it)]));
 // No.346(3.7): 武器は2本(同じ種類は不可)・防具は3つ(同じ種類は不可)。古いセーブは wpn・arm だけ(残りは空)
 const WSL = ['wpn', 'wpn2'], ASL = ['arm', 'arm2', 'arm3'], GSL = WSL.concat(ASL);
-const slotsOf = k => k === 'wpn' ? WSL : k === 'arm' ? ASL : GSL;
+// No.352(作者「直して」2026-11-21): 枠はランクで開く。F・E=武器1・防具1/D・C=武器2・防具2/B から 武器2・防具3
+const slotN = m => { const r = (m && m.rk) || 0; return r <= 1 ? [1, 1] : r <= 3 ? [2, 2] : [2, 3]; };
+const slotOpenRank = s => ({ wpn: 0, arm: 0, wpn2: 2, arm2: 2, arm3: 4 })[s] || 0;
+const slotsOf = (k, m) => { const [w, a] = m ? slotN(m) : [2, 3], ws = WSL.slice(0, w), as = ASL.slice(0, a); return k === 'wpn' ? ws : k === 'arm' ? as : ws.concat(as); };
 const slotKind = s => s.startsWith('wpn') ? 'wpn' : 'arm';
-const gearsOf = (m, k) => slotsOf(k).map(s => m[s]).filter(Boolean);
+const gearsOf = (m, k) => slotsOf(k, m).map(s => m[s]).filter(Boolean);
 // the slot a piece would take: the same kind is not allowed twice (it replaces that one), else the first empty slot, else null
 function slotFor(m, it, avoid) {
   const k = isWeapon(it) ? 'wpn' : isArmor(it) ? 'arm' : null; if (!k) return null;
-  const same = slotsOf(k).find(s => s !== avoid && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(it));
-  return same || slotsOf(k).find(s => !m[s]) || null;
+  const same = slotsOf(k, m).find(s => s !== avoid && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(it));
+  return same || slotsOf(k, m).find(s => !m[s]) || null;
 }
 function gearFrac(it, q, a) {
   if (!it) return 0;
@@ -10750,6 +10754,8 @@ function ensureRoster() {
   G.bench = G.bench || [];
   // No.241: 新しく始めた時は 冒険者・戦士・狩人 の3人。ほかは「仲間を募集」で(前のセーブの名簿はそのまま)
   if (!G.roster.length && !G.bench.length) { G.roster.push(makeAdv(0, 'rookie')); G.roster.push(makeAdv(0, 'warrior')); G.roster.push(makeAdv(Math.min(1, rankMax()), 'hunter')); }
+  // No.352: まだ開いていない枠に持っている武具は倉庫へ(前のセーブ)
+  for (const m of G.roster) if (!advOut(m)) for (const s of GSL) if (m[s] && !slotsOf('all', m).includes(s)) unequipAdv(m.id, s);
   return G.roster;
 }
 const advById = id => (G.roster || []).find(m => m.id === id);
@@ -10784,7 +10790,7 @@ function advUnbench(id) {
 const advOut = m => !!(G.dive && G.dive.party.some(p => p.id === m.id));
 const advHurt = m => Math.max(0, (m.hurt || 0) - G.day);   // days left in bed
 const advReady = m => !advOut(m) && advHurt(m) === 0;
-const partyFee = (a, ms) => ms.reduce((t, m) => t + questFee(a, m.rk), 0);
+const partyFee = (a, ms) => Math.round(ms.reduce((t, m) => t + questFee(a, m.rk), 0) * FEE_K);
 // party size: damage is shared out, the haul grows a little
 const SPREAD = [1, 1, 0.56, 0.42], HAULX = [1, 1, 1.5, 1.85];
 // wear: every fight takes a little from weapon and armour; legendary pieces never wear out
@@ -10806,9 +10812,9 @@ const canWield = (m, it) => rankWields(m, it) && clsWields(m && m.cls, it);
 const wieldRank = it => Math.min(RANKS.length - 1, gearTier(it));
 // No.346: slot = 'wpn'・'wpn2'・'arm'・'arm2'・'arm3'。同じ種類の物を別の枠に持っていたら、それは倉庫へ戻す
 function equipAdv(mid, slot, id) {
-  const m = advById(mid); if (!m || advOut(m) || !GSL.includes(slot)) return false;
+  const m = advById(mid); if (!m || advOut(m) || !slotsOf('all', m).includes(slot)) return false;
   const ok = slotKind(slot) === 'wpn' ? isWeapon : isArmor; if (!ok(IT[id]) || spareCount(id) <= 0 || !canWield(m, IT[id])) return false;
-  for (const s of slotsOf(slotKind(slot))) if (s !== slot && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(IT[id])) unequipAdv(mid, s);
+  for (const s of slotsOf(slotKind(slot), m)) if (s !== slot && m[s] && IT[m[s].id] && gearKey(IT[m[s].id]) === gearKey(IT[id])) unequipAdv(mid, s);
   unequipAdv(mid, slot);
   const q = takeBest(id, 1)[0]; m[slot] = gearCopy({ id, q });
   return true;
@@ -10830,7 +10836,7 @@ function autoEquip(ids, a) {
   for (const id of ids) {
     const m = advById(id); if (!m || advOut(m)) continue;
     for (const k of ['wpn', 'arm']) {
-      const sl = slotsOf(k);
+      const sl = slotsOf(k, m);
       for (let pass = 0; pass < sl.length; pass++) {
         // the weakest (or empty) slot, and the best spare piece of a kind the others don't have
         const vs = sl.map(s => m[s] ? gearVal(IT[m[s].id], m[s].q) * (m[s].dur > 0 ? 1 : 0) : -1);
@@ -10922,7 +10928,8 @@ function bestGear(d, slot) { let best = null, bf = -1; const a = AR[d.area]; for
 function bagCount(d, pred) { return d.bag.reduce((t, b) => t + (pred(IT[b.id]) ? b.qs.length : 0), 0); }
 function dlog(d, text, cls) { d.log.push({ t: text, c: cls || '' }); if (d.log.length > 80) d.log.splice(0, d.log.length - 80); }
 function addHaul(d, id, n) { if (!IT[id] || n <= 0) return; if (Math.random() < mfx(d, 'haul')) n++; d.haul[id] = (d.haul[id] || 0) + n; }
-function lootQty(id, val) { const v = Math.max(1, IT[id].v); const n = val / v * rnd(0.7, 1.3); return n >= 1 ? Math.round(n) : (Math.random() < n ? 1 : 0); }
+const LOOT_K = 2.5, FEE_K = 0.6;   // No.352(作者「直して」2026-11-21): 持ち帰り ×2.5・送り出しの費用 ×0.6(記録_探索と経済の測り 6)
+function lootQty(id, val) { const v = Math.max(1, IT[id].v); const n = val * LOOT_K / v * rnd(0.7, 1.3); return n >= 1 ? Math.round(n) : (Math.random() < n ? 1 : 0); }
 const itemList = ids => ids.filter(id => IT[id]);
 const itName = g => g ? IT[g.id].name + (g.q ? `(${QUAL[g.q].n})` : '') : '';
 // how much of a blow the party's gear takes away (average over the members)
@@ -10937,11 +10944,11 @@ function blow(d, foe, boss) { return fightLoss(d, foe, boss ? 'boss' : foe.mid ?
 function expFight(d, big) { return blow(d, big ? MON[DG[d.area].boss] : { m: 1 }, big); }
 // wear on everyone's gear; a piece at 0 breaks (and goes home broken, if it can be mended)
 // No.346(作者了承 2026-11-18): 武具が1人5か所(武器2・防具3)に増えた分だけ軽くする。武器は1本あたり 1/2、防具は1つあたり 1/3
-const WEAR_K = { wpn: 1 / 2, arm: 1 / 3 };
+// No.352: 枠がランクで開くので、開いている枠の数で割る(武器1本なら1・防具2つなら1/2)
 function wear(d, kind, n) {
-  for (const m of d.party) for (const slot of slotsOf(kind)) {
+  for (const m of d.party) for (const slot of slotsOf(kind, m)) {
     const g = m[slot]; if (!g || g.max >= 999) continue;
-    g.dur = Math.round((g.dur - n * WEAR_K[kind] * (pk('care') && RC_BY_OUT[g.id] ? 0.5 : 1)) * 1000) / 1000;   // No.351 手入れの心得
+    g.dur = Math.round((g.dur - n / slotsOf(kind, m).length * (pk('care') && RC_BY_OUT[g.id] ? 0.5 : 1)) * 1000) / 1000;   // No.351 手入れの心得
     if (g.dur <= 0) {
       d.broke.push({ who: m.n, id: g.id, br: IT['broken_' + g.id] ? 'broken_' + g.id : null }); m[slot] = null;
       dlog(d, `${m.n}の${IT[g.id].name}が${slotKind(slot) === 'wpn' ? '折れて' : '壊れて'}しまった!`, 'bad');
@@ -12026,9 +12033,12 @@ function armVal(g) {
   const it = g && IT[g.id]; if (!it) return 0;
   return FT.AK * FT.ARM_K * (ARM_BASE[gearKey(it)] || 0.08) / 0.12 * ftK(gearGrade(it) + FT.GEAR_UP) * Math.pow(1.1, g.q || 0);
 }
+// No.352: 枠がランクで開く。枠が少ない間は1つの効きを大きく(防具の和×3/枠の数・武器1本なら♠♣の両方)
 function memSpec(m) {
-  const ws = WSL.map(s => m[s]).filter(g => g && IT[g.id]).map(wpnVal);
-  return { rk: m.rk || 0, cls: m.cls, w: [ws[0] || 0, ws[1] || 0], a: ASL.map(s => m[s]).filter(g => g && IT[g.id]).reduce((t, g) => t + armVal(g), 0) };
+  const wsl = typeof slotsOf === 'function' ? slotsOf('wpn', m) : WSL, asl = typeof slotsOf === 'function' ? slotsOf('arm', m) : ASL;
+  const ws = wsl.map(s => m[s]).filter(g => g && IT[g.id]).map(wpnVal);
+  const a = asl.map(s => m[s]).filter(g => g && IT[g.id]).reduce((t, g) => t + armVal(g), 0) * ASL.length / asl.length;
+  return { rk: m.rk || 0, cls: m.cls, w: [ws[0] || 0, wsl.length === 1 ? (ws[0] || 0) : (ws[1] || 0)], a };
 }
 const partyHP = d => d.php || ftPartyHP(d.party.map(m => m.rk || 0));
 const fightKind = p => p.boss ? 'boss' : p.mid ? 'mid' : 'norm';
@@ -12294,7 +12304,7 @@ const skAll = v => Object.fromEntries(SK_ALL.map(k => [k, v]));
 const SKN = [
   ['root', 'join', '店主の心得', 0, [], {}, 'ここから六つの道がのびる。', 0, 0],
   // 体力の道
-  ['b1', 'body', '朝の体操', 1, ['root'], { stam: 2 }, '体力の最大が2増える。', 1, 0],
+  ['b1', 'body', '朝の体操', 1, ['root'], { stam: 1 }, '体力の最大が1増える。', 1, 0],
   ['b2', 'body', '丈夫な体', 2, ['b1'], { stam: 3 }, '体力の最大が3増える。', 2, -1],
   ['b4', 'body', '底力', 3, ['b2'], { stam: 4 }, '体力の最大が4増える。', 3, -1.5],
   ['bg1', 'body', '好調 I', 1, ['b2'], { streak: 1 }, '手で作った成功(ミニゲーム)が4回続くと、体力が1戻る。おまかせは数えない。', 3, -0.5],
@@ -12303,14 +12313,14 @@ const SKN = [
   ['b3', 'body', '舌が肥える', 1, ['b1'], { tongue: 0.5 }, '良品以上の料理・薬を食べると、体力の戻りが1.5倍。', 2, 0.2],
   ['b5', 'body', 'もう一皿', 2, ['b3'], { kinds: 1 }, '1日に食べられる品が1種類増える(3→4種類)。', 3, 0.5],
   ['b_key', 'body', '湯上がりの冴え', 2, ['b5'], { glow: 1 }, '泉の雫を湯に落とす。温泉に入った次の日、体力の最大が3割増える。', 4, 0.5, 'r_springdrop'],
-  ['bf1', 'body', '踏ん張り I', 1, ['b1'], { grit: 0.4 }, 'ミニゲームで失敗しても、ときどき(4割)体力が減らない。', 2, 1.3],
+  ['bf1', 'body', '踏ん張り I', 1, ['b2'], { grit: 0.4 }, 'ミニゲームで失敗しても、ときどき(4割)体力が減らない。', 2, 1.3],
   ['bf2', 'body', '踏ん張り II', 2, ['bf1'], { grit: 0.6 }, '失敗しても、体力が減らない。', 3, 1.5],
   // 工房の道
-  ['c0', 'craft', '器用な手 I', 1, ['root'], skAll(2), 'すべての製作の判定が広がり、良い品が出やすくなる。', 1, 0],
+  ['c0', 'craft', '器用な手 I', 1, ['root'], skAll(1), 'すべての製作の判定が広がり、良い品が出やすくなる。', 1, 0],
   ['c1', 'craft', '器用な手 II', 2, ['c0'], Object.assign(skAll(3), { fast: 1 }), '判定がさらに広がる。作業3以上のレシピが、作業1つ少なくできる。', 2, -0.9],
   ['c_crit', 'craft', '会心の目', 1, ['c0'], { crit: 0.25 }, 'どのミニゲームでも、会心(金色)の幅が広がる。', 2, 0.1],
   ['ctw', 'craft', '会心の二つ取り', 2, ['c_crit'], { twin: 1 }, '会心で作ると、同じ品がもう1つできる(一晩に1回)。', 3, 0.1],
-  ['c_grace', 'craft', '一度の余裕', 1, ['c0'], { grace: 1 }, 'ミニゲームで失敗しても、一晩に1回だけ成功にしてくれる。', 2, 1.1],
+  ['c_grace', 'craft', '一度の余裕', 1, ['c1'], { grace: 1 }, 'ミニゲームで失敗しても、一晩に1回だけ成功にしてくれる。', 2, 1.1],
   ['c_grace2', 'craft', '三度の余裕', 2, ['c_grace'], { grace: 2 }, '「余裕」が一晩に3回になる。', 3, 1.3],
   ['c_key', 'craft', '名工の炉', 2, ['c1', 'ctw'], { forge: 1 }, '溶岩の心核で炉を強くする。会心で作ると、品質のくじを3回引いて一番良い物になる。', 4, -0.4, 'r_lavacore'],
   ['c_ks', 'craft', '熟練の手', 3, ['c_key'], { master: 1 }, 'おまかせで作っても、ときどき良品ができるようになる。', 5, -0.4, null, 1],
@@ -20814,7 +20824,7 @@ function advJob(m) {
 const gqArea = gq => (gq && gq.area && AR[gq.area]) || AREAS.filter(areaOpen).slice(-1)[0] || AR.forest;
 // ▲: the warehouse holds a clearly better piece this adventurer can wear
 function gearBetter(m, slot, a) {   // No.346: その種類(武器/防具)の一番弱い枠を、倉庫の品で1割以上強くできるか
-  const sl = slotsOf(slotKind(slot)), vs = sl.map(s => m[s] ? gearVal(IT[m[s].id], m[s].q) * (m[s].dur > 0 ? 1 : 0) : -1);
+  const sl = slotsOf(slotKind(slot), m), vs = sl.map(s => m[s] ? gearVal(IT[m[s].id], m[s].q) * (m[s].dur > 0 ? 1 : 0) : -1);
   const lo = vs.indexOf(Math.min(...vs)), kinds = sl.filter((s, i) => i !== lo && m[s]).map(s => gearKey(IT[m[s].id]));
   const best = packList(slotKind(slot), a).filter(it => canWield(m, it) && !kinds.includes(gearKey(it))).sort((x, y) => gearVal(y, bestOwnedQ(y.id)) - gearVal(x, bestOwnedQ(x.id)))[0];
   return !!best && gearVal(best, bestOwnedQ(best.id)) > vs[lo] * 1.1;
@@ -20841,9 +20851,11 @@ function advEditor(m, gq, a) {
   const e = gq.edit || 'wpn', hurt = advHurt(m), ml = mealOf(m.id);
   const slot = (k, inner, lab, cls = '') => `<button class="gslot${cls}${e === k ? ' on' : ''}" data-act="dvslot" data-id="${m.id}" data-v="${k}" aria-label="${lab}">${inner}</button>`;
   // No.346: 武器2本・防具3つ(同じ種類は1つまで)。▲は倉庫にもっと良い品がある枠
-  const gear = GSL.map(k => { const g = m[k], n = slotKind(k) === 'wpn' ? '武器' : '防具', up = k === slotsOf(slotKind(k))[0] && gearBetter(m, k, a) ? UP_MARK : '';
+  const open = slotsOf('all', m);
+  const gear = GSL.map(k => { const g = m[k], n = slotKind(k) === 'wpn' ? '武器' : '防具', up = k === slotsOf(slotKind(k), m)[0] && gearBetter(m, k, a) ? UP_MARK : '';
+    if (!open.includes(k)) return `<span class="gslot locked" title="ランク${RANKS[slotOpenRank(k)].n}で開く">${RANKS[slotOpenRank(k)].n}〜</span>`;   // No.352
     return slot(k, g ? ico(g.id, g.q, { size: 'xs' }) + durBar(g) + up : `<span>${n}</span>${up}`, n, g ? '' : ' empty'); }).join('') +
-    `<button class="btn sm" data-act="dvautoeq" data-v="${m.id}" title="武器2本・防具3つを、倉庫の一番良い組み合わせにする">一番良い物</button>`;
+    `<button class="btn sm" data-act="dvautoeq" data-v="${m.id}" title="開いている枠に、倉庫の一番良い組み合わせを着せる">一番良い物</button>`;
   const bag = advBag(m), n = bagSlots(m);
   let bs = ''; for (let i = 0; i < n; i++) { const b = bag[i]; bs += slot('bag', b ? ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 }) : '<span>袋</span>', '道具袋', ' bslot' + (b ? '' : ' empty')); }
   const meal = slot('meal', ml ? `<span class="gmeal">${pubIcon(PUB_BY[ml.dish])}</span>` : '<span>食事</span>', '食事', ' gmealslot' + (ml ? '' : ' empty'));
@@ -31313,7 +31325,7 @@ function boot(local, fresh) {
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
     recCenter, zones, startGauge, centerTag, recWidth, buyStall, buyBook, autoNeeds, paperCheck, paperState, grantPaper, paperRandom, papersOwned, PAPERS, PAPER, paperSrcMet, paperSrcSt, isWeapon, isArmor, isRing, SKN, SKM, SK_TOTAL, pk, shelfSize, skLearn, skWhy, skReset, skResetCost, skSync, skMigrate, skAutoLearn, spSources, spTotal, spFree, spSpent, graceUse, graceLeft, diveCap, skHas, sellTo, buyFrom, acceptOrder, convertToOrder, openShop, closeShop, sleep, nextCust, upgradeShop, learnSkill, craftTime, completion, xpNeed, autoQuality,
     hotNow, pickHot, ateToday, FACS, FAC, facGoods, facSell, facPrice, facOpen, WORK_BASE, eatGain, EAT_MULT, askCall, diveNotify, closeSheet, failCraft, rollQuality, qualOdds, gaugeHit, orderPick, orderQualMult, orderReward, returnQuests, AREAS, AR, rankMax, guildOpen, questFee, questOdds, expectQty, areaOpen, areaBonus, beginAct, endAct, workMax, custCount, sellBold, boldOdds, haggle, sellHot, hotOdds, hotPrice, HOT_MAX, buyAt, buyOdds, buyPrice, BUY_MIN, BUY_MAX, sellBase, sellQty, sellPrice, fairPrice, mktMult, eat, edibles, staminaOf, dine, buyTonya, tonyaList, shopBand, shopClosed, CLOSE_AT,
-    save, invAdd, invTake, advOut, REQ_TIER, GSL, WPN_OF, gearKey, gearTier, fightOdds, fightLoss, partyHP, FT, wpnVal, armVal, memSpec, pzNew, pzPlay, pzMoves, pzHint, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
+    save, invAdd, invTake, advOut, REQ_TIER, GSL, slotsOf, slotN, WPN_OF, gearKey, gearTier, fightOdds, fightLoss, partyHP, FT, wpnVal, armVal, memSpec, pzNew, pzPlay, pzMoves, pzHint, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
     shelfAuto, shelfPut, shelfClean, makeCustomer, shelfGenre, counterCraft, counterCraftWhy, nightLeft, hotShelfId, onShelf, repay, loanLeft, storyChoose, shoppingList, buyList, reservedNeeds, migrate, fixLoaded, TREND, LOAN_MS,
     CH_BOSS, bossCleared, chBoss, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
