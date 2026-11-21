@@ -3627,6 +3627,35 @@ body.btl-open{overflow:hidden}
 .pz-tools .btn small{font-size:10px;opacity:.8}
 .pz-tools .btn.on{box-shadow:0 0 0 2px #f1d99e inset}
 
+/* No.353: 施設のカード */
+.faccards { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 900px) { .faccards { grid-template-columns: 1fr 1fr; gap: 10px; } }
+.faccard { position: relative; display: block; width: 100%; padding: 0; text-align: left; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: rgba(20, 24, 36, .72); color: inherit; cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.faccard:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
+.faccard:disabled { opacity: .5; cursor: default; }
+.faccard.eye { box-shadow: inset 0 0 0 1px rgba(255, 210, 120, .6); }
+.faccard .fcbn { height: 64px; background: #2a3040 center 40% / cover no-repeat; position: relative; }
+@media (min-width: 900px) { .faccard .fcbn { height: 78px; } }
+.faccard .fcbn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10, 12, 20, 0) 30%, rgba(14, 17, 27, .95)); }
+.faccard .fctag { position: absolute; top: 6px; right: 8px; z-index: 1; font-size: 11px; padding: 1px 8px; border-radius: 9px; background: rgba(20, 24, 40, .85); color: #cfd6ff; }
+.faccard .fcbody { display: flex; align-items: flex-end; gap: 10px; padding: 0 10px; margin-top: -30px; position: relative; z-index: 1; }
+.faccard .fcbody .pt { width: 56px; height: 56px; flex: none; box-shadow: 0 0 0 2px rgba(14, 17, 27, .95); }
+.faccard .fcname { min-width: 0; flex: 1; padding-bottom: 2px; }
+.faccard .fcname b { display: block; font-size: 16px; line-height: 1.2; }
+.faccard .fcname span { font-size: 12px; opacity: .7; }
+.faccard .dg-go { padding-bottom: 4px; }
+.faccard .fcchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px 9px; }
+.faccard .fcchip { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: rgba(255, 255, 255, .07); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.faccard .fcchip.gold { background: rgba(255, 196, 80, .18); color: #ffd27a; font-weight: 700; }
+
+.faccard.unk { opacity: .35; }
+.faccard.unk .fcbn { background: repeating-linear-gradient(135deg, #1d2230 0 10px, #232939 10px 20px); }
+.faccard .fcunk { display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #8b93ad; background: #1a1f2c; }
+
+@media (min-width: 1600px) { .wcols[data-v=town-fac] { grid-template-columns: minmax(0, 1fr); } .wcols[data-v=town-fac] > .wb:empty { display: none; } }
+
+.facsep { height: 1px; margin: 12px 4px; background: linear-gradient(90deg, transparent, rgba(255, 220, 160, .35), transparent); }
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -15758,7 +15787,7 @@ function renderTabs() {
     ['main', '店', deliverable],
     ['town', '街', bldReadyN()],
     ['pub', '灯り亭', 0],
-    ...(fishOn() ? [['fish', '釣り', 0]] : []),
+    ['facs', '施設', 0],   // No.353(作者): PC の下の札の「釣り」を「施設」に。釣りは施設のカードの最後
     // No.203 (2026-11-02 作者): 「食事」の札はなくした(食べて意味があるのは夜の工房だけ。工房の中で食べる)
     ...(guildOpen() ? [['adv', 'ギルド', wait ? '!' : 0]] : []),   // No.233 (作者): 「冒険」→「ギルド」
     ['inv', '倉庫', (G.dexNew || []).length],
@@ -15767,7 +15796,8 @@ function renderTabs() {
   const el = $('#tabs');
   el.style.setProperty('--ntabs', tabs.length);
   el.innerHTML = tabs.map(([k, n, dot]) =>
-    k === 'fish' ? `<button class="tab${G.act === 'fish' ? ' on' : ''}" data-act="fshmenu" title="釣り場へ行く">${lineIcon(SKI.hook || SKI.bowl)}<span class="tn">${n}</span></button>`
+    k === 'facs' ? `<button class="tab${UI.tab === 'town' && UI.townView === 'fac' ? ' on' : ''}" data-act="gofacs" title="施設・灯り亭・釣り">${lineIcon(SKI.door)}<span class="tn">${n}</span></button>`
+    : k === 'fish' ? `<button class="tab${G.act === 'fish' ? ' on' : ''}" data-act="fshmenu" title="釣り場へ行く">${lineIcon(SKI.hook || SKI.bowl)}<span class="tn">${n}</span></button>`
     : k === 'meal' ? `<button class="tab" data-act="ownmeal" title="持ち物を食べて体力を戻す">${lineIcon(SKI.bowl)}<span class="tn">${n}</span></button>`
     : k === 'pub' ? `<button class="tab${UI.tab === 'pub' ? ' on' : ''}" data-act="pub" title="${G.act === 'work' ? '夕食と噂' : '夜に夕食'}">${lineIcon(SKI.cutlery)}<span class="tn">${n}</span></button>`
     : `<button class="tab${UI.tab === k ? ' on' : ''}${k === 'adv' && wait ? ' wait' : ''}" data-act="tab" data-v="${k}" title="${esc(tabStatus(k))}${dot ? '・' + tabDotWhy(k, dot) : ''}">${tabIcon(k, G.phase)}<span class="tn">${n}</span>${dot ? `<span class="dot${dot === '!' ? ' alert' : ''}">${dot === '!' ? '!' : ''}</span>` : ''}</button>`).join('') +   // v54u: 説明の行と数のバッジは外し、小さな点(急ぎは!)だけ
@@ -16578,17 +16608,49 @@ function plaza() {
 }
 // ---------- v50: 施設での売り買い ----------
 // No.283: 港のクラブ(紹介状をもらったら、施設の列の最後に)
+// No.353: 施設をカードに(背景の絵の帯・大きな顔・頼み事と得意の札)
+function facPic(b) {
+  if (!b) return '';
+  const t = G.act === 'work' ? '_night' : G.act === 'shop' && G.phase !== 'day' ? '_evening' : '';
+  const n = t && BG_FILES.has(b + t) ? b + t : t === '_evening' && BG_FILES.has(b + '_night') ? b + '_night' : b;
+  return BG_FILES.has(n) ? IMG_BASE + n + '.webp' : '';
+}
+function facCard(o) {
+  const pic = facPic(o.bg);
+  return `<button class="faccard facgo${o.eye ? ' eye' : ''}${o.unk ? ' unk' : ''}" data-act="${o.act}"${o.v ? ` data-v="${o.v}"` : ''}${o.dis ? ' disabled' : ''}>`
+    + `<div class="fcbn"${pic ? ` style="background-image:url('${pic}')"` : ''}>${o.tag ? `<span class="fctag">${o.tag}</span>` : ''}</div>`
+    + `<div class="fcbody">${o.unk ? '<span class="pt md fcunk">?</span>' : portrait({ cls: 'villager', ch: o.ch }, 'md')}<div class="fcname"><b>${o.n}</b><span>${o.who}</span></div><span class="dg-go"><b>›</b></span></div>`
+    + `<div class="fcchips">${o.chips.map(c => `<span class="fcchip${c[0] ? ' gold' : ''}">${c[1]}</span>`).join('')}</div></button>`;
+}
 function casRow() {
   if (typeof casOpenOK !== 'function' || !casOpenOK()) return '';
   const n = casNight();
-  return `<button class="dine dinego facgo" data-act="casino"${n ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: 'madame' }, 'sm')}<div style="min-width:0"><div class="t">港のクラブ<span class="sub" style="font-weight:500"> ロザリンド</span></div><div class="sub">${n ? `毎晩開いている・コイン ${fmt(casSt().coins)}枚` : '夜だけ・スロット・ルーレット・ブラックジャック'}</div></div><span class="dg-go"><b>›</b></span></button>`;
+  return facCard({ act: 'casino', bg: BG_FILES.has('bg_club_in') ? 'bg_club_in' : 'bg_port_night', ch: 'madame', n: '港のクラブ', who: 'ロザリンド', dis: !n, tag: n ? '' : '夜だけ',
+    chips: n ? [[0, `コイン ${fmt(casSt().coins)}枚`], [0, 'スロット・ルーレット・カード']] : [[0, 'スロット・ルーレット・カード']] });
 }
 function vFacs() {
-  const shown = FACS.filter(f => { const b = BUILDINGS.find(x => x.id === f.id); return b && b.st <= G.stage; });
-  if (!shown.length) return '';
-  return `<div class="sec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2><div class="rows facrows">` + shown.map(f => {
-    const open = facOpen(f.id);
-    return `<button class="dine dinego facgo" data-act="fac" data-v="${f.id}"${open ? '' : ' disabled'}>${portrait({ cls: 'villager', ch: f.ch }, 'sm')}<div style="min-width:0"><div class="t">${f.n}<span class="sub" style="font-weight:500"> ${f.who}</span></div><div class="sub">${open ? (() => { const o = foGet(f.id); if (f.id === 'arena') return '勝ち抜き戦(夜だけ)・闘士に賭ける'; if (f.id === 'guild') return (o && !o.done ? `<b class="fc-eye">頼み事: ${IT[o.id].name}×${o.qty}</b>・` : '') + '冒険者に探索を依頼する・買い取り'; return (o && !o.done ? `<b class="fc-eye">頼み事: ${IT[o.id].name}×${o.qty}</b>・` : '') + `得意: ${f.fav}は高く買い取り`; })() : '完成すると、買い取りが開く'}</div></div><span class="dg-go"><b>›</b></span></button>`; }).join('') + casRow() + `</div></div>`;
+  const stOf = id => { const b = BUILDINGS.find(x => x.id === id); return b ? b.st : 99; };
+  if (!FACS.some(f => stOf(f.id) <= G.stage)) return '';
+  const unk = () => facCard({ act: 'fac', dis: true, unk: true, ch: '', n: '？？？', who: '', chips: [[0, '物語が進むと現れる']] });
+  const fac = id => {
+    const f = FAC[id]; if (!f) return '';
+    if (stOf(id) > G.stage) return unk();
+    const open = facOpen(id), o = open ? foGet(id) : null, eye = o && !o.done ? `頼み事 ${IT[o.id].name}×${o.qty}` : '';
+    const chips = !open ? [[0, '完成すると、買い取りが開く']]
+      : id === 'arena' ? [[0, '勝ち抜き戦・闘士に賭ける']]
+      : id === 'guild' ? (eye ? [[1, eye]] : []).concat([[0, '探索の依頼・買い取り']])
+      : (eye ? [[1, eye]] : []).concat([[0, `得意 ${f.fav}`]]);
+    return facCard({ act: 'fac', v: id, bg: f.bg, ch: f.ch, n: f.n, who: f.who, dis: !open, eye: !!eye, tag: id === 'arena' ? '夜だけ' : '', chips });
+  };
+  const rec = typeof pubRecIds === 'function' ? pubRecIds().map(id => PUB_BY[id]).filter(Boolean).map(x => x.n).join('・') : '';
+  const pubC = facCard({ act: 'pub', bg: 'bg_pub', ch: PUB.master.ch, n: '灯り亭', who: PUB.master.n, tag: G.act === 'work' ? '' : '夜に開く', chips: [[0, '夕食・噂・バイト']].concat(rec ? [[0, `おすすめ ${rec}`]] : []) });
+  // No.353(作者): 港のクラブは開いていない時も暗くして出す(港の章の前は？？？)
+  const casC = casRow() || (stOf('port') > G.stage ? unk() : facCard({ act: 'casino', dis: true, bg: BG_FILES.has('bg_club_in') ? 'bg_club_in' : 'bg_port_night', ch: 'madame', n: '港のクラブ', who: 'ロザリンド', tag: '夜だけ', chips: [[0, G.built && G.built.port ? '招待が届くと開く' : '港ができると開く']] }));
+  const fishOk = typeof fishOn === 'function' && fishOn(), opened = fishOk ? fishOpenSpots().map(x => x.id) : [];
+  const fishC = sp => opened.includes(sp.id) ? facCard({ act: 'fshgo', v: sp.id, bg: 'bg_fish_hut_' + sp.id, ch: sp.ch, n: `釣り:${sp.n}`, who: `${sp.place}・${sp.who}`, eye: G.act === 'fish' && G.fishing && G.fishing.spot === sp.id, chips: [[0, G.act === 'fish' && G.fishing && G.fishing.spot === sp.id ? '釣りをしている' : 'いつでも行ける']] }) : unk();
+  // No.353(作者): 並びと区切り = 灯り亭・宿屋 | ギルド・診療所・教会・鍛冶通り・闘技場・港のクラブ・騎士団詰所・竜騎士の厩舎 | 釣り 川・湖・海
+  const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac)), FISH_SPOTS.map(fishC)];
+  return `<div class="sec facsec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2>` + groups.map(g => g.filter(Boolean)).filter(g => g.length).map(g => `<div class="faccards">${g.join('')}</div>`).join('<div class="facsep"></div>') + `</div>`;
 }
 function facSheet(fid, tab, keepScroll) {
   const f = FAC[fid]; if (!f) return;
@@ -16685,8 +16747,7 @@ function vTown() {
   if (!PH) h += `<div class="subtabs" role="tablist" aria-label="街の中">` + [['build', '建設', canDel ? `納品できる ${canDel}` : '建物と章'], ['fac', '施設', '灯り亭・買い取り'], ['reg', '住人', '常連と帳面']].map(([k, n, sub]) =>
     `<button class="stab${tv === k ? ' on' : ''}" data-act="tview" data-v="${k}" role="tab" aria-selected="${tv === k}"><b>${n}</b><small>${sub}</small></button>`).join('') + `</div>`;
   if (tv === 'fac') {
-  if (!PH) h += vPub();
-  h += vFacs();
+  h += vFacs();   // No.353: 灯り亭も釣りも施設のカードの中に
     return h + '</div>';
   }
   if (tv === 'reg') return h + vResidents() + '</div>';   // No.271: 常連さん → 住人の帳面(pubguests.js)
@@ -17237,6 +17298,7 @@ function act0(a, d) {
   const c = curCust();
   switch (a) {
     case 'gtab': UI.gTab = d.v === 'sell' ? 'sell' : d.v === 'ros' ? 'ros' : 'adv'; if (UI.tab !== 'adv') UI.tab = 'adv'; UI.fcLine = null; sfx('tap'); render(); return;   // No.233: ギルドの札(冒険・売る・頼まれごと)
+    case 'gofacs': UI.tab = 'town'; UI.townView = 'fac'; UI.jumpSec = null; sfx('tab'); break;
     case 'tab': if (d.v === 'adv' && UI.tab !== 'adv') { UI.gTab = 'adv'; UI.fcLine = null; } if (d.v === 'town' && innerWidth <= 560) UI.townView = 'map'; if (d.v !== 'inv') UI.dexNewShown = null; if (d.v === 'main' && UI.tab === 'main') UI.shopView = null; UI.tab = d.v; UI.confirmReset = false; UI.treeOpen = false; sfx('tab'); break;
     case 'sview': if (d.close) closeSheet(true); UI.shopView = d.v === G.act ? null : d.v; if (d.tonya) UI.tonyaOpen = true; UI.tab = 'main'; if (d.tonya) UI.jumpSec = '体力の回復'; sfx('tab'); break;
     case 'iview': UI.invView = d.v; if (d.v !== 'dex') UI.dexNewShown = null; sfx('tab'); break;
