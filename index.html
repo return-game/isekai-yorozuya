@@ -3702,6 +3702,59 @@ body.btl-open{overflow:hidden}
   .disp-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
+/* No.370: 竜のレース */
+.rc-topr{display:flex;align-items:center;gap:8px}
+.rc-coins{padding:2px 12px 2px 3px}.rc-coins img{width:26px;height:26px}.rc-coins b{font-size:18px}
+.rc-main{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 12px max(12px,env(safe-area-inset-bottom));overflow:auto}
+.rc-scene[data-view=run] .rc-main{padding:6px 0 0;overflow:hidden}
+.rc-card{display:flex;flex-direction:column;gap:8px;max-width:760px;width:100%;margin:0 auto}
+.rc-rtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rc-rtab{appearance:none;border:1px solid rgba(255,215,160,.3);background:rgba(20,14,10,.72);color:#f3ead8;border-radius:10px;padding:5px 4px;font:700 13px var(--f-ui);cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.rc-rtab small{font-size:11px;color:#d9c3a0}.rc-rtab.on{border-color:#ffcf7a;background:rgba(120,70,20,.75)}.rc-rtab.done{opacity:.7}
+.rc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.rc-head b{font:800 19px var(--f-display);color:#ffd99a;text-shadow:0 2px 6px #000}.rc-head small{color:#e6d6b8;font-size:12.5px}
+.rc-main-t{display:inline-block;background:#c9832f;color:#fff;border-radius:6px;padding:0 6px;margin-right:6px;font-size:13px;vertical-align:2px}
+.rc-eir{background:rgba(20,14,10,.66);border-radius:12px;padding:6px 10px}.rc-eir img{width:44px;height:44px}.rc-eir p{font-size:13px}
+.rc-rows{display:flex;flex-direction:column;gap:4px}
+.rc-row,.rc-rrow{appearance:none;display:grid;grid-template-columns:24px 50px 1fr auto 22px 68px;align-items:center;gap:6px;border:1px solid rgba(255,215,160,.22);background:rgba(20,14,10,.74);color:#f3ead8;border-radius:10px;padding:3px 8px 3px 6px;font:600 13px var(--f-ui);text-align:left;cursor:pointer;min-height:46px}
+.rc-rrow{grid-template-columns:40px 24px 50px 1fr auto;cursor:default}
+.rc-row.on{border-color:#ffcf7a;background:rgba(130,80,25,.8);box-shadow:0 0 0 1px #ffcf7a inset}
+.rc-row[disabled]{cursor:default}.rc-row.p1,.rc-rrow.p1{border-color:#ffd25a}
+.rc-num{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--c);color:#111;font:900 13px var(--f-ui);text-shadow:0 0 2px rgba(255,255,255,.6)}
+.rc-ic{width:50px;height:40px;object-fit:contain}
+.rc-nm{display:flex;flex-direction:column;min-width:0}.rc-nm b{font-size:15px}.rc-nm small{font-size:11px;color:#d9c3a0}
+.rc-fit{color:#e6d6b8}.rc-fit.up{color:#8fe39a}.rc-fit.dn{color:#ff9a7a}
+.rc-cd{display:flex;flex-direction:column;align-items:center;font-size:12px;font-weight:800;color:#f3ead8}.rc-cd small{font-size:10px;color:#bfae90;font-weight:600}
+.rc-cd.up{color:#9be8a4}.rc-cd.up2{color:#5dff7a}.rc-cd.dn{color:#ffb08f}.rc-cd.dn2{color:#ff7a5a}
+.rc-mk{font:900 17px var(--f-ui);color:#ff6a6a;text-align:center}
+.rc-od{display:flex;flex-direction:column;align-items:flex-end}.rc-od small{font-size:10px;color:#bfae90}.rc-od b{font:900 16px var(--f-ui);color:#ffe2a0;font-variant-numeric:tabular-nums}
+.rc-pl{font:900 15px var(--f-ui);color:#ffe2a0}.rc-mg{font-size:12px;color:#d9c3a0}
+.rc-bet{display:flex;flex-direction:column;gap:8px;background:rgba(20,14,10,.8);border:1px solid rgba(255,215,160,.25);border-radius:12px;padding:10px}
+.rc-tys .ar-chip{display:flex;flex-direction:column;align-items:flex-start}
+.rc-betnote{font-size:12px;color:#d9c3a0}
+.rc-tks{display:flex;flex-wrap:wrap;gap:6px}
+.rc-tk{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border-radius:8px;padding:3px 4px 3px 8px;font-size:12px}
+.rc-tk button{appearance:none;border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:6px;width:22px;height:22px;cursor:pointer}
+.rc-tk.hit{background:rgba(255,200,90,.22);color:#ffe2a0}.rc-tk.miss{opacity:.6}
+.rc-sum{display:flex;align-items:baseline;gap:10px;background:rgba(20,14,10,.8);border-radius:12px;padding:8px 12px}.rc-sum b{font:900 20px var(--f-ui)}.rc-sum.hit b{color:#ffd25a}.rc-sum small{color:#d9c3a0}
+.rc-stage{position:relative;flex:1;min-height:240px;overflow:hidden;border-radius:12px 12px 0 0;background:#e9a070}
+.rc-l{position:absolute;inset:0;background-repeat:repeat-x;background-size:auto 100%}
+.rc-sky{background-image:url(img/obj_rc_sky.webp)}
+.rc-cloud{background-image:url(img/obj_rc_cloud.webp)}
+.rc-ground{background-image:url(img/obj_rc_ground.webp)}
+.rc-goal{position:absolute;left:0;bottom:4%;height:78%;z-index:8;pointer-events:none}
+.rc-dr{position:absolute;left:0;top:0;transform-origin:50% 50%;pointer-events:none;will-change:transform}
+.rc-dr img{position:absolute;inset:0;width:100%;height:100%}
+.rc-tag{position:absolute;left:50%;top:6%;transform:translateX(-50%);white-space:nowrap;font:800 11px var(--f-ui);color:#fff;background:rgba(0,0,0,.45);border-left:4px solid var(--c);border-radius:4px;padding:0 5px}
+.rc-live{position:absolute;left:8px;right:8px;bottom:8px;z-index:40;background:rgba(15,10,8,.78);border:1px solid rgba(255,215,160,.35);border-radius:10px;padding:8px 12px;font:800 15px var(--f-ui);color:#fff3d8;text-align:center}
+.rc-live.pop{animation:rcpop .35s ease-out}
+@keyframes rcpop{from{transform:scale(1.06);background:rgba(120,60,20,.9)}to{transform:none}}
+.rc-fast{position:absolute;right:10px;top:8px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.35);border-radius:999px;padding:2px 8px}
+.rc-photo{position:absolute;inset:0;z-index:45;display:none;place-items:center;background:rgba(255,255,255,.35)}
+.rc-photo.on{display:grid;animation:rcflash .5s}.rc-photo b{font:900 34px var(--f-display);color:#2a1606;background:#fff;border-radius:12px;padding:6px 20px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+@keyframes rcflash{from{background:#fff}to{background:rgba(255,255,255,.35)}}
+.rc-tip{z-index:60}
+@media (max-width:480px){.rc-row{grid-template-columns:22px 40px 1fr auto 18px 56px;gap:4px;padding:3px 6px 3px 4px}.rc-ic{width:40px;height:34px}.rc-nm b{font-size:14px}.rc-od b{font-size:14px}}
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -3732,8 +3785,8 @@ const IMG_BASE = 'img/';
 const assetU = p => { const P = window.__IMGP, v = P && P[p]; if (!v) return p + '.webp'; if (v.startsWith('data:')) { try { const b = atob(v.slice(v.indexOf(',') + 1)), a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); P[p] = URL.createObjectURL(new Blob([a], { type: 'image/webp' })); } catch (e) { return v; } } return P[p]; };
 const imgU = n => assetU(IMG_BASE + n);
 const CH_FILES = new Set(["ch_bard_normal", "ch_bard_smile", "ch_bard_surprise", "ch_bard_trouble", "ch_borg_normal", "ch_borg_smile", "ch_borg_surprise", "ch_borg_trouble", "ch_chancellor_normal", "ch_chancellor_smile", "ch_chancellor_surprise", "ch_chancellor_trouble", "ch_chief_normal", "ch_chief_smile", "ch_chief_surprise", "ch_chief_trouble", "ch_clara_blush", "ch_clara_joy", "ch_clara_normal", "ch_clara_pout", "ch_clara_smile", "ch_clara_surprise", "ch_clara_tears", "ch_clara_trouble", "ch_colette_normal", "ch_colette_pout", "ch_colette_smile", "ch_colette_surprise", "ch_colette_trouble", "ch_dahlia_normal", "ch_dahlia_smile", "ch_dahlia_surprise", "ch_dahlia_trouble", "ch_dealer_normal", "ch_dealer_smile", "ch_dealer_surprise", "ch_dealer_trouble", "ch_eir_normal", "ch_eir_smile", "ch_eir_surprise", "ch_eir_trouble", "ch_gantz_normal", "ch_gantz_smile", "ch_gantz_surprise", "ch_gantz_trouble", "ch_gozu_normal", "ch_gozu_smile", "ch_gozu_surprise", "ch_gozu_trouble", "ch_guild_normal", "ch_guild_smile", "ch_guild_surprise", "ch_guild_trouble", "ch_hal_normal", "ch_hal_smile", "ch_hal_surprise", "ch_hal_trouble", "ch_irma_normal", "ch_irma_pout", "ch_irma_smile", "ch_irma_surprise", "ch_irma_trouble", "ch_jin_normal", "ch_jin_smile", "ch_jin_surprise", "ch_jin_trouble", "ch_johan_normal", "ch_johan_smile", "ch_johan_surprise", "ch_johan_trouble", "ch_licorice_normal", "ch_licorice_smile", "ch_licorice_surprise", "ch_licorice_trouble", "ch_luca2_normal", "ch_luca2_smile", "ch_luca2_surprise", "ch_luca2_trouble", "ch_luca_normal", "ch_luca_smile", "ch_luca_surprise", "ch_luca_trouble", "ch_lute_normal", "ch_lute_smile", "ch_lute_surprise", "ch_lute_trouble", "ch_madame_normal", "ch_madame_smile", "ch_madame_surprise", "ch_madame_trouble", "ch_mina_normal", "ch_mina_smile", "ch_mina_surprise", "ch_mina_trouble", "ch_mira2_normal", "ch_mira2_smile", "ch_mira2_surprise", "ch_mira2_trouble", "ch_mira_normal", "ch_mira_smile", "ch_mira_surprise", "ch_mira_trouble", "ch_mire_normal", "ch_mire_smile", "ch_mire_surprise", "ch_mire_trouble", "ch_mob_dragoon_f", "ch_mob_dragoon_f_normal", "ch_mob_dragoon_f_smile", "ch_mob_dragoon_f_surprise", "ch_mob_dragoon_f_trouble", "ch_mob_dragoon_m", "ch_mob_dragoon_m_normal", "ch_mob_dragoon_m_smile", "ch_mob_dragoon_m_surprise", "ch_mob_dragoon_m_trouble", "ch_mob_dwarf_f", "ch_mob_dwarf_f_normal", "ch_mob_dwarf_f_smile", "ch_mob_dwarf_f_surprise", "ch_mob_dwarf_f_trouble", "ch_mob_dwarf_m", "ch_mob_dwarf_m_normal", "ch_mob_dwarf_m_smile", "ch_mob_dwarf_m_surprise", "ch_mob_dwarf_m_trouble", "ch_mob_elf_f", "ch_mob_elf_f_normal", "ch_mob_elf_f_smile", "ch_mob_elf_f_surprise", "ch_mob_elf_f_trouble", "ch_mob_elf_m", "ch_mob_elf_m_normal", "ch_mob_elf_m_smile", "ch_mob_elf_m_surprise", "ch_mob_elf_m_trouble", "ch_mob_hero_f", "ch_mob_hero_f_normal", "ch_mob_hero_f_smile", "ch_mob_hero_f_surprise", "ch_mob_hero_f_trouble", "ch_mob_hero_m", "ch_mob_hero_m_normal", "ch_mob_hero_m_smile", "ch_mob_hero_m_surprise", "ch_mob_hero_m_trouble", "ch_mob_hunter_f", "ch_mob_hunter_f_normal", "ch_mob_hunter_f_smile", "ch_mob_hunter_f_surprise", "ch_mob_hunter_f_trouble", "ch_mob_hunter_m", "ch_mob_hunter_m_normal", "ch_mob_hunter_m_smile", "ch_mob_hunter_m_surprise", "ch_mob_hunter_m_trouble", "ch_mob_knight_f", "ch_mob_knight_f_normal", "ch_mob_knight_f_smile", "ch_mob_knight_f_surprise", "ch_mob_knight_f_trouble", "ch_mob_knight_m", "ch_mob_knight_m_normal", "ch_mob_knight_m_smile", "ch_mob_knight_m_surprise", "ch_mob_knight_m_trouble", "ch_mob_mage_f", "ch_mob_mage_f_normal", "ch_mob_mage_f_smile", "ch_mob_mage_f_surprise", "ch_mob_mage_f_trouble", "ch_mob_mage_m", "ch_mob_mage_m_normal", "ch_mob_mage_m_smile", "ch_mob_mage_m_surprise", "ch_mob_mage_m_trouble", "ch_mob_noble_f", "ch_mob_noble_f_normal", "ch_mob_noble_f_smile", "ch_mob_noble_f_trouble", "ch_mob_noble_m", "ch_mob_noble_m_normal", "ch_mob_noble_m_smile", "ch_mob_noble_m_trouble", "ch_mob_novice_f", "ch_mob_novice_f_normal", "ch_mob_novice_f_smile", "ch_mob_novice_f_surprise", "ch_mob_novice_f_trouble", "ch_mob_novice_m", "ch_mob_novice_m_normal", "ch_mob_novice_m_smile", "ch_mob_novice_m_surprise", "ch_mob_novice_m_trouble", "ch_mob_peddler_f", "ch_mob_peddler_f_normal", "ch_mob_peddler_f_smile", "ch_mob_peddler_f_trouble", "ch_mob_peddler_m", "ch_mob_peddler_m_normal", "ch_mob_peddler_m_smile", "ch_mob_peddler_m_trouble", "ch_mob_royal_f", "ch_mob_royal_m", "ch_mob_villager_f", "ch_mob_villager_f_normal", "ch_mob_villager_f_smile", "ch_mob_villager_f_trouble", "ch_mob_villager_m", "ch_mob_villager_m_normal", "ch_mob_villager_m_smile", "ch_mob_villager_m_trouble", "ch_mob_warrior_f", "ch_mob_warrior_f_normal", "ch_mob_warrior_f_smile", "ch_mob_warrior_f_surprise", "ch_mob_warrior_f_trouble", "ch_mob_warrior_m", "ch_mob_warrior_m_normal", "ch_mob_warrior_m_smile", "ch_mob_warrior_m_surprise", "ch_mob_warrior_m_trouble", "ch_nene_normal", "ch_nene_smile", "ch_nene_surprise", "ch_nene_trouble", "ch_nezu_normal", "ch_noel_normal", "ch_noel_smile", "ch_noel_surprise", "ch_noel_trouble", "ch_owner_2_down", "ch_owner_2_normal", "ch_owner_down", "ch_owner_normal", "ch_owner_smile", "ch_owner_soft", "ch_owner_surprise", "ch_owner_teen_normal", "ch_owner_trouble", "ch_pom_normal", "ch_pom_smile", "ch_pom_surprise", "ch_pom_trouble", "ch_popo_normal", "ch_priest_normal", "ch_priest_smile", "ch_priest_surprise", "ch_priest_trouble", "ch_queen_blush", "ch_queen_joy", "ch_queen_normal", "ch_queen_normal_2", "ch_queen_pout", "ch_queen_smile", "ch_queen_surprise", "ch_queen_trouble", "ch_seres_normal", "ch_seres_smile", "ch_seres_surprise", "ch_seres_trouble", "ch_victor_normal", "ch_victor_smile", "ch_victor_surprise", "ch_victor_trouble", "ch_zen_normal", "ch_zen_smile", "ch_zen_surprise", "ch_zen_trouble"]);
-const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_club_table", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
-const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_joker", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_cas_ui_big", "obj_cas_ui_big_down", "obj_cas_ui_btn", "obj_cas_ui_btn_off", "obj_cas_ui_btn_on", "obj_disp_adamant", "obj_disp_copper", "obj_disp_dragongold", "obj_disp_empty", "obj_disp_gold", "obj_disp_iron", "obj_disp_mithril", "obj_disp_seajade", "obj_disp_silver", "obj_disp_starplat", "obj_newsword", "obj_oldsword", "obj_sword", "obj_tiara"]);
+const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_club_table", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_rc_venue", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
+const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_joker", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_cas_ui_big", "obj_cas_ui_big_down", "obj_cas_ui_btn", "obj_cas_ui_btn_off", "obj_cas_ui_btn_on", "obj_disp_adamant", "obj_disp_copper", "obj_disp_dragongold", "obj_disp_empty", "obj_disp_gold", "obj_disp_iron", "obj_disp_mithril", "obj_disp_seajade", "obj_disp_silver", "obj_disp_starplat", "obj_newsword", "obj_oldsword", "obj_rc_cloud", "obj_rc_goal", "obj_rc_ground", "obj_rc_mist_b", "obj_rc_mist_i", "obj_rc_mist_w", "obj_rc_mist_wd", "obj_rc_obsidian_b", "obj_rc_obsidian_i", "obj_rc_obsidian_w", "obj_rc_obsidian_wd", "obj_rc_ruby_b", "obj_rc_ruby_i", "obj_rc_ruby_w", "obj_rc_ruby_wd", "obj_rc_sky", "obj_rc_smoke_b", "obj_rc_smoke_i", "obj_rc_smoke_w", "obj_rc_smoke_wd", "obj_rc_storm_b", "obj_rc_storm_i", "obj_rc_storm_w", "obj_rc_storm_wd", "obj_rc_thunder_b", "obj_rc_thunder_i", "obj_rc_thunder_w", "obj_rc_thunder_wd", "obj_rc_venus_b", "obj_rc_venus_i", "obj_rc_venus_w", "obj_rc_venus_wd", "obj_rc_wave_b", "obj_rc_wave_i", "obj_rc_wave_w", "obj_rc_wave_wd", "obj_sword", "obj_tiara"]);
 // ---- sprites.js ----
 // ===== Pixel sprites (16x16) =====
 // legend: . clear / o outline / d m l w = main ramp (dark,mid,light,hi)
@@ -9776,16 +9829,21 @@ function storyChoose(c, i) {
   c.done = true; c.emote = ch.fx === 'none' ? '' : 'joy'; c.result = { kind: 'story', reply, extra };
   return c.result;
 }
+// No.371: 聖剣ができてルカが待っているのに、クララの依頼(冠まで)が終わっていない時は、クララを必ず呼ぶ
+const claraRush = () => typeof lucaWaits === 'function' && lucaWaits() && (G.reg.clara || 0) < 4;
 function regularToday() {
   const cands = REGULARS.filter(r => {
     const i = G.reg[r.k] || 0, s = r.steps[i]; if (!s || s.st > G.stage) return false;
     if (s.need && !s.need()) return false;   // v43: a step that waits for its scene in the story
     const rc = RC_BY_OUT[s.item]; if (rc && !recUnlocked(rc) && !r.anyRec) return false;
     if (G.orders.some(o => o.reg === r.k)) return false;
+    if (r.k === 'clara' && claraRush()) return true;   // No.371: 聖剣が待っている間は、間を空けずに来る
     return G.day - (G.regLast[r.k] === undefined ? -99 : G.regLast[r.k]) >= 2;
   });
-  if (!cands.length || (G.day > 1 && Math.random() > 0.75)) return null;
-  const r = G.day === 1 && cands.some(x => x.k === 'luca') ? REG.luca : pick(cands);
+  if (!cands.length) return null;
+  const rush = cands.find(x => x.k === 'clara' && claraRush());
+  if (!rush && G.day > 1 && Math.random() > 0.75) return null;
+  const r = rush || (G.day === 1 && cands.some(x => x.k === 'luca') ? REG.luca : pick(cands));
   const i = G.reg[r.k] || 0, s = r.steps[i];
   return { type: 'regular', reg: r.k, step: i, p: r.p, clsName: s.cls, cls: 'villager', name: r.n, look: r.look, want: s.item, qty: s.qty, days: 8, reward: s.reward, minQ: 0, line: s.line, title: s.title, tol: 1.2, done: false };
 }
@@ -9951,11 +10009,13 @@ function orderQualMult(o) { const pk = orderPick(o); if (!pk) return 1; const av
 const orderReward = o => Math.round(o.reward * orderMult(o) * orderQualMult(o));
 function orderHave(o) { let n = 0; for (let q = o.minQ; q < 4; q++) n += invCount(o.item, q); return n; }
 // mode (regulars only): 'cheap' | 'fair' | 'high' — how you price their request
+// No.371: 聖剣の注文は、戴冠と告白の次の日まで渡せない(案内でも「納品しよう」と出さない)
+const holdHolyOrder = o => o.reg === 'luca' && o.item === 'lg_holy' && typeof storySeen === 'function' && !storyAfter('c5_confess');
 function deliverOrder(oid, mode) {
   const o = G.orders.find(x => x.id === oid); if (!o) return false;
   if (orderHave(o) < o.qty) return false;
   // v52x: 聖剣をルカに渡すのは戴冠(c5_queen)の後。それまでは渡せない(場面 c5_hand が朝に渡す)
-  if (o.reg === 'luca' && o.item === 'lg_holy' && typeof storySeen === 'function' && !storyAfter('c5_confess')) { FX.push({ t: 'toast', msg: '聖剣を渡すのは、クララの戴冠を見届けてから' }); return false; }
+  if (holdHolyOrder(o)) { FX.push({ t: 'toast', msg: '聖剣を渡すのは、クララの戴冠を見届けてから。' + (typeof claraNextTxt === 'function' ? claraNextTxt() : '') }); return false; }
   const pk = orderPick(o), qm = orderQualMult(o);
   const late = lateDays(o), pm = o.reg ? (mode === 'gift' ? { m: 0, bond: 1 } : REG_PRICE[mode] || REG_PRICE.fair) : null;   // v54o: ルカの最初の剣は、お金を受け取らずに渡す
   const pay = pm ? Math.round(o.reward * pm.m * qm * (1 + perk('regpay'))) : orderReward(o);
@@ -15173,7 +15233,8 @@ function musicKey() {
   if (typeof UI !== 'undefined' && UI.story && (TRACKS[UI.story.bgm] || FILE_BGM[UI.story.bgm])) return UI.story.bgm;   // v52y: 物語の場面の曲
   if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
   if (typeof CAS !== 'undefined' && CAS.on) return casNightBgm();   // No.283: 港のクラブ(仮で夜の曲)
-  if (typeof ARN !== 'undefined' && ARN.on) return 'arenaScene';   // No.217: 闘技場の勝ち抜き戦
+  if (typeof ARN !== 'undefined' && ARN.on) return 'arenaScene';
+  if (typeof DRC !== 'undefined' && DRC.on) return 'arenaScene';   // No.370: 竜のレース(仮で闘技場の曲)   // No.217: 闘技場の勝ち抜き戦
   if (G.act === 'fish') return 'fishing';   // No.289: 釣りは MusMus-BGM-036(読めない時は waterside)
   if (G.act === 'market') return G.stage >= 3 ? 'lateMarket' : 'songA';   // No.194: 朝の市場は「風の通り道」
   if (G.act === 'shop') return G.stage >= 3 ? 'lateShop' : 'day';
@@ -15246,6 +15307,9 @@ Object.assign(SE_FILES, { pz_open: 'se_pz_open.mp3', pz_swap: 'se_pz_swap.mp3', 
   mon_slime: 'se_mon_slime.mp3', mon_goblin1: 'se_mon_goblin1.mp3', mon_goblin2: 'se_mon_goblin2.mp3', mon_goblin3: 'se_mon_goblin3.mp3', mon_wyv1: 'se_mon_wyv1.mp3', mon_wyv2: 'se_mon_wyv2.mp3', mon_dragon: 'se_mon_dragon.mp3', mon_wing: 'se_mon_wing.mp3', mon_stomp: 'se_mon_stomp.mp3', mon_tentacle: 'se_mon_tentacle.mp3' });
 Object.assign(SE_ALT, { pz_open: 'tab', pz_swap: 'tap', pz_nope: 'mg_miss', pz_clear: 'mg_zaku', pz_chain: 'mg_combo', pz_hit1: 'hit', pz_hit2: 'ar_crit', pz_skill: 'good', pz_hero: 'great', pz_bomb: 'mg_thunk', pz_win: 'great',
   mon_slime: 'hit', mon_goblin1: 'hit', mon_goblin2: 'hit', mon_goblin3: 'hit', mon_wyv1: 'hit', mon_wyv2: 'hit', mon_dragon: 'hit', mon_wing: 'hit', mon_stomp: 'hit', mon_tentacle: 'hit' });
+// No.370: 竜のレースの音(作者の音源。bgm/ の se_rc_*。頭と後ろを切り、音量をそろえてある。風 se_rc_wind はループで seLoopStart)
+Object.assign(SE_FILES, { rc_gun: 'se_rc_gun.mp3', rc_flap: 'se_rc_flap.mp3', rc_flaps: 'se_rc_flaps.mp3', rc_whoosh: 'se_rc_whoosh.mp3', rc_cheer: 'se_rc_cheer.mp3' });
+Object.assign(SE_ALT, { rc_gun: 'ar_bet', rc_flap: 'mg_whoosh', rc_flaps: 'mg_whoosh', rc_whoosh: 'mg_whoosh', rc_cheer: 'ar_crowd' });
 const SE_GAIN = { fs_line1: 0.55, fs_line2: 0.5, fs_catch: 0.5, fs_land: 0.9, cas_ball: 0.6 };   // No.289: 音量をそろえる(測った音量の差を打ち消す)
 const SE_NOW = {};
 function seReady(k) { const a = SE_EL[k]; return !!(a && !a._bad && a.readyState >= 2); }   // No.289: 音源ファイルが読めているか
@@ -15782,12 +15846,12 @@ function questLine() {
     const got = (G.deliv[b.id] || {})[id] || 0;
     if (got < q && invCount(id) > 0) return { t: `${b.n}に「${IT[id].name}」を納品できる`, v: 'town' };
   }
-  const od = G.orders.find(o => orderHave(o) >= o.qty);
+  const od = G.orders.find(o => orderHave(o) >= o.qty && !holdHolyOrder(o));   // No.371
   if (od) return { t: `「${IT[od.item].name}」の注文を納品しよう`, v: 'main' };
   // v39: buildings done (the 凱旋門 aside) and the boss still standing → the next thing is the boss
   { const sp = stageProgress(), bs = sp.boss;
     if (!G.ended && !bs.done && guildOpen() && sp.blds.every(b => G.built[b.id] || b.id === 'gate')) {
-      if (bs.last && !lairOpen() && lucaWaits() && !storySeen('c5_queen') && !storyOff()) return { t: G.orders.some(o => o.reg === 'clara' && o.step === 3) ? 'クララの「冠」を納めよう(戴冠を見届けると、ルカに聖剣を渡せる)' : 'クララの戴冠を待とう(冠の依頼に来たら納める。そのあとルカに聖剣を渡せる)', v: 'main' };   // v52
+      if (bs.last && !lairOpen() && lucaWaits() && !storySeen('c5_queen') && !storyOff()) return { t: claraNextTxt(), v: 'main' };   // No.371: クララの今の依頼を名前で   // v52
       if (bs.last && !lairOpen()) return { t: G.orders.some(o => o.reg === 'luca' && o.item === 'lg_holy') ? '勇者ルカに渡す聖剣を打とう(折れた剣を芯にする)' : '勇者ルカに聖剣を渡すと、竜の巣へ行ける', v: 'main' };   // v44
       if (G.dive && G.dive.area === bs.area.id) return { t: `冒険者が${bs.area.n}の「${bs.n}」に挑んでいる`, v: 'adv' };
       if (!G.dive) return { t: `${bs.area.n}の「${bs.n}」に挑もう(${bs.last ? '戦いを終えると凱旋門を建てられる' : '倒すと次の章へ'})`, v: 'adv' };
@@ -15857,7 +15921,7 @@ function navCanBack(){return !UI.gauge&&!UI.story&&!!(UI.help||(UI.sheet&&!UI.sh
 function navBackButton(){return `<button class="mn mn-back" data-act="nback" aria-label="前の画面に戻る"${navCanBack()?'':' disabled'}>${lineIcon(HOME_SVG.back)}<span>戻る</span></button>`;}
 function updateNavBack(){document.querySelectorAll('.mn-back').forEach(b=>b.disabled=!navCanBack());}
 function renderTabs() {
-  const deliverable = G.orders.filter(o => orderHave(o) >= o.qty).length;
+  const deliverable = G.orders.filter(o => orderHave(o) >= o.qty && !holdHolyOrder(o)).length;
   const d = G.dive, wait = d && d.pending && !d.done;
   // v54: 毎日の動きの順(店 → 街 → 冒険)。PCは街の下に灯り亭
   const tabs = [
@@ -15931,7 +15995,7 @@ function homeHero() {
 }
 function vHome() {
   const q = UI.quest || questLine();
-  const ready = G.orders.filter(o => orderHave(o) >= o.qty).length, wait = G.dive && G.dive.pending && !G.dive.done;
+  const ready = G.orders.filter(o => orderHave(o) >= o.qty && !holdHolyOrder(o)).length, wait = G.dive && G.dive.pending && !G.dive.done;
   // [label, icon, data attributes, off (out of its hours), badge ('' / number / '!' urgent, '•' a quiet dot), colour]
   const apps = [
     // v54: 時間外の場所も灰色にせず、何ができるかを小さく書く。並びは 店 → 街 → 冒険 → 倉庫 → 店主
@@ -16475,7 +16539,7 @@ function ownMealSheet() {
 function vSideOrders() {
   if (!G.orders.length) return '';
   const os = G.orders.slice().sort((a, b) => (orderHave(b) >= b.qty) - (orderHave(a) >= a.qty) || a.due - b.due);
-  const ready = os.filter(o => orderHave(o) >= o.qty).length;
+  const ready = os.filter(o => orderHave(o) >= o.qty && !holdHolyOrder(o)).length;
   return `<div class="sorders"><div class="row between"><b style="font-size:13.5px">受けている注文</b><span class="sub" style="font-size:11.5px">${G.orders.length}件${ready ? `・<b style="color:var(--patina)">納品できる ${ready}</b>` : ''}</span></div>` + os.map(o => {
     const it = IT[o.item], have = orderHave(o), ok = have >= o.qty, unk = G.found[o.item] === undefined;
     return `<div class="so${ok ? ' ok' : ''}"><button class="so-main" data-act="goto" data-id="${o.item}" aria-label="${it.name}の作り方・入手先">${ico(o.item, o.minQ || null, { size: 'sm', sil: unk })}<span class="grow" style="min-width:0"><span class="so-t">${it.name} ×${o.qty}${o.minQ ? '<span class="qtag q1">良品以上</span>' : ''}${o.reg ? '<span class="qtag reg">常連</span>' : ''}</span>` +
@@ -16727,7 +16791,7 @@ function vFacs() {
   const fishOk = typeof fishOn === 'function' && fishOn(), opened = fishOk ? fishOpenSpots().map(x => x.id) : [];
   const fishC = sp => opened.includes(sp.id) ? facCard({ act: 'fshgo', v: sp.id, bg: 'bg_fish_hut_' + sp.id, ch: sp.ch, n: `釣り:${sp.n}`, who: `${sp.place}・${sp.who}`, eye: G.act === 'fish' && G.fishing && G.fishing.spot === sp.id, chips: [[0, G.act === 'fish' && G.fishing && G.fishing.spot === sp.id ? '釣りをしている' : 'いつでも行ける']] }) : unk();
   // No.353(作者): 並びと区切り = 灯り亭・宿屋 | ギルド・診療所・教会・鍛冶通り・闘技場・港のクラブ・騎士団詰所・竜騎士の厩舎 | 釣り 川・湖・海
-  const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac)), FISH_SPOTS.map(fishC)];
+  const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac), [typeof rcRow === 'function' ? rcRow() : '']), FISH_SPOTS.map(fishC)];
   return `<div class="sec facsec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2>` + groups.map(g => g.filter(Boolean)).filter(g => g.length).map(g => `<div class="faccards">${g.join('')}</div>`).join('<div class="facsep"></div>') + `</div>`;
 }
 function facSheet(fid, tab, keepScroll) {
@@ -17399,6 +17463,7 @@ function act0(a, d) {
     case 'fac': facPage(d.v); sfx('door'); return;   // No.212: 施設は灯り亭と同じ形のページに
     case 'arena': arenaOpen(); return;   // No.217
     case 'casino': casinoOpen(); return;   // No.283
+    case 'race': raceOpen(); return;   // No.370 竜のレース
     case 'onbath': onBath(); return;   // No.287: 温泉
     case 'ontalk': onTalk(); return;
     case 'factab': UI.facTab = d.v; UI.fcLine = null; sfx('tap'); render(); return;
@@ -20665,12 +20730,12 @@ function helpNow() {
     const got = (G.deliv[b.id] || {})[id] || 0;
     if (got < q && invCount(id) > 0 && !L.some(x => x.k === 'bld')) L.push({ k: 'bld', t: `${b.n}に「${IT[id].name}」を納品できます。街の画面へどうぞ。`, to: { tab: 'town' } });
   }
-  const od = G.orders.find(o => orderHave(o) >= o.qty);
+  const od = G.orders.find(o => orderHave(o) >= o.qty && !holdHolyOrder(o));   // No.371
   if (od) L.push({ t: `「${IT[od.item].name}」の注文がそろっています。納品するとお礼がもらえますよ。`, to: { tab: 'main' } });
   // v39: the chapter's boss
   { const sp = stageProgress(), bs = sp.boss;
     if (!G.ended && !bs.done && guildOpen() && !G.dive && sp.blds.every(b => G.built[b.id] || b.id === 'gate'))
-      L.push({ t: bs.last && !lairOpen() && lucaWaits() && !storySeen('c5_queen') ? `聖剣はできています。ルカに渡すのは、クララの戴冠のあとです。クララの「冠」の依頼を受けて、納めてください。` : bs.last && !lairOpen() ? `勇者に選ばれたルカに、聖剣を打ってあげてください。折れた剣を芯にして、アダマンタイトの剣と光の結晶で作ります(伝説の鍛冶書が要ります)。聖剣を渡すと、竜の巣へ行けるようになります。` : bs.last ? `王都の建物がそろいました。あとは竜の巣の古竜です。いちばん良い武具と回復薬を持たせて、2人以上で挑みましょう。戦いを終えると凱旋門を建てられます。`
+      L.push({ t: bs.last && !lairOpen() && lucaWaits() && !storySeen('c5_queen') ? `聖剣はできています。ルカに渡すのは、クララの戴冠のあとです。${claraNextTxt()}。` : bs.last && !lairOpen() ? `勇者に選ばれたルカに、聖剣を打ってあげてください。折れた剣を芯にして、アダマンタイトの剣と光の結晶で作ります(伝説の鍛冶書が要ります)。聖剣を渡すと、竜の巣へ行けるようになります。` : bs.last ? `王都の建物がそろいました。あとは竜の巣の古竜です。いちばん良い武具と回復薬を持たせて、2人以上で挑みましょう。戦いを終えると凱旋門を建てられます。`
         : `建物がそろいました。次の章へ進むには、${bs.area.n}の「${bs.n}」を倒すことです。武具を持たせて、回復薬を道具袋に入れて、2人以上で挑みましょう。`, to: { tab: 'adv' } }); }
   const box = ITEMS.find(it => (it.seal || it.mystery) && invCount(it.id) > 0);
   if (box) L.push(G.act === 'work' ? { t: `「${IT[box.id].name}」があります。工房の「鑑定」で開けましょう(影合わせ)。`, to: { tab: 'main', view: 'work', cat: 'appraise' } } : { t: `「${IT[box.id].name}」は、夜の工房の「鑑定」で開けられます。` });
@@ -23872,6 +23937,15 @@ function lucaHero() {
   }
 }
 const lucaWaits = () => G.orders.some(o => o.reg === 'luca' && o.item === 'lg_holy') && invCount('lg_holy') > 0;
+// No.371: 聖剣を渡す前に、クララの依頼のどこで止まっているか(案内・通知で同じ文を使う)
+function claraNextTxt() {
+  if (storySeen('c5_queen')) return '戴冠は済んだ。次の朝、ルカが聖剣を受け取りに来る';
+  const o = G.orders.find(x => x.reg === 'clara');
+  if (o && o.item === 'k_qcrown') return 'クララの「冠」を納めよう(戴冠を見届けると、ルカに聖剣を渡せる)';
+  if (o) return `先にクララの「${o.title || IT[o.item].name}」(${IT[o.item].name}×${o.qty})を納めよう(そのあとクララが冠を頼みに来る)`;
+  if (storySeen('reg_clara_3')) return 'クララの戴冠を待とう(明日の朝、戴冠式がある)';
+  return 'クララが冠を頼みに来るのを待とう(明日、店に来る)';
+}
 // 剣を渡す: the order is delivered (his story ends there) and the sword goes in his hand.
 // Delivered from the orders by hand, the scene comes after and only puts the sword in his hand.
 function lucaTakeSword() {
@@ -28897,6 +28971,355 @@ async function bcSqueeze(B, k, card) {   // 3枚目は伏せて置き、じわ�
   await casWait(900); B.sq = ''; B.nw = ''; sfx('cas_flip'); casDraw(); await casWait(500);
 }
 try { Object.assign(window.__cas, { casPk, casHl, casBc, pkEval, casDraw, PK_ROLES }); } catch (e) {}
+
+// ---- race.js ----
+// No.370: 竜のレース(第1弾・賭けるだけ)。決まったこと = claude/00_竜のレース_決まったこと(2026-11-23).md
+// 第5章・竜騎士の厩舎ができてから・夜だけ。賭けるのはカジノのコイン。毎晩3レース(最後がメイン)・1レース8頭。
+// 結果は発走の時ではなく、その夜の種(seed)から決まる(読み直しで変わらない)。人気(オッズ)は新聞の印に引っ張られ、本当の強さには今日の調子が効く。
+const DRC = { on: false, view: 'card' };
+const RC_DR = [
+  { k: 'ruby', n: '紅玉', c: '#e0453a', st: 'nige', d: 's', pw: 70 },
+  { k: 'wave', n: '蒼波', c: '#3a8be0', st: 'sashi', d: 'm', pw: 72 },
+  { k: 'storm', n: '翠嵐', c: '#3fbf6a', st: 'oikomi', d: 'l', pw: 71 },
+  { k: 'thunder', n: '雷牙', c: '#f0c53a', st: 'senko', d: 's', pw: 73 },
+  { k: 'mist', n: '白霧', c: '#e8eef5', st: 'sashi', d: 'l', pw: 69 },
+  { k: 'obsidian', n: '黒曜', c: '#5b606e', st: 'senko', d: 'm', pw: 74 },
+  { k: 'smoke', n: '紫煙', c: '#9a5ad0', st: 'oikomi', d: 'm', pw: 68 },
+  { k: 'venus', n: '金星', c: '#e8b84a', st: 'nige', d: 'l', pw: 70 },
+];
+// 翼の付け根(220×230 の絵の上)。tools で 1024 の支点から出した
+const RC_PIV = { ruby: [141.8, 128.2], wave: [136.8, 127.0], storm: [149.2, 138.5], thunder: [140.8, 144.5], mist: [138.2, 141.0], obsidian: [140.8, 138.5], smoke: [140.8, 136.8], venus: [145.0, 136.0] };
+const RC_ST = { nige: '逃げ', senko: '先行', sashi: '差し', oikomi: '追込' };
+const RC_DIST = { s: { n: '短距離', m: 1200, sec: 13 }, m: { n: '中距離', m: 1800, sec: 16 }, l: { n: '長距離', m: 2400, sec: 19 } };
+const RC_NAME = [['夕凪の一戦', '茜雲の一戦', '風見の一戦', '渡り鳥の一戦'], ['旗振りの一戦', '断崖の一戦', '雲海の一戦', '追い風の一戦'], ['宵空賞', '竜舎杯', '黄昏賞', '翼の王冠']];
+const RC_COND = [{ n: 'いまひとつ', c: 'dn2' }, { n: 'やや重い', c: 'dn' }, { n: '普通', c: '' }, { n: '良い', c: 'up' }, { n: '抜群', c: 'up2' }];
+const RC_MARK = ['◎', '○', '▲', '△'];
+const RC_TY = { win: { n: '単勝', d: '1着を当てる' }, place: { n: '複勝', d: '3着までに入る' }, quin: { n: '連', d: '1・2着の2頭(順不同)' } };
+const RC_AMT = [10, 50, 100, 500];
+const RC_K = { back: 0.86, mix: 0.5, q: 0.1 };   // 【未決】back = 払い戻しの率(人気の確率に対して)・mix = 人気のうち本当の強さを知っている分(残りは新聞の見立て)。test/race_sim.py で測って決める
+const RC_SIG = 4;       // 揺らぎ(強さの点)
+const rcImg = n => imgU('obj_rc_' + n);
+const rcOpenOK = () => !!(G && G.stage >= 4 && G.built && G.built.dragon);
+const rcNight = () => G.act === 'work' || G.phase === 'night';
+const rcCoins = () => (typeof casOpenOK === 'function' && casOpenOK()) ? casSt().coins : 0;
+
+function rcRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const rcGauss = r => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
+function rcSt() {
+  const s = G.race || (G.race = {});
+  if (s.day !== G.day) { const keep = { best: s.best || 0, hits: s.hits || 0, bet: s.bet || 0, back: s.back || 0, nights: s.nights || 0, seen: s.seen || 0, pend: s.pend || 0 }; for (const k in s) delete s[k]; Object.assign(s, keep, { day: G.day, seed: (Math.random() * 2 ** 31) >>> 0, tix: [[], [], []], res: [null, null, null], ri: 0 }); }
+  if (!Array.isArray(s.tix)) s.tix = [[], [], []];
+  if (!Array.isArray(s.res)) s.res = [null, null, null];
+  return s;
+}
+// 距離の得手(得意 +3・隣 0・反対 -3)と、脚質と距離(逃げは短い方・追込は長い方)
+const rcFit = (dr, d) => (dr.d === d ? 3 : (dr.d === 'm' || d === 'm') ? 0 : -3) + ({ nige: { s: 1, m: 0, l: -1 }, oikomi: { s: -1, m: 0, l: 1 } }[dr.st] || { s: 0, m: 0, l: 0 })[d];
+const RC_CACHE = {};
+// その夜の1レースの出走表(種から決まる)
+function rcPlan(ri) {
+  const s = rcSt(), key = s.seed + ':' + ri;
+  if (RC_CACHE[key]) return RC_CACHE[key];
+  const r = rcRng(s.seed * 7 + ri * 101 + 3);
+  const ds = ['s', 'm', 'l']; for (let i = 2; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
+  const dr = rcRng(s.seed * 3 + 11);   // 調子はその夜の3レースで同じ
+  const cond = RC_DR.map(() => { const x = dr(); return x < 0.1 ? -2 : x < 0.3 ? -1 : x < 0.7 ? 0 : x < 0.9 ? 1 : 2; });
+  const d = ds[ri];
+  const run = RC_DR.map((x, i) => {
+    const padd = r() < 0.75 ? cond[i] : Math.max(-2, Math.min(2, cond[i] + (r() < 0.5 ? -1 : 1)));   // パドックの見た目(4回に3回は本当)
+    const base = x.pw + rcFit(x, d);
+    return { i, cond: cond[i], padd, base, news: base + rcGauss(r) * 1.5 };
+  });
+  [...run].sort((a, b) => b.news - a.news).forEach((x, k) => { x.mark = k < 4 ? k : -1; });
+  // 人気 = 新聞の見立て(調子を見ない)+ 印の分。本当 = 今日の調子込み
+  const pubS = run.map(x => x.base + ([1, 0.6, 0.3, 0.15][x.mark] || 0));
+  const truS = run.map(x => x.base + x.cond * 2);
+  const mc = (S, seed) => { const q = rcRng(seed), N = 3000, w = Array(8).fill(0), t3 = Array(8).fill(0), pr = {};
+    for (let n = 0; n < N; n++) { const sc = S.map(v => v + rcGauss(q) * RC_SIG), o = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]); w[o[0]]++; t3[o[0]]++; t3[o[1]]++; t3[o[2]]++; const pk = Math.min(o[0], o[1]) * 8 + Math.max(o[0], o[1]); pr[pk] = (pr[pk] || 0) + 1; }
+    return { w: w.map(v => v / N), t3: t3.map(v => v / N), pr: Object.fromEntries(Object.entries(pr).map(([k, v]) => [k, v / N])) }; };
+  const pub = mc(pubS, s.seed * 5 + ri * 17 + 1), tru = mc(truS, s.seed * 5 + ri * 17 + 2);
+  const odd = p => Math.max(1.1, Math.min(300, Math.floor(RC_K.back / Math.max(p, 0.0008) * 10) / 10));
+  const mx = (a, b) => RC_K.mix * b + (1 - RC_K.mix) * a;   // 人気 = 新聞の見立てと本当の強さを混ぜた確率
+  const pw = pub.w.map((v, i) => mx(v, tru.w[i])), p3 = pub.t3.map((v, i) => mx(v, tru.t3[i]));
+  run.forEach(x => { x.pub = pw[x.i]; x.tru = tru.w[x.i]; x.oW = odd(pw[x.i]); x.oP = Math.max(1.1, Math.floor(odd(p3[x.i]) * 10) / 10); });
+  const pl = { ri, d, name: RC_NAME[ri][Math.floor(r() * 4)], main: ri === 2, run, pub, tru, oQ: (a, b) => { const k = Math.min(a, b) * 8 + Math.max(a, b); return Math.floor(odd(mx(pub.pr[k] || 0, tru.pr[k] || 0) || 0.0008) * (1 + RC_K.q / RC_K.back) * 10) / 10; } };   // 連は少し厚く(当てにくい分)
+  return (RC_CACHE[key] = pl);
+}
+// 結果(着順と着差)。種から決まる
+function rcResult(ri) {
+  const s = rcSt(), pl = rcPlan(ri), r = rcRng(s.seed * 13 + ri * 29 + 7);
+  const sc = pl.run.map(x => x.base + x.cond * 2 + rcGauss(r) * RC_SIG);
+  const o = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]);
+  let g = o.map(i => (sc[o[0]] - sc[i]) * 0.55);
+  for (let k = 1; k < 8; k++) if (g[k] - g[k - 1] < 0.12) g[k] = g[k - 1] + 0.12 + r() * 0.1;   // 重ならない(着差の最小)
+  if (g[7] > 9) g = g.map(v => v * 9 / g[7]);
+  return { o, g };
+}
+const rcMargin = d => d < 0.2 ? 'ハナ' : d < 0.35 ? 'アタマ' : d < 0.6 ? 'クビ' : d < 0.85 ? '1/2竜身' : `${Math.round(d * 2) / 2}竜身`;
+// 券が当たったか・払い戻し(枚)
+function rcPay(t, o) {
+  if (t.ty === 'win') return o[0] === t.a ? Math.floor(t.n * t.odds) : 0;
+  if (t.ty === 'place') return o.slice(0, 3).includes(t.a) ? Math.floor(t.n * t.odds) : 0;
+  const top = [o[0], o[1]]; return top.includes(t.a) && top.includes(t.b) ? Math.floor(t.n * t.odds) : 0;
+}
+
+// ---------- 開く・閉じる ----------
+function raceOpen() {
+  if (DRC.on || UI.story) return;
+  if (typeof sePreload === 'function') sePreload();
+  if (!rcOpenOK()) return;
+  if (!rcNight()) { toast('<div>空のレースは、夜だけ。夜の工房の時間においで</div>'); return; }
+  closeSheet(true);
+  const s = rcSt();
+  if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; toast(`<div>前のレースの払い戻し コイン +${fmt(s.pend)}枚</div>`); s.pend = 0; }
+  if (s.lastNight !== G.day) { s.lastNight = G.day; s.nights = (s.nights || 0) + 1; }
+  const el = document.createElement('div'); el.id = 'rcscene'; el.className = 'ar-scene rc-scene';
+  el.innerHTML = `<div class="ar-bg rc-bgv" style="background-image:url(${IMG_BASE}bg_rc_venue.webp)"></div><div class="ar-vig"></div>` +
+    `<div class="ar-top"><div class="ar-where"><b>空のレース場</b><small id="rcsub"></small></div><div class="rc-topr"><span class="cas-coins rc-coins" id="rccoin"></span><button class="ar-x" data-act="rcback" id="rcx">帰る</button></div></div>` +
+    `<div class="rc-main" id="rcmain"></div><div class="ar-fx" id="rcfx"></div>`;
+  document.body.appendChild(el);
+  Object.assign(DRC, { on: true, el, view: 'card', ty: 'win', sel: [], amt: 10, run: null });
+  DRC.ri = Math.min(2, s.res.findIndex(x => !x) < 0 ? 2 : s.res.findIndex(x => !x));
+  rcResize(); window.addEventListener('resize', rcResize);
+  if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
+  sfx('rc_flap'); rcDraw(); save();
+}
+function raceClose() {
+  if (!DRC.on) return;
+  if (DRC.run && !DRC.run.over) return;
+  rcStopRun();
+  const s = rcSt(); if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; s.pend = 0; }
+  DRC.on = false; window.removeEventListener('resize', rcResize);
+  DRC.el.remove(); DRC.el = null; save(); render();
+  if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
+}
+function rcResize() {
+  if (!DRC.on) return;
+  const d = innerWidth >= 900 && !!$('#panel');
+  DRC.el.classList.toggle('docked', d);
+  if (d) { const r = $('#panel').getBoundingClientRect(); Object.assign(DRC.el.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); }
+  else ['left', 'top', 'width', 'height'].forEach(k => DRC.el.style.removeProperty(k));
+}
+
+// ---------- 描く ----------
+const rcIcon = (i, cls) => `<img class="rc-ic ${cls || ''}" src="${rcImg(RC_DR[i].k + '_i')}" alt="">`;
+const rcGate = i => `<span class="rc-num" style="--c:${RC_DR[i].c}">${i + 1}</span>`;
+function rcBar() { $('#rccoin').innerHTML = `<img src="${casImg('sym_coin')}" alt=""><b>${fmt(rcCoins())}</b><small>枚</small>`; }
+const RC_EIR = [['normal', '……竜の目を見て。今日の気分は、目に出る'], ['smile', '調子のいい竜は、翼の音が軽い'], ['normal', '新聞は、昨日までの竜を見てる。今日の竜は、ここでしか見えない'], ['smile', '追込の竜は、最後まで見てて。……来る時は、来る'], ['normal', '逃げる竜は、短い空が好き']];
+function rcDraw() {
+  if (!DRC.on) return;
+  const s = rcSt(); rcBar();
+  $('#rcx').textContent = DRC.view === 'run' ? '…' : '帰る';
+  DRC.el.dataset.view = DRC.view;
+  const M = $('#rcmain');
+  if (DRC.view === 'card') M.innerHTML = rcCardView();
+  else if (DRC.view === 'result') M.innerHTML = rcResultView();
+  $('#rcsub').textContent = DRC.view === 'run' ? '' : `今夜 ${s.res.filter(Boolean).length}/3 レース`;
+  if (DRC.view === 'card' && !s.seen) { s.seen = 1; save(); rcTip(); }
+}
+function rcTip() {
+  const e = document.createElement('div'); e.className = 'ar-tip rc-tip'; e.id = 'rctip';
+  e.innerHTML = `<div class="ar-cardt">空のレース</div><p>毎晩3レース。8頭の竜のうち、どれが勝つかにコインを賭ける。<br><b>新聞の印</b>は昨日までの強さ、<b>パドック</b>は今日の調子。人気(倍率)は新聞に引っ張られるから、調子のいい竜が人気薄なら、狙い目。<br>券は <b>単勝</b>(1着)・<b>複勝</b>(3着まで)・<b>連</b>(1・2着の2頭、順不同)。</p><button class="ar-go" data-act="rctipx">わかった</button>`;
+  DRC.el.appendChild(e);
+}
+function rcCardView() {
+  const s = rcSt(), ri = DRC.ri, pl = rcPlan(ri), done = s.res[ri], D = RC_DIST[pl.d], tix = s.tix[ri];
+  const tabs = [0, 1, 2].map(i => { const p = rcPlan(i); return `<button class="rc-rtab${i === ri ? ' on' : ''}${s.res[i] ? ' done' : ''}" data-act="rcri" data-v="${i}"><b>${i === 2 ? 'メイン' : `第${i + 1}R`}</b><small>${RC_DIST[p.d].n}${s.res[i] ? '・済' : ''}</small></button>`; }).join('');
+  const sel = DRC.sel, ty = DRC.ty;
+  const rows = pl.run.map(x => {
+    const dr = RC_DR[x.i], c = RC_COND[x.padd + 2], on = sel.includes(x.i);
+    const fit = dr.d === pl.d ? '<span class="rc-fit up">得意</span>' : (dr.d !== 'm' && pl.d !== 'm') ? '<span class="rc-fit dn">苦手</span>' : '<span class="rc-fit">ふつう</span>';
+    const place = done ? done.o.indexOf(x.i) + 1 : 0;
+    return `<button class="rc-row${on ? ' on' : ''}${place ? ' p' + place : ''}" data-act="rcsel" data-v="${x.i}"${done ? ' disabled' : ''}>${rcGate(x.i)}${rcIcon(x.i)}` +
+      `<span class="rc-nm"><b>${dr.n}</b><small>${RC_ST[dr.st]}・${fit}</small></span>` +
+      `<span class="rc-cd ${c.c}"><small>パドック</small>${c.n}</span><span class="rc-mk">${x.mark >= 0 ? RC_MARK[x.mark] : ''}</span>` +
+      `<span class="rc-od">${place ? `<b class="rc-pl">${place}着</b>` : `<small>単勝</small><b>×${x.oW.toFixed(1)}</b>`}</span></button>`;
+  }).join('');
+  const eir = RC_EIR[(G.day + ri) % RC_EIR.length];
+  let bet = '';
+  if (done) bet = `<div class="rc-bet"><div class="rc-betnote">このレースは終わった。${ri < 2 && !s.res[ri + 1] ? '' : ''}</div><div class="ar-acts"><button class="ar-go" data-act="rcres" data-v="${ri}">結果を見る</button>${s.res.every(Boolean) ? '' : `<button class="ar-go hot" data-act="rcri" data-v="${s.res.findIndex(x => !x)}">次のレースへ</button>`}</div></div>`;
+  else {
+    const need = ty === 'quin' ? 2 : 1, ok = sel.length === need, coins = rcCoins();
+    const od = !ok ? 0 : ty === 'win' ? pl.run[sel[0]].oW : ty === 'place' ? pl.run[sel[0]].oP : pl.oQ(sel[0], sel[1]);
+    const tys = Object.entries(RC_TY).map(([k, t]) => `<button class="ar-chip${ty === k ? ' on' : ''}" data-act="rcty" data-v="${k}">${t.n}<small>${t.d}</small></button>`).join('');
+    const amts = RC_AMT.map(a => `<button class="ar-chip${DRC.amt === a ? ' on' : ''}" data-act="rcamt" data-v="${a}"${a > coins ? ' disabled' : ''}>${a}枚</button>`).join('');
+    const tl = tix.map((t, k) => `<span class="rc-tk">${RC_TY[t.ty].n} ${t.ty === 'quin' ? `${t.a + 1}-${t.b + 1}` : t.a + 1} ${RC_DR[t.a].n}${t.ty === 'quin' ? '・' + RC_DR[t.b].n : ''} ${t.n}枚 ×${t.odds.toFixed(1)}<button data-act="rcdel" data-v="${k}">×</button></span>`).join('');
+    const tot = tix.reduce((a, t) => a + t.n, 0);
+    bet = `<div class="rc-bet"><div class="ar-chips rc-tys">${tys}</div><div class="ar-betrow"><span class="ar-lbl">1枚の券</span><div class="ar-chips">${amts}</div></div>` +
+      `<div class="ar-acts two"><button class="ar-go" data-act="rcbuy"${ok && coins >= DRC.amt ? '' : ' disabled'}>${!ok ? (need === 2 ? '竜を2頭えらぶ' : '竜をえらぶ') : `券を買う ${DRC.amt}枚・当たれば ${fmt(Math.floor(DRC.amt * od))}枚`}</button>` +
+      `<button class="ar-go hot" data-act="rcgo">${tix.length ? `発走!(券 ${tix.length}枚・${fmt(tot)}枚)` : '見るだけで発走'}</button></div>` +
+      (tl ? `<div class="rc-tks">${tl}</div>` : '') + (casOpenOK() ? '' : `<div class="rc-betnote">コインは港のクラブで買える</div>`) + `</div>`;
+  }
+  return `<div class="rc-card"><div class="rc-rtabs">${tabs}</div>` +
+    `<div class="rc-head"><b>${pl.main ? '<span class="rc-main-t">メイン</span>' : ''}${pl.name}</b><small>${D.n} ${D.m}・8頭</small></div>` +
+    `<div class="ar-mc rc-eir"><img src="${chURL('eir', eir[0])}" alt="エイル"><div><b>エイル</b><p>${esc(eir[1])}</p></div></div>` +
+    `<div class="rc-rows">${rows}</div>${bet}</div>`;
+}
+function rcResultView() {
+  const s = rcSt(), ri = DRC.ri, res = s.res[ri], pl = rcPlan(ri); if (!res) return '';
+  const rows = res.o.map((i, k) => `<div class="rc-rrow p${k + 1}"><b class="rc-pl">${k + 1}着</b>${rcGate(i)}${rcIcon(i)}<span class="rc-nm"><b>${RC_DR[i].n}</b><small>${RC_ST[RC_DR[i].st]}・単勝 ×${pl.run[i].oW.toFixed(1)}</small></span><span class="rc-mg">${k ? rcMargin(res.g[k] - res.g[k - 1]) : ''}</span></div>`).join('');
+  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0), bet = tix.reduce((a, t) => a + t.n, 0);
+  const tl = tix.map(t => { const p = rcPay(t, res.o); return `<span class="rc-tk${p ? ' hit' : ' miss'}">${RC_TY[t.ty].n} ${RC_DR[t.a].n}${t.ty === 'quin' ? '・' + RC_DR[t.b].n : ''} ${t.n}枚 → ${p ? `<b>+${fmt(p)}枚</b>` : 'はずれ'}</span>`; }).join('');
+  const next = s.res.findIndex(x => !x);
+  return `<div class="rc-card rc-res"><div class="rc-head"><b>${pl.name}・結果</b><small>${RC_DIST[pl.d].n} ${RC_DIST[pl.d].m}</small></div>` +
+    (tix.length ? `<div class="rc-sum${got ? ' hit' : ''}"><b>${got ? `払い戻し +${fmt(got)}枚` : '券は、紙くずになった'}</b><small>賭けた ${fmt(bet)}枚</small></div><div class="rc-tks">${tl}</div>` : '') +
+    `<div class="rc-rows">${rows}</div><div class="ar-acts">${next >= 0 ? `<button class="ar-go hot" data-act="rcri" data-v="${next}">${next === 2 ? 'メインレースへ' : '次のレースへ'}</button>` : `<button class="ar-go" data-act="rcback">今夜はおしまい</button>`}</div></div>`;
+}
+
+// ---------- レース ----------
+function rcStopRun() { const R = DRC.run; if (!R) return; cancelAnimationFrame(R.raf); if (R.wind) seLoopStop(R.wind); R.wind = null; }
+const rcSmooth = (a, b, t) => { const x = Math.max(0, Math.min(1, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
+const RC_EARLY = { nige: 3.2, senko: 1.3, sashi: -0.8, oikomi: -2.6 };
+const RC_LANE = [0, 4, 1, 5, 2, 6, 3, 7];   // ゴールの高さ(隣の着順は離す)
+function rcStart() {
+  const s = rcSt(), ri = DRC.ri, pl = rcPlan(ri), res = rcResult(ri);
+  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0);
+  s.res[ri] = res; s.pend += got;   // 結果は先に保存(閉じても払い戻しは残る)
+  const bet = tix.reduce((a, t) => a + t.n, 0); s.bet = (s.bet || 0) + bet; s.back = (s.back || 0) + got; if (got) s.hits = (s.hits || 0) + 1; if (got > (s.best || 0)) s.best = got;
+  save();
+  DRC.view = 'run'; rcDraw();
+  const M = $('#rcmain');
+  M.innerHTML = `<div class="rc-stage" id="rcstage"><div class="rc-l rc-sky"></div><div class="rc-l rc-cloud"></div><div class="rc-l rc-ground"></div><img class="rc-goal" id="rcgoal" src="${rcImg('goal')}" alt="">` +
+    RC_DR.map((d, i) => { const p = RC_PIV[d.k], o = `${(p[0] / 220 * 100).toFixed(1)}% ${(p[1] / 230 * 100).toFixed(1)}%`;
+      return `<div class="rc-dr" id="rcd${i}"><img class="w2" src="${rcImg(d.k + '_wd')}" style="transform-origin:${o}" alt=""><img class="bd" src="${rcImg(d.k + '_b')}" alt=""><img class="w1" src="${rcImg(d.k + '_w')}" style="transform-origin:${o}" alt=""><span class="rc-tag" style="--c:${d.c}">${i + 1} ${d.n}</span></div>`; }).join('') +
+    `<div class="rc-photo" id="rcphoto"></div><div class="rc-live" id="rclive"></div><div class="rc-fast">タップで早送り</div></div>`;
+  const st = $('#rcstage');
+  const rv = Math.random;   // 見た目だけの揺らぎ(結果には効かない)
+  const dr = RC_DR.map((d, i) => {
+    const k = res.o.indexOf(i);
+    return { i, el: $('#rcd' + i), w1: null, w2: null, k, g: res.g[k], early: RC_EARLY[d.st], f1: 1 + rv(), f2: 2.5 + rv() * 1.5, p1: rv() * 6.28, p2: rv() * 6.28, alt: rv(), tgt: rv(), nextT: 0.5 + rv(), ph: rv() * 6.28, x: 0, crossed: false };
+  });
+  dr.forEach(o => { o.w1 = o.el.querySelector('.w1'); o.w2 = o.el.querySelector('.w2'); });
+  const R = DRC.run = { pl, res, dr, t0: performance.now(), last: performance.now(), T: 0, dur: RC_DIST[pl.d].sec, U: 60, cam: 0, lpx: 0, bg: [0, 0, 0], spd: 1, fast: 1, ev: {}, lead: -1, leadT: 0, over: false, photo: res.g[1] - res.g[0] < 0.25, got, tix: tix.length };
+  st.addEventListener('pointerdown', () => { if (!R.over) R.fast = 3; });
+  sfx('rc_gun'); setTimeout(() => sfx('rc_flap'), 180);
+  R.wind = typeof seLoopStart === 'function' ? seLoopStart('se_rc_wind.mp3') : null;
+  rcLive('スタート! 8頭そろって飛び立った!');
+  const frame = now => {
+    if (!DRC.on || DRC.run !== R) return;
+    const dt = Math.min(0.05, (now - R.last) / 1000) * R.fast; R.last = now;
+    if (!R.hold) R.T += dt / R.dur;
+    rcFrame(R, dt);
+    if (R.wind) seLoopVol(R.wind, R.T < 1 ? 0.5 + 0.3 * rcSmooth(0.6, 0.9, R.T) : Math.max(0, 0.8 - (R.T - 1) * 3));
+    R.raf = requestAnimationFrame(frame);
+  };
+  R.raf = requestAnimationFrame(frame);
+}
+function rcLive(t) { const e = $('#rclive'); if (e) { e.innerHTML = t; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } }
+function rcFrame(R, dt) {
+  const st = $('#rcstage'); if (!st) return;
+  const W = st.clientWidth, H = st.clientHeight, T = R.T;
+  const dW = Math.max(64, Math.min(150, W * 0.16, H * 0.2)), dH = dW * 230 / 220;
+  // 位置(竜身)。序盤は脚質と揺らぎ、後半は決まった着差へ寄せる
+  const pos = o => {
+    const tt = Math.min(T, 1);
+    const wob = 0.7 * Math.sin(6.283 * (o.f1 * tt) + o.p1) + 0.45 * Math.sin(6.283 * (o.f2 * tt) + o.p2);
+    const early = (o.early + wob) * rcSmooth(0, 0.18, tt) + (RC_DR[o.i].st === 'sashi' ? 0.8 * rcSmooth(0.45, 0.6, tt) : 0);
+    const w = rcSmooth(0.55, 0.97, tt), r = (1 - w) * early + w * -o.g;
+    return R.U * T + (T > 1 ? -o.g : r);
+  };
+  const S = R.dr.map(pos), lead = S.indexOf(Math.max(...S));
+  const spread = Math.max(...S) - Math.min(...S);
+  const lpx0 = Math.min(dW * 0.8, (W * 0.6) / Math.max(1, spread));
+  R.lpx = R.lpx ? R.lpx + (lpx0 - R.lpx) * Math.min(1, dt * 3) : lpx0;
+  if (T <= 1) R.cam = Math.max(...S);   // カメラは先頭について行き、ゴールの後は止まる
+  const sx = v => W * 0.66 + (v - R.cam) * R.lpx;
+  // 背景(空・雲・地面)。ゴールの後はゆっくり
+  const sp = R.hold ? 0 : T < 1 ? 1 + 0.25 * rcSmooth(0.65, 0.9, T) : Math.max(0.3, 1.25 - (T - 1) * 6);
+  [0.85, 2.1, 5].forEach((v, k) => { R.bg[k] -= v * H * sp * dt; });
+  const L = st.querySelectorAll('.rc-l'); L.forEach((e, k) => { e.style.backgroundPositionX = (R.bg[k] % (H * 2)) + 'px'; });
+  // ゴール門
+  const g = $('#rcgoal'); const gx = sx(R.U); if (g) { g.style.display = gx < W + 300 ? '' : 'none'; g.style.transform = `translateX(${gx - g.clientWidth * 0.5}px)`; }
+  // 高さ
+  const y0 = H * 0.1, y1 = H * 0.58;
+  R.dr.forEach((o, n) => {
+    if (T > 0.86) { if (!R.lanes) R.lanes = rcLanes(R, dW, dH, (y1 - y0), lpx0); o.tgt = R.lanes[o.k]; }
+    else if (T * R.dur > o.nextT) { o.tgt = Math.random(); o.nextT = T * R.dur + 1 + Math.random() * 1.5; }
+    o.alt += (o.tgt - o.alt) * Math.min(1, dt * (T > 0.86 ? 2.6 : 1.6));
+    const surge = T > 0.62 && T < 1.02;
+    o.ph += dt * 6.283 * (surge ? 3.3 : 2.3);
+    const a = -10 + 28 * Math.sin(o.ph);
+    const x = sx(S[n]) - dW * 0.62, y = y0 + o.alt * (y1 - y0) - Math.sin(o.ph) * 2.5, sc = 0.86 + o.alt * 0.2;
+    o.el.style.cssText = `width:${dW}px;height:${dH}px;transform:translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${sc.toFixed(3)});z-index:${10 + Math.round(o.alt * 20)}`;
+    o.w1.style.transform = `rotate(${a.toFixed(1)}deg)`; o.w2.style.transform = `rotate(${(a * 0.7 - 8).toFixed(1)}deg)`;
+    if (!o.crossed && S[n] >= R.U) { o.crossed = true; R.nCross = (R.nCross || 0) + 1; if (R.nCross === 1) rcFirstCross(R); }
+  });
+  // 実況・音
+  const nm = i => RC_DR[i].n, ord = S.map((v, i) => i).sort((a, b) => S[b] - S[a]);
+  if (R.lead !== lead && T > 0.12 && T < 0.97) { if (R.lead >= 0 && R.T - R.leadT > 0.06) { rcLive(`${nm(lead)}が先頭に立った!`); sfx('rc_flaps'); } R.lead = lead; R.leadT = R.T; }
+  const ev = (k, at, fn) => { if (!R.ev[k] && T >= at) { R.ev[k] = 1; fn(); } };
+  ev('a', 0.2, () => rcLive(`先頭は${nm(ord[0])}。${nm(ord[1])}が続く。${RC_ST[RC_DR[ord[7]].st] === '追込' ? `${nm(ord[7])}は最後方で待つ` : `しんがりは${nm(ord[7])}`}`));
+  ev('b', 0.45, () => { const mid = ord.slice(3).find(i => ['sashi', 'oikomi'].includes(RC_DR[i].st)); rcLive(mid != null ? `中団から${nm(mid)}、じわりと上がっていく` : `${nm(ord[0])}、リードを保って半ばを過ぎた`); });
+  ev('c', 0.66, () => { rcLive('最後の直線!'); sfx('rc_whoosh'); });
+  ev('d', 0.8, () => { rcLive(`${nm(ord[0])}先頭! ${nm(ord[1])}が迫る! ${nm(ord[2])}も来た!`); sfx('rc_cheer'); });
+  if (R.nCross === 8 && !R.endT) R.endT = T;
+  if (R.endT && T > R.endT + 0.06 && !R.over) rcFinish(R);
+}
+// ゴールの高さ: 着順に1頭ずつ、先に決めた竜と重ならない高さを選ぶ(横の差 = 着差×1竜身の幅)
+function rcLanes(R, dW, dH, span, lpx) {
+  const g = R.res.g, L = [], bw = dW * 0.65, bh = dH * 0.55;
+  for (let k = 0; k < 8; k++) {
+    let best = 0, bc = 1e9;
+    for (let n = 0; n <= 14; n++) {
+      const y = n / 14; let c = 0;
+      for (let j = 0; j < k; j++) { const ox = Math.max(0, bw - Math.abs(g[k] - g[j]) * lpx), oy = Math.max(0, bh - Math.abs(y - L[j]) * span); c = Math.max(c, ox * oy); }
+      c += Math.abs(y - RC_LANE[k] / 7) * 0.01;
+      if (c < bc) { bc = c; best = y; }
+    }
+    L.push(best);
+  }
+  return L;
+}
+function rcFirstCross(R) {
+  const w = RC_DR[R.res.o[0]].n;
+  if (R.photo) {
+    rcLive('ほとんど並んでゴール! ……写真判定!'); const p = $('#rcphoto'); if (p) { p.innerHTML = '<b>写真判定</b>'; p.classList.add('on'); }
+    sfx('ar_bet');
+    R.hold = true; setTimeout(() => { R.hold = false; if (p) p.classList.remove('on'); rcLive(`判定の結果……${w}、1着!`); sfx('good'); }, 1600 / R.fast);
+  } else rcLive(`${w}、いま1着でゴール!`);
+}
+function rcFinish(R) {
+  R.over = true; rcStopRun();
+  const s = rcSt();
+  if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; s.pend = 0; }
+  save();
+  setTimeout(() => {
+    if (!DRC.on || DRC.run !== R) return;
+    DRC.run = null; DRC.view = 'result'; rcDraw();
+    if (R.got) { sfx(R.got >= 1000 ? 'great' : 'coin'); flyCoins(1); if (R.got >= 1000 && typeof confetti === 'function') confetti(); }
+  }, 700);
+}
+
+// ---------- 押した時 ----------
+function rcAct(a, v) {
+  if (!DRC.on) return;
+  const s = rcSt();
+  if (a === 'rctipx') { const t = $('#rctip'); if (t) t.remove(); sfx('tap'); return; }
+  if (DRC.run) return;
+  if (a === 'rcback') { if (DRC.view === 'result') { DRC.view = 'card'; } raceClose(); return; }
+  if (a === 'rcri') { DRC.ri = +v; DRC.sel = []; DRC.view = 'card'; sfx('tab'); rcDraw(); return; }
+  if (a === 'rcres') { DRC.ri = +v; DRC.view = 'result'; sfx('tab'); rcDraw(); return; }
+  if (a === 'rcty') { DRC.ty = v; if (v !== 'quin') DRC.sel = DRC.sel.slice(-1); sfx('tab'); rcDraw(); return; }
+  if (a === 'rcamt') { DRC.amt = +v; sfx('tab'); rcDraw(); return; }
+  if (a === 'rcsel') { const i = +v, need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.includes(i)) DRC.sel = DRC.sel.filter(x => x !== i); else { DRC.sel.push(i); if (DRC.sel.length > need) DRC.sel.shift(); } sfx('tap'); rcDraw(); return; }
+  if (a === 'rcbuy') {
+    const pl = rcPlan(DRC.ri), need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.length !== need || s.res[DRC.ri] || !casOpenOK()) return;
+    const c = casSt(); if (c.coins < DRC.amt) return;
+    const [x, y] = DRC.sel, odds = DRC.ty === 'win' ? pl.run[x].oW : DRC.ty === 'place' ? pl.run[x].oP : pl.oQ(x, y);
+    c.coins -= DRC.amt; s.tix[DRC.ri].push({ ty: DRC.ty, a: DRC.ty === 'quin' ? Math.min(x, y) : x, b: DRC.ty === 'quin' ? Math.max(x, y) : -1, n: DRC.amt, odds });
+    save(); sfx('ar_bet'); rcDraw(); return;
+  }
+  if (a === 'rcdel') { const t = s.tix[DRC.ri].splice(+v, 1)[0]; if (t && casOpenOK()) casSt().coins += t.n; save(); sfx('tap'); rcDraw(); return; }
+  if (a === 'rcgo') { if (s.res[DRC.ri]) return; rcStart(); return; }
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#rcscene [data-act]'); if (!b || b.disabled) return; e.stopPropagation(); rcAct(b.dataset.act, b.dataset.v); }, true);
+// 施設のカード(竜騎士の厩舎の隣)
+function rcRow() {
+  if (!G || G.stage < 4) return '';
+  const ok = rcOpenOK(), n = rcNight();
+  return facCard({ act: 'race', bg: 'bg_rc_venue', ch: 'eir', n: '空のレース場', who: 'エイル', dis: !ok || !n, tag: !ok ? '' : n ? '' : '夜だけ',
+    chips: !ok ? [[0, '竜騎士の厩舎ができると開く']] : [[0, '毎晩3レース・コインで賭ける']].concat(n && casOpenOK() ? [[0, `コイン ${fmt(casSt().coins)}枚`]] : []) });
+}
+try { window.__rc = { RC_K, RC_CACHE, DRC, RC_DR, rcSt, rcPlan, rcResult, rcPay, raceOpen, raceClose, rcAct, rcStart }; } catch (e) { }
 
 // ---- onsen.js ----
 // ---------- 温泉(No.287・2026-11-13 作者): 宿屋の札。夜に一度、湯に入ると体力が全部戻り、住人どうしの会話を1本聞く ----------
