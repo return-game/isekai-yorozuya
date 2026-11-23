@@ -3754,6 +3754,13 @@ body.btl-open{overflow:hidden}
 @keyframes rcflash{from{background:#fff}to{background:rgba(255,255,255,.35)}}
 .rc-tip{z-index:60}
 @media (max-width:480px){.rc-row{grid-template-columns:22px 40px 1fr auto 18px 56px;gap:4px;padding:3px 6px 3px 4px}.rc-ic{width:40px;height:34px}.rc-nm b{font-size:14px}.rc-od b{font-size:14px}}
+/* No.372 レース場でコインを買う・厩舎の「レース場」ボタン */
+.rc-buyb{white-space:nowrap;border-color:var(--gold)!important;color:#ffe3a0!important}
+.rc-buy .rc-buys{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.rc-buy .rc-betnote{text-align:center}
+.stab.rc-factab{border-color:rgba(255,190,110,.7)}
+.stab.rc-factab:disabled{opacity:.5;cursor:default}
+@media (max-width:520px){.rc-topr{gap:5px}.rc-buyb{padding-left:8px!important;padding-right:8px!important;font-size:12px!important}}
 
 </style>
 <div id="app">
@@ -3786,7 +3793,7 @@ const assetU = p => { const P = window.__IMGP, v = P && P[p]; if (!v) return p +
 const imgU = n => assetU(IMG_BASE + n);
 const CH_FILES = new Set(["ch_bard_normal", "ch_bard_smile", "ch_bard_surprise", "ch_bard_trouble", "ch_borg_normal", "ch_borg_smile", "ch_borg_surprise", "ch_borg_trouble", "ch_chancellor_normal", "ch_chancellor_smile", "ch_chancellor_surprise", "ch_chancellor_trouble", "ch_chief_normal", "ch_chief_smile", "ch_chief_surprise", "ch_chief_trouble", "ch_clara_blush", "ch_clara_joy", "ch_clara_normal", "ch_clara_pout", "ch_clara_smile", "ch_clara_surprise", "ch_clara_tears", "ch_clara_trouble", "ch_colette_normal", "ch_colette_pout", "ch_colette_smile", "ch_colette_surprise", "ch_colette_trouble", "ch_dahlia_normal", "ch_dahlia_smile", "ch_dahlia_surprise", "ch_dahlia_trouble", "ch_dealer_normal", "ch_dealer_smile", "ch_dealer_surprise", "ch_dealer_trouble", "ch_eir_normal", "ch_eir_smile", "ch_eir_surprise", "ch_eir_trouble", "ch_gantz_normal", "ch_gantz_smile", "ch_gantz_surprise", "ch_gantz_trouble", "ch_gozu_normal", "ch_gozu_smile", "ch_gozu_surprise", "ch_gozu_trouble", "ch_guild_normal", "ch_guild_smile", "ch_guild_surprise", "ch_guild_trouble", "ch_hal_normal", "ch_hal_smile", "ch_hal_surprise", "ch_hal_trouble", "ch_irma_normal", "ch_irma_pout", "ch_irma_smile", "ch_irma_surprise", "ch_irma_trouble", "ch_jin_normal", "ch_jin_smile", "ch_jin_surprise", "ch_jin_trouble", "ch_johan_normal", "ch_johan_smile", "ch_johan_surprise", "ch_johan_trouble", "ch_licorice_normal", "ch_licorice_smile", "ch_licorice_surprise", "ch_licorice_trouble", "ch_luca2_normal", "ch_luca2_smile", "ch_luca2_surprise", "ch_luca2_trouble", "ch_luca_normal", "ch_luca_smile", "ch_luca_surprise", "ch_luca_trouble", "ch_lute_normal", "ch_lute_smile", "ch_lute_surprise", "ch_lute_trouble", "ch_madame_normal", "ch_madame_smile", "ch_madame_surprise", "ch_madame_trouble", "ch_mina_normal", "ch_mina_smile", "ch_mina_surprise", "ch_mina_trouble", "ch_mira2_normal", "ch_mira2_smile", "ch_mira2_surprise", "ch_mira2_trouble", "ch_mira_normal", "ch_mira_smile", "ch_mira_surprise", "ch_mira_trouble", "ch_mire_normal", "ch_mire_smile", "ch_mire_surprise", "ch_mire_trouble", "ch_mob_dragoon_f", "ch_mob_dragoon_f_normal", "ch_mob_dragoon_f_smile", "ch_mob_dragoon_f_surprise", "ch_mob_dragoon_f_trouble", "ch_mob_dragoon_m", "ch_mob_dragoon_m_normal", "ch_mob_dragoon_m_smile", "ch_mob_dragoon_m_surprise", "ch_mob_dragoon_m_trouble", "ch_mob_dwarf_f", "ch_mob_dwarf_f_normal", "ch_mob_dwarf_f_smile", "ch_mob_dwarf_f_surprise", "ch_mob_dwarf_f_trouble", "ch_mob_dwarf_m", "ch_mob_dwarf_m_normal", "ch_mob_dwarf_m_smile", "ch_mob_dwarf_m_surprise", "ch_mob_dwarf_m_trouble", "ch_mob_elf_f", "ch_mob_elf_f_normal", "ch_mob_elf_f_smile", "ch_mob_elf_f_surprise", "ch_mob_elf_f_trouble", "ch_mob_elf_m", "ch_mob_elf_m_normal", "ch_mob_elf_m_smile", "ch_mob_elf_m_surprise", "ch_mob_elf_m_trouble", "ch_mob_hero_f", "ch_mob_hero_f_normal", "ch_mob_hero_f_smile", "ch_mob_hero_f_surprise", "ch_mob_hero_f_trouble", "ch_mob_hero_m", "ch_mob_hero_m_normal", "ch_mob_hero_m_smile", "ch_mob_hero_m_surprise", "ch_mob_hero_m_trouble", "ch_mob_hunter_f", "ch_mob_hunter_f_normal", "ch_mob_hunter_f_smile", "ch_mob_hunter_f_surprise", "ch_mob_hunter_f_trouble", "ch_mob_hunter_m", "ch_mob_hunter_m_normal", "ch_mob_hunter_m_smile", "ch_mob_hunter_m_surprise", "ch_mob_hunter_m_trouble", "ch_mob_knight_f", "ch_mob_knight_f_normal", "ch_mob_knight_f_smile", "ch_mob_knight_f_surprise", "ch_mob_knight_f_trouble", "ch_mob_knight_m", "ch_mob_knight_m_normal", "ch_mob_knight_m_smile", "ch_mob_knight_m_surprise", "ch_mob_knight_m_trouble", "ch_mob_mage_f", "ch_mob_mage_f_normal", "ch_mob_mage_f_smile", "ch_mob_mage_f_surprise", "ch_mob_mage_f_trouble", "ch_mob_mage_m", "ch_mob_mage_m_normal", "ch_mob_mage_m_smile", "ch_mob_mage_m_surprise", "ch_mob_mage_m_trouble", "ch_mob_noble_f", "ch_mob_noble_f_normal", "ch_mob_noble_f_smile", "ch_mob_noble_f_trouble", "ch_mob_noble_m", "ch_mob_noble_m_normal", "ch_mob_noble_m_smile", "ch_mob_noble_m_trouble", "ch_mob_novice_f", "ch_mob_novice_f_normal", "ch_mob_novice_f_smile", "ch_mob_novice_f_surprise", "ch_mob_novice_f_trouble", "ch_mob_novice_m", "ch_mob_novice_m_normal", "ch_mob_novice_m_smile", "ch_mob_novice_m_surprise", "ch_mob_novice_m_trouble", "ch_mob_peddler_f", "ch_mob_peddler_f_normal", "ch_mob_peddler_f_smile", "ch_mob_peddler_f_trouble", "ch_mob_peddler_m", "ch_mob_peddler_m_normal", "ch_mob_peddler_m_smile", "ch_mob_peddler_m_trouble", "ch_mob_royal_f", "ch_mob_royal_m", "ch_mob_villager_f", "ch_mob_villager_f_normal", "ch_mob_villager_f_smile", "ch_mob_villager_f_trouble", "ch_mob_villager_m", "ch_mob_villager_m_normal", "ch_mob_villager_m_smile", "ch_mob_villager_m_trouble", "ch_mob_warrior_f", "ch_mob_warrior_f_normal", "ch_mob_warrior_f_smile", "ch_mob_warrior_f_surprise", "ch_mob_warrior_f_trouble", "ch_mob_warrior_m", "ch_mob_warrior_m_normal", "ch_mob_warrior_m_smile", "ch_mob_warrior_m_surprise", "ch_mob_warrior_m_trouble", "ch_nene_normal", "ch_nene_smile", "ch_nene_surprise", "ch_nene_trouble", "ch_nezu_normal", "ch_noel_normal", "ch_noel_smile", "ch_noel_surprise", "ch_noel_trouble", "ch_owner_2_down", "ch_owner_2_normal", "ch_owner_down", "ch_owner_normal", "ch_owner_smile", "ch_owner_soft", "ch_owner_surprise", "ch_owner_teen_normal", "ch_owner_trouble", "ch_pom_normal", "ch_pom_smile", "ch_pom_surprise", "ch_pom_trouble", "ch_popo_normal", "ch_priest_normal", "ch_priest_smile", "ch_priest_surprise", "ch_priest_trouble", "ch_queen_blush", "ch_queen_joy", "ch_queen_normal", "ch_queen_normal_2", "ch_queen_pout", "ch_queen_smile", "ch_queen_surprise", "ch_queen_trouble", "ch_seres_normal", "ch_seres_smile", "ch_seres_surprise", "ch_seres_trouble", "ch_victor_normal", "ch_victor_smile", "ch_victor_surprise", "ch_victor_trouble", "ch_zen_normal", "ch_zen_smile", "ch_zen_surprise", "ch_zen_trouble"]);
 const BG_FILES = new Set(["bg_academy", "bg_academy_night", "bg_altar", "bg_arena", "bg_arena_night", "bg_cathedral", "bg_chief", "bg_church", "bg_church_evening", "bg_church_night", "bg_clinic", "bg_clinic_evening", "bg_clinic_night", "bg_club_door", "bg_club_in", "bg_club_table", "bg_fish_hut_lake", "bg_fish_hut_lake_evening", "bg_fish_hut_lake_night", "bg_fish_hut_river", "bg_fish_hut_river_evening", "bg_fish_hut_river_night", "bg_fish_hut_sea", "bg_fish_hut_sea_evening", "bg_fish_hut_sea_night", "bg_fish_lake", "bg_fish_lake_evening", "bg_fish_lake_night", "bg_fish_lake_off", "bg_fish_lake_off_evening", "bg_fish_lake_off_night", "bg_fish_river", "bg_fish_river_evening", "bg_fish_river_night", "bg_fish_river_pool", "bg_fish_river_pool_evening", "bg_fish_river_pool_night", "bg_fish_sea", "bg_fish_sea_evening", "bg_fish_sea_night", "bg_fish_sea_pier", "bg_fish_sea_pier_evening", "bg_fish_sea_pier_night", "bg_gate", "bg_gate_night", "bg_grand_hall", "bg_guild", "bg_guild_evening", "bg_guild_night", "bg_inn", "bg_inn_evening", "bg_inn_night", "bg_knights", "bg_knights_evening", "bg_knights_night", "bg_library", "bg_library_night", "bg_market", "bg_market_night", "bg_office", "bg_office_night", "bg_onsen_f", "bg_onsen_m", "bg_port", "bg_port_night", "bg_pub", "bg_rc_venue", "bg_royallib", "bg_royallib_night", "bg_shop_day", "bg_shop_evening", "bg_shop_night", "bg_shop_old", "bg_smithy", "bg_smithy_evening", "bg_smithy_night", "bg_stable", "bg_stable_evening", "bg_stable_night", "bg_storage", "bg_storage_night", "bg_town_0", "bg_town_1", "bg_town_1_evening", "bg_town_1_morning", "bg_town_1_night", "bg_town_2", "bg_town_2_evening", "bg_town_2_morning", "bg_town_2_night", "bg_town_3", "bg_town_3_evening", "bg_town_3_morning", "bg_town_3_night", "bg_town_4", "bg_town_4_evening", "bg_town_4_morning", "bg_town_4_night", "bg_town_5", "bg_town_5_evening", "bg_town_5_morning", "bg_town_5_night", "bg_treasury", "bg_treasury_night", "bg_workshop", "bg_workshop_up", "ev_ending", "ev_fall", "ev_forge", "ev_forget", "ev_orm", "ev_pact", "ev_rescue", "ev_return", "ev_square"]);
-const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_joker", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_cas_ui_big", "obj_cas_ui_big_down", "obj_cas_ui_btn", "obj_cas_ui_btn_off", "obj_cas_ui_btn_on", "obj_disp_adamant", "obj_disp_copper", "obj_disp_dragongold", "obj_disp_empty", "obj_disp_gold", "obj_disp_iron", "obj_disp_mithril", "obj_disp_seajade", "obj_disp_silver", "obj_disp_starplat", "obj_newsword", "obj_oldsword", "obj_rc_cloud", "obj_rc_goal", "obj_rc_ground", "obj_rc_mist_b", "obj_rc_mist_i", "obj_rc_mist_w", "obj_rc_mist_wd", "obj_rc_obsidian_b", "obj_rc_obsidian_i", "obj_rc_obsidian_w", "obj_rc_obsidian_wd", "obj_rc_ruby_b", "obj_rc_ruby_i", "obj_rc_ruby_w", "obj_rc_ruby_wd", "obj_rc_sky", "obj_rc_smoke_b", "obj_rc_smoke_i", "obj_rc_smoke_w", "obj_rc_smoke_wd", "obj_rc_storm_b", "obj_rc_storm_i", "obj_rc_storm_w", "obj_rc_storm_wd", "obj_rc_thunder_b", "obj_rc_thunder_i", "obj_rc_thunder_w", "obj_rc_thunder_wd", "obj_rc_venus_b", "obj_rc_venus_i", "obj_rc_venus_w", "obj_rc_venus_wd", "obj_rc_wave_b", "obj_rc_wave_i", "obj_rc_wave_w", "obj_rc_wave_wd", "obj_sword", "obj_tiara"]);
+const OBJ_FILES = new Set(["obj_board_boss", "obj_board_bossfail", "obj_board_lose", "obj_board_pact", "obj_board_win", "obj_cas_card_back", "obj_cas_card_club_a", "obj_cas_card_club_j", "obj_cas_card_club_k", "obj_cas_card_club_q", "obj_cas_card_diamond_a", "obj_cas_card_diamond_j", "obj_cas_card_diamond_k", "obj_cas_card_diamond_q", "obj_cas_card_face", "obj_cas_card_heart_a", "obj_cas_card_heart_j", "obj_cas_card_heart_k", "obj_cas_card_heart_q", "obj_cas_card_joker", "obj_cas_card_spade_a", "obj_cas_card_spade_j", "obj_cas_card_spade_k", "obj_cas_card_spade_q", "obj_cas_chip_black", "obj_cas_chip_blue", "obj_cas_chip_green", "obj_cas_chip_red", "obj_cas_chip_white", "obj_cas_roulette_board", "obj_cas_roulette_wheel", "obj_cas_rulebook_cover", "obj_cas_rulebook_page", "obj_cas_slot_body", "obj_cas_slot_body_sea", "obj_cas_slot_body_sky", "obj_cas_slot_lever", "obj_cas_slot_lever_sea", "obj_cas_slot_lever_sky", "obj_cas_suit_club", "obj_cas_suit_diamond", "obj_cas_suit_heart", "obj_cas_suit_spade", "obj_cas_sym_bell", "obj_cas_sym_bell_sea", "obj_cas_sym_bell_sky", "obj_cas_sym_coin", "obj_cas_sym_coin_sea", "obj_cas_sym_coin_sky", "obj_cas_sym_crown", "obj_cas_sym_crown_sea", "obj_cas_sym_crown_sky", "obj_cas_sym_dragon", "obj_cas_sym_dragon_sea", "obj_cas_sym_dragon_sky", "obj_cas_sym_fish", "obj_cas_sym_fish_sea", "obj_cas_sym_fish_sky", "obj_cas_sym_gem", "obj_cas_sym_gem_sea", "obj_cas_sym_gem_sky", "obj_cas_sym_potion", "obj_cas_sym_potion_sea", "obj_cas_sym_potion_sky", "obj_cas_sym_seven", "obj_cas_sym_seven_sea", "obj_cas_sym_seven_sky", "obj_cas_sym_sword", "obj_cas_sym_sword_sea", "obj_cas_sym_sword_sky", "obj_cas_ui_big", "obj_cas_ui_big_down", "obj_cas_ui_btn", "obj_cas_ui_btn_off", "obj_cas_ui_btn_on", "obj_disp_adamant", "obj_disp_copper", "obj_disp_dragongold", "obj_disp_dusk", "obj_disp_empty", "obj_disp_gale", "obj_disp_gold", "obj_disp_iron", "obj_disp_mithril", "obj_disp_seajade", "obj_disp_silver", "obj_disp_starplat", "obj_newsword", "obj_oldsword", "obj_rc_cloud", "obj_rc_goal", "obj_rc_ground", "obj_rc_mist_b", "obj_rc_mist_i", "obj_rc_mist_w", "obj_rc_mist_wd", "obj_rc_obsidian_b", "obj_rc_obsidian_i", "obj_rc_obsidian_w", "obj_rc_obsidian_wd", "obj_rc_ruby_b", "obj_rc_ruby_i", "obj_rc_ruby_w", "obj_rc_ruby_wd", "obj_rc_sky", "obj_rc_smoke_b", "obj_rc_smoke_i", "obj_rc_smoke_w", "obj_rc_smoke_wd", "obj_rc_storm_b", "obj_rc_storm_i", "obj_rc_storm_w", "obj_rc_storm_wd", "obj_rc_thunder_b", "obj_rc_thunder_i", "obj_rc_thunder_w", "obj_rc_thunder_wd", "obj_rc_venus_b", "obj_rc_venus_i", "obj_rc_venus_w", "obj_rc_venus_wd", "obj_rc_wave_b", "obj_rc_wave_i", "obj_rc_wave_w", "obj_rc_wave_wd", "obj_sword", "obj_tiara"]);
 // ---- sprites.js ----
 // ===== Pixel sprites (16x16) =====
 // legend: . clear / o outline / d m l w = main ramp (dark,mid,light,hi)
@@ -15129,6 +15136,9 @@ const FILE_BGM = {
   miningCity: { file: "mining-city.ogg", loop: null },
   stoneRoad: { file: "stone-road.ogg", loop: null },
   arenaScene: { file: "counterattack.ogg", loop: null },
+  raceA: { file: 'MusMus-BGM-039.ogg', loop: null },   // No.372: 竜のレース(作者の音源3曲・開くたびにランダム)
+  raceB: { file: 'MusMus-BGM-053.ogg', loop: null },
+  raceC: { file: 'MusMus-BGM-067.ogg', loop: null },
   academyStory: { file: "musicbox_spiritual_01.ogg", loop: null },
   portStory: { file: "port-merca.ogg", loop: null },
   smithStory: { file: "marche.ogg", loop: null },
@@ -15223,7 +15233,7 @@ async function startFileBgm(track, gain, token) {
   }
 }
 // No.235: 旧BGMの代わり。同じ名前の旧曲 → 章ごとの通常曲(朝市 songA・店先 day・夜 night)・闘技場 arena → 物語の場面は warm
-const FILE_BGM_FALLBACK = { onsenStory: 'night', fishing: 'waterside', casinoNight: 'night', lateMarket: 'songA', lateShop: 'day', lateWorkshop: 'night', pubStory: 'night', shopStory: 'warm', arenaScene: 'arena' };
+const FILE_BGM_FALLBACK = { onsenStory: 'night', fishing: 'waterside', casinoNight: 'night', lateMarket: 'songA', lateShop: 'day', lateWorkshop: 'night', pubStory: 'night', shopStory: 'warm', arenaScene: 'arena', raceA: 'arena', raceB: 'arena', raceC: 'arena' };
 function fileBgmFallback(track) {
   for (const k of [track, FILE_BGM_FALLBACK[track], 'warm']) if (k && TRACKS[k]) return k;
   return null;
@@ -15234,7 +15244,7 @@ function musicKey() {
   if (typeof UI !== 'undefined' && UI.tab === 'pub' && !UI.gauge && G.act === 'work') return G.stage >= 3 ? 'lateWorkshop' : 'night';   // No.209 (作者): 灯り亭に入ったら「灯り亭の夜」(バイトのミニゲームの間はミニゲームの曲)
   if (typeof CAS !== 'undefined' && CAS.on) return casNightBgm();   // No.283: 港のクラブ(仮で夜の曲)
   if (typeof ARN !== 'undefined' && ARN.on) return 'arenaScene';
-  if (typeof DRC !== 'undefined' && DRC.on) return 'arenaScene';   // No.370: 竜のレース(仮で闘技場の曲)   // No.217: 闘技場の勝ち抜き戦
+  if (typeof DRC !== 'undefined' && DRC.on) return DRC.mk || 'raceA';   // No.372: 竜のレースの曲3つ(raceOpen でランダム)   // No.217: 闘技場の勝ち抜き戦
   if (G.act === 'fish') return 'fishing';   // No.289: 釣りは MusMus-BGM-036(読めない時は waterside)
   if (G.act === 'market') return G.stage >= 3 ? 'lateMarket' : 'songA';   // No.194: 朝の市場は「風の通り道」
   if (G.act === 'shop') return G.stage >= 3 ? 'lateShop' : 'day';
@@ -16791,7 +16801,7 @@ function vFacs() {
   const fishOk = typeof fishOn === 'function' && fishOn(), opened = fishOk ? fishOpenSpots().map(x => x.id) : [];
   const fishC = sp => opened.includes(sp.id) ? facCard({ act: 'fshgo', v: sp.id, bg: 'bg_fish_hut_' + sp.id, ch: sp.ch, n: `釣り:${sp.n}`, who: `${sp.place}・${sp.who}`, eye: G.act === 'fish' && G.fishing && G.fishing.spot === sp.id, chips: [[0, G.act === 'fish' && G.fishing && G.fishing.spot === sp.id ? '釣りをしている' : 'いつでも行ける']] }) : unk();
   // No.353(作者): 並びと区切り = 灯り亭・宿屋 | ギルド・診療所・教会・鍛冶通り・闘技場・港のクラブ・騎士団詰所・竜騎士の厩舎 | 釣り 川・湖・海
-  const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac), [typeof rcRow === 'function' ? rcRow() : '']), FISH_SPOTS.map(fishC)];
+  const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac)), FISH_SPOTS.map(fishC)];
   return `<div class="sec facsec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2>` + groups.map(g => g.filter(Boolean)).filter(g => g.length).map(g => `<div class="faccards">${g.join('')}</div>`).join('<div class="facsep"></div>') + `</div>`;
 }
 function facSheet(fid, tab, keepScroll) {
@@ -26885,6 +26895,13 @@ function vResidents() {
 // 大前提(作者): シビアにしない。材料が手に入る・体力に見合う・良い物が高く売れる。朝市で買って施設で売る錬金術は作らない。
 
 // ---------- 第1章の三つの施設の台詞(ネガティブな言葉の後には、店の品のおかげで良くなった事実を必ず続ける) ----------
+// No.372 厩舎に来た時のエイルの話(レース場が開いたことを、最初の一度は必ず話す)
+const RC_TOLD = `
+eir smile 「……店主。空のレース場が、開いた」
+eir normal 「町の竜と、山から来た竜。八頭が、夜の空を競って飛ぶ」
+eir smile 「どの竜が勝つか、コインを賭けて当てる。コインは、レース場でも買える」
+eir normal 「新聞は、昨日までの竜しか見てない。……今日の竜は、パドックで見て」
+eir smile 「夜になったら、上の「レース場」から。待ってる」`;
 const FC = {
   guild: {
     hi: [['smile', '店主さん! いらっしゃいませ……って、ギルドで言うのも変ですね'], ['normal', 'ちょうど、帳簿をつけ終わったところです'], ['smile', '店主さんの道具、今日も棚の一番前に置いてます']],
@@ -27049,7 +27066,11 @@ eir smile 「抜けたうろこは、集めておく。山では、何も捨て�
 eir trouble 「町の子が、竜に石を投げた」
 eir smile 「……竜は、怒らなかった。次の日、その子がりんごを持ってきた。竜は、それを覚えている」` }, { st: 4, t: `
 eir normal 「竜騎士は、竜に乗るんじゃない。竜に、乗せてもらう」
-eir smile 「だから、毎朝、頼む。今日も乗せて、って」` }],
+eir smile 「だから、毎朝、頼む。今日も乗せて、って」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: `
+eir normal 「追込の竜は、最後の直線まで、じっと待つ」
+eir smile 「待てる竜が、いちばん速い。……人も、たぶん同じ」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: `
+eir normal 「パドックで、翼をたたんで動かない竜がいる」
+eir smile 「眠いんじゃない。力をためてる。……そういう竜は、人気がなくても、来る」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: RC_TOLD }],
     ord: { pick: it => ['grilled_meat', 'herb_roast', 'wyvern_steak'].includes(it.id),
       why: ['竜が、遠くまで飛ぶ日。', '若い竜が、はじめて山から下りてきた。', '竜の食が、少し細い。焼いた肉なら、食べる。'],
       ask: ['normal', '{item}を{n}つ、ほしい。……お金は、ちゃんと払う。山では、もらったら同じだけ返す'],
@@ -27145,6 +27166,7 @@ function fcScene(fid, txt, done) {
 }
 function fcTalk(fid) {
   const f = FAC[fid], fc = FC[fid]; if (!f) return;
+  if (fid === 'dragon' && typeof rcToldYet === 'function' && rcToldYet()) { rcSt().told = G.day; save(); const L0 = storyParse(RC_TOLD).filter(l => l.t || l.act); UI.fcLine = { fid, L: L0, i: 0 }; render(); return; }   // No.372
   const list = fc ? fc.talks.filter(t => (t.st === undefined || t.st === G.stage) && (!t.c || t.c())) : [];
   let txt;
   if (list.length) { G.fct = G.fct || {}; const i = (G.fct[fid] || 0) % list.length; G.fct[fid] = i + 1; txt = list[i].t; }
@@ -27171,6 +27193,10 @@ function fcGreet(f, tab) {
   if (fc.out && G.dive && !G.dive.done && G.dive.party && G.dive.party.length) return [fc.out[0], fc.out[1].replace('{name}', G.dive.party[0].n || '冒険者')];
   const b = G.pgBack;
   if (b && b.day === G.day && b.party && b.party.length && b.ok) { if (b.hurt && fc.hurt) return fc.hurt; if (!b.hurt && fc.back) return fc.back; }
+  if (f.id === 'dragon' && typeof rcToldYet === 'function') {   // No.372: レース場が開いたら、まずそれを話したがる
+    if (rcToldYet()) return ['smile', '……店主。話がある。竜の、空のレースのこと'];
+    if (rcOpenOK() && G.day % 3 === 0) return ['smile', rcNight() ? '今夜も、竜が飛ぶ。レース場は、開いてる' : 'レース場は、夜に開く。竜も、夜の空が好き'];
+  }
   const hi = fc.hi5 && G.stage >= 4 ? fc.hi5 : fc.hi;
   return hi[G.day % hi.length];
 }
@@ -27289,7 +27315,7 @@ function vFacPage() {
   let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
   if (f.id === 'arena') tab = 'bout';   // No.223 (作者): 闘技場は入ったら賭けだけ(売る・頼まれごとはなし) UI.facTab = tab;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="factab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'dragon' && typeof rcFacTab === 'function' ? rcFacTab() : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
   const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
   return facFrame(f, tab, tabs, body, `${f.who}・得意: ${f.fav}`);
 }
@@ -27901,11 +27927,15 @@ addRec('lg_sage', [['staff_3', 1], ['crys_light', 1], ['crys_dark', 1], ['cas_st
 [['ingot_dragongold','竜金のインゴット','深紅がかった赤金の延べ棒。竜の巣の金を溶かしたと噂される。カジノでしか手に入らない。',2,75],
  ['ingot_seajade','深海翠のインゴット','深い翠の延べ棒。海の底の光を閉じこめたような色。カジノでしか手に入らない。',3,113],
  ['ingot_starplat','星白金のインゴット','白金に星の輝きが走る延べ棒。カジノでしか手に入らない最上の金属。',3,150],
+ // No.372 コインでしか取れない一式の第2弾(作者 2026-11-24 了承・連絡帳 No.369)。売値は同じく交換の枚数の約15%
+ ['ingot_gale','疾風のインゴット','銀緑に白い風の筋が走る延べ棒。竜の手綱の金具に使われる。コインでしか手に入らない。',3,375],
+ ['ingot_dusk','宵闇のインゴット','深い藍に月の銀が浮かぶ延べ棒。夜にだけ鈍く光る。コインでしか手に入らない。',4,600],
 ].forEach(([id,n,d,st,v]) => addItem(id, n, 'mat', { sh: 'ingot', m: 'gold' }, { st, v, raw: true, casOnly: true, sub: 'カジノ限定のインゴット', desc: d }));
 // No.312 カジノ限定のインゴットの一式 18品(作者 2026-11-15)。冒険者に装備させる武具で、シリーズ装備としてマネキンにも飾る。
 // 3金属とも Lv20・強さは同じ(集める順は、インゴットの枚数 100/150/200 の差で決まる)。作り方は伝説の武具と同じ形:
 // 「その金属のインゴット+アダマンタイトのインゴット+属性の結晶か革か布」。インゴットの数は 剣2・盾2・兜2・鎧4・籠手1・脚甲1。
-const CAS_SET_METAL = { dragongold: ['竜金', 'fire', '深紅の竜の血を思わせる'], seajade: ['深海翠', 'water', '波の紋が走る'], starplat: ['星白金', 'light', '星と月の光が散る'] };
+const CAS_SET_METAL = { dragongold: ['竜金', 'fire', '深紅の竜の血を思わせる'], seajade: ['深海翠', 'water', '波の紋が走る'], starplat: ['星白金', 'light', '星と月の光が散る'],
+  gale: ['疾風', 'wind', '風と羽根の意匠をまとう'], dusk: ['宵闇', 'dark', '月と夜の影を映す'] };
 const CAS_SET_PART = [
   // 部位, sub, インゴット数, 追加の素材, 作る時間
   ['sword', '武器', 2, c => [['crys_' + c, 2]], 4],
@@ -27919,6 +27949,8 @@ const CAS_SET_NAME = {
   dragongold: { sword: '竜血の黄金剣', shield: '紅金竜翼の盾', helmet: '紅金竜の騎士兜', armor: '真紅の竜翼金鎧', gauntlet: '紅金竜の籠手', boots: '紅金竜の脚甲' },
   seajade: { sword: '海翡翠の波紋宝剣', shield: '海翡翠の紋章盾', helmet: '深海翡翠の三鰭王冠兜', armor: '海碧の波紋胸甲', gauntlet: '海翠の波紋籠手', boots: '海翡翠の装甲脚甲' },
   starplat: { sword: '星月の白金長剣', shield: '星月紋の白金盾', helmet: '三日月冠の白金兜', armor: '白銀星月の星板鎧', gauntlet: '星月紋の白銀籠手', boots: '星輝く白銀の脚甲' },
+  gale: { sword: '疾風の羽刃剣', shield: '疾風の翼紋盾', helmet: '疾風の羽飾り兜', armor: '疾風の竜騎鎧', gauntlet: '疾風の手綱籠手', boots: '疾風の翔け脚甲' },
+  dusk: { sword: '宵闇の月影剣', shield: '宵闇の三日月盾', helmet: '宵闇の月冠兜', armor: '宵闇の影織鎧', gauntlet: '宵闇の影籠手', boots: '宵闇の夜歩き脚甲' },
 };
 const CAS_SET_DESC = { sword: '剣', shield: '盾', helmet: '兜', armor: '鎧', gauntlet: '籠手', boots: '脚甲' };
 Object.keys(CAS_SET_METAL).forEach(mk => {
@@ -27950,6 +27982,8 @@ function casPrizes() {
     { id: 'ingot_dragongold', q: 1, c: 100 },   // No.309
     { id: 'ingot_seajade', q: 1, c: 150 },
     { id: 'ingot_starplat', q: 1, c: 200 },
+    { id: 'ingot_gale', q: 1, c: 500 },   // No.372
+    { id: 'ingot_dusk', q: 1, c: 800 },
 ].filter(p => IT[p.id] && p.c > 0);
 }
 
@@ -29001,13 +29035,15 @@ const RC_SIG = 4;       // 揺らぎ(強さの点)
 const rcImg = n => imgU('obj_rc_' + n);
 const rcOpenOK = () => !!(G && G.stage >= 4 && G.built && G.built.dragon);
 const rcNight = () => G.act === 'work' || G.phase === 'night';
-const rcCoins = () => (typeof casOpenOK === 'function' && casOpenOK()) ? casSt().coins : 0;
+// No.372(作者): コインはレース場でも買える。港のクラブの招待がなくても、コインはここで使える
+const rcCoinOK = () => typeof casSt === 'function';
+const rcCoins = () => rcCoinOK() ? casSt().coins : 0;
 
 function rcRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const rcGauss = r => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
 function rcSt() {
   const s = G.race || (G.race = {});
-  if (s.day !== G.day) { const keep = { best: s.best || 0, hits: s.hits || 0, bet: s.bet || 0, back: s.back || 0, nights: s.nights || 0, seen: s.seen || 0, pend: s.pend || 0 }; for (const k in s) delete s[k]; Object.assign(s, keep, { day: G.day, seed: (Math.random() * 2 ** 31) >>> 0, tix: [[], [], []], res: [null, null, null], ri: 0 }); }
+  if (s.day !== G.day) { const keep = { best: s.best || 0, hits: s.hits || 0, bet: s.bet || 0, back: s.back || 0, nights: s.nights || 0, seen: s.seen || 0, pend: s.pend || 0, told: s.told || 0 }; for (const k in s) delete s[k]; Object.assign(s, keep, { day: G.day, seed: (Math.random() * 2 ** 31) >>> 0, tix: [[], [], []], res: [null, null, null], ri: 0 }); }
   if (!Array.isArray(s.tix)) s.tix = [[], [], []];
   if (!Array.isArray(s.res)) s.res = [null, null, null];
   return s;
@@ -29070,14 +29106,14 @@ function raceOpen() {
   if (!rcNight()) { toast('<div>空のレースは、夜だけ。夜の工房の時間においで</div>'); return; }
   closeSheet(true);
   const s = rcSt();
-  if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; toast(`<div>前のレースの払い戻し コイン +${fmt(s.pend)}枚</div>`); s.pend = 0; }
+  if (s.pend > 0 && rcCoinOK()) { casSt().coins += s.pend; toast(`<div>前のレースの払い戻し コイン +${fmt(s.pend)}枚</div>`); s.pend = 0; }
   if (s.lastNight !== G.day) { s.lastNight = G.day; s.nights = (s.nights || 0) + 1; }
   const el = document.createElement('div'); el.id = 'rcscene'; el.className = 'ar-scene rc-scene';
   el.innerHTML = `<div class="ar-bg rc-bgv" style="background-image:url(${IMG_BASE}bg_rc_venue.webp)"></div><div class="ar-vig"></div>` +
-    `<div class="ar-top"><div class="ar-where"><b>空のレース場</b><small id="rcsub"></small></div><div class="rc-topr"><span class="cas-coins rc-coins" id="rccoin"></span><button class="ar-x" data-act="rcback" id="rcx">帰る</button></div></div>` +
+    `<div class="ar-top"><div class="ar-where"><b>空のレース場</b><small id="rcsub"></small></div><div class="rc-topr"><span class="cas-coins rc-coins" id="rccoin"></span><button class="ar-x rc-buyb" data-act="rcbuyv" id="rcbuyb">コインを買う</button><button class="ar-x" data-act="rcback" id="rcx">帰る</button></div></div>` +
     `<div class="rc-main" id="rcmain"></div><div class="ar-fx" id="rcfx"></div>`;
   document.body.appendChild(el);
-  Object.assign(DRC, { on: true, el, view: 'card', ty: 'win', sel: [], amt: 10, run: null });
+  Object.assign(DRC, { mk: ['raceA', 'raceB', 'raceC'][Math.floor(Math.random() * 3)], on: true, el, view: 'card', ty: 'win', sel: [], amt: 10, run: null });
   DRC.ri = Math.min(2, s.res.findIndex(x => !x) < 0 ? 2 : s.res.findIndex(x => !x));
   rcResize(); window.addEventListener('resize', rcResize);
   if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
@@ -29087,7 +29123,7 @@ function raceClose() {
   if (!DRC.on) return;
   if (DRC.run && !DRC.run.over) return;
   rcStopRun();
-  const s = rcSt(); if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; s.pend = 0; }
+  const s = rcSt(); if (s.pend > 0 && rcCoinOK()) { casSt().coins += s.pend; s.pend = 0; }
   DRC.on = false; window.removeEventListener('resize', rcResize);
   DRC.el.remove(); DRC.el = null; save(); render();
   if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
@@ -29113,6 +29149,8 @@ function rcDraw() {
   const M = $('#rcmain');
   if (DRC.view === 'card') M.innerHTML = rcCardView();
   else if (DRC.view === 'result') M.innerHTML = rcResultView();
+  else if (DRC.view === 'buy') M.innerHTML = rcBuyView();
+  const bb = $('#rcbuyb'); if (bb) bb.style.display = DRC.view === 'run' || DRC.view === 'buy' ? 'none' : '';
   $('#rcsub').textContent = DRC.view === 'run' ? '' : `今夜 ${s.res.filter(Boolean).length}/3 レース`;
   if (DRC.view === 'card' && !s.seen) { s.seen = 1; save(); rcTip(); }
 }
@@ -29147,7 +29185,7 @@ function rcCardView() {
     bet = `<div class="rc-bet"><div class="ar-chips rc-tys">${tys}</div><div class="ar-betrow"><span class="ar-lbl">1枚の券</span><div class="ar-chips">${amts}</div></div>` +
       `<div class="ar-acts two"><button class="ar-go" data-act="rcbuy"${ok && coins >= DRC.amt ? '' : ' disabled'}>${!ok ? (need === 2 ? '竜を2頭えらぶ' : '竜をえらぶ') : `券を買う ${DRC.amt}枚・当たれば ${fmt(Math.floor(DRC.amt * od))}枚`}</button>` +
       `<button class="ar-go hot" data-act="rcgo">${tix.length ? `発走!(券 ${tix.length}枚・${fmt(tot)}枚)` : '見るだけで発走'}</button></div>` +
-      (tl ? `<div class="rc-tks">${tl}</div>` : '') + (casOpenOK() ? '' : `<div class="rc-betnote">コインは港のクラブで買える</div>`) + `</div>`;
+      (tl ? `<div class="rc-tks">${tl}</div>` : '') + (coins >= 10 ? '' : `<div class="rc-betnote">コインは右上の「コインを買う」で買える(一枚${CAS_PRICE}G)</div>`) + `</div>`;
   }
   return `<div class="rc-card"><div class="rc-rtabs">${tabs}</div>` +
     `<div class="rc-head"><b>${pl.main ? '<span class="rc-main-t">メイン</span>' : ''}${pl.name}</b><small>${D.n} ${D.m}・8頭</small></div>` +
@@ -29191,7 +29229,7 @@ function rcStart() {
   dr.forEach(o => { o.w1 = o.el.querySelector('.w1'); o.w2 = o.el.querySelector('.w2'); });
   const R = DRC.run = { pl, res, dr, t0: performance.now(), last: performance.now(), T: 0, dur: RC_DIST[pl.d].sec, U: 60, cam: 0, lpx: 0, bg: [0, 0, 0], spd: 1, fast: 1, ev: {}, lead: -1, leadT: 0, over: false, photo: res.g[1] - res.g[0] < 0.25, got, tix: tix.length };
   st.addEventListener('pointerdown', () => { if (!R.over) R.fast = 3; });
-  sfx('rc_gun'); setTimeout(() => sfx('rc_flap'), 180);
+  sfx('rc_gun'); setTimeout(() => { sfx('rc_flap'); sfx('rc_cheer'); }, 180); setTimeout(() => sfx('rc_flaps'), 420);   // No.372(作者): 音をもっと激しく
   R.wind = typeof seLoopStart === 'function' ? seLoopStart('se_rc_wind.mp3') : null;
   rcLive('スタート! 8頭そろって飛び立った!');
   const frame = now => {
@@ -29199,7 +29237,7 @@ function rcStart() {
     const dt = Math.min(0.05, (now - R.last) / 1000) * R.fast; R.last = now;
     if (!R.hold) R.T += dt / R.dur;
     rcFrame(R, dt);
-    if (R.wind) seLoopVol(R.wind, R.T < 1 ? 0.5 + 0.3 * rcSmooth(0.6, 0.9, R.T) : Math.max(0, 0.8 - (R.T - 1) * 3));
+    if (R.wind) seLoopVol(R.wind, R.T < 1 ? 0.65 + 0.35 * rcSmooth(0.6, 0.9, R.T) : Math.max(0, 1 - (R.T - 1) * 3));
     R.raf = requestAnimationFrame(frame);
   };
   R.raf = requestAnimationFrame(frame);
@@ -29249,8 +29287,11 @@ function rcFrame(R, dt) {
   const ev = (k, at, fn) => { if (!R.ev[k] && T >= at) { R.ev[k] = 1; fn(); } };
   ev('a', 0.2, () => rcLive(`先頭は${nm(ord[0])}。${nm(ord[1])}が続く。${RC_ST[RC_DR[ord[7]].st] === '追込' ? `${nm(ord[7])}は最後方で待つ` : `しんがりは${nm(ord[7])}`}`));
   ev('b', 0.45, () => { const mid = ord.slice(3).find(i => ['sashi', 'oikomi'].includes(RC_DR[i].st)); rcLive(mid != null ? `中団から${nm(mid)}、じわりと上がっていく` : `${nm(ord[0])}、リードを保って半ばを過ぎた`); });
-  ev('c', 0.66, () => { rcLive('最後の直線!'); sfx('rc_whoosh'); });
-  ev('d', 0.8, () => { rcLive(`${nm(ord[0])}先頭! ${nm(ord[1])}が迫る! ${nm(ord[2])}も来た!`); sfx('rc_cheer'); });
+  ev('c', 0.66, () => { rcLive('最後の直線!'); sfx('rc_whoosh'); sfx('rc_flaps'); sfx('rc_cheer'); });
+  ev('d', 0.8, () => { rcLive(`${nm(ord[0])}先頭! ${nm(ord[1])}が迫る! ${nm(ord[2])}も来た!`); sfx('rc_cheer'); sfx('rc_whoosh'); });
+  ev('e', 0.9, () => sfx('rc_cheer'));
+  // No.372(作者): 羽ばたきを絶えず鳴らす(最後の直線からは間を詰める)
+  if (T < 0.99) { if (R.flapAt == null) R.flapAt = 0.05; if (T >= R.flapAt) { sfx(Math.random() < 0.5 ? 'rc_flap' : 'rc_flaps'); R.flapAt = T + (0.8 + Math.random() * 0.9) * (T > 0.66 ? 0.5 : 1) / R.dur; } }
   if (R.nCross === 8 && !R.endT) R.endT = T;
   if (R.endT && T > R.endT + 0.06 && !R.over) rcFinish(R);
 }
@@ -29270,7 +29311,7 @@ function rcLanes(R, dW, dH, span, lpx) {
   return L;
 }
 function rcFirstCross(R) {
-  const w = RC_DR[R.res.o[0]].n;
+  const w = RC_DR[R.res.o[0]].n; sfx('rc_cheer'); sfx('rc_flaps');
   if (R.photo) {
     rcLive('ほとんど並んでゴール! ……写真判定!'); const p = $('#rcphoto'); if (p) { p.innerHTML = '<b>写真判定</b>'; p.classList.add('on'); }
     sfx('ar_bet');
@@ -29280,7 +29321,7 @@ function rcFirstCross(R) {
 function rcFinish(R) {
   R.over = true; rcStopRun();
   const s = rcSt();
-  if (s.pend > 0 && casOpenOK()) { casSt().coins += s.pend; s.pend = 0; }
+  if (s.pend > 0 && rcCoinOK()) { casSt().coins += s.pend; s.pend = 0; }
   save();
   setTimeout(() => {
     if (!DRC.on || DRC.run !== R) return;
@@ -29289,35 +29330,54 @@ function rcFinish(R) {
   }, 700);
 }
 
+// No.372(作者): レース場でもコインを買える(港のクラブと同じ値段・同じ両替のおまけ)
+const RC_BUY = [50, 100, 500, 1000, 5000];
+function rcBuyView() {
+  const x = n => typeof casXchg === 'function' ? casXchg(n) : 0;
+  return `<div class="rc-card rc-buy"><div class="ar-mc rc-eir"><img src="${chURL('eir', 'normal')}" alt="エイル"><div><b>エイル</b><p>コインは一枚${CAS_PRICE}G。港のクラブと同じ。……一度コインにしたら、Gには戻らない</p></div></div>` +
+    `<div class="cas-buys rc-buys">${RC_BUY.map(n => `<button class="cas-mb" data-act="rccbuy" data-v="${n}"${G.gold >= n * CAS_PRICE ? '' : ' disabled'}><img src="${casImg('sym_coin')}" alt=""><span><b>${fmt(n)}枚${x(n) ? `<em>+${fmt(x(n))}</em>` : ''}</b><small>${fmt(n * CAS_PRICE)}G</small></span></button>`).join('')}</div>` +
+    `<p class="rc-betnote">所持金 ${fmt(G.gold)}G・コイン ${fmt(rcCoins())}枚</p><div class="ar-acts"><button class="ar-go" data-act="rcbuyx">出走表に戻る</button></div></div>`;
+}
+
 // ---------- 押した時 ----------
 function rcAct(a, v) {
   if (!DRC.on) return;
   const s = rcSt();
   if (a === 'rctipx') { const t = $('#rctip'); if (t) t.remove(); sfx('tap'); return; }
   if (DRC.run) return;
-  if (a === 'rcback') { if (DRC.view === 'result') { DRC.view = 'card'; } raceClose(); return; }
+  if (a === 'rcbuyv') { DRC.view = 'buy'; sfx('tab'); rcDraw(); return; }
+  if (a === 'rcbuyx') { DRC.view = 'card'; sfx('tab'); rcDraw(); return; }
+  if (a === 'rccbuy') { const n = +v, g = n * CAS_PRICE; if (!(n > 0) || G.gold < g) return; G.gold -= g; casSt().coins += n + (typeof casXchg === 'function' ? casXchg(n) : 0); sfx('ar_bet'); save(); rcDraw(); return; }
+  if (a === 'rcback') { if (DRC.view === 'buy') { DRC.view = 'card'; rcDraw(); return; } if (DRC.view === 'result') { DRC.view = 'card'; } raceClose(); return; }
   if (a === 'rcri') { DRC.ri = +v; DRC.sel = []; DRC.view = 'card'; sfx('tab'); rcDraw(); return; }
   if (a === 'rcres') { DRC.ri = +v; DRC.view = 'result'; sfx('tab'); rcDraw(); return; }
   if (a === 'rcty') { DRC.ty = v; if (v !== 'quin') DRC.sel = DRC.sel.slice(-1); sfx('tab'); rcDraw(); return; }
   if (a === 'rcamt') { DRC.amt = +v; sfx('tab'); rcDraw(); return; }
   if (a === 'rcsel') { const i = +v, need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.includes(i)) DRC.sel = DRC.sel.filter(x => x !== i); else { DRC.sel.push(i); if (DRC.sel.length > need) DRC.sel.shift(); } sfx('tap'); rcDraw(); return; }
   if (a === 'rcbuy') {
-    const pl = rcPlan(DRC.ri), need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.length !== need || s.res[DRC.ri] || !casOpenOK()) return;
+    const pl = rcPlan(DRC.ri), need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.length !== need || s.res[DRC.ri] || !rcCoinOK()) return;
     const c = casSt(); if (c.coins < DRC.amt) return;
     const [x, y] = DRC.sel, odds = DRC.ty === 'win' ? pl.run[x].oW : DRC.ty === 'place' ? pl.run[x].oP : pl.oQ(x, y);
     c.coins -= DRC.amt; s.tix[DRC.ri].push({ ty: DRC.ty, a: DRC.ty === 'quin' ? Math.min(x, y) : x, b: DRC.ty === 'quin' ? Math.max(x, y) : -1, n: DRC.amt, odds });
     save(); sfx('ar_bet'); rcDraw(); return;
   }
-  if (a === 'rcdel') { const t = s.tix[DRC.ri].splice(+v, 1)[0]; if (t && casOpenOK()) casSt().coins += t.n; save(); sfx('tap'); rcDraw(); return; }
+  if (a === 'rcdel') { const t = s.tix[DRC.ri].splice(+v, 1)[0]; if (t && rcCoinOK()) casSt().coins += t.n; save(); sfx('tap'); rcDraw(); return; }
   if (a === 'rcgo') { if (s.res[DRC.ri]) return; rcStart(); return; }
 }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#rcscene [data-act]'); if (!b || b.disabled) return; e.stopPropagation(); rcAct(b.dataset.act, b.dataset.v); }, true);
-// 施設のカード(竜騎士の厩舎の隣)
+// No.372(作者): レース場は竜騎士の厩舎の中(「売る・頼み事」の札の隣のボタン)。施設のカードは出さない
+function rcFacTab() {
+  if (!rcOpenOK()) return '';
+  const s = rcSt(), n = rcNight(), d = s.res ? s.res.filter(Boolean).length : 0;
+  return `<button class="stab rc-factab" data-act="race"${n ? '' : ' disabled'}><b>レース場</b><small>${!n ? '夜だけ' : d >= 3 ? '今夜は済' : `今夜 ${d}/3`}</small></button>`;
+}
+const rcToldYet = () => rcOpenOK() && !rcSt().told;
+// 施設のカード(No.370。No.372 から使わない)
 function rcRow() {
   if (!G || G.stage < 4) return '';
   const ok = rcOpenOK(), n = rcNight();
   return facCard({ act: 'race', bg: 'bg_rc_venue', ch: 'eir', n: '空のレース場', who: 'エイル', dis: !ok || !n, tag: !ok ? '' : n ? '' : '夜だけ',
-    chips: !ok ? [[0, '竜騎士の厩舎ができると開く']] : [[0, '毎晩3レース・コインで賭ける']].concat(n && casOpenOK() ? [[0, `コイン ${fmt(casSt().coins)}枚`]] : []) });
+    chips: !ok ? [[0, '竜騎士の厩舎ができると開く']] : [[0, '毎晩3レース・コインで賭ける']].concat(n && rcCoinOK() ? [[0, `コイン ${fmt(casSt().coins)}枚`]] : []) });
 }
 try { window.__rc = { RC_K, RC_CACHE, DRC, RC_DR, rcSt, rcPlan, rcResult, rcPay, raceOpen, raceClose, rcAct, rcStart }; } catch (e) { }
 
@@ -31412,6 +31472,8 @@ const DISP_SETS = [
   { k: 'dragongold', n: '竜金の一式', m: '竜金', cas: true },
   { k: 'seajade', n: '深海翠の一式', m: '深海翠', cas: true },
   { k: 'starplat', n: '星白金の一式', m: '星白金', cas: true },
+  { k: 'gale', n: '疾風の一式', m: '疾風', cas: true },   // No.372
+  { k: 'dusk', n: '宵闇の一式', m: '宵闇', cas: true },
 ];
 const DISP_PARTS = [['sword', '剣'], ['shield', '盾'], ['helmet', '兜'], ['armor', '鎧'], ['gauntlet', '籠手'], ['boots', '脚甲']];
 const DISP_SELL = 0.02;   // 完成1体ごとの売値の上乗せ
