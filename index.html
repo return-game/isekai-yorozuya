@@ -8629,7 +8629,7 @@ function itemIconURL(id, sil) {
     if (!normal || normal.icon.sh !== it.icon.sh) return iconURL(it.icon, sil);
     sourceID = it.icon.sh + '_iron';
   }
-  const source = typeof PX_IMG !== 'undefined' && PX_IMG['item_' + sourceID];
+  const source = typeof PX_IMG !== 'undefined' && (PX_IMG[it.pxKey] || PX_IMG['item_' + sourceID]);   // No.355: ゴズの皿は pub_・魚の区分は代表の魚の絵
   if (source) {
     const entry = _loadItemPNG(id, source);
     if (entry.state === 'ready') return sil ? entry.silhouette : entry.normal;
@@ -8933,10 +8933,16 @@ function discover(id, q, silent) {
   return false;
 }
 function invCount(id, q) {
+  if (IT[id] && IT[id].grp) return fgMembers(IT[id].grp).reduce((t, f) => t + invCount(f.id, q), 0);   // No.355 魚の区分 = 中の魚の合計
   const a = G.inv[id]; if (!a) return 0;
   return q === undefined ? a[0] + a[1] + a[2] + a[3] : a[q];
 }
 function invTake(id, n, q) {
+  if (IT[id] && IT[id].grp) {   // No.355 魚の区分: 安い魚から使う
+    if (invCount(id, q) < n) return false;
+    for (const f of fgMembers(IT[id].grp)) { const k = Math.min(n, invCount(f.id, q)); if (k) { invTake(f.id, k, q); n -= k; } if (!n) break; }
+    return true;
+  }
   const a = G.inv[id]; if (!a) return false;
   if (q !== undefined) { if (a[q] < n) return false; a[q] -= n; }
   else {
@@ -9383,10 +9389,13 @@ function unmetNeeds() { const need = reservedNeeds(); return Object.keys(need).f
 function sellableItems() {
   return ITEMS.filter(it => !it.junk && !it.mystery && it.st <= G.stage);
 }
+// No.355: ゴズの皿で料理の品が増えても、料理の注文の割合は前と同じ(料理の品は前の工房の料理の数=24品ぶんの重さに)
+function foodShare(pool, x) { if (x.cat !== 'food') return 1; const n = pool.filter(y => y.cat === 'food').length; return n > 24 ? 24 / n : 1; }
 function makeablePool() {
   const out = [];
   for (const r of RECIPES) {
     if (r.repair || r.appraise || !recUnlocked(r)) continue;
+    if (typeof recFishOk === 'function' && !recFishOk(r)) continue;   // No.355: 釣ったことのない区分の魚を使う皿は、注文に出さない
     const it = IT[r.out];
     if (it.st > G.stage || it.cat === 'mat') continue;
     out.push(it);
@@ -9615,7 +9624,7 @@ function makeSeller(c, cls) {
 }
 function makeOrderCust(c, cls) {
   const pool = makeablePool();
-  const it = wpick(pool, x => (catWeight(cls, x) || 0.3) * genrePull(x));
+  const it = wpick(pool, x => (catWeight(cls, x) || 0.3) * genrePull(x) * foodShare(pool, x));
   if (!it) return;
   c.type = 'order';
   c.want = it.id;
@@ -9651,7 +9660,7 @@ function makeMkCust() {
     c.line = custSay(c, 'buy', SHELF_LINES).replace('{item}', it.name);
   }
   if (!c.type && normalOrders() < orderCap()) {
-    const it = pick(makeablePool().filter(want));
+    const pl = makeablePool().filter(want), it = pl.length ? wpick(pl, x => foodShare(pl, x)) : null;
     if (it) {
       c.type = 'order'; c.want = it.id;
       c.qty = it.v < 20 ? ri(2, 3) : 1; c.days = ri(4, 6); c.minQ = 0;
@@ -17435,7 +17444,7 @@ function act0(a, d) {
     case 'pubdish': if (pgDishPick() && !pgS().night.treat) { sfx('tap'); pgDishSheet(d.id); return; }   // No.208: 客がいる夜は「自分で食べる/隣の人に出す」を選ぶ
     // falls through
     case 'pubeat': { const r = pubOrder(d.id); if (!r) return; closeSheet(true); sfx(r.item.k === 'food' ? 'door' : 'coin');
-      queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.jack ? '<p style="text-align:left">「今夜のは出来がいい。腹いっぱい食ってけ」<br><b>体力がたっぷり戻った。</b></p>' : ''}${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
+      queueSheet(`<div class="celebrate"><div class="pop">${pubIcon(r.item)}</div><div class="kicker">灯り亭で ${r.item.n}${r.gain ? ` 体力+${r.gain}` : ''}</div><h2>${PUB.master.n}</h2>${r.jack ? '<p style="text-align:left">「今夜のは出来がいい。腹いっぱい食ってけ」<br><b>体力がたっぷり戻った。</b></p>' : ''}${r.tip ? `<p style="text-align:left">「${r.tip}」</p>` : ''}${(r.lines || []).map(l => `<div class="rumor ${l.k}"><span class="rk">${{ hot: '明日の特需', dg: 'ダンジョンの噂', recipe: 'ひらめきの噂', luck: '明日のおまけ', dive: '差し入れ', learn: '教わった' }[l.k]}</span><span>「${l.t}」</span></div>`).join('')}<button class="btn pri big" data-act="pubback" data-focus>ごちそうさま</button></div>`, { bg: 'bg_pub', crumb: ['灯り亭'] }); break; }
     case 'sleepno': closeSheet(); return;
     case 'recsort': { UI.recSort = REC_SORT.some(x => x[0] === d.v) ? d.v : 'todo'; sfx('tap'); break; }
     case 'slot': slotSwitch(+d.v); return;
@@ -17461,7 +17470,7 @@ function act0(a, d) {
     case 'pubjob': startJob(d.v); return;
     case 'mealsheet': mealSheet(); sfx('tap'); return;
     case 'mealpick': mealPickSheet(d.v); sfx('tap'); return;
-    case 'mealgive': { const o = mealGive(d.v, d.id, +d.q); if (!o) { mealSheet(); return; } sfx('good'); render(); mealSheet(); mealReveal(o.r, o.hit); toast(`<div><div class="t1">${o.m.n}が${PUB_BY[o.r.dish].n}を食べた</div>${mealLine(o.r)}</div>`); return; }
+    case 'mealgive': { const o = mealGive(d.v, d.id, +d.q); if (!o) { mealSheet(); return; } sfx('good'); render(); mealSheet(); mealReveal(o.r, o.hit); toast(`<div><div class="t1">${o.m.n}が${dishName(o.r.dish)}を食べた</div>${mealLine(o.r)}</div>`); return; }
     case 'mealback': mealLeave(); render(); mealSheet(); return;
     case 'mealretry': { const g0 = UI.gauge; if (!g0 || !g0.meal || G.gold < MEAL_RETRY_GOLD || G.work < 1) return; const id = g0.meal.id, c = g0.meal.casts + 1; G.gold -= MEAL_RETRY_GOLD; G.work = Math.max(0, G.work - 1); save(); mealLeave(); render(); startMeal(id, c); return; }
     case 'mealeat': { const g0 = UI.gauge; if (!g0 || !g0.meal || !g0.res) return; const m = advById(g0.meal.id), r = g0.res; if (!m || mealOf(m.id)) return; G.meals = G.meals || {}; G.meals[m.id] = { dish: r.dish, buff: r.buff, s: r.s, day: G.day }; save(); sfx('good'); mealLeave(); render(); mealSheet(); toast(`<div><div class="t1">${m.n}が${PUB_BY[r.dish].n}を食べた</div>${mealLine(r)}</div>`); return; }
@@ -17836,6 +17845,11 @@ function pubTonight() {
   const t = pubMenuNow(), all = t.food.concat(t.drink); let s = ((G ? G.day : 1) * 2654435761 + 97) >>> 0; const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   const out = [];
   for (const [k, n] of Object.entries(PUB_TONIGHT)) { const a = all.filter(x => pubCat(x) === k); for (let i = 0; i < n && a.length; i++) out.push(a.splice(Math.floor(r() * a.length), 1)[0]); }
+  // No.355: まだ覚えていない皿を、毎晩1つは品書きに入れる(同じ品書きの欄の皿と入れ替える)
+  if (typeof pubKnown === 'function' && G && !out.some(x => x.k === 'food' && RC_BY_OUT[x.id] && !pubKnown(x.id))) {
+    const nw = t.food.filter(x => RC_BY_OUT[x.id] && !pubKnown(x.id));
+    if (nw.length) { const n = nw[Math.floor(r() * nw.length)], c = pubCat(n), i = out.findIndex(x => pubCat(x) === c); if (i >= 0) out[i] = n; else out.push(n); }
+  }
   return out;
 }
 // 今日のおすすめ(今夜の品書きの料理から2皿・日で決まる)
@@ -17861,6 +17875,7 @@ function pubOrder(id) {
     r = { gain: G.work - before, tip: '', lines: [] };
   }
   G.pubVisits = (G.pubVisits || 0) + 1;
+  if (x.k === 'food' && typeof pubLearn === 'function' && pubLearn(x.id)) r.lines.push({ k: 'learn', t: `作り方? いいぜ、教えてやる。……工房で「${x.n}」を作れるようになった` });   // No.355 食べる=覚える
   if (x.bonus === 'luck') { G.pubLuck = G.day + 1; r.lines.push({ k: 'luck', t: '明日の最初の製作は、手がよく動きそうだ。' }); }
   if (x.bonus === 'dive' && G.dive && !G.dive.done) { playerTurn(); r.lines.push({ k: 'dive', t: '冒険者たちに差し入れが届いた。一歩進んだぞ。' }); }
   if (x.bonus === 'rumor') { const rr = guildOpen() ? dgRumor() : null; const N = TREND[G.trendNext]; r.lines.push({ k: 'dg', t: rr ? rr.text : `来週は「${N.n}」が来る。${N.d}。` }); }
@@ -17984,9 +17999,9 @@ function mealSheet() {
   const ros = ensureRoster(), fish = mealFish();
   const rows = ros.map(m => {
     const ml = mealOf(m.id), out = advOut(m), hurt = advHurt(m);
-    const st = ml ? `<div class="meal-got">${pubIcon(PUB_BY[ml.dish])}<span><b>${PUB_BY[ml.dish].n}</b>を食べた<br><span class="sub">${mealLine(ml)}</span></span></div>` : out ? '<span class="sub">探索中</span>' : hurt ? `<span class="sub">療養中(あと${hurt}日)</span>` : '<span class="sub">おなかがすいている</span>';
+    const st = ml ? `<div class="meal-got">${dishIcon(ml.dish)}<span><b>${dishName(ml.dish)}</b>を食べた<br><span class="sub">${mealLine(ml)}</span></span></div>` : out ? '<span class="sub">探索中</span>' : hurt ? `<span class="sub">療養中(あと${hurt}日)</span>` : '<span class="sub">おなかがすいている</span>';
     const can = !ml && !out && !hurt;
-    return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0;flex:1"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}</div>${st}</div>${can ? `<button class="btn sm gold" data-act="mealpick" data-v="${m.id}"${fish.length ? '' : ' disabled'}>魚を渡す</button>` : ''}</div>`;
+    return `<div class="ri gxli">${advFace(m, 'sm')}<div style="min-width:0;flex:1"><div class="row" style="gap:6px"><b>${m.n}</b>${rankTag(m.rk)}</div>${st}</div>${can ? `<button class="btn sm gold" data-act="mealpick" data-v="${m.id}"${fish.length || mealDishes().length ? '' : ' disabled'}>魚を渡す</button>` : ''}</div>`;
   }).join('');
   const h = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">冒険者ギルド</div><h2>食事</h2></div></div>` +
     `<p class="note">釣った魚をゴズに渡すと、料理を1品作って冒険者に食べさせます。良い魚ほど良い料理が出ます(何が出るかは出てくるまで分かりません)。食べた冒険者は、次に出発する冒険の間だけ料理のバフがつきます。</p>` +
@@ -17996,18 +18011,175 @@ function mealSheet() {
 }
 function mealPickSheet(advId) {
   const m = advById(advId); if (!m || mealOf(advId) || !advReady(m)) return mealSheet();
-  const fish = mealFish(); if (!fish.length) return mealSheet();
+  const fish = mealFish(), dishes = mealDishes(); if (!fish.length && !dishes.length) return mealSheet();
+  const drows = dishes.map(c => `<div class="ri">${ico(c.id, c.q, { size: 'sm' })}<div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${QUAL[c.q].n}・${c.n}個</span><br><span class="sub">${dishBuffLine(c.id)}${c.q >= 2 ? '・上振れ' : ''}</span></div><button class="btn sm gold" data-act="mealgive" data-v="${advId}" data-id="${c.id}" data-q="${c.q}">渡す</button></div>`).join('');
   const rows = fish.map(c => `<div class="ri">${ico(c.id, c.q, { size: 'sm' })}<div style="min-width:0;flex:1"><b>${IT[c.id].name}</b> <span class="sub">${QUAL[c.q].n}・${c.n}匹</span><br><span class="sub">${MEAL_TIER_N[c.f.tier]}料理${c.q >= 2 ? '・上振れ' : ''}</span></div><button class="btn sm pri" data-act="mealgive" data-v="${advId}" data-id="${c.id}" data-q="${c.q}">渡す</button></div>`).join('');
-  openSheet(`${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">食事</div><h2>${m.n}に、どの魚で作る?</h2></div></div><p class="note">ゴズ「いい魚なら、いい皿にしてやるよ」</p><div class="rows">${rows}</div><button class="btn ghost" data-act="mealsheet" style="margin-top:8px">戻る</button>`, { cur: 'meal' });
+  openSheet(`${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">食事</div><h2>${m.n}に、何を食べさせる?</h2></div></div>${drows ? `<div class="sub" style="margin:4px 0">作った料理を渡す(効き目は皿で決まっている)</div><div class="rows">${drows}</div>` : ''}${rows ? `<p class="note" style="margin-top:8px">ゴズ「いい魚なら、いい皿にしてやるよ」(魚を渡すと、何が出るかは出てくるまで分からない)</p><div class="rows">${rows}</div>` : ''}<button class="btn ghost" data-act="mealsheet" style="margin-top:8px">戻る</button>`, { cur: 'meal' });
 }
 function mealGive(advId, id, q) {
+  if (!FISH_BY[id]) return mealGiveDish(advId, id, q);   // No.355: 作った料理を渡す
   const m = advById(advId), f = FISH_BY[id];
   if (!m || !f || mealOf(advId) || !advReady(m) || !invTake(id, 1, q)) return null;
   const hit = q >= 2 ? 'crit' : 'ok', r = mealRoll(f.tier, hit);
   G.meals = G.meals || {}; G.meals[m.id] = { dish: r.dish, buff: r.buff, s: r.s, day: G.day, fish: id };
+  if (typeof pubLearn === 'function') pubLearn(r.dish);   // No.355: ゴズが作った皿は、作り方も覚える
   save();
   return { m, r, hit };
 }
+
+// No.355: 作った料理を冒険者に渡す。効き目は皿ごとに1つ決まっている(dishBuff)。強さは皿の値打ち、上質以上で上振れ
+function mealGiveDish(advId, id, q) {
+  const m = advById(advId), b = typeof dishBuff === 'function' ? dishBuff(id) : null;
+  if (!m || !b || mealOf(advId) || !advReady(m) || spareCount(id) <= 0 || !invTake(id, 1, q)) return null;
+  const ci = dishCi(id), hit = q >= 2 ? 'crit' : 'ok', s = +((0.8 + 0.1 * ci) * (hit === 'crit' ? 1.4 : 1)).toFixed(2);
+  const r = { dish: id, buff: b, s, kind: dishKind(dishOf(id)) };
+  G.meals = G.meals || {}; G.meals[m.id] = { dish: id, buff: b, s, day: G.day, made: 1 };
+  save();
+  return { m, r, hit };
+}
+const dishBuffLine = id => { const b = dishBuff(id), x = MEAL_B[b]; return x ? x.n : ''; };
+
+// ---- food.js ----
+// ===== No.355 料理の作り直し(2026-11-22・作者「ゴズの料理と冒険者の料理を一度ガラポンして、ひとつの楽しみに」) =====
+// 設計: プロジェクト「00_料理の作り直し_決まったこと(2026-11-22)」・72皿の材料「表_ゴズの皿72品の材料(案・2026-11-22)」
+// 工房の料理・灯り亭のゴズの皿・冒険者の食事を1つにつなぐ。ゴズの皿は、灯り亭で食べると作り方を覚える(食べる=覚える)。
+// 新しい素材は Work の絵が届くまで入れない(コードで描いた仮の絵は使わない)。その素材を使う皿も、絵が届くまで作れない。
+const foodArt = id => !!window.__foodArtAll || typeof PX_IMG !== 'undefined' && !!PX_IMG['item_' + id];
+const FOOD_NEW = [
+  ['f_salt', '塩', 'sack', 'ivory', 2, 0, '料理の味の決め手。'],
+  ['f_oil', '油', 'jar', 'honey', 3, 0, '揚げ物と炒め物に。'],
+  ['f_milk', '乳', 'jar', 'ivory', 3, 0, 'しぼりたての乳。'],
+  ['f_egg', '卵', 'egg', 'ivory', 3, 0, '村の鶏が産んだ卵。'],
+  ['f_sugar', '砂糖', 'sack', 'wheatc', 5, 0, '甘い物には欠かせない。'],
+  ['f_vinegar', '酢', 'flask', 'potR', 4, 0, '葡萄からつくった酢。'],
+  ['f_rice', '米', 'sack', 'ivory', 4, 0, '港から運ばれてくる米。'],
+  ['f_wine', '葡萄酒', 'flask', 'potR', 7, 0, '煮込みにも、そのまま飲んでも。'],
+  ['m_game', '獣の肉', 'meat', 'meat', 6, 0, '森の獣の肉。猪や角兎。'],
+  ['m_bird', '魔鳥の肉', 'meat', 'fire', 18, 2, '火の鳥のような魔鳥の肉。'],
+  ['m_beast', '魔獣の肉', 'meat', 'dark', 30, 3, 'キマイラやヒュドラの肉。']
+];
+for (const [id, n, sh, m, v, st, d] of FOOD_NEW) if (foodArt(id) && !IT[id]) addItem(id, n, 'mat', { sh, m, s: 'wood0', a: 'herb' }, { v, st, raw: true, sub: id.startsWith('m_') ? '魔物素材' : '食材', desc: d });
+// 下ごしらえ(工房の料理): バター・チーズ
+const FOOD_PREP = [['f_butter', 'バター', 'cheese', 'honey', [['f_milk', 2]], 2, 'しぼった乳を練った、黄色いバター。'], ['f_cheese', 'チーズ', 'cheese', 'wheatc', [['f_milk', 2], ['f_salt', 1]], 4, '穴のあいた、熟成したチーズ。']];
+for (const [id, n, sh, m, ins, lv, d] of FOOD_PREP) if (foodArt(id) && !IT[id] && ins.every(([x]) => IT[x])) { addItem(id, n, 'mat', { sh, m, s: 'wood0', a: 'herb' }, { st: 0, sub: '食材', desc: d }); addRec(id, ins, 'cook', lv, 1); }
+// 魚の区分: 持ち帰った魚を、区分で料理の材料にする(ぬしは入れない)。invCount・invTake が中の魚に読み替える(engine.js)
+const FISH_SHELL = /エビ|ガニ|カニ|ザリガニ|タコ|イカ|シャコ/;
+const FG = {
+  fg_river: { n: '川の魚', v: 30, st: 0, ok: f => f.spot === 'river' && !FISH_SHELL.test(f.n), d: '川で釣った魚(ぬしを除く)。どれでも使える。安い魚から使う。' },
+  fg_lake: { n: '湖の魚', v: 30, st: 1, ok: f => f.spot === 'lake' && !FISH_SHELL.test(f.n), d: '湖で釣った魚(ぬしを除く)。どれでも使える。安い魚から使う。' },
+  fg_sea: { n: '海の魚', v: 35, st: 2, ok: f => f.spot === 'sea' && !FISH_SHELL.test(f.n), d: '海で釣った魚(ぬしを除く)。どれでも使える。安い魚から使う。' },
+  fg_shell: { n: 'エビ・カニ・イカ・タコ', v: 30, st: 0, ok: f => FISH_SHELL.test(f.n), d: 'ザリガニ・サワガニ・エビ・カニ・タコ・イカ・シャコ。どれでも使える。' },
+  fg_big: { n: '大物の魚', v: 150, st: 1, ok: f => f.tier >= 3, d: '格B以上の魚(ぬしを除く)。どれでも使える。安い魚から使う。' },
+};
+const fgMembers = gid => FISH.filter(f => !f.lord && FG[gid].ok(f)).sort((a, b) => a.v - b.v);
+for (const gid in FG) { const g = FG[gid], rep = fgMembers(gid)[0]; addItem(gid, g.n, 'mat', IT[rep.id].icon, { v: g.v, st: g.st, keep: true, nodex: true, grp: gid, sub: '魚の区分', desc: g.d, pxKey: 'item_' + rep.id }); }
+// 釣ったことのある区分か(お客の注文・施設の頼み事は、釣ったことのある区分の皿だけ)
+const fgSeen = gid => { const dx = (G.fsh && G.fsh.dex) || {}; return fgMembers(gid).some(f => dx[f.id]); };
+const recFishOk = r => r.ins.every(([x]) => !(IT[x] && IT[x].grp) || fgSeen(x));
+// ゴズの皿72品: [id, 章(材料に合わせて直した), 材料]。段で作業と数: 軽い 作業1で2つ・普段1・おまけ2・しっかり2・大皿3
+const GOZ_DISH = [
+  ['p_slimejelly', 0, [['m_slime', 1],['f_sugar', 1]]],
+  ['p_rabbitstew', 0, [['m_game', 1],['f_wine', 1],['f_veg', 1]]],
+  ['p_firelizard', 1, [['m_game', 1],['f_spice', 1],['f_salt', 1]]],
+  ['p_elfsoup', 0, [['herb_heal', 2],['f_veg', 1],['f_salt', 1]]],
+  ['p_moonmush', 0, [['f_mush', 2],['f_cheese', 1],['f_milk', 1]]],
+  ['p_dragonbone', 2, [['m_game', 2],['f_veg', 2],['f_salt', 1]]],
+  ['p_fairycake', 1, [['f_wheat', 1],['f_honey', 1],['f_butter', 1]]],
+  ['p_dwarfbread', 0, [['f_wheat', 2],['f_salt', 1]]],
+  ['p_krakensoup', 1, [['f_fish', 2],['f_veg', 1],['f_salt', 1]]],
+  ['p_boarroast', 1, [['m_game', 3],['f_spice', 1],['f_salt', 1]]],
+  ['p_mandrake', 0, [['f_veg', 2],['herb_heal', 1],['f_vinegar', 1]]],
+  ['p_riverfish', 0, [['fg_river', 1],['herb_heal', 1],['f_salt', 1]]],
+  ['p_adventbento', 0, [['f_rice', 1],['grilled_meat', 1],['f_egg', 1]]],
+  ['p_wyvernsteak', 3, [['m_wyvern', 2],['f_wine', 1],['f_butter', 1]]],
+  ['p_goldapple', 1, [['f_fruit', 2],['f_wheat', 1],['f_butter', 1],['f_sugar', 1]]],
+  ['p_sakuramochi', 0, [['s_sakura', 1],['f_rice', 1],['f_sugar', 1]]],
+  ['p_tempura', 0, [['fg_shell', 1],['f_veg', 1],['f_wheat', 1],['f_oil', 1]]],
+  ['p_feast', 1, [['grilled_meat', 2],['grilled_fish', 1],['bread', 1],['f_wine', 1]]],
+  ['p_kingfeast', 4, [['m_beast', 2],['fg_big', 1],['f_wine', 1],['f_butter', 1]]],
+  ['p_curry', 1, [['f_meat', 1],['f_spice', 2],['f_veg', 1]]],
+  ['p_ogrestew', 1, [['f_meat', 2],['f_veg', 2],['f_mush', 1]]],
+  ['p_pumpkin', 0, [['f_veg', 2],['f_milk', 1]]],
+  ['p_honeyham', 1, [['f_meat', 1],['f_honey', 1],['f_salt', 1]]],
+  ['p_seaplatter', 2, [['fg_sea', 2],['fg_shell', 1],['f_vinegar', 1]]],
+  ['p_mermaid', 2, [['fg_shell', 1],['m_slime', 1],['f_sugar', 1]]],
+  ['p_chestnut', 0, [['s_kuri', 2],['f_wheat', 1],['f_sugar', 1]]],
+  ['p_griffon', 3, [['m_bird', 1],['f_egg', 2],['f_butter', 1]]],
+  ['p_shepherd', 0, [['f_meat', 1],['f_wheat', 1],['f_butter', 1]]],
+  ['p_spiritrice', 1, [['f_rice', 1],['herb_sun', 1],['f_salt', 1]]],
+  ['p_beerstew', 0, [['f_meat', 2],['f_wine', 1],['f_veg', 1]]],
+  ['p_basilisk', 3, [['m_beast', 1],['f_oil', 1],['f_wheat', 1]]],
+  ['p_snowpot', 1, [['fg_lake', 1],['f_milk', 2],['f_veg', 1]]],
+  ['p_trollcheese', 0, [['f_cheese', 1],['f_wheat', 1]]],
+  ['p_phoenix', 4, [['m_bird', 2],['f_spice', 2],['f_oil', 1],['herb_sun', 1]]],
+  ['p_guildcurry', 1, [['f_rice', 1],['f_meat', 1],['f_spice', 1],['f_veg', 1]]],
+  ['p_gozspecial', 0, [['f_meat', 1],['f_fish', 1],['f_veg', 1],['f_salt', 1]]],
+  ['p_goblinstew', 0, [['f_meat', 1],['f_mush', 1],['f_veg', 1]]],
+  ['p_cloudbread', 1, [['f_wheat', 1],['f_egg', 1],['f_sugar', 1]]],
+  ['p_frostfish', 1, [['fg_lake', 1],['f_salt', 1]]],
+  ['p_sandworm', 2, [['f_meat', 2],['f_spice', 1],['herb_heal', 1]]],
+  ['p_owlbear', 2, [['m_game', 2],['f_salt', 1],['f_oil', 1]]],
+  ['p_slimepudding', 0, [['m_slime', 1],['f_egg', 1],['f_milk', 1],['f_sugar', 1]]],
+  ['p_lavacurry', 2, [['m_bird', 1],['f_spice', 2],['f_rice', 1]]],
+  ['p_sakuratart', 0, [['s_sakura', 1],['f_wheat', 1],['f_butter', 1],['f_sugar', 1]]],
+  ['p_hobbitbreakfast', 0, [['bread', 1],['f_egg', 1],['f_meat', 1]]],
+  ['p_merfolkrice', 1, [['fg_shell', 1],['f_fish', 1],['f_rice', 1],['f_salt', 1]]],
+  ['p_bardsoup', 0, [['f_veg', 2],['herb_heal', 1],['f_butter', 1]]],
+  ['p_ironpot', 0, [['f_meat', 1],['f_veg', 1],['f_oil', 1]]],
+  ['p_witchcookie', 1, [['f_fruit', 1],['f_wheat', 1],['f_honey', 1]]],
+  ['p_wolfjerky', 0, [['m_game', 1],['herb_heal', 1],['f_salt', 1]]],
+  ['p_hydra', 3, [['m_beast', 3],['f_spice', 1],['f_oil', 1]]],
+  ['p_angelcake', 3, [['f_wheat', 1],['f_egg', 2],['f_sugar', 1],['f_butter', 1]]],
+  ['p_dwarfstew', 1, [['f_meat', 2],['f_veg', 1],['f_wine', 1]]],
+  ['p_tempurabig', 1, [['fg_shell', 2],['f_wheat', 1],['f_oil', 1],['f_egg', 1]]],
+  ['p_moonmochi', 2, [['f_rice', 1],['herb_moon', 1],['f_sugar', 1]]],
+  ['p_kingbento', 2, [['f_rice', 1],['herb_roast', 1],['grilled_fish', 1]]],
+  ['p_cheesefondue', 1, [['f_cheese', 2],['f_wine', 1],['bread', 1]]],
+  ['p_chimera', 3, [['m_beast', 1],['m_game', 1],['f_spice', 1]]],
+  ['p_honeyroast', 1, [['m_game', 2],['f_honey', 1],['f_salt', 1]]],
+  ['p_seaserpent', 3, [['fg_big', 1],['fg_sea', 1],['fg_shell', 1],['f_salt', 1]]],
+  ['p_wanderersoup', 0, [['f_veg', 1],['f_meat', 1],['f_salt', 1]]],
+  ['p_spicedpie', 1, [['f_meat', 1],['f_wheat', 1],['f_spice', 1],['f_butter', 1]]],
+  ['p_mushroomrisotto', 1, [['f_rice', 1],['f_mush', 2],['f_cheese', 1]]],
+  ['p_firebird', 2, [['m_bird', 1],['f_oil', 1],['f_wheat', 1]]],
+  ['p_harvestfeast', 0, [['m_game', 2],['f_veg', 2],['f_fruit', 2],['f_wine', 1]]],
+  ['p_crystaljelly', 1, [['m_slime', 1],['f_fruit', 1],['f_sugar', 1]]],
+  ['p_dragonegg', 2, [['f_egg', 3],['f_butter', 1],['f_spice', 1]]],
+  ['p_royalcurry', 4, [['m_beast', 1],['f_wine', 1],['f_spice', 1],['f_butter', 1]]],
+  ['p_starfish', 2, [['fg_shell', 1],['f_milk', 1],['f_cheese', 1],['f_wheat', 1]]],
+  ['p_heroburger', 4, [['m_beast', 1],['bread', 1],['f_cheese', 1],['f_veg', 1]]],
+  ['p_ghostsoup', 2, [['f_veg', 2],['f_milk', 1],['f_salt', 1]]],
+  ['p_treantsalad', 4, [['herb_world', 1],['f_veg', 1],['f_vinegar', 1]]]
+];
+// GOZ_LV = 作れるレベル(その章に入った頃のレベル)・GOZ_PLV = 売値の手間賃のレベル(章の中ほど)
+const GOZ_TIME = { L: 1, N: 1, B: 2, H: 2, F: 3 }, GOZ_LV = [1, 5, 8, 11, 14], GOZ_PLV = [3, 7, 11, 15, 19];
+const pubKnown = id => !!(G && G.pubKnown && G.pubKnown[id]);
+function pubLearn(id) { if (!PUB_BY[id] || !RC_BY_OUT[id] || pubKnown(id)) return false; G.pubKnown = G.pubKnown || {}; G.pubKnown[id] = G.day; return true; }
+const gozNew = [];
+for (const [id, st, ins] of GOZ_DISH) {
+  const x = PUB_BY[id]; if (!x) continue;
+  x.st = Math.max(x.st, st);   // 材料の章に合わせて、品書きに出る章も後ろへ
+  if (!ins.every(([y]) => IT[y])) continue;   // 素材の絵がまだの皿は、作れない(品書きでは食べられる)
+  addItem(id, x.n, 'food', { sh: x.ic.sh, m: x.ic.m, s: x.ic.s, a: 'apple' }, { st: x.st, sub: 'ゴズの皿', desc: x.d, pxKey: 'pub_' + id, goz: x.tier });
+  addRec(id, ins, 'cook', GOZ_LV[Math.min(4, x.st)], GOZ_TIME[x.tier], { n: x.tier === 'L' ? 2 : 1, need: () => pubKnown(id), goz: true, plv: GOZ_PLV[Math.min(4, x.st)] + ('HF'.includes(x.tier) ? 1 : 0) });
+  gozNew.push(id);
+}
+// 売値: data.js の式(No.296)と同じ。下ごしらえ → 皿の順
+for (let pass = 0; pass < 3; pass++) for (const id of ['f_butter', 'f_cheese', ...gozNew]) {
+  const r = RC_BY_OUT[id]; if (!r) continue; let sum = 0;
+  for (const [y, q] of r.ins) sum += (IT[y].v || 0) * q;
+  IT[id].v = Math.max(2, Math.round((sum * (1 + PRICE_MARGIN) + r.time * priceWage(r.plv || r.lv) + (r.plv || r.lv) * 0.8) / r.n));
+}
+// 探索で拾える魔物の肉(絵が届いてから)
+for (const [aid, mid] of [["forest", "m_game"], ["wolf", "m_game"], ["volcano", "m_bird"], ["wyvern", "m_bird"], ["ruins", "m_beast"], ["moon", "m_beast"]]) { const a = AREAS.find(z => z.id === aid); if (a && IT[mid] && !a.bonus.includes(mid)) a.bonus.push(mid); }
+// 冒険者の食事: 作った料理を渡す。皿ごとに効き目が1つ決まっている(種類の2〜3つから、名前で決める)
+const dishOf = id => PUB_BY[id] || (IT[id] && IT[id].cat === 'food' ? { id, n: IT[id].name, ic: IT[id].icon, tier: 'N' } : null);
+function dishBuff(id) { const x = dishOf(id); if (!x) return null; const l = KIND_BUFFS[dishKind(x)]; let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return l[h % l.length]; }
+const dishCi = id => { const v = IT[id] ? IT[id].v : 0; return v >= 400 ? 5 : v >= 220 ? 4 : v >= 120 ? 3 : v >= 60 ? 2 : v >= 25 ? 1 : 0; };
+const mealDishes = () => Object.keys(G.inv || {}).filter(id => IT[id] && IT[id].cat === 'food' && dishOf(id) && staminaOf(IT[id]) > 0 && spareCount(id) > 0).flatMap(id => [0, 1, 2, 3].filter(q => G.inv[id][q] > 0).map(q => ({ id, q, n: G.inv[id][q] })))
+  .sort((a, b) => IT[b.id].v - IT[a.id].v || b.q - a.q);
+const dishIcon = id => PUB_BY[id] ? pubIcon(PUB_BY[id]) : `<img class="ic md pubic" src="${itemIconURL(id)}" alt="">`;
+const dishName = id => (PUB_BY[id] || {}).n || (IT[id] || {}).name || id;
 
 // ---- mg2.js ----
 // ---- mg2: the short random minigames (one module for the game and proto/minigames.html) ----
@@ -19329,7 +19501,7 @@ function mealEnd(g, hit) {
   const r = g.res, can = G.gold >= MEAL_RETRY_GOLD && G.work >= 1;
   const retry = `<button class="btn${r ? '' : ' pri'}" data-act="mealretry"${can ? '' : ' disabled'}>もう一度釣る<small>(${MEAL_RETRY_GOLD}G・体力1${can ? '' : '・足りない'})</small></button>`;
   foot.innerHTML = r
-    ? `<div class="gres"><div class="qbig ${hit === 'crit' ? 'q3' : 'q1'}">${hit === 'crit' ? '大物だ!' : '釣れた!'}</div><div class="meal-got">${pubIcon(PUB_BY[r.dish])}<span><b>${PUB_BY[r.dish].n}</b>が入っていた<br><span class="sub">${mealLine(r)}</span></span></div>` +
+    ? `<div class="gres"><div class="qbig ${hit === 'crit' ? 'q3' : 'q1'}">${hit === 'crit' ? '大物だ!' : '釣れた!'}</div><div class="meal-got">${dishIcon(r.dish)}<span><b>${dishName(r.dish)}</b>が入っていた<br><span class="sub">${mealLine(r)}</span></span></div>` +
       `<div class="btns" style="justify-content:center;margin-top:6px"><button class="btn pri" data-act="mealeat" data-focus>${m ? m.n + 'に' : ''}食べさせる</button>${retry}</div></div>`
     : `<div class="gres"><div class="qbig fail">逃げられた…</div><div class="sub">${g.why || ''}</div><div class="btns" style="justify-content:center;margin-top:6px">${retry}<button class="btn" data-act="mealback">やめる</button></div></div>`;
   if (r) mealReveal(r, hit);
@@ -20920,7 +21092,7 @@ function advEditor(m, gq, a) {
     `<button class="btn sm" data-act="dvautoeq" data-v="${m.id}" title="開いている枠に、倉庫の一番良い組み合わせを着せる">一番良い物</button>`;
   const bag = advBag(m), n = bagSlots(m);
   let bs = ''; for (let i = 0; i < n; i++) { const b = bag[i]; bs += slot('bag', b ? ico(b.id, b.qs[0], { size: 'xs', cnt: b.qs.length > 1 ? b.qs.length : 0 }) : '<span>袋</span>', '道具袋', ' bslot' + (b ? '' : ' empty')); }
-  const meal = slot('meal', ml ? `<span class="gmeal">${pubIcon(PUB_BY[ml.dish])}</span>` : '<span>食事</span>', '食事', ' gmealslot' + (ml ? '' : ' empty'));
+  const meal = slot('meal', ml ? `<span class="gmeal">${dishIcon(ml.dish)}</span>` : '<span>食事</span>', '食事', ' gmealslot' + (ml ? '' : ' empty'));
   const treat = hurt ? `<button class="btn sm heal" data-act="dvtreat" data-v="${m.id}">手当て</button>` : '';
   let h = `<div class="gm2-ed"><div class="row gm2-slots"><span class="sub gm2-k">武具</span>${gear}<span class="sub gm2-k">道具袋</span>${bs}<span class="gm2-sp"></span>${meal}${treat}</div>`;
   h += e === 'bag' ? bagEditor(a, m) : e === 'meal' ? mealEditor(m) : gearEditor(m, e, a);
@@ -20957,10 +21129,11 @@ function gearEditor(m, slot, a) {
 // 食事: the fish list right here (no sheet). The dish's buff lasts for the next trip only
 function mealEditor(m) {
   const ml = mealOf(m.id);
-  if (ml) return `<div class="gedit"><div class="meal-got">${pubIcon(PUB_BY[ml.dish])}<span><b>${PUB_BY[ml.dish].n}</b>を食べた<br><span class="sub">${mealLine(ml)}・次に出発する冒険の間だけ</span></span></div></div>`;
+  if (ml) return `<div class="gedit"><div class="meal-got">${dishIcon(ml.dish)}<span><b>${dishName(ml.dish)}</b>を食べた<br><span class="sub">${mealLine(ml)}・次に出発する冒険の間だけ</span></span></div></div>`;
   if (!advReady(m)) return `<div class="gedit"><p class="note" style="margin:0;font-size:12px">療養中は食事ができない。手当てをして、治ってから。</p></div>`;
-  const fish = mealFish();
-  let h = `<div class="gedit"><span class="sub">釣った魚をゴズに渡すと、料理を1品作って${m.n}に食べさせる。良い魚ほど良い料理(何が出るかは出てくるまで分からない)。バフは次に出発する冒険の間だけ。</span>`;
+  const fish = mealFish(), dishes = mealDishes();   // No.355: 作った料理も渡せる
+  const dh = dishes.length ? `<div class="sub" style="margin:2px 0 4px">作った料理を渡す(効き目は皿で決まっている)</div><div class="fxlist">` + dishes.map(c => `<button class="fxrow pick" data-act="gmeal" data-v="${m.id}" data-id="${c.id}" data-q="${c.q}">${ico(c.id, c.q, { size: 'sm', cnt: c.n })}<div class="fxb"><b>${IT[c.id].name}</b> <span class="sub">${QUAL[c.q].n}・${dishBuffLine(c.id)}${c.q >= 2 ? '・上振れ' : ''}</span></div></button>`).join('') + `</div>` : '';
+  let h = `<div class="gedit">${dh}<span class="sub">釣った魚をゴズに渡すと、料理を1品作って${m.n}に食べさせる。良い魚ほど良い料理(何が出るかは出てくるまで分からない)。バフは次に出発する冒険の間だけ。</span>`;
   if (!fish.length) return h + `<p class="note" style="margin:4px 0 0;font-size:12px"><b>倉庫に魚がない。</b>釣り場で釣った魚を、売らずに持ち帰ると渡せる。</p></div>`;
   h += `<div class="fxlist">` + fish.map(c => `<button class="fxrow pick" data-act="gmeal" data-v="${m.id}" data-id="${c.id}" data-q="${c.q}">${ico(c.id, c.q, { size: 'sm', cnt: c.n })}<div class="fxb"><b>${IT[c.id].name}</b> <span class="sub">${QUAL[c.q].n}・${MEAL_TIER_N[c.f.tier]}料理${c.q >= 2 ? '・上振れ' : ''}</span></div></button>`).join('') + `</div>`;
   return h + `</div>`;
@@ -21097,7 +21270,7 @@ const DIVE_ACTS = {
     gqDraw(); if (ok) save(); sfx(ok ? 'tap' : 'fail'); return true;
   },
   dvbagclear(d) { if (bagEmpty(d.v)) { sfx('tap'); save(); } gqDraw(); return true; },
-  gmeal(d) { const o = mealGive(d.v, d.id, +d.q); if (!o) { gqDraw(); return true; } sfx('good'); gqDraw(); mealReveal(o.r, o.hit); toast(`<div><div class="t1">${o.m.n}が${PUB_BY[o.r.dish].n}を食べた</div>${mealLine(o.r)}</div>`); return true; },
+  gmeal(d) { const o = mealGive(d.v, d.id, +d.q); if (!o) { gqDraw(); return true; } sfx('good'); gqDraw(); mealReveal(o.r, o.hit); toast(`<div><div class="t1">${o.m.n}が${dishName(o.r.dish)}を食べた</div>${mealLine(o.r)}</div>`); return true; },
   dvsend() {
     const g = gqState(), dv = sendDive(g.area, g.target, g.party || [], {});
     if (!dv) return;
@@ -31124,6 +31297,7 @@ function migrate(s) {
   if (!s || typeof s !== 'object' || !s.inv) return null;
   const base = { skills: { smith: 0, alch: 0, cook: 0, scribe: 0 }, tools: { smith: 0, alch: 0, cook: 0, scribe: 0 }, found: {}, made: {}, books: {}, built: {}, deliv: {}, orders: [], cust: [], stall: [], soldGear: [], stats: { sold: 0, earned: 0, crafted: 0, bought: 0, orders: 0, best: 0 }, sound: true, shop: 0, stage: 0, work: 0, sp: 0, reg: {}, regLast: {}, hidden: {}, rumors: {}, ms: 0 };
   if (s.tut === undefined) { s.tut = -1; s._old = true; }
+  if (!s.pubKnown) { s.pubKnown = {}; for (const k in (s.meals || {})) { const d = s.meals[k] && s.meals[k].dish; if (d && /^p_/.test(d)) s.pubKnown[d] = s.day || 1; } }   // No.355
   if (!s.gspeed) s.gspeed = 'slow';
   if (s.music === undefined) s.music = true;
   if (!s.vol) s.vol = { m: 0.5, s: 0.7 };
@@ -31395,7 +31569,8 @@ function boot(local, fresh) {
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
     cancelOrder, orderOffSeason, sortInv, season, regularToday, REG, REGULARS, iconURL, AU, TRACKS, auBuild, AUS, ringFx, orderCap, genStall, makeHotCust, storyPlay, storySeen, storyHook, storyKick, storyLater, storyView, chURL, MOB_OF, BLD, REG, STORY, REG_STORY, storyFlushChapter, recUnlocked, flushFX, wsGift, wsBg, TOOLS, buyTool, lucaJoin, lucaHero, lucaTakeSword, lairOpen, bossWin, storyOff,
     RARE, RARES_OF, RARE_T, rareW, rareEV, rareOdds, drawRare, appraiseDraw, itemGrade, itemUses, breathInfo, haulK, isBreath, sealP2, divePlanMigrate, itemSheet, RARE_LIST, lastStand, trapRoom, goHome, sealsAdd, healOf,
-    btlStart, btlAct, btlSkDo, btlEnd, btlState, btlFlee, btlOpen, btlOpenMini, BTLMG, BTLU, PZU, pzHint, btlPzMove, btlPzItem, devPz, BTL_SK, btlSkMax, dragoonK, diveRankOk, resolveTrapMan, resolveChestMan,   // No.262
+    pubTonight, pubKnown, pubLearn, mealDishes, dishBuff, fgSeen, makeablePool, FG, GOZ_DISH,   // No.355
+  btlStart, btlAct, btlSkDo, btlEnd, btlState, btlFlee, btlOpen, btlOpenMini, BTLMG, BTLU, PZU, pzHint, btlPzMove, btlPzItem, devPz, BTL_SK, btlSkMax, dragoonK, diveRankOk, resolveTrapMan, resolveChestMan,   // No.262
   };
 }
 if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
