@@ -3756,11 +3756,33 @@ body.btl-open{overflow:hidden}
 @media (max-width:480px){.rc-row{grid-template-columns:22px 40px 1fr auto 18px 56px;gap:4px;padding:3px 6px 3px 4px}.rc-ic{width:40px;height:34px}.rc-nm b{font-size:14px}.rc-od b{font-size:14px}}
 /* No.372 レース場でコインを買う・厩舎の「レース場」ボタン */
 .rc-buyb{white-space:nowrap;border-color:var(--gold)!important;color:#ffe3a0!important}
-.rc-buy .rc-buys{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.rc-buy .rc-buys{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+/* No.373: 数字がはみ出さない大きさ(レース場はカジノの画面の大きさで文字を決めない) */
+.rc-buy .cas-mb{min-height:64px;gap:8px;padding:8px 10px;border-radius:14px}
+.rc-buy .cas-mb img{width:36px;height:36px}
+.rc-buy .cas-mb b{font-size:18px}.rc-buy .cas-mb b em{font-size:12px}
+.rc-buy .cas-mb small{font-size:13px;overflow:visible;text-overflow:clip}
+@media (max-width:520px){.rc-buy .rc-buys{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-buy .cas-mb{padding:6px 8px;gap:6px}.rc-buy .cas-mb img{width:28px;height:28px}.rc-buy .cas-mb b{font-size:16px}}
 .rc-buy .rc-betnote{text-align:center}
 .stab.rc-factab{border-color:rgba(255,190,110,.7)}
 .stab.rc-factab:disabled{opacity:.5;cursor:default}
 @media (max-width:520px){.rc-topr{gap:5px}.rc-buyb{padding-left:8px!important;padding-right:8px!important;font-size:12px!important}}
+
+/* No.373 券の種類・ボックス・自分の券の竜 */
+.rc-tys{gap:5px}.rc-tys .ar-chip{display:block;padding:5px 10px;font-size:13px}
+.rc-tyrow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.rc-tyd{font-size:12.5px;color:#e6d6b8}.rc-tyd b{color:#ffd99a;margin-right:4px}
+.rc-mode .ar-chip{display:block;padding:4px 12px}
+.rc-ordb,.rc-mine{font-style:normal;display:inline-block;margin-left:6px;padding:0 5px;border-radius:5px;font:900 11px var(--f-ui);vertical-align:2px}
+.rc-ordb{background:#ffcf7a;color:#2a1606}
+.rc-mine{background:#2a1606;color:#ffd25a;border:1px solid #ffd25a}
+.rc-row.mine{box-shadow:inset 4px 0 0 #ffd25a}
+.rc-tag.mine{background:#ffd25a;color:#2a1606;font-size:12.5px;padding:1px 6px;box-shadow:0 0 0 2px #fff6d0,0 0 14px 3px rgba(255,210,90,.9);z-index:2}
+.rc-tag.mine em{font-style:normal;background:#2a1606;color:#ffd25a;border-radius:3px;padding:0 3px;margin-right:4px;font-size:10.5px}
+.rc-mineb{position:absolute;left:10px;top:8px;z-index:40;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;max-width:calc(100% - 140px);background:rgba(15,10,8,.72);border:1px solid #ffd25a;border-radius:10px;padding:4px 10px;font:800 12.5px var(--f-ui);color:#fff3d8}
+.rc-mineb small{color:#ffd25a;font-size:11px}
+.rc-mineb span{border-left:4px solid var(--c);padding-left:5px;white-space:nowrap}.rc-mineb span b{margin-right:4px}
+.rc-mineb[hidden]{display:none}
 
 </style>
 <div id="app">
@@ -29028,9 +29050,34 @@ const RC_DIST = { s: { n: '短距離', m: 1200, sec: 13 }, m: { n: '中距離', 
 const RC_NAME = [['夕凪の一戦', '茜雲の一戦', '風見の一戦', '渡り鳥の一戦'], ['旗振りの一戦', '断崖の一戦', '雲海の一戦', '追い風の一戦'], ['宵空賞', '竜舎杯', '黄昏賞', '翼の王冠']];
 const RC_COND = [{ n: 'いまひとつ', c: 'dn2' }, { n: 'やや重い', c: 'dn' }, { n: '普通', c: '' }, { n: '良い', c: 'up' }, { n: '抜群', c: 'up2' }];
 const RC_MARK = ['◎', '○', '▲', '△'];
-const RC_TY = { win: { n: '単勝', d: '1着を当てる' }, place: { n: '複勝', d: '3着までに入る' }, quin: { n: '連', d: '1・2着の2頭(順不同)' } };
+// No.373(作者): 本物の馬券のような買い方。k = 選ぶ頭数・ord = 着順どおり
+const RC_TY = { win: { n: '単勝', d: '1着を当てる', k: 1 }, place: { n: '複勝', d: '3着までに入る竜を当てる', k: 1 }, wide: { n: 'ワイド', d: '2頭とも3着まで(順不同)', k: 2 }, quin: { n: '馬連', d: '1着・2着の2頭(順不同)', k: 2 }, exa: { n: '馬単', d: '1着→2着を順番どおり', k: 2, ord: 1 }, trio: { n: '三連複', d: '1〜3着の3頭(順不同)', k: 3 }, tri: { n: '三連単', d: '1着→2着→3着を順番どおり', k: 3, ord: 1 } };
 const RC_AMT = [10, 50, 100, 500];
-const RC_K = { back: 0.86, mix: 0.5, q: 0.1 };   // 【未決】back = 払い戻しの率(人気の確率に対して)・mix = 人気のうち本当の強さを知っている分(残りは新聞の見立て)。test/race_sim.py で測って決める
+const RC_K = { back: { win: 0.86, place: 0.86, wide: 0.79, quin: 0.79, exa: 0.81, trio: 0.75, tri: 0.75 }, mix: 0.5 };   // 【未決】back = 券の種類ごとの払い戻しの率(人気の確率に対して)・mix = 人気のうち本当の強さを知っている分(残りは新聞の見立て)。test/race_sim.py で測って決める
+const RC_MAXO = 999.9;
+// 券の組み合わせ → 確率の表の番号
+const rcKey = (ty, s) => { const k = RC_TY[ty].k; if (k === 1) return s[0]; const a = RC_TY[ty].ord ? s : [...s].sort((x, y) => x - y); return k === 2 ? a[0] * 8 + a[1] : a[0] * 64 + a[1] * 8 + a[2]; };
+const RC_TAB = { win: 'w', place: 't3', wide: 'wd', quin: 'pr', exa: 'ex', trio: 'tr', tri: 'tf' };
+// 当たったか(o = 着順)
+function rcHit(ty, s, o) {
+  if (ty === 'win') return o[0] === s[0];
+  if (ty === 'place') return o.indexOf(s[0]) < 3;
+  if (ty === 'wide') return o.indexOf(s[0]) < 3 && o.indexOf(s[1]) < 3;
+  if (ty === 'quin') return o.indexOf(s[0]) < 2 && o.indexOf(s[1]) < 2;
+  if (ty === 'exa') return o[0] === s[0] && o[1] === s[1];
+  if (ty === 'trio') return s.every(i => o.indexOf(i) < 3);
+  return o[0] === s[0] && o[1] === s[1] && o[2] === s[2];
+}
+// ボックス: 選んだ竜の組み合わせを全部(着順どおりの券は並べ方も全部)
+function rcCombos(ty, sel) {
+  const k = RC_TY[ty].k, ord = RC_TY[ty].ord, out = [], a = [...sel].sort((x, y) => x - y);
+  const go = (pre, rest) => { if (pre.length === k) { out.push(pre); return; } rest.forEach((v, n) => go(pre.concat(v), ord ? rest.filter((_, m) => m !== n) : rest.slice(n + 1))); };
+  go([], a); return out;
+}
+const rcCost = t => t.n * t.pts.length;
+const rcSeq = (ty, s) => s.map(i => i + 1).join(RC_TY[ty].ord ? '→' : '-');
+const rcTkName = t => t.box ? `${RC_TY[t.ty].n}ボックス ${t.box.map(i => i + 1).join('・')}(${t.pts.length}点)` : `${RC_TY[t.ty].n} ${rcSeq(t.ty, t.pts[0].s)} ${t.pts[0].s.map(i => RC_DR[i].n).join(RC_TY[t.ty].ord ? '→' : '・')}`;
+const rcMineSet = tix => { const m = new Set(); tix.forEach(t => (t.box || []).concat(...t.pts.map(p => p.s)).forEach(i => m.add(i))); return m; };
 const RC_SIG = 4;       // 揺らぎ(強さの点)
 const rcImg = n => imgU('obj_rc_' + n);
 const rcOpenOK = () => !!(G && G.stage >= 4 && G.built && G.built.dragon);
@@ -29046,6 +29093,7 @@ function rcSt() {
   if (s.day !== G.day) { const keep = { best: s.best || 0, hits: s.hits || 0, bet: s.bet || 0, back: s.back || 0, nights: s.nights || 0, seen: s.seen || 0, pend: s.pend || 0, told: s.told || 0 }; for (const k in s) delete s[k]; Object.assign(s, keep, { day: G.day, seed: (Math.random() * 2 ** 31) >>> 0, tix: [[], [], []], res: [null, null, null], ri: 0 }); }
   if (!Array.isArray(s.tix)) s.tix = [[], [], []];
   if (!Array.isArray(s.res)) s.res = [null, null, null];
+  s.tix.forEach(L => L.forEach(t => { if (!t.pts) { t.pts = [{ s: t.ty === 'quin' ? [t.a, t.b] : [t.a], o: t.odds }]; delete t.a; delete t.b; delete t.odds; } }));
   return s;
 }
 // 距離の得手(得意 +3・隣 0・反対 -3)と、脚質と距離(逃げは短い方・追込は長い方)
@@ -29069,15 +29117,23 @@ function rcPlan(ri) {
   // 人気 = 新聞の見立て(調子を見ない)+ 印の分。本当 = 今日の調子込み
   const pubS = run.map(x => x.base + ([1, 0.6, 0.3, 0.15][x.mark] || 0));
   const truS = run.map(x => x.base + x.cond * 2);
-  const mc = (S, seed) => { const q = rcRng(seed), N = 3000, w = Array(8).fill(0), t3 = Array(8).fill(0), pr = {};
-    for (let n = 0; n < N; n++) { const sc = S.map(v => v + rcGauss(q) * RC_SIG), o = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]); w[o[0]]++; t3[o[0]]++; t3[o[1]]++; t3[o[2]]++; const pk = Math.min(o[0], o[1]) * 8 + Math.max(o[0], o[1]); pr[pk] = (pr[pk] || 0) + 1; }
-    return { w: w.map(v => v / N), t3: t3.map(v => v / N), pr: Object.fromEntries(Object.entries(pr).map(([k, v]) => [k, v / N])) }; };
+  const mc = (S, seed) => { const q = rcRng(seed), N = 12000, C = { w: new Float64Array(8), t3: new Float64Array(8), pr: new Float64Array(64), wd: new Float64Array(64), ex: new Float64Array(64), tr: new Float64Array(512), tf: new Float64Array(512) }, sc = new Array(8), o = [0, 1, 2, 3, 4, 5, 6, 7];
+    for (let n = 0; n < N; n++) { for (let i = 0; i < 8; i++) sc[i] = S[i] + rcGauss(q) * RC_SIG; o.sort((a, b) => sc[b] - sc[a]); const [a, b, c] = o;
+      C.w[a]++; C.t3[a]++; C.t3[b]++; C.t3[c]++; C.ex[a * 8 + b]++; C.tf[a * 64 + b * 8 + c]++;
+      const u = [a, b, c].sort((x, y) => x - y); C.pr[Math.min(a, b) * 8 + Math.max(a, b)]++; C.tr[u[0] * 64 + u[1] * 8 + u[2]]++; C.wd[u[0] * 8 + u[1]]++; C.wd[u[0] * 8 + u[2]]++; C.wd[u[1] * 8 + u[2]]++; }
+    // まれな並びは数が少なくぶれるので、1着の確率から順に割り直した値(K 回分)を混ぜる
+    const w = Array.from(C.w, v => v / N), K = 300, h2 = (a, b) => w[a] * w[b] / Math.max(0.02, 1 - w[a]), h3 = (a, b, c) => h2(a, b) * w[c] / Math.max(0.02, 1 - w[a] - w[b]);
+    const P = { w, t3: Array.from(C.t3, v => v / N), wd: Array.from(C.wd, v => v / N), pr: new Array(64).fill(0), ex: new Array(64).fill(0), tr: new Array(512).fill(0), tf: new Array(512).fill(0) };
+    for (let a = 0; a < 8; a++) for (let b = 0; b < 8; b++) { if (a === b) continue; P.ex[a * 8 + b] = (C.ex[a * 8 + b] + K * h2(a, b)) / (N + K); if (a < b) P.pr[a * 8 + b] = (C.pr[a * 8 + b] + K * (h2(a, b) + h2(b, a))) / (N + K);
+      for (let c = 0; c < 8; c++) { if (c === a || c === b) continue; P.tf[a * 64 + b * 8 + c] = (C.tf[a * 64 + b * 8 + c] + K * h3(a, b, c)) / (N + K);
+        if (a < b && b < c) P.tr[a * 64 + b * 8 + c] = (C.tr[a * 64 + b * 8 + c] + K * (h3(a, b, c) + h3(a, c, b) + h3(b, a, c) + h3(b, c, a) + h3(c, a, b) + h3(c, b, a))) / (N + K); } }
+    return P; };
   const pub = mc(pubS, s.seed * 5 + ri * 17 + 1), tru = mc(truS, s.seed * 5 + ri * 17 + 2);
-  const odd = p => Math.max(1.1, Math.min(300, Math.floor(RC_K.back / Math.max(p, 0.0008) * 10) / 10));
   const mx = (a, b) => RC_K.mix * b + (1 - RC_K.mix) * a;   // 人気 = 新聞の見立てと本当の強さを混ぜた確率
-  const pw = pub.w.map((v, i) => mx(v, tru.w[i])), p3 = pub.t3.map((v, i) => mx(v, tru.t3[i]));
-  run.forEach(x => { x.pub = pw[x.i]; x.tru = tru.w[x.i]; x.oW = odd(pw[x.i]); x.oP = Math.max(1.1, Math.floor(odd(p3[x.i]) * 10) / 10); });
-  const pl = { ri, d, name: RC_NAME[ri][Math.floor(r() * 4)], main: ri === 2, run, pub, tru, oQ: (a, b) => { const k = Math.min(a, b) * 8 + Math.max(a, b); return Math.floor(odd(mx(pub.pr[k] || 0, tru.pr[k] || 0) || 0.0008) * (1 + RC_K.q / RC_K.back) * 10) / 10; } };   // 連は少し厚く(当てにくい分)
+  const pP = (ty, sel) => { const t = RC_TAB[ty], k = rcKey(ty, sel); return mx(pub[t][k] || 0, tru[t][k] || 0); };
+  const od = (ty, sel) => { const bk = RC_K.back[ty]; return Math.max(1.1, Math.min(RC_MAXO, Math.floor(bk / Math.max(pP(ty, sel), bk / RC_MAXO) * 10) / 10)); };
+  run.forEach(x => { x.pub = pP('win', [x.i]); x.tru = tru.w[x.i]; x.oW = od('win', [x.i]); x.oP = od('place', [x.i]); });
+  const pl = { ri, d, name: RC_NAME[ri][Math.floor(r() * 4)], main: ri === 2, run, pub, tru, pP, od, tP: (ty, sel) => tru[RC_TAB[ty]][rcKey(ty, sel)] || 0 };
   return (RC_CACHE[key] = pl);
 }
 // 結果(着順と着差)。種から決まる
@@ -29092,11 +29148,7 @@ function rcResult(ri) {
 }
 const rcMargin = d => d < 0.2 ? 'ハナ' : d < 0.35 ? 'アタマ' : d < 0.6 ? 'クビ' : d < 0.85 ? '1/2竜身' : `${Math.round(d * 2) / 2}竜身`;
 // 券が当たったか・払い戻し(枚)
-function rcPay(t, o) {
-  if (t.ty === 'win') return o[0] === t.a ? Math.floor(t.n * t.odds) : 0;
-  if (t.ty === 'place') return o.slice(0, 3).includes(t.a) ? Math.floor(t.n * t.odds) : 0;
-  const top = [o[0], o[1]]; return top.includes(t.a) && top.includes(t.b) ? Math.floor(t.n * t.odds) : 0;
-}
+function rcPay(t, o) { return t.pts.reduce((a, p) => a + (rcHit(t.ty, p.s, o) ? Math.floor(t.n * p.o) : 0), 0); }
 
 // ---------- 開く・閉じる ----------
 function raceOpen() {
@@ -29113,7 +29165,7 @@ function raceOpen() {
     `<div class="ar-top"><div class="ar-where"><b>空のレース場</b><small id="rcsub"></small></div><div class="rc-topr"><span class="cas-coins rc-coins" id="rccoin"></span><button class="ar-x rc-buyb" data-act="rcbuyv" id="rcbuyb">コインを買う</button><button class="ar-x" data-act="rcback" id="rcx">帰る</button></div></div>` +
     `<div class="rc-main" id="rcmain"></div><div class="ar-fx" id="rcfx"></div>`;
   document.body.appendChild(el);
-  Object.assign(DRC, { mk: ['raceA', 'raceB', 'raceC'][Math.floor(Math.random() * 3)], on: true, el, view: 'card', ty: 'win', sel: [], amt: 10, run: null });
+  Object.assign(DRC, { mk: ['raceA', 'raceB', 'raceC'][Math.floor(Math.random() * 3)], on: true, el, view: 'card', ty: 'win', sel: [], amt: 10, box: false, run: null });
   DRC.ri = Math.min(2, s.res.findIndex(x => !x) < 0 ? 2 : s.res.findIndex(x => !x));
   rcResize(); window.addEventListener('resize', rcResize);
   if (typeof musicFor === 'function' && AUS.music) musicFor(musicKey());
@@ -29156,19 +29208,20 @@ function rcDraw() {
 }
 function rcTip() {
   const e = document.createElement('div'); e.className = 'ar-tip rc-tip'; e.id = 'rctip';
-  e.innerHTML = `<div class="ar-cardt">空のレース</div><p>毎晩3レース。8頭の竜のうち、どれが勝つかにコインを賭ける。<br><b>新聞の印</b>は昨日までの強さ、<b>パドック</b>は今日の調子。人気(倍率)は新聞に引っ張られるから、調子のいい竜が人気薄なら、狙い目。<br>券は <b>単勝</b>(1着)・<b>複勝</b>(3着まで)・<b>連</b>(1・2着の2頭、順不同)。</p><button class="ar-go" data-act="rctipx">わかった</button>`;
+  e.innerHTML = `<div class="ar-cardt">空のレース</div><p>毎晩3レース。8頭の竜のうち、どれが勝つかにコインを賭ける。<br><b>新聞の印</b>は昨日までの強さ、<b>パドック</b>は今日の調子。人気(倍率)は新聞に引っ張られるから、調子のいい竜が人気薄なら、狙い目。<br>券は <b>単勝・複勝・ワイド・馬連・馬単・三連複・三連単</b>。<b>ボックス</b>なら、選んだ竜の組み合わせを全部まとめて買える。</p><button class="ar-go" data-act="rctipx">わかった</button>`;
   DRC.el.appendChild(e);
 }
 function rcCardView() {
   const s = rcSt(), ri = DRC.ri, pl = rcPlan(ri), done = s.res[ri], D = RC_DIST[pl.d], tix = s.tix[ri];
   const tabs = [0, 1, 2].map(i => { const p = rcPlan(i); return `<button class="rc-rtab${i === ri ? ' on' : ''}${s.res[i] ? ' done' : ''}" data-act="rcri" data-v="${i}"><b>${i === 2 ? 'メイン' : `第${i + 1}R`}</b><small>${RC_DIST[p.d].n}${s.res[i] ? '・済' : ''}</small></button>`; }).join('');
-  const sel = DRC.sel, ty = DRC.ty;
+  const sel = DRC.sel, ty = DRC.ty, T = RC_TY[ty], mine = rcMineSet(tix);
   const rows = pl.run.map(x => {
     const dr = RC_DR[x.i], c = RC_COND[x.padd + 2], on = sel.includes(x.i);
     const fit = dr.d === pl.d ? '<span class="rc-fit up">得意</span>' : (dr.d !== 'm' && pl.d !== 'm') ? '<span class="rc-fit dn">苦手</span>' : '<span class="rc-fit">ふつう</span>';
     const place = done ? done.o.indexOf(x.i) + 1 : 0;
-    return `<button class="rc-row${on ? ' on' : ''}${place ? ' p' + place : ''}" data-act="rcsel" data-v="${x.i}"${done ? ' disabled' : ''}>${rcGate(x.i)}${rcIcon(x.i)}` +
-      `<span class="rc-nm"><b>${dr.n}</b><small>${RC_ST[dr.st]}・${fit}</small></span>` +
+    const ordB = on && T.ord && !DRC.box ? `<em class="rc-ordb">${sel.indexOf(x.i) + 1}着</em>` : '', mk = mine.has(x.i) ? '<em class="rc-mine">券</em>' : '';
+    return `<button class="rc-row${on ? ' on' : ''}${place ? ' p' + place : ''}${mine.has(x.i) ? ' mine' : ''}" data-act="rcsel" data-v="${x.i}"${done ? ' disabled' : ''}>${rcGate(x.i)}${rcIcon(x.i)}` +
+      `<span class="rc-nm"><b>${dr.n}${ordB}${mk}</b><small>${RC_ST[dr.st]}・${fit}</small></span>` +
       `<span class="rc-cd ${c.c}"><small>パドック</small>${c.n}</span><span class="rc-mk">${x.mark >= 0 ? RC_MARK[x.mark] : ''}</span>` +
       `<span class="rc-od">${place ? `<b class="rc-pl">${place}着</b>` : `<small>単勝</small><b>×${x.oW.toFixed(1)}</b>`}</span></button>`;
   }).join('');
@@ -29176,15 +29229,17 @@ function rcCardView() {
   let bet = '';
   if (done) bet = `<div class="rc-bet"><div class="rc-betnote">このレースは終わった。${ri < 2 && !s.res[ri + 1] ? '' : ''}</div><div class="ar-acts"><button class="ar-go" data-act="rcres" data-v="${ri}">結果を見る</button>${s.res.every(Boolean) ? '' : `<button class="ar-go hot" data-act="rcri" data-v="${s.res.findIndex(x => !x)}">次のレースへ</button>`}</div></div>`;
   else {
-    const need = ty === 'quin' ? 2 : 1, ok = sel.length === need, coins = rcCoins();
-    const od = !ok ? 0 : ty === 'win' ? pl.run[sel[0]].oW : ty === 'place' ? pl.run[sel[0]].oP : pl.oQ(sel[0], sel[1]);
-    const tys = Object.entries(RC_TY).map(([k, t]) => `<button class="ar-chip${ty === k ? ' on' : ''}" data-act="rcty" data-v="${k}">${t.n}<small>${t.d}</small></button>`).join('');
+    const coins = rcCoins(), box = !!DRC.box, pts = box ? (sel.length >= T.k ? rcCombos(ty, sel) : []) : (sel.length === T.k ? [T.ord ? sel.slice() : [...sel].sort((x, y) => x - y)] : []), ok = pts.length > 0, cost = DRC.amt * pts.length;
+    const ods = pts.map(q => pl.od(ty, q)), oMin = ods.length ? Math.min(...ods) : 0, oMax = ods.length ? Math.max(...ods) : 0;
+    const tys = Object.entries(RC_TY).map(([k, t]) => `<button class="ar-chip${ty === k ? ' on' : ''}" data-act="rcty" data-v="${k}">${t.n}</button>`).join('');
     const amts = RC_AMT.map(a => `<button class="ar-chip${DRC.amt === a ? ' on' : ''}" data-act="rcamt" data-v="${a}"${a > coins ? ' disabled' : ''}>${a}枚</button>`).join('');
-    const tl = tix.map((t, k) => `<span class="rc-tk">${RC_TY[t.ty].n} ${t.ty === 'quin' ? `${t.a + 1}-${t.b + 1}` : t.a + 1} ${RC_DR[t.a].n}${t.ty === 'quin' ? '・' + RC_DR[t.b].n : ''} ${t.n}枚 ×${t.odds.toFixed(1)}<button data-act="rcdel" data-v="${k}">×</button></span>`).join('');
-    const tot = tix.reduce((a, t) => a + t.n, 0);
-    bet = `<div class="rc-bet"><div class="ar-chips rc-tys">${tys}</div><div class="ar-betrow"><span class="ar-lbl">1枚の券</span><div class="ar-chips">${amts}</div></div>` +
-      `<div class="ar-acts two"><button class="ar-go" data-act="rcbuy"${ok && coins >= DRC.amt ? '' : ' disabled'}>${!ok ? (need === 2 ? '竜を2頭えらぶ' : '竜をえらぶ') : `券を買う ${DRC.amt}枚・当たれば ${fmt(Math.floor(DRC.amt * od))}枚`}</button>` +
-      `<button class="ar-go hot" data-act="rcgo">${tix.length ? `発走!(券 ${tix.length}枚・${fmt(tot)}枚)` : '見るだけで発走'}</button></div>` +
+    const tl = tix.map((t, k) => `<span class="rc-tk">${rcTkName(t)} ${t.box ? `各${t.n}枚・計${fmt(rcCost(t))}枚` : `${t.n}枚 ×${t.pts[0].o.toFixed(1)}`}<button data-act="rcdel" data-v="${k}">×</button></span>`).join('');
+    const tot = tix.reduce((a, t) => a + rcCost(t), 0);
+    const hint = box ? `${T.k}頭以上えらぶ(いま ${sel.length}頭${ok ? `・${pts.length}点` : ''})` : T.ord ? `${T.k}頭を、${T.k === 2 ? '1着→2着' : '1着→2着→3着'}の順に押す` : T.k === 1 ? '竜を1頭えらぶ' : `竜を${T.k}頭えらぶ`;
+    const btn = !ok ? hint : box ? `ボックスで買う ${pts.length}点×${DRC.amt}枚=${fmt(cost)}枚・×${oMin.toFixed(1)}〜${oMax.toFixed(1)}` : `券を買う ${DRC.amt}枚・×${oMin.toFixed(1)}・当たれば ${fmt(Math.floor(DRC.amt * oMin))}枚`;
+    bet = `<div class="rc-bet"><div class="ar-chips rc-tys">${tys}</div><div class="rc-tyrow"><span class="rc-tyd"><b>${T.n}</b> ${T.d}</span><div class="ar-chips rc-mode"><button class="ar-chip${box ? '' : ' on'}" data-act="rcbox" data-v="0">通常</button><button class="ar-chip${box ? ' on' : ''}" data-act="rcbox" data-v="1">ボックス</button></div></div>${ok || !sel.length ? '' : `<div class="rc-betnote">${hint}</div>`}<div class="ar-betrow"><span class="ar-lbl">1枚の券</span><div class="ar-chips">${amts}</div></div>` +
+      `<div class="ar-acts two"><button class="ar-go" data-act="rcbuy"${ok && coins >= cost ? '' : ' disabled'}>${btn}${ok && coins < cost ? '(コインが足りない)' : ''}</button>` +
+      `<button class="ar-go hot" data-act="rcgo">${tix.length ? `発走!(券 ${tix.reduce((a, t) => a + t.pts.length, 0)}点・${fmt(tot)}枚)` : '見るだけで発走'}</button></div>` +
       (tl ? `<div class="rc-tks">${tl}</div>` : '') + (coins >= 10 ? '' : `<div class="rc-betnote">コインは右上の「コインを買う」で買える(一枚${CAS_PRICE}G)</div>`) + `</div>`;
   }
   return `<div class="rc-card"><div class="rc-rtabs">${tabs}</div>` +
@@ -29195,8 +29250,8 @@ function rcCardView() {
 function rcResultView() {
   const s = rcSt(), ri = DRC.ri, res = s.res[ri], pl = rcPlan(ri); if (!res) return '';
   const rows = res.o.map((i, k) => `<div class="rc-rrow p${k + 1}"><b class="rc-pl">${k + 1}着</b>${rcGate(i)}${rcIcon(i)}<span class="rc-nm"><b>${RC_DR[i].n}</b><small>${RC_ST[RC_DR[i].st]}・単勝 ×${pl.run[i].oW.toFixed(1)}</small></span><span class="rc-mg">${k ? rcMargin(res.g[k] - res.g[k - 1]) : ''}</span></div>`).join('');
-  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0), bet = tix.reduce((a, t) => a + t.n, 0);
-  const tl = tix.map(t => { const p = rcPay(t, res.o); return `<span class="rc-tk${p ? ' hit' : ' miss'}">${RC_TY[t.ty].n} ${RC_DR[t.a].n}${t.ty === 'quin' ? '・' + RC_DR[t.b].n : ''} ${t.n}枚 → ${p ? `<b>+${fmt(p)}枚</b>` : 'はずれ'}</span>`; }).join('');
+  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0), bet = tix.reduce((a, t) => a + rcCost(t), 0);
+  const tl = tix.map(t => { const p = rcPay(t, res.o); return `<span class="rc-tk${p ? ' hit' : ' miss'}">${rcTkName(t)} ${fmt(rcCost(t))}枚 → ${p ? `<b>+${fmt(p)}枚</b>` : 'はずれ'}</span>`; }).join('');
   const next = s.res.findIndex(x => !x);
   return `<div class="rc-card rc-res"><div class="rc-head"><b>${pl.name}・結果</b><small>${RC_DIST[pl.d].n} ${RC_DIST[pl.d].m}</small></div>` +
     (tix.length ? `<div class="rc-sum${got ? ' hit' : ''}"><b>${got ? `払い戻し +${fmt(got)}枚` : '券は、紙くずになった'}</b><small>賭けた ${fmt(bet)}枚</small></div><div class="rc-tks">${tl}</div>` : '') +
@@ -29210,16 +29265,16 @@ const RC_EARLY = { nige: 3.2, senko: 1.3, sashi: -0.8, oikomi: -2.6 };
 const RC_LANE = [0, 4, 1, 5, 2, 6, 3, 7];   // ゴールの高さ(隣の着順は離す)
 function rcStart() {
   const s = rcSt(), ri = DRC.ri, pl = rcPlan(ri), res = rcResult(ri);
-  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0);
+  const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0), mine = rcMineSet(tix);
   s.res[ri] = res; s.pend += got;   // 結果は先に保存(閉じても払い戻しは残る)
-  const bet = tix.reduce((a, t) => a + t.n, 0); s.bet = (s.bet || 0) + bet; s.back = (s.back || 0) + got; if (got) s.hits = (s.hits || 0) + 1; if (got > (s.best || 0)) s.best = got;
+  const bet = tix.reduce((a, t) => a + rcCost(t), 0); s.bet = (s.bet || 0) + bet; s.back = (s.back || 0) + got; if (got) s.hits = (s.hits || 0) + 1; if (got > (s.best || 0)) s.best = got;
   save();
   DRC.view = 'run'; rcDraw();
   const M = $('#rcmain');
   M.innerHTML = `<div class="rc-stage" id="rcstage"><div class="rc-l rc-sky"></div><div class="rc-l rc-cloud"></div><div class="rc-l rc-ground"></div><img class="rc-goal" id="rcgoal" src="${rcImg('goal')}" alt="">` +
     RC_DR.map((d, i) => { const p = RC_PIV[d.k], o = `${(p[0] / 220 * 100).toFixed(1)}% ${(p[1] / 230 * 100).toFixed(1)}%`;
-      return `<div class="rc-dr" id="rcd${i}"><img class="w2" src="${rcImg(d.k + '_wd')}" style="transform-origin:${o}" alt=""><img class="bd" src="${rcImg(d.k + '_b')}" alt=""><img class="w1" src="${rcImg(d.k + '_w')}" style="transform-origin:${o}" alt=""><span class="rc-tag" style="--c:${d.c}">${i + 1} ${d.n}</span></div>`; }).join('') +
-    `<div class="rc-photo" id="rcphoto"></div><div class="rc-live" id="rclive"></div><div class="rc-fast">タップで早送り</div></div>`;
+      return `<div class="rc-dr" id="rcd${i}"><img class="w2" src="${rcImg(d.k + '_wd')}" style="transform-origin:${o}" alt=""><img class="bd" src="${rcImg(d.k + '_b')}" alt=""><img class="w1" src="${rcImg(d.k + '_w')}" style="transform-origin:${o}" alt=""><span class="rc-tag${mine.has(i) ? ' mine' : ''}" style="--c:${d.c}">${mine.has(i) ? '<em>券</em>' : ''}${i + 1} ${d.n}</span></div>`; }).join('') +
+    `<div class="rc-mineb" id="rcmine"${mine.size ? '' : ' hidden'}></div><div class="rc-photo" id="rcphoto"></div><div class="rc-live" id="rclive"></div><div class="rc-fast">タップで早送り</div></div>`;
   const st = $('#rcstage');
   const rv = Math.random;   // 見た目だけの揺らぎ(結果には効かない)
   const dr = RC_DR.map((d, i) => {
@@ -29227,7 +29282,7 @@ function rcStart() {
     return { i, el: $('#rcd' + i), w1: null, w2: null, k, g: res.g[k], early: RC_EARLY[d.st], f1: 1 + rv(), f2: 2.5 + rv() * 1.5, p1: rv() * 6.28, p2: rv() * 6.28, alt: rv(), tgt: rv(), nextT: 0.5 + rv(), ph: rv() * 6.28, x: 0, crossed: false };
   });
   dr.forEach(o => { o.w1 = o.el.querySelector('.w1'); o.w2 = o.el.querySelector('.w2'); });
-  const R = DRC.run = { pl, res, dr, t0: performance.now(), last: performance.now(), T: 0, dur: RC_DIST[pl.d].sec, U: 60, cam: 0, lpx: 0, bg: [0, 0, 0], spd: 1, fast: 1, ev: {}, lead: -1, leadT: 0, over: false, photo: res.g[1] - res.g[0] < 0.25, got, tix: tix.length };
+  const R = DRC.run = { pl, res, dr, t0: performance.now(), last: performance.now(), T: 0, dur: RC_DIST[pl.d].sec, U: 60, cam: 0, lpx: 0, bg: [0, 0, 0], spd: 1, fast: 1, ev: {}, lead: -1, leadT: 0, over: false, photo: res.g[1] - res.g[0] < 0.25, got, tix: tix.length, mine: [...mine].sort((a, b) => a - b), mineS: '' };
   st.addEventListener('pointerdown', () => { if (!R.over) R.fast = 3; });
   sfx('rc_gun'); setTimeout(() => { sfx('rc_flap'); sfx('rc_cheer'); }, 180); setTimeout(() => sfx('rc_flaps'), 420);   // No.372(作者): 音をもっと激しく
   R.wind = typeof seLoopStart === 'function' ? seLoopStart('se_rc_wind.mp3') : null;
@@ -29283,6 +29338,7 @@ function rcFrame(R, dt) {
   });
   // 実況・音
   const nm = i => RC_DR[i].n, ord = S.map((v, i) => i).sort((a, b) => S[b] - S[a]);
+  if (R.mine.length && T <= 1.02) { const ms = R.mine.map(i => `<span style="--c:${RC_DR[i].c}"><b>${nm(i)}</b>${ord.indexOf(i) + 1}番手</span>`).join(''); if (ms !== R.mineS) { R.mineS = ms; const e = $('#rcmine'); if (e) e.innerHTML = '<small>あなたの券</small>' + ms; } }
   if (R.lead !== lead && T > 0.12 && T < 0.97) { if (R.lead >= 0 && R.T - R.leadT > 0.06) { rcLive(`${nm(lead)}が先頭に立った!`); sfx('rc_flaps'); } R.lead = lead; R.leadT = R.T; }
   const ev = (k, at, fn) => { if (!R.ev[k] && T >= at) { R.ev[k] = 1; fn(); } };
   ev('a', 0.2, () => rcLive(`先頭は${nm(ord[0])}。${nm(ord[1])}が続く。${RC_ST[RC_DR[ord[7]].st] === '追込' ? `${nm(ord[7])}は最後方で待つ` : `しんがりは${nm(ord[7])}`}`));
@@ -29351,17 +29407,20 @@ function rcAct(a, v) {
   if (a === 'rcback') { if (DRC.view === 'buy') { DRC.view = 'card'; rcDraw(); return; } if (DRC.view === 'result') { DRC.view = 'card'; } raceClose(); return; }
   if (a === 'rcri') { DRC.ri = +v; DRC.sel = []; DRC.view = 'card'; sfx('tab'); rcDraw(); return; }
   if (a === 'rcres') { DRC.ri = +v; DRC.view = 'result'; sfx('tab'); rcDraw(); return; }
-  if (a === 'rcty') { DRC.ty = v; if (v !== 'quin') DRC.sel = DRC.sel.slice(-1); sfx('tab'); rcDraw(); return; }
+  if (a === 'rcty') { DRC.ty = v; if (!DRC.box) DRC.sel = DRC.sel.slice(-RC_TY[v].k); sfx('tab'); rcDraw(); return; }
+  if (a === 'rcbox') { DRC.box = v === '1'; if (!DRC.box) DRC.sel = DRC.sel.slice(-RC_TY[DRC.ty].k); sfx('tab'); rcDraw(); return; }
   if (a === 'rcamt') { DRC.amt = +v; sfx('tab'); rcDraw(); return; }
-  if (a === 'rcsel') { const i = +v, need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.includes(i)) DRC.sel = DRC.sel.filter(x => x !== i); else { DRC.sel.push(i); if (DRC.sel.length > need) DRC.sel.shift(); } sfx('tap'); rcDraw(); return; }
+  if (a === 'rcsel') { const i = +v, need = DRC.box ? 8 : RC_TY[DRC.ty].k; if (DRC.sel.includes(i)) DRC.sel = DRC.sel.filter(x => x !== i); else { DRC.sel.push(i); if (DRC.sel.length > need) DRC.sel.shift(); } sfx('tap'); rcDraw(); return; }
   if (a === 'rcbuy') {
-    const pl = rcPlan(DRC.ri), need = DRC.ty === 'quin' ? 2 : 1; if (DRC.sel.length !== need || s.res[DRC.ri] || !rcCoinOK()) return;
-    const c = casSt(); if (c.coins < DRC.amt) return;
-    const [x, y] = DRC.sel, odds = DRC.ty === 'win' ? pl.run[x].oW : DRC.ty === 'place' ? pl.run[x].oP : pl.oQ(x, y);
-    c.coins -= DRC.amt; s.tix[DRC.ri].push({ ty: DRC.ty, a: DRC.ty === 'quin' ? Math.min(x, y) : x, b: DRC.ty === 'quin' ? Math.max(x, y) : -1, n: DRC.amt, odds });
+    const pl = rcPlan(DRC.ri), ty = DRC.ty, T = RC_TY[ty], sel = DRC.sel; if (s.res[DRC.ri] || !rcCoinOK()) return;
+    const L = DRC.box ? (sel.length >= T.k ? rcCombos(ty, sel) : []) : (sel.length === T.k ? [T.ord ? sel.slice() : [...sel].sort((x, y) => x - y)] : []);
+    if (!L.length) return;
+    const t = { ty, n: DRC.amt, pts: L.map(q => ({ s: q, o: pl.od(ty, q) })) }; if (DRC.box) t.box = [...sel].sort((x, y) => x - y);
+    const c = casSt(); if (c.coins < rcCost(t)) return;
+    c.coins -= rcCost(t); s.tix[DRC.ri].push(t);
     save(); sfx('ar_bet'); rcDraw(); return;
   }
-  if (a === 'rcdel') { const t = s.tix[DRC.ri].splice(+v, 1)[0]; if (t && rcCoinOK()) casSt().coins += t.n; save(); sfx('tap'); rcDraw(); return; }
+  if (a === 'rcdel') { const t = s.tix[DRC.ri].splice(+v, 1)[0]; if (t && rcCoinOK()) casSt().coins += rcCost(t); save(); sfx('tap'); rcDraw(); return; }
   if (a === 'rcgo') { if (s.res[DRC.ri]) return; rcStart(); return; }
 }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#rcscene [data-act]'); if (!b || b.disabled) return; e.stopPropagation(); rcAct(b.dataset.act, b.dataset.v); }, true);
@@ -29379,7 +29438,7 @@ function rcRow() {
   return facCard({ act: 'race', bg: 'bg_rc_venue', ch: 'eir', n: '空のレース場', who: 'エイル', dis: !ok || !n, tag: !ok ? '' : n ? '' : '夜だけ',
     chips: !ok ? [[0, '竜騎士の厩舎ができると開く']] : [[0, '毎晩3レース・コインで賭ける']].concat(n && rcCoinOK() ? [[0, `コイン ${fmt(casSt().coins)}枚`]] : []) });
 }
-try { window.__rc = { RC_K, RC_CACHE, DRC, RC_DR, rcSt, rcPlan, rcResult, rcPay, raceOpen, raceClose, rcAct, rcStart }; } catch (e) { }
+try { window.__rc = { RC_TY, rcCombos, rcHit, rcCost, RC_K, RC_CACHE, DRC, RC_DR, rcSt, rcPlan, rcResult, rcPay, raceOpen, raceClose, rcAct, rcStart }; } catch (e) { }
 
 // ---- onsen.js ----
 // ---------- 温泉(No.287・2026-11-13 作者): 宿屋の札。夜に一度、湯に入ると体力が全部戻り、住人どうしの会話を1本聞く ----------
