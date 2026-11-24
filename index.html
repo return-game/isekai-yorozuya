@@ -3835,6 +3835,15 @@ body.btl-open{overflow:hidden}
 .counter-market .rf-big .ic, .counter-market .rf-empty span { --s: 68px; width: 68px; height: 68px; }
 .counter-market .rf-anvil { padding: 8px 10px; gap: 6px; } .counter-market .rf-who { display: none; } .counter-market .rf-go { padding: 9px 14px; }
 .counter-market .rf-sw button { padding: 6px; }
+/* No.380 手慣れ: 1回で作る数 */
+.fampick { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: rgba(255,255,255,.03); }
+.fampick .fp-k { display: block; font-size: 12.5px; color: var(--brass-hi); font-weight: 700; margin-bottom: 8px; }
+.fampick .fp-bs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.fampick .fp-b { display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 10px; border: 2px solid var(--line); background: none; color: inherit; font: inherit; cursor: pointer; }
+.fampick .fp-b b { font-size: 16px; margin-left: 4px; }
+.fampick .fp-b.on { border-color: var(--brass-hi); background: rgba(214,170,90,.18); }
+.fampick .fp-b:disabled { opacity: .35; cursor: default; }
+.fampick .fp-note { display: block; font-size: 11.5px; color: var(--ink-2); margin-top: 6px; }
 
 </style>
 <div id="app">
@@ -9399,7 +9408,9 @@ function inheritQ(r) {
 const FAM_GAP = 5, FAM_GAP3 = 10;
 const famCut = () => pk('hand') || 0;
 const famRaw = r => { if (!r || r.appraise || r.repair || r.rare || String(r.out).startsWith('lg_')) return 1; const d = (G.lv || 1) - (r.lv || 1) + famCut(); return d >= FAM_GAP3 ? 3 : d >= FAM_GAP ? 2 : 1; };
-const famN = r => { let n = famRaw(r); while (n > 1 && !hasInputs(r, n)) n--; return n; };
+// No.380 作者 2026-11-25: 何個作るかは選べる(G.famPick[レシピ id]。無ければ上限)
+const famPickN = r => { const m = famRaw(r), k = (G.famPick || {})[r.id]; return k ? Math.max(1, Math.min(k, m)) : m; };
+const famN = r => { let n = famPickN(r); while (n > 1 && !hasInputs(r, n)) n--; return n; };
 const familiar = r => famRaw(r) > 1;
 function doCraft(r, q, auto, crit, pre) {
   const t = craftTime(r);
@@ -12582,8 +12593,8 @@ const SKN = [
   ['c_grace2', 'craft', '三度の余裕', 2, ['c_grace'], { grace: 2 }, '「余裕」が一晩に3回になる。', 3, 1.3],
   ['c_key', 'craft', '名工の炉', 2, ['c1', 'ctw'], { forge: 1 }, '溶岩の心核で炉を強くする。会心で作ると、品質のくじを3回引いて一番良い物になる。', 4, -0.4, 'r_lavacore'],
   ['c_ks', 'craft', '熟練の手', 3, ['c_key'], { master: 1 }, 'おまかせで作っても、ときどき良品ができるようになる。', 5, -0.4, null, 1],
-  ['e3', 'craft', '手慣れ I', 1, ['root'], { hand: 1 }, '手慣れに要るレベルの差が1縮む(5→4で2つ・10→9で3つ)。', 1.2, -1.5],
-  ['e_key', 'craft', '手慣れ II', 2, ['e3'], { hand: 2 }, '月の雫で目を清める。手慣れに要るレベルの差がさらに2縮む(2で2つ・7で3つ)。', 2.2, -2, 'r_moondrop'],
+  ['e3', 'craft', '手慣れ I', 1, ['root'], { hand: 1 }, '工房の製作で、1回分の体力で1個以上作れる。何個作るかは選べる(材料は作る数の分)。店主のLvが作る品のLvより4以上高いと2個まで、9以上なら3個まで。', 1.2, -1.5],
+  ['e_key', 'craft', '手慣れ II', 2, ['e3'], { hand: 2 }, '月の雫で目を清める。手慣れ I より少ないLv差で働く。2以上高ければ2個まで、7以上なら3個まで。', 2.2, -2, 'r_moondrop'],
   ['e_ks', 'craft', '秘伝の勘', 2, ['e_key'], { paper: 1 }, '破れたレシピの紙の影の品が、どこで取れるか分かる。レシピの紙が手に入りやすくなる。', 3.2, -2.2],
   // 冒険者探索の道(攻撃・防御の力は足さない)
   ['a1', 'adv', '道中の目', 1, ['root'], { haul: 0.15 }, '探索の道中の収穫が増える(+15%)。', 1, -0.7],
@@ -17291,6 +17302,10 @@ function recipeSheet(rid, nav) {
   if (r.craft === 'appraise') h += `<button class="btn pri big" data-act="appraise" data-id="${rid}"${ok ? '' : ' disabled'}>鑑定する</button>${mgOn(r) && invCount('r_mirror') ? '<p class="note" style="font-size:12px">月影の鏡: 影合わせで、まちがいの影がひとつ消える</p>' : ''}`;
   else {
     const mgo = mgOn(r) && !r.repair;
+    if (familiar(r)) {   // No.380 手慣れ: 1回の作業で作る数を選ぶ
+      const fm = famRaw(r), fp = famPickN(r);
+      h += `<div class="fampick"><span class="fp-k">手慣れ・1回で作る数</span><span class="fp-bs">${[1, 2, 3].filter(k => k <= fm).map(k => `<button class="fp-b${k === fp ? ' on' : ''}" data-act="fampick" data-id="${rid}" data-n="${k}"${k > 1 && !hasInputs(r, k) ? ' disabled' : ''}>${ico(r.out, f === undefined ? null : f, { size: 'sm', sil: f === undefined }).repeat(k)}<b>×${k * r.n}</b></button>`).join('')}</span><span class="fp-note">作業${craftTime(r)}は同じ・材料は作る数の分</span></div>`;
+    }
     h += `<button class="btn pri big" data-act="gauge" data-id="${rid}"${ok ? '' : ' disabled'} data-focus>${mgo ? (mgRand(r) ? '作る' : `作る(${MG[r.craft].n})`) : r.repair ? '修理' : '作る'}</button>`;
     const needQ = !noQual(r.out) && (G.orders.some(o => o.item === r.out && o.minQ) || (G.hot && G.hot.id === r.out));
     if (needQ) h += `<p class="note" style="font-size:12.5px;margin:0">良品以上が要る(${G.orders.some(o => o.item === r.out && o.minQ) ? '注文' : '特需'})。良品以上は${mgo ? 'ミニゲーム' : 'ゲージ'}で。</p>`;
@@ -17745,6 +17760,7 @@ function act0(a, d) {
     }
     case 'appraise': startCraftGame(d.id); return;
     case 'gauge': startCraftGame(d.id); return;
+    case 'fampick': { G.famPick = G.famPick || {}; G.famPick[d.id] = +d.n; save(); recipeSheet(d.id, true); return; }
     case 'gstop': gaugeTap(); return;
     case 'mgbtn': if (UI.gauge && UI.gauge.mg === 'mg2') { mg2Begin(UI.gauge); return; } if (UI.gauge && UI.gauge.mg && !(UI.gauge.lastPD && performance.now() - UI.gauge.lastPD < 700)) { mgDown(); if (UI.gauge && UI.gauge.mg === 'pour') mgUp(); } return;
     case 'mgpick': if (UI.gauge && UI.gauge.mg === 'shadow') MGK.shadow.pick(UI.gauge, +d.i, mgNow()); return;
@@ -24960,20 +24976,18 @@ F('clara', pgPre, `
 gozu smile 「おう、シスター。鍋なら、もうすぐ温まる。座って待ってな」
 clara normal 「……はい。では、失礼いたします」(カウンターの端に、背筋を伸ばして座る)
 (修道女は、店主の方を見ないようにしていた。)
-clara trouble 「あの……ここでは、どのように、お願いをすれば」
-gozu surprise 「ん? ああ、頼みてえ物を言やいい」
-clara smile 「では、これで」(金貨を一枚、カウンターに置く)
-gozu trouble 「……シスター。そいつで、この店の酒が全部買える」
-owner normal 「・・・」(黙って、金貨を彼女の前に押し戻す)
-clara blush 「…………」
-gozu smile 「神さまのお使いから、金は取らねえよ。ほれ、温けえミルクだ」
-clara smile 「……ありがとうございます」(両手で杯を包む)`);
+clara trouble 「あの……鍋のお代を、お支払いしたいのですが」
+gozu smile 「余り物だ。金なんざ取らねえよ」
+clara normal 「受け取るばかりでは、司祭さまに叱られます」(小袋の口に手をかける)
+owner normal 「・・・」(黙って、温めたミルクの杯を彼女の前に置く)
+clara surprise 「…………」
+gozu smile 「待ってる間に冷えちまう。そいつも、うちのおごりだ」
+clara smile 「……では、このご恩は、子どもたちのお祈りでお返しいたします」(両手で杯を包む)`);
 T('clara', pgPre, `
-clara normal 「温かいミルクを、ひとつ。……おいくらでしょう」
-gozu smile 「ただだ」
-clara surprise 「では、おつりは」
-gozu trouble 「……ただの、おつりか?」
-clara blush 「…………」
+clara normal 「温かいミルクを、ひとつ。……今夜も、お代は取っていただけないのでしょう?」
+gozu smile 「よく分かってるじゃねえか」
+clara smile 「では、明日の朝のお祈りに、ゴズさんのお名前を足しておきます」
+gozu trouble 「……そいつは、高くついたな」
 owner normal 「・・・」(黙って、杯に目を落とす)`);
 T('clara', pgPre, `
 (修道女は、今夜もカウンターのいちばん端に座っていた。店主は、反対の端に。)
@@ -25001,9 +25015,10 @@ clara smile 「では、次は、あなたのおすすめを、きちんと聞�
 owner normal 「……甘いのでいいか」
 clara joy 「はい!」`);
 T('clara', () => pgPost() || pgNamed(), `
-clara normal 「今夜のお代は、私が自分で数えます。司祭さまとの約束なので」
-clara normal 「ミルクが、ただで……お菓子が、15Gで……」
-clara smile 「15Gです!」
+clara normal 「ゴズさん。あちらのお客さまは、もうすぐ二杯目を頼まれます」
+gozu surprise 「……なんで分かる」
+clara smile 「杯の傾け方が、子どもたちが『おかわり』を言う前と、同じなので」
+adv normal 「親父、もう一杯!」
 gozu smile 「お見事!」
 owner normal 「・・・」(小さく、うなずく)`);
 T('clara', pgNamed, `
@@ -25025,21 +25040,23 @@ B('clara', pgPre, `
 clara surprise 「……私に、ですか」
 clara blush 「あ、ありがとうございます。……教会の子どもたちに、お菓子をひとつ、持って帰ってもよろしいですか」`);
 B('clara', () => !pgPre(), `
-clara smile 「では、今夜は私も、おごり返します。……ちゃんと、数えてきましたから」`);
+clara smile 「では、次の一杯は、私からおごらせてください。……今夜は、私の番です」`);
 E('clara', { skip: () => !pgPre() }, `
 (鍋が温まった。修道女は、両手で取っ手をつかんで、持ち上げようとした。)
 clara trouble 「だ、大丈夫です。持てます。……持てます」
 (鍋は、ほんの少しだけ浮いて、また下りた。)
-owner normal 「・・・」(黙って立ち、鍋を持ち上げる)
+owner normal 「・・・」(黙って立ち、棚から小鍋を出して、スープを半分移す)
 clara surprise 「あ……」
-(丘の上の教会まで、店主は鍋を運んだ。修道女は、その少し後ろを歩いた。)
-(教会の戸の前で、店主は鍋を下ろした。)
 clara normal 「……また、助けていただいて」
 owner surprise 「・・・」
 clara surprise 「あ……い、いえ。パンの時も、袋を分けてくださったので。……その、また、と」
 owner normal 「……ああ」
-clara smile 「おやすみなさいませ」
-(戸が閉まる。店主は、丘の下の灯りの方へ、ゆっくり歩いて帰った。)`);
+gozu normal 「何ぼさっとしてる。小鍋はお前が持て。丘の上まで、一緒に行ってやんな」
+clara surprise 「え……あ、あの……」
+owner normal 「・・・」(黙って、小鍋を抱える)
+clara smile 「……はい。お願いいたします」
+(戸口の鈴が鳴った。鍋を抱えた二人が、並んで夜の中へ出ていった。)
+gozu smile 「……やれやれ。世話の焼ける」(杯を拭く)`);
 E('clara', { c: () => pgSn('c3_next'), skip: () => pgSn('c4_square') }, `
 clara normal 「教会の窓からは、この町の灯りが、よく見えるのです」
 clara smile 「宿の灯り。ギルドの灯り。ここ、灯り亭の灯り」
@@ -25053,7 +25070,7 @@ owner normal 「……来たい時に、来ればいい」
 clara surprise 「…………」
 clara joy 「……はい!」`);
 E('clara', { c: () => pgSn('c3_next'), skip: () => pgQueen() }, `
-(勘定の時、修道女は小袋から硬貨を数えて出した。銀貨が一枚だけ、袋の底に残った。)
+(勘定の時、修道女は小袋から硬貨を出した。銀貨が一枚だけ、袋の底に残った。)
 gozu normal 「シスター、その一枚は使わねえのか」
 clara normal 「これは……使えないお金なのです」
 gozu surprise 「偽金か?」
@@ -27095,8 +27112,8 @@ priest smile 「鳴り終わるまで、帽子を取って立っておられる�
 priest normal 「シスターは、ろうそくを買いに行くと申しては、なかなか戻りませぬ」
 priest trouble 「……道に迷うほどの村ではございませぬのに」
 owner normal 「・・・」` }, { st: 1, t: `
-priest normal 「シスターに、算術を教えております」
-priest trouble 「銅貨三枚と銀貨一枚では、なぜ銀貨の方が多いのか、と問われました」` }, { st: 2, t: `
+priest normal 「シスターは、子どもたちに文字を教えております」
+priest smile 「子どもたちの覚えが、私が教えた時より早うございます。……教える者が、良いのでしょうな」` }, { st: 2, t: `
 priest normal 「港の船乗りが、海の無事を祈りに参ります」
 priest smile 「祈りのあとで、あなたの店の護符も買っていく。……抜け目のないことで」` }, { st: 2, c: () => storySeen('c3_tran'), t: `
 priest normal 「……町の者には、まだ『トラン』のままで結構でございます」
@@ -30119,10 +30136,10 @@ ON_TXT += `
 @until !oSn('c4_square')
 トラン1「ヨハン殿。……ひとつ、お尋ねしたいことが」
 ヨハン3「はい、司祭さま。湯の中でご相談とは、めずらしい」
-トラン4「算術の本を、一冊。……ごく、易しいものを」
-ヨハン1「易しい、と申しますと」
-トラン4「……おつりの出し方が、分かる程度の」
-ヨハン2「ふふ。ございますよ。店の奥に、子ども向けのが。絵も入っております」
+トラン4「菓子作りの本を、一冊。……ごく、易しいものを」
+ヨハン1「菓子、と申しますと」
+トラン4「……子どもたちに、焼いてやりたいと申す者がおりまして」
+ヨハン2「ふふ。ございますよ。絵も入っております」
 トラン1「誤解なきよう。私が使うのではございませぬ」
 ヨハン2「ええ。皆さん、そうおっしゃいます」
 トラン4「…………」
