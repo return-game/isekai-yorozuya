@@ -3794,6 +3794,47 @@ body.btl-open{overflow:hidden}
 .ach-c { cursor: default; }
 .ach-c.on { color: var(--brass-hi); }
 .ach-fl { margin: 0 0 8px; white-space: normal; text-align: left; }
+/* No.379 鍛え直し(金床の台) */
+.rf { display: grid; gap: 12px; }
+.rf-sw { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rf-sw button { appearance: none; border: 1px solid rgba(217,184,116,.3); background: rgba(20,14,8,.55); color: var(--ink-2); border-radius: 12px; padding: 10px 6px; display: grid; gap: 2px; cursor: pointer; }
+.rf-sw button b { font-size: 15px; } .rf-sw button small { font-size: 11px; opacity: .8; }
+.rf-sw button.on { border-color: var(--brass); background: linear-gradient(180deg, rgba(217,184,116,.28), rgba(120,80,30,.25)); color: #fff3d6; box-shadow: 0 0 0 1px rgba(217,184,116,.4) inset; }
+.rf-anvil { border-radius: 16px; padding: 14px 12px; background: radial-gradient(120% 90% at 50% 0%, rgba(255,140,50,.18), rgba(30,20,12,.75) 60%); border: 1px solid rgba(217,184,116,.35); display: grid; gap: 10px; justify-items: center; text-align: center; }
+.rf-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+.rf-big { display: grid; justify-items: center; gap: 6px; width: 40%; min-width: 0; }
+.rf-big .ic { --s: 84px; border-radius: 16px; }
+.rf-big b { font-size: 13.5px; color: #fff3d6; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; }
+.rf-big b em { font-style: normal; font-size: 11px; margin-left: 4px; padding: 1px 5px; border-radius: 6px; background: rgba(255,255,255,.12); }
+.rf-empty span { width: 84px; height: 84px; border-radius: 16px; border: 2px dashed rgba(217,184,116,.45); display: grid; place-items: center; font-size: 30px; color: rgba(217,184,116,.6); }
+.rf-empty b { color: var(--ink-2); font-weight: 600; }
+.rf-arrow { font-size: 28px; color: var(--brass); text-shadow: 0 0 10px rgba(255,150,60,.7); }
+.rf-two { position: relative; display: grid; justify-items: center; width: 40%; } .rf-two .rf-big { width: 100%; }
+.rf-x { position: absolute; top: 58px; right: 14%; background: #b8402a; color: #fff; font-weight: 800; font-size: 13px; padding: 2px 7px; border-radius: 10px; }
+.rf-who { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
+.rf-mts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.rf-mt { appearance: none; cursor: pointer; border: 1px solid var(--mc); color: var(--mc); background: rgba(0,0,0,.35); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700; }
+.rf-mt.on { background: var(--mc); color: #1a1208; }
+.rf-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.rf-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 5px; border-radius: 999px; background: rgba(70,140,80,.25); border: 1px solid rgba(120,200,130,.5); font-size: 12.5px; color: #e8ffe8; }
+.rf-chip .ic { --s: 22px; border-radius: 6px; } .rf-chip b { margin-left: 2px; }
+.rf-chip.ng { background: rgba(160,50,40,.3); border-color: rgba(230,110,90,.6); color: #ffd8d0; }
+.rf-g { width: 22px; height: 22px; border-radius: 50%; background: #e0b040; color: #3a2508; font-weight: 900; font-size: 12px; display: grid; place-items: center; }
+.rf-price { font-size: 14px; color: #fff3d6; } .rf-price s { opacity: .6; } .rf-price b { color: #ffd36a; font-size: 17px; } .rf-price small { margin-left: 4px; opacity: .8; }
+.rf-hint { margin: 0; font-size: 13px; color: var(--ink-2); }
+.rf-go { min-width: 60%; font-size: 16px; padding: 12px 18px; }
+.rf-sec { font-size: 13.5px; font-weight: 700; color: var(--brass); margin-top: 4px; }
+.rf-grid { gap: 10px 6px; }
+.rf-cell { padding: 6px 2px; border-radius: 12px; border: 1px solid transparent; }
+.rf-cell.on { border-color: var(--brass); background: rgba(217,184,116,.14); }
+.rf-adv { display: grid; gap: 6px; padding: 8px; border-radius: 12px; background: rgba(0,0,0,.2); }
+.rf-advn { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+.rf-l, .rf-r { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.counter-market .rf { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; gap: 14px; }
+.counter-market .rf-big .ic, .counter-market .rf-empty span { --s: 68px; width: 68px; height: 68px; }
+.counter-market .rf-anvil { padding: 8px 10px; gap: 6px; } .counter-market .rf-who { display: none; } .counter-market .rf-go { padding: 9px 14px; }
+.counter-market .rf-sw button { padding: 6px; }
 
 </style>
 <div id="app">
@@ -9354,14 +9395,18 @@ function inheritQ(r) {
   return any ? f : 0;
 }
 // No.361 手慣れ: 自分のレベルがレシピより10以上高いと、1回の作業で2回分できる(材料も2回分使う。足りなければ1回分)
-const FAM_GAP = 10;
-const familiar = r => !!r && !r.appraise && !r.repair && !r.rare && !String(r.out).startsWith('lg_') && (G.lv || 1) >= (r.lv || 1) + FAM_GAP;
+// No.379 手慣れ(作者 2026-11-24): 店主の Lv が作り方の Lv より5以上高いと1回で2つ、10以上で3つ。スキル(手慣れ I・II)で要る差が1・2縮む
+const FAM_GAP = 5, FAM_GAP3 = 10;
+const famCut = () => pk('hand') || 0;
+const famRaw = r => { if (!r || r.appraise || r.repair || r.rare || String(r.out).startsWith('lg_')) return 1; const d = (G.lv || 1) - (r.lv || 1) + famCut(); return d >= FAM_GAP3 ? 3 : d >= FAM_GAP ? 2 : 1; };
+const famN = r => { let n = famRaw(r); while (n > 1 && !hasInputs(r, n)) n--; return n; };
+const familiar = r => famRaw(r) > 1;
 function doCraft(r, q, auto, crit, pre) {
   const t = craftTime(r);
   if ((auto ? G.work < t : !workOk(t)) || !hasInputs(r)) return null;
   const floorQ = r.appraise ? 0 : inheritQ(r), drawn = q;
   q = noQual(r.out) ? 0 : Math.max(q, floorQ);
-  const fam = familiar(r) && hasInputs(r, 2) ? 2 : 1;
+  const fam = famN(r);
   for (const [id, n] of r.ins) invTake(id, n * fam);
   let gasp = false; if (G.work < t) { G.gaspN = 1; G.work = 0; gasp = true; } else G.work -= t;
   G.made[r.id] = (G.made[r.id] || 0) + 1;
@@ -10729,8 +10774,8 @@ const ARM_BASE = { shield: 0.12, helmet: 0.08, armor: 0.17, gauntlet: 0.07, boot
 const ARM_SH = { shield: '盾', helmet: '兜', armor: '鎧', gauntlet: '籠手', boots: '脚甲' };
 const gearKey = it => it.gk ? it.gk : it.icon && (WPN_BASE[it.icon.sh] !== undefined || ARM_SH[it.icon.sh]) ? it.icon.sh : it.id.split('_')[0];
 function gearTier(it) { if (it.id.startsWith('lg_')) return 6; if (it.id.startsWith('bow_') || it.id.startsWith('staff_')) /* No.378: 霊木=銀・世界樹=アダマンタイト */ return [0, 1, 2, 5][it.tier || 0]; return it.tier || 0; }
-const isWeapon = it => it && it.cat === 'equip' && !it.broken && (it.sub === '武器' || it.sub === '属性武器' || it.gslot === 'w' || (it.gear && !it.gslot && it.sub !== '防具' && WPN_BASE[gearKey(it)] !== undefined));
-const isArmor = it => it && it.cat === 'equip' && !it.broken && (it.sub === '防具' || it.gslot === 'a' || (it.gear && !it.gslot && it.sub !== '武器' && !!ARM_SH[gearKey(it)]));
+const isWeapon = it => it && it.cat === 'equip' && !it.broken && !it.plus && (it.sub === '武器' || it.sub === '属性武器' || it.gslot === 'w' || (it.gear && !it.gslot && it.sub !== '防具' && WPN_BASE[gearKey(it)] !== undefined));
+const isArmor = it => it && it.cat === 'equip' && !it.broken && !it.plus && (it.sub === '防具' || it.gslot === 'a' || (it.gear && !it.gslot && it.sub !== '武器' && !!ARM_SH[gearKey(it)]));
 // No.346(3.7): 武器は2本(同じ種類は不可)・防具は3つ(同じ種類は不可)。古いセーブは wpn・arm だけ(残りは空)
 const WSL = ['wpn', 'wpn2'], ASL = ['arm', 'arm2', 'arm3'], GSL = WSL.concat(ASL);
 // No.352(作者「直して」2026-11-21): 枠はランクで開く。F・E=武器1・防具1/D・C=武器2・防具2/B から 武器2・防具3
@@ -12537,8 +12582,8 @@ const SKN = [
   ['c_grace2', 'craft', '三度の余裕', 2, ['c_grace'], { grace: 2 }, '「余裕」が一晩に3回になる。', 3, 1.3],
   ['c_key', 'craft', '名工の炉', 2, ['c1', 'ctw'], { forge: 1 }, '溶岩の心核で炉を強くする。会心で作ると、品質のくじを3回引いて一番良い物になる。', 4, -0.4, 'r_lavacore'],
   ['c_ks', 'craft', '熟練の手', 3, ['c_key'], { master: 1 }, 'おまかせで作っても、ときどき良品ができるようになる。', 5, -0.4, null, 1],
-  ['e3', 'craft', '鑑定の目', 1, ['root'], { shadow: 1 }, '影合わせで影が長く見え、考える時間も延びる。', 1.2, -1.5],
-  ['e_key', 'craft', '真贋の目', 2, ['e3'], { truth: 1 }, '月の雫で目を清める。影合わせで、まちがいの絵がひとつ消える(月影の鏡と重なる)。', 2.2, -2, 'r_moondrop'],
+  ['e3', 'craft', '手慣れ I', 1, ['root'], { hand: 1 }, '手慣れに要るレベルの差が1縮む(5→4で2つ・10→9で3つ)。', 1.2, -1.5],
+  ['e_key', 'craft', '手慣れ II', 2, ['e3'], { hand: 2 }, '月の雫で目を清める。手慣れに要るレベルの差がさらに2縮む(2で2つ・7で3つ)。', 2.2, -2, 'r_moondrop'],
   ['e_ks', 'craft', '秘伝の勘', 2, ['e_key'], { paper: 1 }, '破れたレシピの紙の影の品が、どこで取れるか分かる。レシピの紙が手に入りやすくなる。', 3.2, -2.2],
   // 冒険者探索の道(攻撃・防御の力は足さない)
   ['a1', 'adv', '道中の目', 1, ['root'], { haul: 0.15 }, '探索の道中の収穫が増える(+15%)。', 1, -0.7],
@@ -17187,7 +17232,7 @@ function itemSheet(id, nav) {
   const r = RC_BY_OUT[id];
   if (r && !r.appraise) {
     const can = recUnlocked(r);
-    h += `<div class="sec" style="margin-top:14px"><h2 style="font-size:14px">作り方<span class="aside">${CRAFTS[r.craft].n}${r.rare ? '・探索のレアで解放' : ' Lv' + r.lv}${familiar(r) ? '・手慣れ(1回で2回分)' : ''}${r.book ? '・' + BK[r.book].n : ''}</span></h2><div class="ins">${r.ins.map(([x, q]) => linkChip(x, `×${q}`)).join('')}${r.n > 1 ? `<span class="in">→ ${r.n}個</span>` : ''}</div>` +
+    h += `<div class="sec" style="margin-top:14px"><h2 style="font-size:14px">作り方<span class="aside">${CRAFTS[r.craft].n}${r.rare ? '・探索のレアで解放' : ' Lv' + r.lv}${familiar(r) ? `・手慣れ(1回で${famRaw(r)}つ)` : ''}${r.book ? '・' + BK[r.book].n : ''}</span></h2><div class="ins">${r.ins.map(([x, q]) => linkChip(x, `×${q}`)).join('')}${r.n > 1 ? `<span class="in">→ ${r.n}個</span>` : ''}</div>` +
       (can ? (inWork() ? `<button class="btn gold" data-act="gorec" data-id="${r.id}">工房で作る</button>` : `<p class="note" style="font-size:12px">工房で作れる。</p>`) : '') + `</div>`;
   }
   const uses = RECIPES.filter(x => !x.appraise && x.ins.some(([y]) => y === id) && recUnlocked(x)).slice(0, 12);
@@ -17510,7 +17555,8 @@ function act0(a, d) {
     case 'race': raceOpen(); return;   // No.370 竜のレース
     case 'onbath': onBath(); return;   // No.287: 温泉
     case 'ontalk': onTalk(); return;
-    case 'factab': UI.facTab = d.v; UI.fcLine = null; sfx('tap'); render(); return;
+    case 'rfpick': case 'rfmode': case 'rfto': case 'kwpick': case 'rfgo2': case 'kwgo2': rfAct(a, d.v); return;   // No.379 鍛え直し
+    case 'factab': UI.rfPick = null; UI.facTab = d.v; UI.fcLine = null; sfx('tap'); render(); return;
     case 'fctalk': sfx('tap'); fcTalk(d.v); return;
     case 'fcnext': sfx('tap'); fcNext(); return;
     case 'focraft': foStart(d.v); return;
@@ -19551,7 +19597,7 @@ function mgParams0(r) {
   // v34 (14.2): faster (157 → 188°/s) and a narrower gold (z.crit×1300° → ×1100°)
   if (k === 'ring') { const w1 = 188 * sp * (1 + 0.02 * lv); return { k, arc: ok * 900, gold: crit * 1100, w1, w2: w1 * 1.2 }; }
   // v34 (14.2): the shadow shows for about half a second, then you choose from memory
-  return { k, limit: (5000 + 2000 * pk('shadow')) / sp, critT: 2000 / sp, peek: (550 + 300 * pk('shadow')) / sp };
+  return { k, limit: 5000 / sp, critT: 2000 / sp, peek: 550 / sp };
 }
 // ---------- judges (pure; the tests call these too) ----------
 const mgMarkBeat = (off, P) => Math.abs(off) <= P.critMs ? 'p' : Math.abs(off) <= P.okMs ? 'g' : 'm';
@@ -19594,7 +19640,7 @@ function startCraftGame(rid) {
   sfx('tap');
 }
 function mgTag(r, P) {
-  if (typeof familiar === 'function' && familiar(r) && hasInputs(r, 2)) return (P.k === 'beat' ? `・${P.n}打` : P.k === 'ring' ? '・2回' : '') + '・手慣れ 2回分';   // No.361
+  if (typeof famN === 'function' && famN(r) > 1) return (P.k === 'beat' ? `・${P.n}打` : P.k === 'ring' ? '・2回' : '') + `・手慣れ ${famN(r)}つ分`;   // No.361
   if (P.k === 'beat') return `・${P.n}打`;
   if (P.k === 'ring') return '・2回';
   return '';
@@ -20170,7 +20216,7 @@ MGK.shadow = {
     const n = pre.mystery ? 2 : pre.t === 'c' ? 3 : 4;
     g.opts = shadowOpts(pre, n);
     // the mirror and 真贋の目 (v36) each take away one wrong picture (never the last wrong one)
-    const nm = Math.min(g.opts.length - 2, (invCount('r_mirror') > 0 ? 1 : 0) + pk('truth'));
+    const nm = Math.min(g.opts.length - 2, (invCount('r_mirror') > 0 ? 1 : 0) );
     g.mirrors = nm > 0 ? g.opts.filter(x => x !== pre.id).slice(0, nm) : [];
     g.mirror = g.mirrors[0] || null;
     return `<div class="mgshadow"><div class="mgtimer" id="mgtimer"><i id="mgtime"></i></div><div class="mgspot"><div class="mgbox" id="mgbox">${ico(r.appraise, null, { size: 'xl' })}</div><div class="mgshade" id="mgshade">${ico(pre.id, null, { size: 'xl', sil: true })}</div><div class="mgmist" id="mgmist">?</div></div>` +
@@ -20883,7 +20929,7 @@ const DICT = [
   { k: 'move', n: '画面の移り方', t: ['スマホは、下のバーで「店・街・ギルド・ホーム・エマ」を行き来する(ギルドは冒険者ギルドが建ってから)。倉庫・図鑑・店主・灯り亭・設定は、ホームから。', 'PCは、下の並び(店・街・灯り亭・釣り・ギルド・倉庫・店主)から。', '「店」の中は市場・店先・工房に分かれていて、いまの時間の場所が自動で開く。上の切り替えで、いつでも行き来できる(夜でも店先で棚を整えられる)。'] },
   { k: 'market', n: '朝市と問屋', t: ['朝市には、季節の行商・鉱石・資材(木材・布など)・薬草と魔物素材・食材・宝石と魔石の店が並ぶ。今の章と前の章の素材は、毎朝ぜんぶ入荷する。古書商(レシピの本)が来る日もある。', '朝市にしかない物: 次の章の素材(ときどき)と、掘り出し物(汚れた品。夜の工房で磨くと化ける)。市場が建つと、毎朝どこか1店が1割引きになる(商隊の日は、別の1店が2割引き)。割引は重ならず、一番大きいものだけ。', '「建設と注文に足りない素材」の「まとめて買う」で、建物と受けた注文に要る素材を一度に仕入れられる。迷ったらまずこれ。赤い数字の素材は、まだ朝市に並ばない(先の章の素材は、持ち込みや探索を待つ)。', '値段は相場で動く。流行(1週間ごとに変わる)で上がる品・下がる品があり、灯り亭の噂で来週の流行が分かることもある。', '問屋は、基本の素材だけを夜でも買える(朝市の1.5倍ほど)。'] },
   { k: 'shelf', n: '陳列棚', t: ['陳列棚と特需の枠に並べた品は、お客さんの目に留まって売れやすい(買い物客のおよそ4人に3人は棚から選ぶ)。棚にない作った品も、倉庫から売れることがある。素材は棚に置いた時だけ売れる。', '「空いたら自動で並べる」をつけると、売れた所に倉庫から補充する。建物や受けた注文に使う分は取っておき、並べない(棚の下に何を取っておいたか出る)。素材も並べる(作った品が先)。素材を取っておきたい時は、チェックを外す。'] },
-  { k: 'fam', n: '手慣れ', t: ['自分のレベルがレシピのレベルより10以上高いと、そのレシピは「手慣れ」になる。1回の作業(体力)で2回分できる(材料は2回分使う。足りない時は1回分)。', '鍛冶・調合・料理・写本のどれにも効く。伝説の武具・レアで解放したレシピ・修理・鑑定には効かない。'] },
+  { k: 'fam', n: '手慣れ', t: ['自分のレベルがレシピのレベルより5以上高いと、そのレシピは「手慣れ」になる。1回の作業(体力)で2つ、10以上高いと3つできる(材料は作る数だけ使う。足りない時は作れる数まで)。スキルの「手慣れ I・II」で、要るレベルの差が縮む。', '鍛冶・調合・料理・写本のどれにも効く。伝説の武具・レアで解放したレシピ・修理・鑑定には効かない。'] },
   { k: 'disp', n: 'ディスプレイ', t: ['店先のマネキンに、武具の一式(剣・盾・兜・鎧・籠手・脚甲)を1つずつ納める。鉄・銅・銀・金・ミスリル・アダマンタイトと、港のクラブのインゴットで打つ竜金・深海翠・星白金の9種。', '6部位がそろうと、マネキンがその一式をまとう。完成した一式はずっと飾られ、左右の矢印や下の札で切り替えて見られる。', '完成1体ごとに店の売値が2%上がり、3体ごとに1日のお客が1人増える。納めた品は戻らないが、同じ品をまた作れば冒険者の装備に使える。'] },
   { k: 'cust', n: 'お客さん', t: ['お客さんは1人ずつ来る。種類は毎日ランダムで、買い物客(棚の品を買う)・依頼の客(品を注文していく)・持ち込みの客(素材や壊れた武具、謎の品を売りに来る)のほか、たまに小さな物語を持った客も来る。', '時計が進むと客層が変わる(朝=出発前の冒険者/昼=村人や行商人/夕方=帰ってきた冒険者の持ち込み/夜=騎士や貴族)。店先の上に、いまの客層と「いま売れ筋」が出る。', '買い物客の欲しい品が棚になければ、その客は依頼の客になる(依頼が4件で埋まっている時は、持ち込みの客)。'] },
   { k: 'sell', n: '売る・強気', t: ['「売る」の1タップで、相場で売れる。良品以上なら「強気」で高く売る賭けもできる(品質が高いほど通りやすい。断られても相場で売れる)。', '強気が続けて決まると「目利きコンボ」で、名声が多めに入る。'] },
@@ -27361,11 +27407,11 @@ function vFacPage() {
   if (!f || !facOpen(f.id)) { UI.tab = 'town'; return vTown(); }
   if (f.id === 'guild') { UI.tab = 'adv'; return vAdv(); }   // No.233
   const fc = FC[f.id], o = fc ? foGet(f.id) : null;   // No.213 (作者): 朝市は仕入れ、施設は売る(「分けてもらう」はなくした)
-  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
+  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'forge' && f.id !== 'smithy') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
   if (f.id === 'arena') tab = 'bout';   // No.223 (作者): 闘技場は入ったら賭けだけ(売る・頼まれごとはなし) UI.facTab = tab;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="factab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'dragon' && typeof rcFacTab === 'function' ? rcFacTab() : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
-  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
+  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'smithy' ? T('forge', '鍛え直し', '打ち直し・重ね打ち') : ''}${f.id === 'dragon' && typeof rcFacTab === 'function' ? rcFacTab() : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : tab === 'forge' && f.id === 'smithy' ? rfTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
   return facFrame(f, tab, tabs, body, `${f.who}・得意: ${f.fav}`);
 }
 // No.233 (作者): 「売る・頼まれごと」の札(どの施設も同じ。空いた所に、いずれ施設ごとの色の札を足す)
@@ -27406,6 +27452,109 @@ function vFacWork(off) {
 }
 // 確かめ用
 try { window.__fcw = fcWant; window.__fc = { FC, foGet, foPay, foRecs, foNeed, foHave, foStart, foEnd, foDeliver, polResult, polStart, polEnd, digStall, digPrice, digPool, digGems, facPage, fcTalk, fcNext, fcGreet }; } catch (e) { }
+
+// ===== No.379 (作者 2026-11-24): 鍛冶通りの「鍛え直し」= 打ち直し(上の金属へ)・重ね打ち(同じ品2つ → +1) =====
+// 決まったこと: claude/00_手慣れと鍛冶通り_決まったこと(2026-11-24).md の 3。体力は使わない・いつでもできる・ミニゲームなし。
+const RF_MT = METALS.map(m => m.k);
+const RF_FEE = { iron: 10, copper: 20, silver: 40, gold: 80, mithril: 150, adamant: 250 };
+const RF_EQ = EQ.map(e => e[0]);
+const rfParse = id => { const m = /^([a-z]+)_([a-z]+)$/.exec(String(id || '')); return m && RF_EQ.includes(m[1]) && RF_MT.includes(m[2]) ? { k: m[1], mt: m[2] } : null; };
+const rfIngots = tid => { const r = RC_BY_OUT[tid]; const x = r && r.ins.find(([i]) => i.startsWith('ingot_')); return x ? x[1] : 0; };
+// 行き先: 今より上の金属で、作り方を思いついている物(冒険者の物は、その人が持てる物だけ)
+function rfTargets(id, mem) {
+  const p = rfParse(id); if (!p) return [];
+  return RF_MT.slice(RF_MT.indexOf(p.mt) + 1).map(mt => p.k + '_' + mt).filter(t => IT[t] && RC_BY_OUT[t] && recUnlocked(RC_BY_OUT[t]) && (!mem || canWield(mem, IT[t])));
+}
+// 打ち直せる物: 倉庫の在庫(出来ごと)と、冒険者が持っている物
+function rfSources() {
+  const out = [];
+  for (const id in G.inv) { if (!rfParse(id) || !rfTargets(id).length) continue; const a = G.inv[id]; for (let q = 0; q < 4; q++) if (a[q] > 0) out.push({ id, q, n: a[q] }); }
+  for (const m of (G.roster || [])) { if (advOut(m)) continue; for (const s of GSL) { const g = m[s]; if (g && rfParse(g.id) && rfTargets(g.id, m).length) out.push({ id: g.id, q: g.q || 0, mid: m.id, slot: s, who: m.n }); } }
+  return out;
+}
+const rfSay = t => { UI.fcLine = { fid: 'smithy', L: [{ who: 'bard', t, ex: 'smile' }], i: 0 }; };
+function rfDo(src, tid) {
+  const n = rfIngots(tid), ing = 'ingot_' + rfParse(tid).mt, fee = RF_FEE[rfParse(tid).mt] || 0;
+  if (G.gold < fee || invCount(ing) < n) return false;
+  if (src.mid) {
+    const m = advById(src.mid); if (!m || advOut(m) || !m[src.slot] || m[src.slot].id !== src.id || !canWield(m, IT[tid])) return false;
+    invTake(ing, n); G.gold -= fee; m[src.slot] = gearCopy({ id: tid, q: m[src.slot].q || 0 });   // 打ち直した品は傷みが新品に戻る
+  } else {
+    if (invCount(src.id, src.q) < 1) return false;
+    invTake(ing, n); invTake(src.id, 1, src.q); G.gold -= fee; invAdd(tid, src.q, 1);
+  }
+  sfx('craft_smith'); setTimeout(() => sfx('good'), 300);
+  rfSay(`${IT[src.id].name}が、${IT[tid].name}に生まれ変わった。${src.who ? src.who + 'も喜ぶだろう' : 'まだまだ使える'}`);
+  UI.rfPick = null; save(); render(); return true;
+}
+// 重ね打ち: 同じ品・同じ出来を2つ → +1(売値は2つ分)。+1 同士で +2(4つ分)。戦闘の数値は変わらない(冒険者には持たせない)
+const kwBase = id => String(id).split('__p')[0];
+const kwP = id => +((String(id).split('__p')[1]) || 0);
+function kwItem(base, p) {
+  const id = p ? base + '__p' + p : base; if (IT[id] || !p) return IT[id];
+  const b = IT[base]; if (!b) return null;
+  IT[id] = Object.assign({}, b, { id, name: b.name + '+' + p, v: b.v * Math.pow(2, p), plus: p, base, desc: b.desc + `(重ね打ち +${p}。売値は${Math.pow(2, p)}本分)` });
+  return IT[id];
+}
+const kwFee = id => Math.round((RF_FEE[(rfParse(kwBase(id)) || {}).mt] || 10) * (kwP(id) + 1));
+function kwSources() { const out = []; for (const id in G.inv) { if (!rfParse(kwBase(id))) continue; const a = G.inv[id]; for (let q = 0; q < 4; q++) if (a[q] >= 2) out.push({ id, q, n: a[q] }); } return out; }
+function kwDo(id, q) {
+  const fee = kwFee(id), a = G.inv[id]; if (!a || a[q] < 2 || G.gold < fee) return false;
+  const nid = kwItem(kwBase(id), kwP(id) + 1).id;
+  a[q] -= 2; G.gold -= fee; const b = G.inv[nid] || (G.inv[nid] = [0, 0, 0, 0]); b[q] += 1;   // discover は通さない(図鑑の数を変えない)
+  sfx('craft_smith'); setTimeout(() => sfx('great'), 300);
+  rfSay(`重ねて打った。${IT[nid].name}だ。逸品より高く売れるぞ`);
+  save(); render(); return true;
+}
+const QN = ['', '良品', '上質', '傑作'];
+const MT_COL = { iron: '#9aa3ad', copper: '#d0814e', silver: '#dfe6ee', gold: '#f0c64a', mithril: '#7fd6e6', adamant: '#b07be0' };
+// No.379 作り直し(作者「文字だけはNO・親切すぎるくらい・直感で分かる」): 上に金床の台(元 → できる品)、下に絵の格子で品を選ぶ
+function rfTabBody() {
+  const mode = UI.rfMode === 'kw' ? 'kw' : 're';
+  const big = (id, q, cnt) => id ? `<div class="rf-big">${ico(kwBase(id), q, { size: 'lg', cnt })}<b>${IT[id].name}${q ? `<em class="q${q}">${QN[q]}</em>` : ''}</b></div>` : '';
+  const empty = t => `<div class="rf-big rf-empty"><span>?</span><b>${t}</b></div>`;
+  const mat = (id, need) => { const h = invCount(id), ok = h >= need; return `<span class="rf-chip${ok ? '' : ' ng'}">${ico(id, 0, { size: 'xs' })}${IT[id].name}<b>${h}/${need}</b></span>`; };
+  const gold = fee => `<span class="rf-chip${G.gold >= fee ? '' : ' ng'}"><span class="rf-g">G</span>料金<b>${fmt(fee)}G</b></span>`;
+  let stage = '', pickH = '';
+  if (mode === 're') {
+    const src = rfSources(), key = x => x.mid ? x.mid + ':' + x.slot : x.id + ':' + x.q;
+    const cur = src.find(x => key(x) === UI.rfPick) || null;
+    const tg = cur ? rfTargets(cur.id, cur.mid ? advById(cur.mid) : null) : [];
+    const to = cur && tg.includes(UI.rfTo) ? UI.rfTo : (tg[0] || null);
+    const fee = to ? RF_FEE[rfParse(to).mt] : 0, ing = to ? 'ingot_' + rfParse(to).mt : null, n = to ? rfIngots(to) : 0;
+    const ok = cur && to && G.gold >= fee && invCount(ing) >= n;
+    stage = `<div class="rf-anvil"><div class="rf-row">${cur ? big(cur.id, cur.q) : empty('下から選ぶ')}<div class="rf-arrow">➜</div>${to ? big(to, cur.q) : empty('できる品')}</div>`
+      + (cur ? `<div class="rf-who">${cur.who ? advFace(advById(cur.mid)) + esc(cur.who) + 'が持っている' : '倉庫の品'}</div>` : '')
+      + (tg.length ? `<div class="rf-mts">${tg.map(t => { const mt = rfParse(t).mt; return `<button class="rf-mt${t === to ? ' on' : ''}" data-act="rfto" data-v="${t}" style="--mc:${MT_COL[mt]}">${METALS.find(m => m.k === mt).n}</button>`; }).join('')}</div>` : '')
+      + (to ? `<div class="rf-chips">${mat(ing, n)}${gold(fee)}</div>` : `<p class="rf-hint">打ち直したい武具を、下から1つ選んでね</p>`)
+      + `<button class="btn primary rf-go" data-act="rfgo2" ${ok ? '' : 'disabled'}><b>⚒ 打ち直す</b></button></div>`;
+    const cell = x => `<button class="cell rf-cell${key(x) === UI.rfPick ? ' on' : ''}" data-act="rfpick" data-v="${key(x)}">${ico(x.id, x.q, x.n > 1 ? { cnt: x.n } : {})}<span class="lb">${IT[x.id].name}</span></button>`;
+    const inv = src.filter(x => !x.mid), adv = src.filter(x => x.mid), byM = {};
+    adv.forEach(x => (byM[x.mid] = byM[x.mid] || []).push(x));
+    pickH = `<div class="rf-sec">📦 倉庫</div>` + (inv.length ? `<div class="grid rf-grid">${inv.map(cell).join('')}</div>` : `<p class="rf-hint">打ち直せる武具が倉庫にない</p>`)
+      + (adv.length ? `<div class="rf-sec">⚔ 冒険者が持っている物</div>` + Object.keys(byM).map(mid => { const m = advById(mid); return `<div class="rf-adv"><div class="rf-advn">${advFace(m, 'sm')}<b>${esc(m.n)}</b></div><div class="grid rf-grid">${byM[mid].map(cell).join('')}</div></div>`; }).join('') : '');
+  } else {
+    const kw = kwSources(), key = x => x.id + ':' + x.q;
+    const cur = kw.find(x => key(x) === UI.kwPick) || null;
+    const nx = cur ? kwItem(kwBase(cur.id), kwP(cur.id) + 1) : null, fee = cur ? kwFee(cur.id) : 0;
+    stage = `<div class="rf-anvil"><div class="rf-row">${cur ? `<div class="rf-two">${big(cur.id, cur.q)}<span class="rf-x">×2</span></div>` : empty('下から選ぶ')}<div class="rf-arrow">➜</div>${nx ? big(nx.id, cur.q) : empty('+1 の品')}</div>`
+      + (cur ? `<div class="rf-price">売値 <s>${fmt(Math.round(fairPrice(IT[cur.id], cur.q)))}G</s> ➜ <b>${fmt(Math.round(fairPrice(nx, cur.q)))}G</b><small>(2つ分)</small></div><div class="rf-chips">${gold(fee)}</div>` : `<p class="rf-hint">同じ品が2つあると、重ねて +1 にできる(売値が2つ分になる)</p>`)
+      + `<button class="btn primary rf-go" data-act="kwgo2" ${cur && G.gold >= fee ? '' : 'disabled'}><b>⚒ 重ね打ち</b></button></div>`;
+    pickH = `<div class="rf-sec">📦 倉庫(同じ品が2つ以上)</div>` + (kw.length ? `<div class="grid rf-grid">${kw.map(x => `<button class="cell rf-cell${key(x) === UI.kwPick ? ' on' : ''}" data-act="kwpick" data-v="${key(x)}">${ico(kwBase(x.id), x.q, { cnt: x.n })}<span class="lb">${IT[x.id].name}</span></button>`).join('')}</div>` : `<p class="rf-hint">同じ品が2つ以上ある武具がない</p>`);
+  }
+  const sw = `<div class="rf-sw"><button class="${mode === 're' ? 'on' : ''}" data-act="rfmode" data-v="re"><b>🔨 打ち直し</b><small>上の金属に</small></button><button class="${mode === 'kw' ? 'on' : ''}" data-act="rfmode" data-v="kw"><b>✦ 重ね打ち</b><small>2つで +1</small></button></div>`;
+  return `<div class="rf"><div class="rf-l">${sw}${stage}</div><div class="rf-r">${pickH}<p class="note" style="font-size:12px">体力は使わない。所持金 <span class="price">${fmt(G.gold)}G</span></p></div></div>`;
+}
+function rfAct(act, v) {
+  if (act === 'rfmode') { UI.rfMode = v; sfx('tap'); render(); return; }
+  if (act === 'rfpick') { UI.rfPick = UI.rfPick === v ? null : v; UI.rfTo = null; sfx('tap'); render(); return; }
+  if (act === 'rfto') { UI.rfTo = v; sfx('tap'); render(); return; }
+  if (act === 'kwpick') { UI.kwPick = UI.kwPick === v ? null : v; sfx('tap'); render(); return; }
+  if (act === 'rfgo2') { const s = rfSources().find(x => (x.mid ? x.mid + ':' + x.slot : x.id + ':' + x.q) === UI.rfPick); if (!s) return; const tg = rfTargets(s.id, s.mid ? advById(s.mid) : null); const t = tg.includes(UI.rfTo) ? UI.rfTo : tg[0]; if (t) rfDo(s, t); UI.rfTo = null; return; }
+  if (act === 'kwgo2') { const [id, q] = String(UI.kwPick || '').split(':'); if (kwDo(id, +q)) { const a = G.inv[id]; if (!a || a[+q] < 2) UI.kwPick = null; } }
+}
+// 読み込んだセーブの +品を IT に戻す(main.js migrate の後)
+function kwRestore() { for (const id in (G.inv || {})) if (id.includes('__p')) kwItem(kwBase(id), kwP(id)); for (const s of (G.shelf || [])) if (s && s.id && s.id.includes('__p')) kwItem(kwBase(s.id), kwP(s.id)); }
 
 // ---- arena-sprites.js ----
 // No.219/222: 闘技場の闘士のデフォルメ(Work No.218・220・221・18人・192×192・右向き・地面は y=180)
@@ -32463,6 +32612,7 @@ function migrate(s) {
   if (!Array.isArray(s.paperQ)) s.paperQ = [];
   if (!Array.isArray(s.dexNew)) s.dexNew = [];
   if (!TOD.includes(s.phase)) s.phase = s.act === 'shop' ? 'day' : TOD[s.slot];
+  try { for (const id in s.inv) if (id.includes('__p') && typeof kwItem === 'function') kwItem(kwBase(id), kwP(id)); } catch (e) {}   // No.379 重ね打ちの +品
   return s;
 }
 // fill in what needs the live game state (call right after G is replaced)
