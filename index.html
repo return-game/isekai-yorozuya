@@ -3783,6 +3783,17 @@ body.btl-open{overflow:hidden}
 .rc-mineb small{color:#ffd25a;font-size:11px}
 .rc-mineb span{border-left:4px solid var(--c);padding-left:5px;white-space:nowrap}.rc-mineb span b{margin-right:4px}
 .rc-mineb[hidden]{display:none}
+/* No.375 実績 */
+.ach-ri { grid-template-columns: minmax(0, 1fr) auto; }
+.ach-ri .t { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ach-ri.done .t { color: var(--brass-hi); }
+.ach-ri.done .sub { opacity: .7; }
+.ach-ok { color: var(--brass-hi); font-weight: 700; }
+.ach-rw { font-size: 11px; color: var(--ink-dim, #9a8f80); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; line-height: 16px; }
+.ach-m { height: 5px; margin-top: 5px; }
+.ach-c { cursor: default; }
+.ach-c.on { color: var(--brass-hi); }
+.ach-fl { margin: 0 0 8px; white-space: normal; text-align: left; }
 
 </style>
 <div id="app">
@@ -8504,7 +8515,7 @@ function fishMenu() {
     (at ? `<p class="note">いまは${SPOT[at.spot].n}で釣りをしている。</p>` : `<p class="note">釣り場へはいつでも行けます。時間は進まず、冒険者の探索も進みません。体力は使いません。餌は1匹${BAIT_ONE}G。この画面の「道具」で買い、残りは持ち越します。</p>`) +
     `<div class="row" style="gap:12px;margin:6px 0"><span>図鑑 <b>${got}</b>/${FISH.length}</span><span>${RODS[s.rod].n}・${REELS[s.reel].n}</span></div>` +
     `<div class="chips fsh-tabs"><button class="chip${UI.fshView === 'dex' ? '' : ' on'}" data-act="fshview" data-v="spots">釣り場と道具</button><button class="chip${UI.fshView === 'dex' ? ' on' : ''}" data-act="fshview" data-v="dex">魚の図鑑 <span class="n">${got}/${FISH.length}</span></button></div>` +
-    (UI.fshView === 'dex' ? fishDexHtml() : `<div class="rows">${spots}</div>` + fishGearHtml());
+    (UI.fshView === 'dex' ? (typeof achFishLine === 'function' ? achFishLine() : '') + fishDexHtml() : `<div class="rows">${spots}</div>` + fishGearHtml());
   openSheet(h, { cur: 'fish', crumb: ['釣り'] });
 }
 // No.185: 魚だけの図鑑(釣りの「図鑑と道具」を作り直した)。場所で絞り、レア度と釣れる条件を見せる
@@ -9366,6 +9377,7 @@ function doCraft(r, q, auto, crit, pre) {
   let twin = 0; if (crit && !auto && !r.appraise && pk('twin') && (G.twinN || 0) < 1 && !String(out).startsWith('lg_')) { invAdd(out, q, n); G.twinN = (G.twinN || 0) + 1; twin = n; }
   if (out === 'lg_holy') storyPlay('c5_forge');   // v44: 聖剣を打つ
   gainXp(craftXp(r, q) * (auto ? 0.8 : 1) + (first ? 8 : 0));
+  if (!r.appraise && G.made[r.id] === 1) FX.push({ t: 'achp', id: out });   // No.375 実績の進み
   let refill = 0;
   // No.351 好調: 手で作った成功が4回続くと体力が戻る(I=1・II=2)。好調がない時は、今までの集中(会心3回で1)
   if (!auto && !r.appraise) {
@@ -10269,11 +10281,13 @@ function buyStall(i, n = 1) {
   n = Math.min(n, s.stock, Math.floor(G.gold / s.price));
   if (n <= 0) return 0;
   G.gold -= s.price * n; s.stock -= n; invAdd(s.id, 0, n); noteBought(s.id, n);
+  if (typeof achInc === 'function') { achInc('mk_' + (s.m || (IT[s.id] ? MERCH_OF(IT[s.id]) : 'x'))); }   // No.376 実績: 朝市の店ごと
   return n;
 }
 function buyBook() {
   const b = BK[G.stallBook]; if (!b || G.gold < b.v) return false;
   G.gold -= b.v; G.books[b.id] = true; G.stallBook = null;
+  if (typeof achInc === 'function') achInc('mk_book');
   const n = RECIPES.filter(r => r.book === b.id).length;
   FX.push({ t: 'book', id: b.id, n });
   return true;
@@ -11305,7 +11319,7 @@ function bossWin(d, dmg, notes, gn) {
   const val = (1 + pk('haul')) * baseFeeOf(a) * 0.7 * haulK(a) * (1 + 0.1 * Math.max(0, d.prk - a.rk)) * HAULX[Math.min(3, d.party.length)];
   const t = pick(a.main); addHaul(d, t, Math.max(1, lootQty(t, val * 0.5)));
   for (const id of itemList(boss.drops)) addHaul(d, id, Math.max(1, lootQty(id, val * 0.25)));
-  d.beat = true; d.eff.kills.push(boss.k);
+  d.beat = true; d.eff.kills.push(boss.k); if (typeof achInc === 'function') { achInc('kill_' + boss.k); achInc('kill'); }   // No.376 実績
   if (a.id === 'dragon') {   // v44: the fight with the 古竜 stops; the queen renews the pact
     dlog(d, `${boss.n}との戦いが止まった。女王が祭壇で誓いを立て直し、古竜は眠りについた。${gn ? gn + '。' : ''}元気 −${dmg}`, 'great');
     storyPlay('c5_pact');
@@ -12384,7 +12398,7 @@ function fEnd(d) {
     if (drop) { n = lootQty(drop, val * 1.1); addHaul(d, drop, n); }
     if (a.kind === 'hunt' && Math.random() < 0.6) { const t = pick(a.main); addHaul(d, t, Math.max(1, lootQty(t, val * 0.5))); }
     if (F.kind === 'mid') d.midBeat = true;
-    d.eff.kills.push(foe.k);
+    d.eff.kills.push(foe.k); if (typeof achInc === 'function') { achInc('kill_' + foe.k); achInc('kill'); }   // No.376 実績
     dlog(d, `${F.kind === 'mid' ? '手強い' : ''}${foe.n}を倒した。${notes}${F.taken ? `元気 −${F.taken}` : '無傷'}` + (n ? `。${IT[drop].name}×${n}` : ''), F.kind === 'mid' ? 'great' : 'fight');
     d.last = { k: 'fight', foe: foe.k, dmg: F.taken, item: drop, n, post: true };
     afterRoom(d);
@@ -12580,37 +12594,21 @@ const SK_TOTAL = SKN.reduce((t, s) => t + s.cost, 0);
 const SK_OPEN_LV = 2;
 // ---------- points ----------
 // earned from the state itself (so an old save counts what it already did)
+// No.375: レベル以外は、実績(ach.js の r:'b')から数える。入り口・条件・点数は前と同じ(温泉だけ、聞けなくなった話を数えない)
 function spSources() {
-  const rares = Object.keys(RARE).filter(id => G.found[id] !== undefined).length;
-  const bosses = Object.keys(G.clears || {}).filter(a => (G.clears[a] || 0) > 0).length;
-  const regs = REGULARS.filter(r => (G.reg[r.k] || 0) >= r.steps.length).length;
-  const crafts = ['smith', 'alch', 'cook', 'scribe'].filter(k => RECIPES.some(r => r.craft === k && !r.appraise && !r.repair && G.found[r.out] === 3)).length;
   return [
     { k: 'lv', n: 'レベル', v: Math.max(0, (G.lv || 1) - 1), d: 'レベルが上がるたびに1' },
-    { k: 'rare', n: '探索のレア', v: rares, d: '初めて手に入れるたびに1' },
-    { k: 'boss', n: 'ぬしの初討伐', v: bosses, d: '場所ごとに1' },
-    { k: 'reg', n: '常連さんの物語', v: regs * 2, d: '最後まで見届けると2' },
-    { k: 'dex', n: '図鑑の節目', v: (G.ms || 0) * 2, d: '節目ごとに2' },
-    { k: 'master', n: '初めての傑作', v: crafts, d: '鍛冶・錬金・調理・筆写それぞれ1' },
-    // v46: 肩書でスキルポイント (each title after the first). 自動プレイでは エンディングまでに +10(肩書11個)
-    { k: 'title', n: '肩書', v: Math.max(0, Object.keys(G.titles || {}).length - 1), d: '肩書が変わるたびに1' },
-    // No.351: 釣り・カジノ・闘技場・温泉からも入る
-    { k: 'fish', n: '釣り', v: spFish(), d: '魚の図鑑 25・50・75・100匹で1ずつ・ぬし魚(川・湖・海)を初めて釣るたびに1' },
-    { k: 'cas', n: 'カジノの会員', v: spCas(), d: '銀の会員で2・金の会員で3' },
-    { k: 'arena', n: '闘技場', v: spArena(), d: '3連勝で1・5連勝(勝ち抜き)で2' },
-    { k: 'onsen', n: '温泉の話', v: spOnsen(), d: '湯の話を聞いた数が 1/4・1/2・全部で1ずつ' },
+    { k: 'rare', n: '探索のレア', v: achSp('rare'), d: '初めて手に入れるたびに1' },
+    { k: 'boss', n: 'ぬしの初討伐', v: achSp('boss'), d: '場所ごとに1' },
+    { k: 'reg', n: '常連さんの物語', v: achSp('reg'), d: '最後まで見届けると2' },
+    { k: 'dex', n: '図鑑の節目', v: achSp('dex'), d: '節目ごとに2' },
+    { k: 'master', n: '初めての傑作', v: achSp('master'), d: '鍛冶・錬金・調理・筆写それぞれ1' },
+    { k: 'title', n: '肩書', v: achSp('title'), d: '肩書が変わるたびに1' },
+    { k: 'fish', n: '釣り', v: achSp('fish'), d: '魚の図鑑 25・50・75・100種で1ずつ・ぬし魚(川・湖・海)を初めて釣るたびに1' },
+    { k: 'cas', n: 'カジノの会員', v: achSp('cas'), d: '銀の会員で2・金の会員で3' },
+    { k: 'arena', n: '闘技場', v: achSp('arena'), d: '3試合続けて当てて1・5連勝(勝ち抜き)で2' },
+    { k: 'onsen', n: '温泉の話', v: achSp('onsen'), d: '湯の話を聞いた数が 1/4・1/2・全部で1ずつ(聞けなくなった話は数えない)' },
   ];
-}
-function spFish() {
-  const s = G.fsh; if (!s || !s.dex) return 0;
-  const n = Object.keys(s.dex).length;
-  return [25, 50, 75, 100].filter(k => n >= k).length + ['fsh_lord_river', 'fsh_lord_lake', 'fsh_lord_sea'].filter(id => s.dex[id]).length;
-}
-function spCas() { if (!G.casino || typeof casRankI !== 'function') return 0; const i = casRankI(); return (i >= 1 ? 2 : 0) + (i >= 2 ? 3 : 0); }
-function spArena() { const b = (G.arena && G.arena.best) || 0; return (b >= 3 ? 1 : 0) + (b >= 5 ? 2 : 0); }
-function spOnsen() {
-  const h = (G.onsen && G.onsen.heard) || 0, all = typeof ON_TALK !== 'undefined' ? ON_TALK.filter(c => !c.usual).length : 0; if (!h || !all) return 0;
-  return [0.25, 0.5, 1].filter(k => h >= Math.ceil(all * k)).length;
 }
 const spTotal = () => spSources().reduce((t, s) => t + s.v, 0);
 const spSpent = () => Object.keys(G.sk || {}).reduce((t, id) => t + (SKM[id] ? SKM[id].cost : 0), 0);
@@ -12759,7 +12757,8 @@ function skPtsSheet() {
   const xs = spSources();
   openSheet(`${xBtn}<h2>スキルポイントの入り方</h2><p class="note">レベルのほかに、やり込むほどポイントが増える。全部集めれば、盤の節を全部取れる(盤は全部で${SK_TOTAL}ポイント)。</p><div class="rows">` +
     xs.map(x => `<div class="ri" style="grid-template-columns:minmax(0,1fr) auto"><div><div class="t">${x.n}</div><div class="sub">${x.d}</div></div><b class="num">${x.v}</b></div>`).join('') +
-    `<div class="ri" style="grid-template-columns:minmax(0,1fr) auto"><div class="t">合計(使った ${spSpent()})</div><b class="num price">${spTotal()}</b></div></div>`, { crumb: ['店主', 'スキル盤', 'ポイント'] });
+    `<div class="ri" style="grid-template-columns:minmax(0,1fr) auto"><div class="t">合計(使った ${spSpent()})</div><b class="num price">${spTotal()}</b></div></div>` +
+    `<button class="btn" data-act="achs" data-v="sp" style="justify-self:start">次のポイントは何をすればもらえるか(実績の一覧) ›</button>`, { crumb: ['店主', 'スキル盤', 'ポイント'] });
 }
 // a new point from やり込み (not a level, which has its own fanfare): say so once
 function skNotice() {
@@ -12768,7 +12767,8 @@ function skNotice() {
   const was = G.spSeen || null; G.spSeen = now;
   if (!was) return;
   // levels and titles tell it in their own notice (an old save sees its titles' points here once)
-  const got = xs.filter(x => x.k !== 'lv' && !(x.k === 'title' && was.title !== undefined) && now[x.k] > (was[x.k] || 0));
+  // No.375: 図鑑の節目のほかは、実績の知らせ(ach.js)が言う
+  const got = xs.filter(x => x.k === 'dex' && now[x.k] > (was[x.k] || 0));
   if (got.length && skOpen()) setTimeout(() => toast(`<div><div class="t1">スキルポイント +${got.reduce((t, x) => t + now[x.k] - (was[x.k] || 0), 0)}</div>${got.map(x => x.n).join('・')}。店主のスキル盤で使える</div>`, 'lv', 3600), 300);
 }
 // keep the board where the player left it; the first time, put the centre (店主の心得) in the middle
@@ -15588,7 +15588,7 @@ const sellableStock = () => { const ids = new Set((G.shelf || []).filter(s => s 
 
 // ---------- render root ----------
 function render() {
-  paperCheck(); skSync(); skNotice(); storyHook('any');
+  paperCheck(); achCheck(); skSync(); skNotice(); storyHook('any');
   $('#app').classList.toggle('scene-open', !!G.sceneOpen);
   { const de = document.documentElement; de.dataset.theme = themeNow(); de.classList.toggle('at-home', UI.tab === 'home'); }
   renderHud(); renderQuest(); renderTabs(); placeTabs(); renderFab();
@@ -16686,6 +16686,7 @@ function vDex() {
   if (nm) h += `<p class="note">次の節目は <b class="num" style="color:var(--ink)">${nm.n || cp.total}種</b>(あと${(nm.n || cp.total) - cp.found})。達成すると「${nm.title}」と呼ばれ、${fmt(nm.gold)}Gのほうび。</p>`;
   h += `<div class="chips"><button class="chip${UI.dexCat === 'all' ? ' on' : ''}" data-act="dcat" data-v="all">すべて</button>` +
     CATS.map(c => { const all = ITEMS.filter(it => it.cat === c.k); const f = all.filter(it => G.found[it.id] !== undefined).length; return `<button class="chip${UI.dexCat === c.k ? ' on' : ''}" data-act="dcat" data-v="${c.k}">${c.n}<span class="n">${f}/${all.length}</span></button>`; }).join('') + `</div>`;
+  if (UI.dexCat !== 'all') h += achDexStrip(UI.dexCat);
   if (UI.dexCat === 'all' || UI.dexCat === 'relic') h += dexRares();
   if (UI.dexCat === 'all') h += dexPapers();
   if (UI.dexCat === 'all') h += dexTitles();
@@ -16982,6 +16983,7 @@ function vOwner() {
   if (!split || ov === 'skill') {
   h += `<div class="sec dextitles-mini"><div class="row between"><span class="sub">肩書</span><button class="btn sm ghost" data-act="gotitles">肩書の一覧 ›</button></div><h2 style="font-size:19px">${titleNow()}</h2>${titleNext()}</div>`;
   h += `<div class="row" style="gap:16px">${portrait({ cls: 'villager', reg: 'owner', look: {} })}<div class="grow stat2"><div class="row between"><h2 style="font-size:20px">Lv ${G.lv}</h2><span class="num sub">${G.xp} / ${need}</span></div><div class="meter"><i style="width:${G.xp / need * 100}%"></i></div><div class="sub">スキルポイント <b class="price">${G.sp}</b>(レベルとやり込みで増える)${G.ms ? `<br>店の呼び名「<b style="color:var(--brass-hi)">${shopTitle()}</b>」` : ''}</div></div></div>`;
+  h += achMini();
   h += vSkills();
   }
   if (!split || ov === 'shop') {
@@ -17399,6 +17401,12 @@ function flushFX() {
       levelBurst(f.lv);
       toast(`<div><div class="t1">レベルアップ Lv${f.lv}</div>スキルポイント+1${f.recipes ? `・新しいレシピ${f.recipes}件` : ''}${f.metal ? `・${f.metal}を扱えるように` : ''}</div>`, 'lv', 3400);
       sfx('level');
+    } else if (f.t === 'ach') {
+      achToast(f);
+    } else if (f.t === 'achp') {
+      achPToast(f.id);
+    } else if (f.t === 'achold') {
+      sfx('level'); queueSheet(celebrate('実績', `これまでの実績 ${f.n}個`, `<p>今までの商いで果たしていた実績を、まとめて記録した。実績は店主のタブの「実績の一覧」で見られる。</p><div class="meta">ほうび ${f.xp ? `経験値+${fmt(f.xp)}` : ''}${f.g ? `・${fmt(f.g)}G` : ''}(スキルポイントはもう受け取っている)</div>`, 'よし'));
     } else if (f.t === 'title') {
       toast(`<div><div class="t1">肩書が変わった</div>「${TITLES[f.i].n}」・スキルポイント+1</div>`, 'lv', 3400); sfx('level');
     } else if (f.t === 'book') {
@@ -17703,6 +17711,7 @@ function act0(a, d) {
     case 'sklearn': { const s = SKM[d.id]; if (skLearn(d.id)) { sfx('level'); closeSheet(true); toast(`<div><div class="t1">${s.ks ? '要の節を習得した' : '習得した'}</div>${s.n}:${s.t}</div>`, 'lv', 3400); if (s.ks || s.key) confetti(); } break; }
     case 'skview': UI.skView = d.v; sfx('tab'); break;
     case 'skpts': skPtsSheet(); sfx('tap'); return;
+    case 'achs': achSheet(d.v); sfx('tap'); return;
     case 'skreset': { const c = skResetCost(); if (!UI.skResetAsk) { UI.skResetAsk = 1; toast(`<div><div class="t1">振り直す?</div>習得した節をすべて戻して、ポイントを返す${c ? `(${fmt(c)}G)` : '(1回目は無料)'}。鍵の節は開いたまま。もう一度押すと振り直す</div>`, '', 4200); setTimeout(() => { UI.skResetAsk = 0; }, 4500); return; } UI.skResetAsk = 0; if (skReset()) { sfx('tap'); toast('<div>スキル盤を振り直した。ポイントが戻った</div>'); } else toast('<div>お金が足りない</div>'); break; }
     case 'sound': AUS.sound = !AUS.sound; if (AUS.sound) AUS.mute = false; ausSave(); auVolumes(); sfx('tap'); break;
     case 'music': AUS.music = !AUS.music; if (AUS.music) AUS.mute = false; ausSave(); if (!AU.ctx) { AU.started = true; auStart(); } auVolumes(); sfx('tap'); break;
@@ -18054,6 +18063,7 @@ function pubOrder(id) {
     r = { gain: G.work - before, tip: '', lines: [] };
   }
   G.pubVisits = (G.pubVisits || 0) + 1;
+  if (typeof achInc === 'function') achInc('pub_' + x.id);   // No.376 実績: 頼んだ品
   if (x.k === 'food' && typeof pubLearn === 'function' && pubLearn(x.id)) r.lines.push({ k: 'learn', t: `作り方? いいぜ、教えてやる。……工房で「${x.n}」を作れるようになった` });   // No.355 食べる=覚える
   if (x.bonus === 'luck') { G.pubLuck = G.day + 1; r.lines.push({ k: 'luck', t: '明日の最初の製作は、手がよく動きそうだ。' }); }
   if (x.bonus === 'dive' && G.dive && !G.dive.done) { playerTurn(); r.lines.push({ k: 'dive', t: '冒険者たちに差し入れが届いた。一歩進んだぞ。' }); }
@@ -18105,6 +18115,7 @@ const jobOk = j => G.act === 'work' && G.work >= 1 && !jobDone(j.k) && jobsToday
 function jobResolve(j, hit) {
   if (!G.jobs || G.jobs.day !== G.day) G.jobs = { day: G.day, ks: [], hs: [] };
   G.jobs.ks.push(j.k); if (G.jobs.hs) G.jobs.hs.push(hit); G.work = Math.max(0, G.work - 1);
+  if (typeof achInc === 'function') { achInc('job_' + j.k); const h3 = G.jobs.hs; if (h3 && h3.length === 3 && !h3.includes('fail')) achInc('job_all'); }   // No.376 実績
   const pay = Math.max(1, Math.round(jobBase() * JOB_MULT[hit]));
   G.gold += pay; G.jobPaid = (G.jobPaid || 0) + pay;
   let meal = null;
@@ -19631,6 +19642,7 @@ function mgEnd(g, hit, why) {
   g.stopped = true; g.hit = hit; g.why = why || ''; cancelAnimationFrame(g.raf);
   const w = document.querySelector('.mgwrap'); if (w) { w.classList.remove('run'); w.classList.add('end', 'end-' + hit); }
   if (MGK[g.mg].end) try { MGK[g.mg].end(g, hit); } catch (e) { /* a picture only */ }
+  if (!PRACTICE && hit === 'crit' && typeof achInc === 'function') achInc('mgc_' + g.mg);   // No.376 実績: 製作のミニゲームの会心
   if (g.mg === 'shadow') return shadowResolve(g, hit);
   craftResolve(g, hit, MGK[g.mg].fxAt ? MGK[g.mg].fxAt(g) : 50, MGK[g.mg].fxY ? MGK[g.mg].fxY(g) : 50);
 }
@@ -19767,6 +19779,7 @@ function mg2End(g, hit, why) {
   g.stopped = true; g.hit = hit; g.why = why || '';
   const w = document.querySelector('.mgwrap'); if (w) { w.classList.remove('run'); w.classList.add('end', 'end-' + hit); }
   if (PRACTICE) return practiceResult(g, hit);
+  { const sk = MG2.run && MG2.run.g && MG2.run.g.G && MG2.run.g.G.sk; if (sk && hit !== 'fail' && typeof achInc === 'function') { achInc('m2o_' + sk); if (hit === 'crit') achInc('m2c_' + sk); } }   // No.376 実績: 短いミニゲームの成功・会心
   if (g.job) return jobEnd(g, hit);
   if (g.fo) return foEnd(g, hit);
   if (g.pol) return polEnd(g, hit);
@@ -26919,9 +26932,19 @@ function vResidents() {
 // ---------- 第1章の三つの施設の台詞(ネガティブな言葉の後には、店の品のおかげで良くなった事実を必ず続ける) ----------
 // No.372 厩舎に来た時のエイルの話(レース場が開いたことを、最初の一度は必ず話す)
 const RC_TOLD = `
-eir smile 「……店主。空のレース場が、開いた」
+eir smile 「……店主。話がある。竜の、空のレースのこと」
+eir normal 「来て。見せたほうが、早い」
+@bg bg_rc_venue
+eir smile 「……ここ。空のレース場が、開いた」
 eir normal 「町の竜と、山から来た竜。八頭が、夜の空を競って飛ぶ」
-eir smile 「どの竜が勝つか、コインを賭けて当てる。コインは、レース場でも買える」
+eir normal 「逃げる竜、後ろから捲る竜。高く飛ぶ竜、低く飛ぶ竜。……同じ竜は、一頭もいない」
+eir smile 「どの竜が勝つか、コインを賭けて当てる。コインは、ここでも買える」
+eir normal 「新聞は、昨日までの竜しか見てない。……今日の竜は、パドックで見て」
+eir normal 「眠そうな竜が、来ることもある。元気すぎる竜が、沈むこともある」
+@bg bg_stable
+eir smile 「夜になったら、上の「レース場」から。……待ってる」`;
+const RC_TALK = `
+eir normal 「空のレース場。八頭が、夜の空を競って飛ぶ」
 eir normal 「新聞は、昨日までの竜しか見てない。……今日の竜は、パドックで見て」
 eir smile 「夜になったら、上の「レース場」から。待ってる」`;
 const FC = {
@@ -27092,7 +27115,7 @@ eir smile 「だから、毎朝、頼む。今日も乗せて、って」` }, { 
 eir normal 「追込の竜は、最後の直線まで、じっと待つ」
 eir smile 「待てる竜が、いちばん速い。……人も、たぶん同じ」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: `
 eir normal 「パドックで、翼をたたんで動かない竜がいる」
-eir smile 「眠いんじゃない。力をためてる。……そういう竜は、人気がなくても、来る」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: RC_TOLD }],
+eir smile 「眠いんじゃない。力をためてる。……そういう竜は、人気がなくても、来る」` }, { st: 4, c: () => typeof rcOpenOK === 'function' && rcOpenOK(), t: RC_TALK }],
     ord: { pick: it => ['grilled_meat', 'herb_roast', 'wyvern_steak'].includes(it.id),
       why: ['竜が、遠くまで飛ぶ日。', '若い竜が、はじめて山から下りてきた。', '竜の食が、少し細い。焼いた肉なら、食べる。'],
       ask: ['normal', '{item}を{n}つ、ほしい。……お金は、ちゃんと払う。山では、もらったら同じだけ返す'],
@@ -27155,7 +27178,7 @@ function foEnd(g, hit) {
   discover(o.id, q, true); gainXp(craftXp(r, q)); playerTurn();
   const pay = foPay(o, q); G.gold += pay; G.stats.earned += pay; if (G.today) G.today.earned += pay;
   const extra = foSets(o) * (r.n || 1) - o.qty; if (extra > 0) invAdd(o.id, q, extra);   // 一度に2つできる品の余りは手元に
-  Object.assign(o, { done: true, q, pay, next: G.day + FO_GAP }); G.foDone = (G.foDone || 0) + 1;
+  Object.assign(o, { done: true, q, pay, next: G.day + FO_GAP }); G.foDone = (G.foDone || 0) + 1; if (typeof achInc === 'function') achInc('fo_' + fid);   // No.376 実績
   sfx(hit === 'crit' ? 'crit' : 'craft_' + r.craft); setTimeout(() => sfx(q === 3 ? 'great' : q >= 1 ? 'good' : 'hit'), 300);
   if (typeof diveNotify === 'function') diveNotify(G.dive);
   save();
@@ -27188,7 +27211,7 @@ function fcScene(fid, txt, done) {
 }
 function fcTalk(fid) {
   const f = FAC[fid], fc = FC[fid]; if (!f) return;
-  if (fid === 'dragon' && typeof rcToldYet === 'function' && rcToldYet()) { rcSt().told = G.day; save(); const L0 = storyParse(RC_TOLD).filter(l => l.t || l.act); UI.fcLine = { fid, L: L0, i: 0 }; render(); return; }   // No.372
+  if (fid === 'dragon' && typeof rcToldYet === 'function' && rcToldYet()) { rcSt().told = G.day; save(); fcScene(fid, RC_TOLD, () => render()); return; }   // No.372 → No.376 シーンに
   const list = fc ? fc.talks.filter(t => (t.st === undefined || t.st === G.stage) && (!t.c || t.c())) : [];
   let txt;
   if (list.length) { G.fct = G.fct || {}; const i = (G.fct[fid] || 0) % list.length; G.fct[fid] = i + 1; txt = list[i].t; }
@@ -27486,7 +27509,7 @@ function arOdds(A, B, hp0) {
 }
 // 次の挑戦者(今夜まだ出ていない、今の章までの闘士)
 function arNext(used) {
-  const pool = AR_F.filter(f => f.t <= G.stage + 1 && f.t >= G.stage - 1 && !used.includes(f.id));   // 近い格どうしで組む
+  const pool = AR_F.filter(f => (G.ended || (f.t <= G.stage + 1 && f.t >= G.stage - 1)) && !used.includes(f.id));   // 近い格どうしで組む。No.375: エンディングの後は全員から(実績の取り逃がしをなくす)
   return pick(pool.length ? pool : AR_F.filter(f => !used.includes(f.id)));
 }
 function arBout(champ) {
@@ -27720,6 +27743,7 @@ async function arFight() {
   ARN.anim = false;
   G.arena = Object.assign(G.arena || {}, { day: G.day }); G.arena.rec = G.arena.rec || {}; G.arena.rec[b.f[w].id] = (G.arena.rec[b.f[w].id] || 0) + 1;
   const hit = b.pick === w, stake = R.stake || 0;
+  if (hit && stake) { G.arena.hit = G.arena.hit || {}; G.arena.hit[b.f[w].id] = (G.arena.hit[b.f[w].id] || 0) + 1; }   // No.375 実績: 誰に賭けて当てたか
   R.champ = { id: b.f[w].id, hp: res.hp[w], wins: b.wins[w] + 1 };
   if (R.n >= AR_MAX) { G.arena.champ = G.arena.champ || {}; G.arena.champ[b.f[w].id] = (G.arena.champ[b.f[w].id] || 0) + 1; }
   if (!stake) { R.state = 'watched'; save(); sfx(hit ? 'good' : 'hit'); arWatched(hit); }
@@ -28322,7 +28346,7 @@ function casSpin(fromAuto) {
   const inK = s.kaku > 0; if (inK) s.kaku--;
   let role = slDraw(null, s.carry, inK);
   // 天井(作者 No.283j): ふだんの回転でボーナスなしが SL_CEIL 回続いたら、次は必ず竜のBIG
-  if (!inK && !s.carry) { s.ceil = (s.ceil || 0) + 1; if (s.ceil >= SL_CEIL && !(role && SL_ROLE[role].bonus)) role = 'dragon'; }
+  if (!inK && !s.carry) { s.ceil = (s.ceil || 0) + 1; if (s.ceil >= SL_CEIL && !(role && SL_ROLE[role].bonus)) { role = 'dragon'; if (typeof achInc === 'function') achInc('sl_ceil'); } }
   if (role && SL_ROLE[role].bonus) s.ceil = 0;
   const fresh = !!(role && SL_ROLE[role].bonus && role !== s.carry);
   // リールロック(作者 No.283j): レバーを叩いた瞬間の溜め。新しいボーナスなら40%、ふだんも2%で起きる(期待させるだけの空振り)
@@ -28406,6 +28430,7 @@ function casSlotResult() {
   const chain = res.big && S.inK;
   if (res.big) { s.kaku = res.kaku; s.bigs = (s.bigs || 0) + 1; } else if (res.bar) s.kaku = Math.max(s.kaku, res.kaku);
   const prem = res.got.includes('crown');
+  if (typeof achInc === 'function') { new Set(res.got).forEach(k => achInc('sl_' + k)); if (jack) achInc('sl_pot'); if (chain) achInc('sl_chain'); }   // No.376 実績
   if (jack) { msg = `大当たり! 王冠のプレミアBIG! 積立 ${fmt(casPot())}枚ごと!`; big = true; c.pot = CAS_POT0; c.jack++; }
   else if (prem) { msg = '王冠のプレミアBIG!'; big = true; }
   else if (res.big) { msg = chain ? '連チャン! 竜のBIG!' : '竜のBIG BONUS!'; big = true; }
@@ -28638,7 +28663,7 @@ async function casRlSpin() {
   R.rot = wf % 360; R.ball = [bf, 0.587];
   // 払い戻し
   let back = 0;
-  for (const [k, v] of Object.entries(R.bets)) { const b = rlBet(k); if (b.hits.includes(num)) back += v * (b.pay + 1); }
+  for (const [k, v] of Object.entries(R.bets)) { const b = rlBet(k); if (b.hits.includes(num)) { back += v * (b.pay + 1); if (typeof achInc === 'function') { const t = k.split(':')[0]; achInc('rl_' + (RL_PAY[t] !== undefined ? t : /^col/.test(t) ? 'col' : /^dz/.test(t) ? 'dz' : 'even')); } } }
   c.coins += back; R.res = num; R.last = Object.assign({}, R.bets); R.bets = {};
   c.hist.push(num); if (c.hist.length > 40) c.hist.splice(0, c.hist.length - 40);
   const col = { g: '緑', r: '赤', k: '黒' }[rlColor(num)];
@@ -28728,7 +28753,7 @@ async function casBj(a) {
   const h = B.hands[B.cur];
   if (a === 'hit') { h.c.push(bjDraw(B)); B.nw = 'p' + B.cur; sfx('cas_deal'); if (bjTotal(h.c).t >= 21) return casBjNext(); casDraw(); return; }
   if (a === 'stand') return casBjNext();
-  if (a === 'double') { if (h.c.length !== 2 || c.coins < h.bet) return; c.coins -= h.bet; c.used += h.bet; h.bet *= 2; h.c.push(bjDraw(B)); B.nw = 'p' + B.cur; sfx('cas_deal'); casRefreshBar(); return casBjNext(); }
+  if (a === 'double') { if (h.c.length !== 2 || c.coins < h.bet) return; c.coins -= h.bet; c.used += h.bet; h.bet *= 2; h.dbl = 1; h.c.push(bjDraw(B)); B.nw = 'p' + B.cur; sfx('cas_deal'); casRefreshBar(); return casBjNext(); }
   if (a === 'split') {
     if (B.hands.length !== 1 || h.c.length !== 2 || bjVal(h.c[0].r) !== bjVal(h.c[1].r) || c.coins < h.bet) return;
     c.coins -= h.bet; c.used += h.bet;
@@ -28754,8 +28779,10 @@ async function casBjSettle() {
     let r;
     if (t > 21) r = 0; else if (pBJ && !dBJ) r = 2.5; else if (dBJ && !pBJ) r = 0; else if (pBJ && dBJ) r = 1; else if (dt > 21 || t > dt) r = 2; else if (t === dt) r = 1; else r = 0;
     const got = Math.floor(h.bet * r); back += got; net += got - h.bet;
+    h.r = r; if (typeof achInc === 'function') { if (r === 2.5) achInc('bj_bj'); if (h.dbl && r === 2) achInc('bj_dbl'); }   // No.376 実績
     h.res = r === 2.5 ? `ブラックジャック +${fmt(got - h.bet)}` : r === 2 ? `勝ち +${fmt(h.bet)}` : r === 1 ? '引き分け' : '負け';
   }
+  if (B.hands.length === 2 && B.hands.every(h => h.r === 2) && typeof achInc === 'function') achInc('bj_split');
   c.coins += back; if (net > 0) casWinRecord(net); else if (net < 0) casTableGrace(-net);
   B.state = 'bet'; CAS.anim = false;
   const pBJ = B.hands.length === 1 && bjBJ(B.hands[0].c);
@@ -28920,6 +28947,7 @@ async function casPk(a) {
     for (let i = 0; i < 5; i++) if (!P.hold[i]) { await casWait(200); P.hand[i] = P.deck.pop(); P.nw = i; sfx('cas_deal'); casDraw(); }
     await casWait(300); CAS.anim = false;
     const r = pkEval(P.hand); P.role = r;
+    if (r >= 0 && typeof achInc === 'function') achInc('pk_' + r);   // No.376 実績: ポーカーの役
     if (r < 0) { casTableGrace(P.bet); P.state = 'bet'; P.face = 'smile'; P.msg = '役なし。わたしの勝ちです'; sfx('mg_miss'); save(); casDraw(); return; }
     P.won = P.bet * PK_ROLES[r][1]; P.state = 'win'; P.face = r <= 3 ? 'surprise' : r <= 6 ? 'trouble' : 'normal';
     P.msg = r <= 3 ? `${PK_ROLES[r][0]}……!` : `${PK_ROLES[r][0]}です`;
@@ -28971,7 +28999,7 @@ async function casHl(a) {
   else if ((y > x) === (a === 'hi')) {
     H.step++; H.stake *= 2; sfx(H.step >= 3 ? 'great' : 'cas_win'); if (H.step >= 3) casFlash('#fff2c0');
     H.face = H.step >= 3 ? 'surprise' : 'trouble'; H.msg = `当たり。${fmt(H.stake)}枚`;
-    if (H.step >= HL_MAX) { H.msg = `${HL_MAX}回連続……打ち止めです`; casDraw(); await casWait(900); CAS.anim = false; return hlEnd(true); }
+    if (H.step >= HL_MAX) { if (H.base && typeof achInc === 'function') achInc('hl_' + (H.from === 'pk' ? 'pk' : 'hl')); H.msg = `${HL_MAX}回連続……打ち止めです`; casDraw(); await casWait(900); CAS.anim = false; return hlEnd(true); }
   } else { H.face = 'smile'; H.msg = 'はずれ。わたしの勝ちです'; sfx('mg_miss'); H.stake = 0; casTableGrace(H.base); CAS.anim = false; return hlEnd(false); }
   CAS.anim = false; H.cur = H.next; H.next = null; H.state = 'guess'; casDraw();
 }
@@ -29014,7 +29042,7 @@ async function casBc(a) {
   }
   const P = bcT(B.p), K = bcT(B.b); B.res = P > K ? 'p' : K > P ? 'b' : 't';
   let back = 0;
-  if (B.res === B.side) back = Math.round(B.bet * BC_PAY[B.side]); else if (B.res === 't') back = B.bet;   // タイの時、プレイヤー・バンカーへの賭けは戻る
+  if (B.res === B.side) { back = Math.round(B.bet * BC_PAY[B.side]); if (typeof achInc === 'function') achInc('bc_' + B.side); } else if (B.res === 't') back = B.bet;   // タイの時、プレイヤー・バンカーへの賭けは戻る
   const net = back - B.bet; CAS.anim = false; B.state = 'bet';
   B.msg = (B.res === 't' ? `タイ。${P}と${K}` : `${BC_N[B.res]}の勝ち。${Math.max(P, K)}対${Math.min(P, K)}`) + (net > 0 ? '……お見事' : net < 0 ? '' : '。お返しします');
   B.face = net > 0 ? (B.res === 't' ? 'surprise' : 'trouble') : net < 0 ? 'smile' : 'normal';
@@ -29053,7 +29081,7 @@ const RC_MARK = ['◎', '○', '▲', '△'];
 // No.373(作者): 本物の馬券のような買い方。k = 選ぶ頭数・ord = 着順どおり
 const RC_TY = { win: { n: '単勝', d: '1着を当てる', k: 1 }, place: { n: '複勝', d: '3着までに入る竜を当てる', k: 1 }, wide: { n: 'ワイド', d: '2頭とも3着まで(順不同)', k: 2 }, quin: { n: '馬連', d: '1着・2着の2頭(順不同)', k: 2 }, exa: { n: '馬単', d: '1着→2着を順番どおり', k: 2, ord: 1 }, trio: { n: '三連複', d: '1〜3着の3頭(順不同)', k: 3 }, tri: { n: '三連単', d: '1着→2着→3着を順番どおり', k: 3, ord: 1 } };
 const RC_AMT = [10, 50, 100, 500];
-const RC_K = { back: { win: 0.86, place: 0.86, wide: 0.79, quin: 0.79, exa: 0.81, trio: 0.75, tri: 0.75 }, mix: 0.5 };   // 【未決】back = 券の種類ごとの払い戻しの率(人気の確率に対して)・mix = 人気のうち本当の強さを知っている分(残りは新聞の見立て)。test/race_sim.py で測って決める
+const RC_K = { back: { win: 0.92, place: 0.92, wide: 0.86, quin: 0.86, exa: 0.88, trio: 0.82, tri: 0.82 }, mix: 0.5 };   // 【作者 No.376 甘く】back = 券の種類ごとの払い戻しの率(人気の確率に対して)・mix = 人気のうち本当の強さを知っている分(残りは新聞の見立て)。test/race_sim.py で測って決める
 const RC_MAXO = 999.9;
 // 券の組み合わせ → 確率の表の番号
 const rcKey = (ty, s) => { const k = RC_TY[ty].k; if (k === 1) return s[0]; const a = RC_TY[ty].ord ? s : [...s].sort((x, y) => x - y); return k === 2 ? a[0] * 8 + a[1] : a[0] * 64 + a[1] * 8 + a[2]; };
@@ -29268,6 +29296,11 @@ function rcStart() {
   const tix = s.tix[ri], got = tix.reduce((a, t) => a + rcPay(t, res.o), 0), mine = rcMineSet(tix);
   s.res[ri] = res; s.pend += got;   // 結果は先に保存(閉じても払い戻しは残る)
   const bet = tix.reduce((a, t) => a + rcCost(t), 0); s.bet = (s.bet || 0) + bet; s.back = (s.back || 0) + got; if (got) s.hits = (s.hits || 0) + 1; if (got > (s.best || 0)) s.best = got;
+  if (typeof achInc === 'function') {   // No.376 実績: 券の種類・竜ごとの単勝・配当の最高倍率・写真判定・人気薄
+    const photo = res.g[1] - res.g[0] < 0.25, pop = [...pl.run].sort((a, b) => b.pub - a.pub).map(x => x.i);
+    for (const t of tix) for (const p of t.pts) { if (!rcHit(t.ty, p.s, res.o)) continue;
+      achInc('rct_' + t.ty); achMax('rcmax', p.o); if (photo) achInc('rcph');
+      if (t.ty === 'win') { achInc('rcw_' + RC_DR[p.s[0]].k); achMax('rcwmax', p.o); if (pop[7] === p.s[0]) achInc('rclow'); } } }
   save();
   DRC.view = 'run'; rcDraw();
   const M = $('#rcmain');
@@ -29508,7 +29541,7 @@ function onParse(src) {
     }
     if (!cur) continue;
     if (s.startsWith('@when ')) { cur.when = onExpr(s.slice(6)); continue; }
-    if (s.startsWith('@until ')) { cur.until = onExpr(s.slice(7)); continue; }
+    if (s.startsWith('@until ')) { cur.until = onExpr(s.slice(7)); cur.untilS = s.slice(7); continue; }
     if (s.startsWith('@side ')) { cur.side = s.slice(6).trim() === '男' ? 'm' : 'f'; continue; }
     if (/^[((]/.test(s)) { cur.lines.push({ t: s.replace(/^[((]|[))]$/g, '') }); continue; }
     const m = s.match(/^(~?)([^\s「(()0-9]+?)([1-4])?「([\s\S]*?)」\s*(?:[((]([\s\S]*)[))])?$/);
@@ -29525,9 +29558,11 @@ const oF = s => pgFish(s);                                    // 釣り場で会
 const oV = k => !!(G.vigLast && G.vigLast[k]);                // 店先で一度会った後(minstrel・wounded)
 const oK = () => casOpenOK();                                 // 港のクラブの招待の後
 const oD2 = () => G.day >= 2;                                 // 朝市の7人(2日目から)
-const oT = id => { const f = typeof AR_F !== 'undefined' && AR_F.find(x => x.id === id); if (!f || !oB('arena')) return false; return G.stage >= f.t - 1 && G.stage <= (f.t === 2 ? 3 : 4); };   // 闘士が出る間(arena.js 101行の格)
+const oT = id => { const f = typeof AR_F !== 'undefined' && AR_F.find(x => x.id === id); if (!f || !oB('arena')) return false; return G.ended || (G.stage >= f.t - 1 && G.stage <= (f.t === 2 ? 3 : 4)); };   // No.375: エンディングの後は闘技場に全員が出る(arena.js arNext)   // 闘士が出る間(arena.js 101行の格)
 const onSafe = f => { if (!f) return true; try { return !!f(); } catch (e) { return false; } };
 const onCan = c => onSafe(c.when) && onSafe(c.until);
+// No.375 聞けなくなった話(期限が章・場面で過ぎた・まだ聞いていない)。闘士の期限(oT)はエンディングの後にまた出るので、聞けなくならない
+const onLost = c => !!(c.until && !onSeen(c.id) && !/oT\(/.test(c.untilS || '') && !onSafe(c.until));
 // 見た・見ていない: セーブとは別にブラウザに覚える(2周目でも続きから出る)
 const ON_LS = 'manbanya_onsen_seen_v1';
 function onSeenAll() { try { return JSON.parse(localStorage.getItem(ON_LS) || '{}') || {}; } catch (e) { return {}; } }
@@ -29558,7 +29593,7 @@ const onTonight = () => { const s = G.onsen; return s && s.tonight && s.tonight.
 function onBath() {
   if (onWhy() || UI.story) return;
   const s = onSt(), before = G.work;
-  G.gold -= onPrice(); if (s.bathed !== G.day) s.prev = s.bathed; s.bathed = G.day; G.work = workMax();   // 作者: 全回復。工房の前でも後でも
+  G.gold -= onPrice(); if (s.bathed !== G.day) { s.prev = s.bathed; s.n = (s.n || (s.bathed ? 1 : 0)) + 1; } s.bathed = G.day; G.work = workMax();   // 作者: 全回復。工房の前でも後でも
   const gain = G.work - before;
   const c = onPick(onKinds(), s.last);
   s.tonight = null;
@@ -31630,6 +31665,328 @@ const DISP_ACTS = {
 };
 try { window.__disp = { DISP_SETS, DISP_PARTS, dispPut, dispDone, dispDoneN, dispSellBonus, dispCustBonus, dispCanPut, dispSheet, vDisplay, custCount, sellBase }; } catch (e) {}
 try { window.__t361 = { familiar, doCraft, RC, RC_BY_OUT, PUB_BY, DEX_MS, IT, checkDexMilestone }; } catch (e) {}
+
+// ---- ach.js ----
+// No.375 実績(第1弾)。決まったこと: claude/00_実績_決まったこと(2026-11-24).md
+// 図鑑=見る所・実績=果たす所・スキル=使う所。スキルポイントの入り口(spSources)は、ここの r:'b' の実績から数える。
+// ご褒美: s=経験値を少し / m=G と経験値 / b=スキルポイント(今の入り口と同じ物だけ・点数も同じ)。
+// どの実績も、エンディングの後に遊び続ければ必ず取れる(取り返しのつかない実績は作らない)。
+const ACH_CATS = [['craft', '工房'], ['shop', '店'], ['adv', '冒険'], ['fish', '釣り'], ['arena', '闘技場'], ['onsen', '温泉'], ['play', 'カジノ・レース'], ['mg', 'ミニゲーム'], ['town', '灯り亭・町'], ['story', '物語・店主']];
+// No.376: 運だめし(ほぼ運だけの物)。ご褒美なし・「実績 n/全部」に数えない
+const ACH_LUCK = 'luck';
+// No.376: 第2弾で新しく数える物(今から数える)。G.cnt = { 名前: 回数 }
+function achInc(k, n) { if (!G || PRACTICE) return; const c = G.cnt || (G.cnt = {}); c[k] = (c[k] || 0) + (n || 1); }
+function achMax(k, v) { if (!G || PRACTICE) return; const c = G.cnt || (G.cnt = {}); if (!(c[k] >= v)) c[k] = v; }
+const achC = k => (G.cnt && G.cnt[k]) || 0;
+// 短いミニゲーム19種(mg2.js の sk)
+const ACH_MG2 = ['魔法陣', '懐中時計', '炉の温度計', '祭り太鼓', '下ごしらえ', 'フラスコ', 'エール', '弓', '親方と打つ', '吟遊詩人', 'ルーンの石板', 'お客の注文', '封印の印', '魔法の的', '鍵開け', '釣り', '素材の拍子', '光の道筋', '品磨き'];
+const ACH_XP = { s: 0.04, m: 0.08 };                  // 今のレベルの必要経験値に対する割合(No.375 仮・手順4で測って決める)
+const ACH_GOLD = [20, 50, 250, 500, 1200];          // 中のご褒美の G(章ごと・1日の稼ぎの約1/12。No.375 仮: 1/4 では第4・5章で章の稼ぎの2〜7割になった)
+const ACH_METALS = ['iron', 'copper', 'silver', 'gold', 'mithril', 'adamant'];
+let ACH = null, ACH_BY = {};
+let ACH_OUT = null;   // 品 -> その品を作るレシピの id
+function achOutRc() {
+  if (ACH_OUT) return ACH_OUT;
+  ACH_OUT = {};
+  for (const r of RECIPES) if (!r.repair && !r.appraise && IT[r.out]) (ACH_OUT[r.out] = ACH_OUT[r.out] || []).push(r.id);
+  return ACH_OUT;
+}
+const achMade = id => (achOutRc()[id] || []).some(rid => (G.made[rid] || 0) > 0);
+const achMadeN = outs => outs.reduce((t, id) => t + (achMade(id) ? 1 : 0), 0);
+const achUniq = a => [...new Set(a)].filter(id => achOutRc()[id]);
+const achOuts = f => achUniq(RECIPES.filter(r => !r.repair && !r.appraise && IT[r.out] && f(r, IT[r.out])).map(r => r.out));
+const achNum = n => n >= 10000 ? (n / 10000) + '万' : String(n);
+
+function achBuild() {
+  if (ACH) return ACH;
+  const A = [];
+  // add(cat, id, 名前, 条件, 段, 目標, 今, 付け足し)
+  const add = (c, id, n, d, r, goal, now, o) => A.push(Object.assign({ c, id, n, d, r, goal, now }, o || {}));
+  const set = (c, id, n, d, r, outs, o) => add(c, id, n, d, r, () => outs.length, () => achMadeN(outs), Object.assign({ outs }, o || {}));
+  const steps = (c, id, n, d, r, ks, now, o) => ks.forEach((k, i) => add(c, id + '_' + k, n(k, i), d(k, i), typeof r === 'function' ? r(k, i) : r, () => k, now, o));
+
+  // ---------- 1. 工房 ----------
+  for (const s of DISP_SETS) set('craft', 'set_' + s.k, s.n, '剣・盾・兜・鎧・籠手・脚甲を作る', 'm', achUniq(DISP_PARTS.map(([p]) => dispPartId(s.k, p))));
+  for (const k of ['dagger', 'sword', 'spear', 'axe', 'hammer', 'greatsword'])
+    set('craft', 'wk_' + k, WPN_KINDS[k] + 'の鍛冶', `${WPN_KINDS[k]}を鉄・銅・銀・金・ミスリル・アダマンタイトで作る`, 'm', achUniq(ACH_METALS.map(m => k + '_' + m)));
+  for (const k of ['bow', 'staff'])
+    set('craft', 'wk_' + k, WPN_KINDS[k] + 'の木工', `${WPN_KINDS[k]}を雑木・樫・霊木・世界樹で作る`, 'm', achOuts((r, it) => it.sub === '武器' && it.icon && it.icon.sh === k && /^wood[0-3]$/.test(it.icon.m)));
+  for (const [p, pn] of [['shield', '盾'], ['helmet', '兜'], ['armor', '鎧'], ['gauntlet', '籠手'], ['boots', '脚甲']])
+    set('craft', 'ap_' + p, pn + 'の鍛冶', `${pn}を鉄・銅・銀・金・ミスリル・アダマンタイトで作る`, 'm', achUniq(ACH_METALS.map(m => p + '_' + m)));
+  set('craft', 'g_ring', '指輪の職人', '6つの金属の指輪を作る', 's', achOuts((r, it) => it.sub === '装飾' && it.icon && ACH_METALS.includes(it.icon.m)));
+  set('craft', 'g_tool', '道具の職人', '釘・鍵・ツルハシなどの道具を全部作る', 's', achOuts((r, it) => it.sub === '道具' && r.craft === 'smith'));
+  set('craft', 'g_ingot', 'インゴットの職人', '6つの金属のインゴットを作る', 's', achOuts((r, it) => it.sub === 'インゴット'));
+  set('craft', 'g_adv', '冒険道具の職人', '冒険道具を全部作る', 's', achOuts((r, it) => it.sub === '冒険道具'));
+  set('craft', 'g_esword', '属性の剣', '炎・氷・風・大地・光・闇の剣を作る', 'm', achOuts(r => r.book === 'b_ele'));
+  set('craft', 'g_estaff', '精霊の杖', '6つの属性の杖を作る', 'm', achOuts(r => r.book === 'b_estaff'));
+  const leg = achOuts((r, it) => it.sub === '伝説');
+  leg.forEach(id => set('craft', 'lg_' + id, IT[id].name, IT[id].name + 'を作る', 's', [id]));
+  set('craft', 'lg_all', '伝説の鍛冶師', '伝説の武具を全部作る', 'm', leg);
+  for (const [k, sub, n] of [['potion', '薬', '薬師'], ['bomb', '爆薬', '火薬師'], ['elixir', '秘薬', '秘薬の調合'], ['crystal', '属性結晶', '結晶の錬成'], ['dye', '染料', '染物師']])
+    set('craft', 'al_' + k, n, `${sub}を全部作る`, 'm', achOuts((r, it) => r.craft === 'alch' && it.sub === sub));
+  set('craft', 'sc_scroll', '巻物の書き手', '6つの属性のスクロールを作る', 'm', achOuts((r, it) => it.sub === 'スクロール' && !/^上級/.test(it.name)));
+  set('craft', 'sc_scroll2', '上級の巻物', '6つの属性の上級スクロールを作る', 'm', achOuts((r, it) => it.sub === 'スクロール' && /^上級/.test(it.name)));
+  set('craft', 'sc_tome', '魔導書の写し手', '魔導書を全部作る', 'm', achOuts((r, it) => it.sub === '魔導書'));
+  set('craft', 'sc_charm', '護符の書き手', '護符を全部作る', 'm', achOuts((r, it) => it.sub === '護符'));
+  set('craft', 'ck_dish', '料理人', '料理を全部作る(17品)', 'm', achOuts((r, it) => r.craft === 'cook' && it.sub === '料理'));
+  set('craft', 'ck_court', '宮廷の料理人', '宮廷料理を全部作る', 'm', achOuts((r, it) => it.sub === '宮廷料理'));
+  const goz = achOuts(r => r.goz);
+  for (let st = 0; st < 5; st++) set('craft', 'goz_' + st, `ゴズの皿 第${st + 1}章`, `第${st + 1}章の灯り亭の皿を全部作る`, 'm', goz.filter(id => (IT[id].st || 0) === st));
+  set('craft', 'goz_all', 'ゴズの弟子', 'ゴズの皿を全部作る', 'm', goz);
+  set('craft', 'hd_smith', '鍛冶の秘伝', '鍛冶の秘伝のレシピを全部作る', 'm', achOuts(r => r.hidden && r.craft === 'smith'));
+  set('craft', 'hd_alch', '錬金の秘伝', '錬金の秘伝のレシピを全部作る', 'm', achOuts(r => r.hidden && r.craft === 'alch'));
+  set('craft', 'hd_all', '秘伝の継ぎ手', '秘伝のレシピを全部作る', 'm', achOuts(r => r.hidden));
+  for (const [k, sn] of [['spring', '春'], ['summer', '夏'], ['autumn', '秋'], ['winter', '冬']])
+    set('craft', 'ss_' + k, sn + 'の品', `${sn}の品を全部作る`, 'm', achOuts((r, it) => it.sub === sn + 'の品'));
+  for (const b of BOOKS) set('craft', 'bk_' + b.id, b.n, `「${b.n}」の品を全部作る`, 'm', achOuts(r => r.book === b.id));
+  const KINDS = { smith: [10, 25, 50, 100, 0], cook: [10, 25, 50, 100, 0], alch: [10, 25, 0], scribe: [10, 25, 0] };
+  for (const k in KINDS) {
+    const outs = achOuts(r => r.craft === k);
+    KINDS[k].forEach(n => add('craft', `kd_${k}_${n || 'all'}`, `${CRAFTS[k].n} ${n ? n + '種' : '全部'}`, n ? `${CRAFTS[k].n}で${n}種類の品を作る` : `${CRAFTS[k].n}の品を全部作る(${outs.length}種)`, n ? 's' : 'm', () => n || outs.length, () => achMadeN(outs)));
+  }
+  for (const k of ['smith', 'alch', 'cook', 'scribe']) {
+    const outs = achOuts(r => r.craft === k);
+    add('craft', 'q2_' + k, `${CRAFTS[k].n}の上質`, `${CRAFTS[k].n}で初めて上質の品を作る`, 's', () => 1, () => outs.some(id => (G.found[id] || 0) >= 2) ? 1 : 0);
+    add('craft', 'q3_' + k, `${CRAFTS[k].n}の傑作`, `${CRAFTS[k].n}で初めて傑作を作る`, 'b', () => 1, () => outs.some(id => G.found[id] === 3) ? 1 : 0, { sp: 'master', v: 1 });
+  }
+  steps('craft', 'q3n', k => `傑作 ${k}種`, k => `傑作の品を${k}種類そろえる`, 'm', [10, 50], () => completion().master);
+  const mst = n => RECIPES.filter(r => (G.made[r.id] || 0) >= n).length;
+  steps('craft', 'ms4', k => `熟練の品 ${k}`, k => `同じ品を50回作ったレシピが${k}つ`, 's', [1, 5, 20], () => mst(50));
+  add('craft', 'ms1_50', '手に馴染んだ品 50', '3回以上作ったレシピが50', 's', () => 50, () => mst(3));
+  steps('craft', 'made', k => `作った数 ${achNum(k)}`, k => `品を${achNum(k)}個作る`, 's', [100, 500, 1000, 5000], () => G.stats.crafted || 0);
+
+  // ---------- 2. 店 ----------
+  steps('shop', 'sold', k => `売った数 ${achNum(k)}`, k => `品を${achNum(k)}個売る`, 's', [100, 500, 1000, 5000], () => G.stats.sold || 0);
+  steps('shop', 'earn', k => `稼ぎ ${achNum(k)}G`, k => `売上の合計が${achNum(k)}G`, 's', [10000, 100000, 500000, 1000000], () => G.stats.earned || 0);
+  steps('shop', 'best', k => `大口の商い ${achNum(k)}G`, k => `一度の売り値が${achNum(k)}G`, 's', [100, 500, 2000, 5000], () => G.stats.best || 0);
+  steps('shop', 'ord', k => `注文 ${k}件`, k => `注文を${k}件こなす`, 's', [10, 50, 100], () => G.stats.orders || 0);
+  LOAN_MS.forEach((m, i) => add('shop', 'loan_' + i, m.k === 'done' ? '完済' : `返済 ${fmt(m.at)}G`, m.k === 'done' ? '村長に開店資金を返し終える' : `村長に${fmt(m.at)}G返す(${m.n})`, 's', () => m.at, () => (G.loan && G.loan.paid) || 0));
+  for (const s of DISP_SETS) add('shop', 'dp_' + s.k, `飾る: ${s.n}`, `ディスプレイに${s.n}を飾る`, 's', () => DISP_PARTS.length, () => G.disp ? dispCount(s.k) : 0);
+  add('shop', 'dp_all', '店の甲冑の間', 'ディスプレイを全部飾る', 'm', () => DISP_SETS.length, () => dispDoneN());
+  steps('shop', 'bld', k => `建物 ${k}`, k => `王都の建物を${k}建てる`, 'm', [5, 10, 15], () => Object.keys(G.built || {}).filter(k => G.built[k]).length);
+  for (const r of REGULARS) add('shop', 'reg_' + r.k, `常連 ${r.n}`, `${r.n}の物語を最後まで見届ける`, 'b', () => r.steps.length, () => G.reg[r.k] || 0, { sp: 'reg', v: 2 });
+  TITLES.forEach((t, i) => { if (i) add('shop', 'tt_' + i, `肩書「${t.n}」`, `名声 ${fmt(t.f)}`, 'b', () => 1, () => (G.titles || {})[i] !== undefined ? 1 : 0, { sp: 'title', v: 1, quiet: true, hide: true }); });
+  DEX_MS.forEach((m, i) => add('shop', 'dx_' + i, `図鑑 ${m.n ? m.n + '種' : '全部'}`, `図鑑に${m.n ? m.n + '種' : 'すべての品'}を記録する(店の称号「${m.title}」)`, 'b', () => 1, () => (G.ms || 0) > i ? 1 : 0, { sp: 'dex', v: 2, quiet: true }));
+
+  // ---------- 3. 冒険 ----------
+  for (const a of AREAS) {
+    const rs = RARES_OF[a.id] || [];
+    rs.forEach(id => add('adv', 'rr_' + id, IT[id] ? IT[id].name : id, `${a.n}で探索のレアを手に入れる`, 'b', () => 1, () => G.found[id] !== undefined ? 1 : 0, { sp: 'rare', v: 1, area: a.id }));
+    add('adv', 'ra_' + a.id, `${a.n}の宝`, `${a.n}の探索のレアを全部(${rs.length})`, 'm', () => rs.length, () => rs.filter(id => G.found[id] !== undefined).length, { area: a.id });
+    add('adv', 'bs_' + a.id, `${a.n}のぬし`, `${a.n}のぬしを初めて倒す`, 'b', () => 1, () => ((G.clears || {})[a.id] || 0) > 0 ? 1 : 0, { sp: 'boss', v: 1, area: a.id });
+  }
+  add('adv', 'bs_all', 'ぬし狩り', 'すべての行き先のぬしを倒す', 'm', () => AREAS.length, () => AREAS.filter(a => ((G.clears || {})[a.id] || 0) > 0).length);
+  add('adv', 'rr_all', '秘宝の目録', '探索のレアを全部そろえる', 'm', () => Object.keys(RARE).length, () => Object.keys(RARE).filter(id => G.found[id] !== undefined).length);
+
+  // ---------- 4. 釣り ----------
+  const dexN = () => Object.keys((G.fsh && G.fsh.dex) || {}).length, hasF = id => !!(G.fsh && G.fsh.dex && G.fsh.dex[id]);
+  add('fish', 'f_first', '初めての一匹', '魚を1匹釣る', 's', () => 1, () => Math.min(1, dexN()));
+  steps('fish', 'fdex', k => `魚の図鑑 ${k}種`, k => `魚を${k}種類釣る`, 'b', [25, 50, 75, 100], dexN, { sp: 'fish', v: 1 });
+  for (const [id, sn] of [['fsh_lord_river', '川'], ['fsh_lord_lake', '湖'], ['fsh_lord_sea', '海']]) add('fish', 'fl_' + id, FISH_BY[id] ? FISH_BY[id].n : id, `${FISH_BY[id] ? FISH_BY[id].n : 'ぬし魚'}を釣る`, 'b', () => 1, () => hasF(id) ? 1 : 0, { sp: 'fish', v: 1, hide: true, hd: `${sn}のぬし魚を釣る` });
+  for (const [sp, sn] of [['river', '川'], ['lake', '湖'], ['sea', '海']]) {
+    const fs = FISH.filter(f => f.spot === sp).map(f => f.id);
+    add('fish', 'fs_' + sp, `${sn}の魚`, `${sn}の魚を全部釣る(${fs.length}種)`, 'm', () => fs.length, () => fs.filter(hasF).length, { spot: sp });
+  }
+  add('fish', 'f_all', '釣り名人', `魚を全部釣る(${FISH.length}種)`, 'm', () => FISH.length, dexN);
+  add('fish', 'f_rod', RODS[RODS.length - 1].n, `竿を${RODS[RODS.length - 1].n}にする`, 's', () => RODS.length - 1, () => (G.fsh && G.fsh.rod) || 0);
+  add('fish', 'f_reel', REELS[REELS.length - 1].n, `リールを${REELS[REELS.length - 1].n}にする`, 's', () => REELS.length - 1, () => (G.fsh && G.fsh.reel) || 0);
+
+  // ---------- 5. 闘技場(賭けて当てる) ----------
+  const hitBy = id => !!(G.arena && G.arena.hit && G.arena.hit[id]);
+  for (const f of AR_F) add('arena', 'ah_' + f.id, `${f.n}に賭けて`, `${f.n}に賭けて当てる`, 's', () => 1, () => hitBy(f.id) ? 1 : 0);
+  for (const ty in AR_TY) { const fs = AR_F.filter(f => f.ty === ty); add('arena', 'at_' + ty, `${AR_TY[ty].n || ty}の闘士を見る目`, `${AR_TY[ty].n || ty}の闘士${fs.length}人それぞれに賭けて当てる`, 'm', () => fs.length, () => fs.filter(f => hitBy(f.id)).length); }
+  add('arena', 'ab_3', '3試合続けて当てる', '勝ち抜き戦で3試合続けて当てる', 'b', () => 3, () => (G.arena && G.arena.best) || 0, { sp: 'arena', v: 1 });
+  add('arena', 'ab_5', '五連勝', '勝ち抜き戦の5試合を全部当てる', 'b', () => 5, () => (G.arena && G.arena.best) || 0, { sp: 'arena', v: 2 });
+  add('arena', 'aw_10', '払い戻し 10回', '闘技場の払い戻しを10回受け取る', 'm', () => 10, () => (G.arena && G.arena.wins) || 0);
+
+  // ---------- 6. 温泉 ----------
+  [[1, 4, '湯の話 4分の1'], [1, 2, '湯の話 半分'], [1, 1, '湯の話 全部']].forEach(([a, b, n], i) =>
+    add('onsen', 'oh_' + i, n, `湯で聞いた話が${b === 1 ? '全部' : `${a}/${b}`}(聞けなくなった話は数えない)`, 'b', () => Math.ceil(onTalkAll() * a / b), () => (G.onsen && G.onsen.heard) || 0, { sp: 'onsen', v: 1 }));
+  steps('onsen', 'ob', k => k === 1 ? '初めての湯' : `湯に${k}回`, k => `温泉に${k}回入る`, 's', [1, 10, 30], () => (G.onsen && G.onsen.n) || 0);
+
+  // ---------- 7. カジノ・竜のレース ----------
+  add('play', 'cas_1', '銀の会員', '港のクラブで銀の会員になる', 'b', () => 1, () => (G.casino && typeof casRankI === 'function' && casRankI() >= 1) ? 1 : 0, { sp: 'cas', v: 2 });
+  add('play', 'cas_2', '金の会員', '港のクラブで金の会員になる', 'b', () => 1, () => (G.casino && typeof casRankI === 'function' && casRankI() >= 2) ? 1 : 0, { sp: 'cas', v: 3 });
+  add('play', 'rc_1', '初めての的中', '竜のレースで券を当てる', 's', () => 1, () => Math.min(1, (G.race && G.race.hits) || 0));
+
+  // ---------- 7b. 第2弾(No.376): カジノの役・賭け方 ----------
+  const symN = k => (typeof CAS_SYM_N !== 'undefined' && CAS_SYM_N[k]) || k;
+  for (const k of ['dragon', 'seven', 'gem', 'sword', 'coin', 'potion', 'fish', 'bell'])
+    add('play', 'sl_' + k, `スロット ${symN(k)}`, `スロットで${symN(k)}をそろえる`, 's', () => 1, () => achC('sl_' + k));
+  add('play', 'sl_chain', '連チャン', 'スロットの確変中に、また竜のBIGを引く', 'm', () => 1, () => achC('sl_chain'));
+  [['n', '一点'], ['sp', '二点'], ['st', '三点'], ['cr', '四点'], ['five', '五点(0・00・1・2・3)'], ['sx', '六点'], ['dz', '1〜12などの12点'], ['col', '列'], ['even', '赤黒・偶数奇数・前半後半']].forEach(([k, n]) =>
+    add('play', 'rl_' + k, `ルーレット ${n}`, `ルーレットの「${n}」に賭けて当てる`, 's', () => 1, () => achC('rl_' + k)));
+  add('play', 'bj_bj', 'ブラックジャック', 'ブラックジャックで、最初の2枚で21', 's', () => 1, () => achC('bj_bj'));
+  add('play', 'bj_dbl', 'ダブルで勝つ', 'ブラックジャックでダブルにして勝つ', 's', () => 1, () => achC('bj_dbl'));
+  add('play', 'bj_split', 'スプリットで両方勝つ', 'ブラックジャックで札を分けて、両方とも勝つ', 'm', () => 1, () => achC('bj_split'));
+  for (let r = 3; r <= 9; r++) add('play', 'pk_' + r, `ポーカー ${PK_ROLES[r][0]}`, `ドローポーカーで${PK_ROLES[r][0]}`, r <= 4 ? 'm' : 's', () => 1, () => achC('pk_' + r));
+  add('play', 'hl_5', 'ダブルアップ 5連続', 'ポーカーの勝ちを、ハイ&ローで5回続けて当てる', 'm', () => 1, () => achC('hl_pk'));
+  [['p', 'プレイヤー'], ['b', 'バンカー'], ['t', 'タイ']].forEach(([k, n]) => add('play', 'bc_' + k, `バカラ ${n}`, `バカラで${n}に賭けて当てる`, 's', () => 1, () => achC('bc_' + k)));
+  // 竜のレース
+  for (const ty in RC_TY) add('play', 'rct_' + ty, `${RC_TY[ty].n}を当てる`, `竜のレースで${RC_TY[ty].n}の券を当てる`, 's', () => 1, () => achC('rct_' + ty));
+  for (const d of RC_DR) add('play', 'rcw_' + d.k, `${d.n}の単勝`, `${d.n}の単勝を当てる`, 's', () => 1, () => achC('rcw_' + d.k));
+  add('play', 'rc_m50', '配当50倍', '竜のレースで、配当50倍以上の券を当てる', 'm', () => 50, () => Math.min(50, achC('rcmax')));
+  add('play', 'rc_m100', '配当100倍', '竜のレースで、配当100倍以上の券を当てる', 'm', () => 100, () => Math.min(100, achC('rcmax')));
+  add('play', 'rc_ph', '写真判定', '写真判定になったレースで券を当てる', 's', () => 1, () => achC('rcph'));
+
+  // ---------- 7c. ミニゲーム ----------
+  for (const [k, n, ty] of [['beat', '槌で打つ', 1], ['pour', '沸かして止める', 1], ['fire', '火加減', 1], ['ring', '魔法陣', 1], ['shadow', '影合わせ', 0]]) {
+    const note = ty ? '(設定「製作のミニゲーム: 工房ごと」の時に出る)' : '';
+    [[1, `${n}の会心`, 's'], [10, `${n} 会心10`, 's'], [50, `${n} 会心50`, 'm']].forEach(([g, nm, r]) =>
+      add('mg', `mgc_${k}_${g}`, nm, `製作の「${n}」で会心を${g === 1 ? '出す' : g + '回'}${note}`, r, () => g, () => achC('mgc_' + k)));
+  }
+  ACH_MG2.forEach((sk, i) => {
+    add('mg', `m2o_${i}`, `${sk}`, `ミニゲーム「${sk}」で成功する`, 's', () => 1, () => achC('m2o_' + sk));
+    add('mg', `m2c_${i}`, `${sk}の会心`, `ミニゲーム「${sk}」で会心を出す`, 's', () => 1, () => achC('m2c_' + sk));
+  });
+  add('mg', 'm2o_all', 'ミニゲームを一通り', `短いミニゲーム${ACH_MG2.length}種を全部成功させる`, 'm', () => ACH_MG2.length, () => ACH_MG2.filter(sk => achC('m2o_' + sk)).length);
+  add('mg', 'm2c_all', 'ミニゲームの達人', `短いミニゲーム${ACH_MG2.length}種を全部会心で`, 'm', () => ACH_MG2.length, () => ACH_MG2.filter(sk => achC('m2c_' + sk)).length);
+  const m2c = () => ACH_MG2.reduce((t, sk) => t + achC('m2c_' + sk), 0);
+  add('mg', 'm2c_50', '会心 50', '短いミニゲームで会心を合わせて50回', 's', () => 50, m2c);
+  add('mg', 'm2c_200', '会心 200', '短いミニゲームで会心を合わせて200回', 'm', () => 200, m2c);
+
+  // ---------- 3b. 冒険: 倒した魔物(今から数える) ----------
+  const monN = k => (MON[k] && MON[k].n) || k, allMon = [...new Set(Object.keys(DG).flatMap(id => [...DG[id].foes.map(x => x[0]), DG[id].boss]))].filter(k => MON[k]);
+  for (const id in DG) {
+    const ks = [...new Set([...DG[id].foes.map(x => x[0]), DG[id].boss])].filter(k => MON[k]), ar = AREAS.find(x => x.id === id);
+    add('adv', 'kl_' + id, `${ar ? ar.n : id}の魔物`, `${ar ? ar.n : id}の魔物${ks.length}種(ぬしも)をそれぞれ倒す`, 's', () => ks.length, () => ks.filter(k => achC('kill_' + k)).length);
+  }
+  add('adv', 'kl_all', '魔物を全部', `魔物${allMon.length}種を全部倒す`, 'm', () => allMon.length, () => allMon.filter(k => achC('kill_' + k)).length);
+  steps('adv', 'kn', k => `魔物を${k}体`, k => `冒険で魔物を合わせて${k}体倒す`, (k, i) => i ? 'm' : 's', [100, 500, 1000], () => achC('kill'));
+
+  // ---------- 灯り亭・町 ----------
+  const pubN = () => PUB_MENU.filter(x => achC('pub_' + x.id)).length;
+  steps('town', 'pm', k => k >= PUB_MENU.length ? '灯り亭の品書きを全部' : `灯り亭で${k}品`, k => `灯り亭の品書きから${k}品を頼む(違う品)`, (k, i) => i === 3 ? 'm' : 's', [10, 30, 60, PUB_MENU.length], pubN);
+  const pgN = o => { try { return Object.keys(pgS()[o]).length; } catch (e) { return 0; } };
+  steps('town', 'pg', k => k >= PG_LIST.length ? '相席の客 全員' : `相席の客 ${k}人`, k => `灯り亭の相席で${k}人と知り合う`, (k, i) => i === 2 ? 'm' : 's', [10, 20, PG_LIST.length], () => pgN('met'));
+  steps('town', 'pp', k => k >= PG_PAIR.length ? '掛け合い 全部' : `掛け合い ${k}`, k => `灯り亭の客どうしの掛け合いを${k}つ見る`, (k, i) => i ? 'm' : 's', [5, PG_PAIR.length], () => pgN('pair'));
+  steps('town', 'pq', k => k === 1 ? 'ゴズの頼みごと' : `ゴズの頼みごと ${k}`, k => `ゴズの頼みごとを${k}回こなす`, (k, i) => i === 2 ? 'm' : 's', [1, 10, 30], () => G.pubDone || 0);
+  for (const j of PUB_JOBS) add('town', 'jb_' + j.k, `バイト ${j.n}`, `灯り亭のバイト「${j.n}」をする`, 's', () => 1, () => achC('job_' + j.k));
+  add('town', 'jb_all', 'バイトをやり通す', '灯り亭のバイトを、ひと晩で3つとも失敗なしでやる', 'm', () => 1, () => achC('job_all'));
+  for (const f of FACS) add('town', 'fo_' + f.id, `${f.n}の頼みごと`, `${f.n}の頼みごとをこなす`, 's', () => 1, () => achC('fo_' + f.id));
+  steps('town', 'fon', k => `施設の頼みごと ${k}`, k => `施設の頼みごとを合わせて${k}回こなす`, (k, i) => i ? 'm' : 's', [10, 30], () => G.foDone || 0);
+  const MK = MERCHANTS.map(m => [m.k, m.n]);   // ハルの隊商(caravan)は talk.js で足される
+  for (const [k, n] of MK) add('town', 'mk_' + k, `朝市 ${n}`, `朝市の「${n}」で買う`, 's', () => 1, () => achC('mk_' + k));
+  add('town', 'mk_all', '朝市の常連', `朝市の${MK.length}軒すべてで買う`, 'm', () => MK.length, () => MK.filter(([k]) => achC('mk_' + k)).length);
+
+  // ---------- 運だめし(ご褒美なし・数えない。平均で数十夜かかる物。記録_実績の運だめしの線引き) ----------
+  const L1 = (id, n, d, now) => add(ACH_LUCK, id, n, d, 'l', () => 1, now);
+  L1('lk_crown', 'スロット 王冠', 'スロットで王冠をそろえる', () => achC('sl_crown'));
+  L1('lk_pot', '王冠の積み立て', '5枚賭けで王冠をそろえ、積み立てを丸ごと受け取る', () => achC('sl_pot'));
+  L1('lk_ceil', '天井', 'スロットでボーナスなしのまま600回まわし、天井のBIGを受ける', () => achC('sl_ceil'));
+  for (const r of [0, 1, 2]) L1('lk_pk' + r, `ポーカー ${PK_ROLES[r][0]}`, `ドローポーカーで${PK_ROLES[r][0]}`, () => achC('pk_' + r));
+  L1('lk_low', '最低人気の単勝', '竜のレースで、一番人気のない竜の単勝を当てる', () => achC('rclow'));
+  L1('lk_w30', '単勝 30倍', '竜のレースで、30倍以上の単勝を当てる', () => achC('rcwmax') >= 30 ? 1 : 0);
+  L1('lk_m500', '配当500倍', '竜のレースで、配当500倍以上の券を当てる', () => achC('rcmax') >= 500 ? 1 : 0);
+
+  // ---------- 8. 物語・店主 ----------
+  for (let st = 1; st <= 4; st++) add('story', 'ch_' + st, `第${st}章を終える`, `第${st}章を終える`, 'm', () => st, () => G.stage || 0);
+  add('story', 'ch_end', '物語の結末', '？？？', 'm', () => 1, () => G.ended ? 1 : 0, { hide: true });
+  const skN = () => Object.keys(G.sk || {}).filter(id => id !== 'root' && G.sk[id]).length, skAll = SKN.filter(s => s.id !== 'root').length;
+  add('story', 'sk_10', 'スキル 10', 'スキル盤の節を10覚える', 's', () => 10, skN);
+  add('story', 'sk_30', 'スキル 30', 'スキル盤の節を30覚える', 's', () => 30, skN);
+  add('story', 'sk_all', 'スキル盤の主', 'スキル盤の節を全部覚える', 'm', () => skAll, skN);
+  ['春', '夏', '秋', '冬'].forEach((n, i) => add('story', 'sn_' + i, `${n}を過ごす`, `店で${n}を過ごす`, 's', () => 7 * (i + 1) + 1, () => G.day || 1));
+
+  ACH = A; ACH_BY = {}; for (const a of A) ACH_BY[a.id] = a;
+  return A;
+}
+// 湯の話の数(聞けなくなった話は外す。No.375)
+function onTalkAll() { return typeof ON_TALK === 'undefined' ? 0 : ON_TALK.filter(c => !c.usual && !(typeof onLost === 'function' && onLost(c))).length; }
+const achGot = a => { try { const g = a.goal(); return g > 0 && a.now() >= g; } catch (e) { return false; } };
+const achProg = a => { try { return [Math.min(a.now(), a.goal()), a.goal()]; } catch (e) { return [0, 1]; } };
+// スキルポイントの入り口(skills.js spSources)が数える分
+function achSp(k) { return achBuild().filter(a => a.sp === k && achGot(a)).reduce((t, a) => t + a.v, 0); }
+function achReward(a) {
+  if (a.r === 'b') return 'スキルポイント+' + a.v;
+  const xp = Math.max(1, Math.round(xpNeed(G.lv) * ACH_XP[a.r])), g = a.r === 'm' ? ACH_GOLD[Math.min(4, G.stage || 0)] : 0;
+  return { xp, g };
+}
+// 果たした実績を記録してご褒美を出す。初めての時(古いセーブ)は、今まで果たしている分をまとめて記録する(スキルポイントは二重に出さない)
+function achCheck() {
+  if (!G || PRACTICE) return;
+  const L = achBuild(), first0 = !G.ach, first2 = !first0 && !(G.achV >= 2);   // first2: 第2弾の入った版を初めて読んだ
+  if (first0) G.ach = {};
+  G.achV = 2;
+  const got = [];
+  for (const a of L) if (G.ach[a.id] === undefined && achGot(a)) { G.ach[a.id] = G.day; got.push(a); }
+  if (!got.length) return;
+  const first = first0 || first2;
+  let xp = 0, g = 0;
+  for (const a of got) { if (a.r === 'b' || a.r === 'l') continue; const w = achReward(a); xp += w.xp; g += w.g; }
+  // 古いセーブのまとめての解除: 今のレベル・章の値で全部出すと、レベルが一度に4つ・G が数万増えた(No.375 の試し)。経験値は1レベル分・G は中の5つ分まで
+  if (first && got.length > 2) { xp = Math.min(xp, xpNeed(G.lv)); g = Math.min(g, ACH_GOLD[Math.min(4, G.stage || 0)] * 5); }
+  if (g) { G.gold += g; }
+  if (xp) gainXp(xp);
+  const show = got.filter(a => !a.quiet);
+  if (first && got.length > 2) FX.push({ t: 'achold', n: got.length, xp, g });
+  else if (show.length) FX.push({ t: 'ach', ids: show.map(a => a.id), xp, g });
+}
+const achDone = () => Object.keys(G.ach || {}).filter(id => ACH_BY[id] && ACH_BY[id].c !== ACH_LUCK).length;
+const achMain = () => achBuild().filter(a => a.c !== ACH_LUCK);
+const achLuck = () => achBuild().filter(a => a.c === ACH_LUCK);
+
+// ---------- 見せ方 ----------
+const ACH_R = { s: '経験値', m: 'G・経験値', l: '運だめし' };
+const achName = a => a.hide && !(G.ach && G.ach[a.id] !== undefined) && !achGot(a) ? '？？？' : a.n;
+const achCond = a => a.hide && !(G.ach && G.ach[a.id] !== undefined) && !achGot(a) ? (a.hd || a.d) : a.d;
+const achIsDone = a => !!(G.ach && G.ach[a.id] !== undefined) || achGot(a);
+// もう少しで果たせる物(進みの割合が高い順)
+function achNear(n) {
+  return achMain().filter(a => !achIsDone(a) && !a.hide).map(a => { const [x, y] = achProg(a); return { a, k: y ? x / y : 0 }; })
+    .filter(o => o.k > 0).sort((p, q) => q.k - p.k).slice(0, n).map(o => o.a);
+}
+function achRow(a) {
+  const done = achIsDone(a), [x, y] = achProg(a), day = G.ach && G.ach[a.id];
+  const rw = a.r === 'b' ? `<span class="qtag reg">ポイント+${a.v}</span>` : `<span class="ach-rw">${ACH_R[a.r]}</span>`;
+  return `<div class="ri ach-ri${done ? ' done' : ''}"><div style="min-width:0"><div class="t">${done ? '<span class="ach-ok">✓</span>' : ''}${esc(achName(a))} ${rw}</div><div class="sub">${esc(achCond(a))}</div>` +
+    (done ? '' : y > 1 ? `<div class="meter ach-m"><i style="width:${(x / y * 100).toFixed(1)}%"></i></div>` : '') + `</div>` +
+    `<b class="num">${done ? (day ? `${day}日目` : '済') : y > 1 ? `${fmt(x)}/${fmt(y)}` : ''}</b></div>`;
+}
+function achSheet(cat) {
+  UI.achCat = cat || UI.achCat || 'near';
+  const L = achMain(), LK = achLuck(), k = UI.achCat, nd = L.filter(achIsDone).length;
+  const cnt = xs => `${xs.filter(achIsDone).length}/${xs.length}`;
+  const chips = [['near', 'もう少し', ''], ['sp', 'ポイント', cnt(L.filter(a => a.r === 'b'))], ...ACH_CATS.map(([c, n]) => [c, n, cnt(L.filter(a => a.c === c))]), [ACH_LUCK, '運だめし', cnt(LK)]]
+    .map(([c, n, x]) => `<button class="chip${k === c ? ' on' : ''}" data-act="achs" data-v="${c}">${n}${x ? ` <span class="n">${x}</span>` : ''}</button>`).join('');
+  const list = k === 'near' ? achNear(30) : k === 'sp' ? L.filter(a => a.r === 'b') : k === ACH_LUCK ? LK : L.filter(a => a.c === k);
+  const order = k === 'near' ? list : [...list.filter(a => !achIsDone(a)), ...list.filter(achIsDone)];
+  openSheet(`${xBtn}<h2>実績 <span class="num">${nd} / ${L.length}</span></h2><p class="note">毎日の商い・製作・冒険で進む。果たすと経験値、まとまりは G も。「ポイント」の実績はスキルポイントになる。${k === ACH_LUCK ? '<br>運だめしは、ほとんど運だけで決まる物。ご褒美はなく、実績の数にも入らない。' : ''}</p>` +
+    `<div class="chips wrap">${chips}</div><div class="rows">${order.map(achRow).join('') || '<p class="note">いまは進みかけの実績がない。</p>'}</div>`, { crumb: ['店主', '実績'], cur: 'ach' });
+}
+// 店主タブの小さな枠
+function achMini() {
+  const L = achMain(), nd = L.filter(achIsDone).length, nr = achNear(3), LK = achLuck(), nl = LK.filter(achIsDone).length;
+  return `<div class="sec ach-mini"><div class="row between"><span class="sub">実績 <b class="num">${nd} / ${L.length}</b> ・ 運だめし <b class="num">${nl} / ${LK.length}</b></span><button class="btn sm ghost" data-act="achs" data-v="near">実績の一覧 ›</button></div>` +
+    (nr.length ? `<div class="rows">${nr.map(achRow).join('')}</div>` : '') + `</div>`;
+}
+// 図鑑のページ: その分類の品の「そろえる」実績の進み
+const achCatOf = a => { if (!a.outs || !a.outs.length) return null; const c = {}; a.outs.forEach(id => { const x = IT[id] && IT[id].cat; if (x) c[x] = (c[x] || 0) + 1; }); return Object.keys(c).sort((p, q) => c[q] - c[p])[0] || null; };
+function achDexStrip(cat) {
+  const xs = achBuild().filter(a => a.outs && a.outs.length > 1 && achCatOf(a) === cat); if (!xs.length) return '';
+  return `<div class="sec ach-dex"><div class="row between"><h2>そろえる実績</h2><button class="btn sm ghost" data-act="achs" data-v="craft">実績の一覧 ›</button></div><div class="chips wrap">` +
+    xs.map(a => { const [x, y] = achProg(a), d = achIsDone(a); return `<span class="chip ach-c${d ? ' on' : ''}">${esc(a.n)} <span class="n">${x}/${y}</span></span>`; }).join('') + `</div></div>`;
+}
+// 釣りの図鑑: 次の釣りの実績
+function achFishLine() {
+  const xs = achBuild().filter(a => a.c === 'fish' && !achIsDone(a) && !a.hide).slice(0, 3); if (!xs.length) return '';
+  return `<button class="btn sm ghost ach-fl" data-act="achs" data-v="fish">実績: ${xs.map(a => { const [x, y] = achProg(a); return `${esc(a.n)} ${x}/${y}`; }).join('・')} ›</button>`;
+}
+// 知らせ(ui.js flushFX から)
+function achToast(f) {
+  const xs = f.ids.map(id => ACH_BY[id]).filter(Boolean); if (!xs.length) return;
+  const sp = xs.filter(a => a.r === 'b').reduce((t, a) => t + a.v, 0);
+  const rw = [sp ? `スキルポイント+${sp}` : '', f.xp ? `経験値+${fmt(f.xp)}` : '', f.g ? `${fmt(f.g)}G` : ''].filter(Boolean).join('・');
+  const head = xs.length === 1 ? `${xs[0].c === ACH_LUCK ? '運だめし' : '実績'}「${esc(xs[0].n)}」` : `実績 ${xs.length}つ`;
+  const body = xs.length === 1 ? rw : `${xs.slice(0, 4).map(a => esc(a.n)).join('・')}${xs.length > 4 ? ' ほか' : ''}<br>${rw}`;
+  toast(`<div><div class="t1">${head}</div>${body}</div>`, 'lv', 3400); sfx('level');
+}
+// 初めて作った品: その品が入っている実績の進み
+function achPToast(id) {
+  const xs = achBuild().filter(a => a.outs && a.outs.length > 1 && a.outs.includes(id) && !achIsDone(a)).slice(0, 2); if (!xs.length) return;
+  toast(`<div><div class="t1">実績の進み</div>${xs.map(a => { const [x, y] = achProg(a); return `${esc(a.n)} ${x}/${y}`; }).join('・')}</div>`);
+}
+try { window.__ach = { achBuild, achCheck, achGot, achProg, achSp, achNear, achSheet, achMini, ACH_BY: () => ACH_BY, fcTalk: (...a) => fcTalk(...a), rcSt: () => rcSt(), rcToldYet: () => rcToldYet(), UI: () => UI }; } catch (e) {}
 
 // ---- practice.js ----
 // ===== v53b: ミニゲームの練習場(ミニゲームだけを遊ぶページ) =====
