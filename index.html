@@ -27480,7 +27480,7 @@ const rfIngots = tid => { const r = RC_BY_OUT[tid]; const x = r && r.ins.find(([
 // 行き先: 今より上の金属で、作り方を思いついている物(冒険者の物は、その人が持てる物だけ)
 function rfTargets(id, mem) {
   const p = rfParse(id); if (!p) return [];
-  return RF_MT.slice(RF_MT.indexOf(p.mt) + 1).map(mt => p.k + '_' + mt).filter(t => IT[t] && RC_BY_OUT[t] && recUnlocked(RC_BY_OUT[t]) && (!mem || canWield(mem, IT[t])));
+  return RF_MT.slice(RF_MT.indexOf(p.mt) + 1, RF_MT.indexOf(p.mt) + 2).map(mt => p.k + '_' + mt).filter(t => IT[t] && RC_BY_OUT[t] && recUnlocked(RC_BY_OUT[t]) && (!mem || canWield(mem, IT[t])));
 }
 // 打ち直せる物: 倉庫の在庫(出来ごと)と、冒険者が持っている物
 function rfSources() {
