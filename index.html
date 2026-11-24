@@ -7668,10 +7668,13 @@ ELEM.forEach((e, i) => {
 
 // ---------- Elemental / legendary gear ----------
 ELEM.forEach((e, i) => {
-  addItem('esw_' + e.k, e.sw + 'の剣', 'equip', { sh: 'sword', m: e.ramp, s: 'wood1', a: e.ramp, fx: ['spark'] }, { st: Math.max(1, e.st), sub: '属性武器', tier: 3, desc: e.sw + 'の力が宿った剣。銀の剣に属性を付与したもの。', gear: true, book: 'b_ele' });
+  addItem('esw_' + e.k, e.sw + 'の剣', 'equip', { sh: 'sword', m: e.ramp, s: 'wood1', a: e.ramp, fx: ['spark'] }, { st: Math.max(1, e.st), sub: '属性武器', tier: i >= 4 ? 4 : 3, desc: e.sw + 'の力が宿った剣。銀の剣に属性を付与したもの。', gear: true, book: 'b_ele' });
   addRec('esw_' + e.k, [['sword_silver', 1], ['ms_' + e.k, 2]], 'smith', 8, 2, { book: 'b_ele' });
-  addItem('est_' + e.k, ['火炎', '氷結', '疾風', '大地', '聖光', '暗黒'][i] + 'の杖', 'equip', { sh: 'staff', m: 'wood1', a: e.ramp, fx: ['spark'] }, { st: Math.max(2, e.st), sub: '属性武器', tier: 3, desc: '属性結晶をはめこんだ杖。強力な魔法を放てる。', gear: true, book: 'b_estaff' });
+  addItem('est_' + e.k, ['火炎', '氷結', '疾風', '大地', '聖光', '暗黒'][i] + 'の杖', 'equip', { sh: 'staff', m: 'wood1', a: e.ramp, fx: ['spark'] }, { st: Math.max(2, e.st), sub: '属性武器', tier: i >= 4 ? 4 : 3, desc: '属性結晶をはめこんだ杖。強力な魔法を放てる。', gear: true, book: 'b_estaff' });
   addRec('est_' + e.k, [['staff_1', 1], ['crys_' + e.k, 1]], 'smith', 11, 2, { book: 'b_estaff' });
+  // No.378 (作者 2026-11-24): 属性の弓。火水風土=金・光闇=ミスリル(杖・剣と同じ)
+  addItem('ebw_' + e.k, ['火炎', '氷結', '疾風', '大地', '聖光', '暗黒'][i] + 'の弓', 'equip', { sh: 'bow', m: 'wood1', s: 'cloth1', a: e.ramp, fx: ['spark'] }, { st: Math.max(2, e.st), sub: '属性武器', tier: i >= 4 ? 4 : 3, desc: '属性結晶を弓の芯に宿した弓。放つ矢が属性の力をまとう。', gear: true, book: 'b_ebow' });
+  addRec('ebw_' + e.k, [['bow_1', 1], ['crys_' + e.k, 1]], 'smith', 11, 2, { book: 'b_ebow' });
 });
 // v40 (本筋 2b): the broken sword (出世払いの剣) — on the wall of the shop from day 1; its steel becomes the core of the 聖剣
 addItem('k_oldsword', '折れた剣', 'relic', { sh: 'sword', m: 'rust', s: 'wood1', fx: ['crack'] }, { v: 40, st: 0, sub: '思い出の品', keep: true, nodex: true,
@@ -8032,6 +8035,7 @@ const BOOKS = [
   { id: 'b_secret', n: '秘薬の書', st: 2, v: 700, m: 'potY', d: '特級回復薬とエリクサー' },
   { id: 'b_court', n: '宮廷料理の書', st: 2, v: 650, m: 'gold', d: '宴会料理・英雄の宴など' },
   { id: 'b_estaff', n: '精霊の杖の書', st: 2, v: 900, m: 'wind', d: '属性結晶で杖を作る方法' },
+  { id: 'b_ebow', n: '精霊の弓の書', st: 2, v: 900, m: 'wind', d: '属性結晶で弓を作る方法' },
   { id: 'b_tome', n: '古代魔導書の写本', st: 3, v: 1400, m: 'dark', d: '6属性の魔導書の作り方' },
   { id: 'b_legend', n: '伝説の鍛冶書', st: 4, v: 4000, m: 'adamant', d: '聖剣・魔剣など伝説の武具' },
 ];
@@ -10724,7 +10728,7 @@ const ARM_BASE = { shield: 0.12, helmet: 0.08, armor: 0.17, gauntlet: 0.07, boot
 // No.346(3.6): 形は絵の形(icon.sh)で見る。伝説の盾・鎧・杖、カジノの剣・弓、白熊のコートも正しい種類になる
 const ARM_SH = { shield: '盾', helmet: '兜', armor: '鎧', gauntlet: '籠手', boots: '脚甲' };
 const gearKey = it => it.gk ? it.gk : it.icon && (WPN_BASE[it.icon.sh] !== undefined || ARM_SH[it.icon.sh]) ? it.icon.sh : it.id.split('_')[0];
-function gearTier(it) { if (it.id.startsWith('lg_')) return 6; if (it.id.startsWith('bow_') || it.id.startsWith('staff_')) return [0, 1, 3, 4][it.tier || 0]; return it.tier || 0; }
+function gearTier(it) { if (it.id.startsWith('lg_')) return 6; if (it.id.startsWith('bow_') || it.id.startsWith('staff_')) /* No.378: 霊木=銀・世界樹=アダマンタイト */ return [0, 1, 2, 5][it.tier || 0]; return it.tier || 0; }
 const isWeapon = it => it && it.cat === 'equip' && !it.broken && (it.sub === '武器' || it.sub === '属性武器' || it.gslot === 'w' || (it.gear && !it.gslot && it.sub !== '防具' && WPN_BASE[gearKey(it)] !== undefined));
 const isArmor = it => it && it.cat === 'equip' && !it.broken && (it.sub === '防具' || it.gslot === 'a' || (it.gear && !it.gslot && it.sub !== '武器' && !!ARM_SH[gearKey(it)]));
 // No.346(3.7): 武器は2本(同じ種類は不可)・防具は3つ(同じ種類は不可)。古いセーブは wpn・arm だけ(残りは空)
@@ -31719,6 +31723,7 @@ function achBuild() {
   set('craft', 'g_adv', '冒険道具の職人', '冒険道具を全部作る', 's', achOuts((r, it) => it.sub === '冒険道具'));
   set('craft', 'g_esword', '属性の剣', '炎・氷・風・大地・光・闇の剣を作る', 'm', achOuts(r => r.book === 'b_ele'));
   set('craft', 'g_estaff', '精霊の杖', '6つの属性の杖を作る', 'm', achOuts(r => r.book === 'b_estaff'));
+  set('craft', 'g_ebow', '精霊の弓', '6つの属性の弓を作る', 'm', achOuts(r => r.book === 'b_ebow'));
   const leg = achOuts((r, it) => it.sub === '伝説');
   leg.forEach(id => set('craft', 'lg_' + id, IT[id].name, IT[id].name + 'を作る', 's', [id]));
   set('craft', 'lg_all', '伝説の鍛冶師', '伝説の武具を全部作る', 'm', leg);
