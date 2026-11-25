@@ -17601,6 +17601,7 @@ function act0(a, d) {
     case 'rfpick': case 'rfmode': case 'rfto': case 'kwpick': case 'rfgo2': case 'kwgo2': rfAct(a, d.v); return;   // No.379 鍛え直し
     case 'factab': UI.rfPick = null; UI.facTab = d.v; UI.fcLine = null; sfx('tap'); render(); return;
     case 'fctalk': sfx('tap'); fcTalk(d.v); return;
+    case 'cltalk': sfx('tap'); clTalk(); return;   // No.385: 教会の「クララと話す」
     case 'fcnext': sfx('tap'); fcNext(); return;
     case 'focraft': foStart(d.v); return;
     case 'fodone': foDeliver(d.v); return;
@@ -23008,7 +23009,7 @@ function storyStep() {
   if (S.i >= lines.length) { storyEnd(); return; }
   const L = lines[S.i];
   storySetBg(v, L.bg);
-  { const shopScene = ['c1_pro', 'c1_open', 'new_c1_emma_visit', 'reg_luca_0', 'new_c1_luca_gate'].includes(S.id) || /^bg_shop(?:_|$)/.test(L.bg || ''); const guildScene = /^bg_guild(?:_|$)/.test(L.bg || ''); const innScene = /^bg_inn(?:_|$)/.test(L.bg || ''); const smithScene = ['bld_smithy', 'new_c3_bard_box', 'c5_forge'].includes(S.id) || /^bg_smithy(?:_|$)/.test(L.bg || ''); const want = S.id === 'c3_confess' ? 'confessionShade' : ["c5_ending", "c5_ending0"].includes(S.id) ? "endingDream" : ["boss_dragon", "bld_gate"].includes(S.id) ? "dragonVictory" : S.id === "bld_dragon" ? "dragonMeeting" : ["bld_knights", "new_c4_luca_knight", "bld_treasury"].includes(S.id) ? "knightsStory" : S.id === "bld_cathedral" ? "cathedralStory" : ["c4_crowd", "c4_square"].includes(S.id) ? "crowdStorm" : ["c4_fall", "c5_pact"].includes(S.id) ? "fallBattle" : /^bg_pub(?:_|$)/.test(L.bg || '') ? 'pubStory' : ['c4_end', 'c5_start', 'c5_queen'].includes(S.id) ? 'westPort' : ['c3_end', 'c4_start'].includes(S.id) ? 'miningCity' : S.id === 'new_c3_luca_lose' ? 'stoneRoad' : S.id === 'new_c3_bard_box' ? 'shopStory' : smithScene ? 'smithStory' : STORY[S.id].bgm === 'valleyDream' ? 'valleyDream' : /^bg_arena(?:_|$)/.test(L.bg || '') ? 'arenaScene' : /^bg_academy(?:_|$)/.test(L.bg || '') ? 'academyStory' : /^bg_port(?:_|$)/.test(L.bg || '') ? 'portStory' : /^bg_clinic(?:_|$)/.test(L.bg || '') ? 'clinicStory' : /^bg_church(?:_|$)/.test(L.bg || '') ? 'churchStory': S.id !== 'c3_news' && /^bg_market(?:_|$)/.test(L.bg || '') ? 'songA' : innScene ? 'coletteInn' : guildScene ? 'guildStory' : shopScene ? 'shopStory' : L.bgm || STORY[S.id].bgm || 'shopStory'; if (S.bgm !== want) { S.bgm = want; try { if (AU.ctx) musicFor(musicKey()); } catch (e) { /* no audio */ } } }   // v52y
+  { const shopScene = ['c1_pro', 'c1_open', 'new_c1_emma_visit', 'reg_luca_0', 'new_c1_luca_gate'].includes(S.id) || /^bg_shop(?:_|$)/.test(L.bg || ''); const guildScene = /^bg_guild(?:_|$)/.test(L.bg || ''); const innScene = /^bg_inn(?:_|$)/.test(L.bg || ''); const smithScene = ['bld_smithy', 'new_c3_bard_box', 'c5_forge'].includes(S.id) || /^bg_smithy(?:_|$)/.test(L.bg || ''); const want = S.id === '__cl' && typeof clBgm === 'function' ? (L.bgm || clBgm(L.bg)) : S.id === 'c3_confess' ? 'confessionShade' : ["c5_ending", "c5_ending0"].includes(S.id) ? "endingDream" : ["boss_dragon", "bld_gate"].includes(S.id) ? "dragonVictory" : S.id === "bld_dragon" ? "dragonMeeting" : ["bld_knights", "new_c4_luca_knight", "bld_treasury"].includes(S.id) ? "knightsStory" : S.id === "bld_cathedral" ? "cathedralStory" : ["c4_crowd", "c4_square"].includes(S.id) ? "crowdStorm" : ["c4_fall", "c5_pact"].includes(S.id) ? "fallBattle" : /^bg_pub(?:_|$)/.test(L.bg || '') ? 'pubStory' : ['c4_end', 'c5_start', 'c5_queen'].includes(S.id) ? 'westPort' : ['c3_end', 'c4_start'].includes(S.id) ? 'miningCity' : S.id === 'new_c3_luca_lose' ? 'stoneRoad' : S.id === 'new_c3_bard_box' ? 'shopStory' : smithScene ? 'smithStory' : STORY[S.id].bgm === 'valleyDream' ? 'valleyDream' : /^bg_arena(?:_|$)/.test(L.bg || '') ? 'arenaScene' : /^bg_academy(?:_|$)/.test(L.bg || '') ? 'academyStory' : /^bg_port(?:_|$)/.test(L.bg || '') ? 'portStory' : /^bg_clinic(?:_|$)/.test(L.bg || '') ? 'clinicStory' : /^bg_church(?:_|$)/.test(L.bg || '') ? 'churchStory': S.id !== 'c3_news' && /^bg_market(?:_|$)/.test(L.bg || '') ? 'songA' : innScene ? 'coletteInn' : guildScene ? 'guildStory' : shopScene ? 'shopStory' : L.bgm || STORY[S.id].bgm || 'shopStory'; if (S.bgm !== want) { S.bgm = want; try { if (AU.ctx) musicFor(musicKey()); } catch (e) { /* no audio */ } } }   // v52y
   const ob = v.querySelector('.st-obj');
   if (L.obj && OBJ_FILES.has(L.obj)) { if (S.obj !== L.obj) { ob.src = imgOf(L.obj); S.obj = L.obj; } ob.hidden = false; } else { ob.hidden = true; S.obj = null; }
   const chImg = v.querySelector('.st-ch img'), chBox = v.querySelector('.st-ch');
@@ -27455,11 +27456,11 @@ function vFacPage() {
   if (!f || !facOpen(f.id)) { UI.tab = 'town'; return vTown(); }
   if (f.id === 'guild') { UI.tab = 'adv'; return vAdv(); }   // No.233
   const fc = FC[f.id], o = fc ? foGet(f.id) : null;   // No.213 (作者): 朝市は仕入れ、施設は売る(「分けてもらう」はなくした)
-  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'forge' && f.id !== 'smithy') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
+  let tab = UI.facTab || 'sell'; if (tab === 'ord' || tab === 'buy' || (tab === 'bout' && f.id !== 'arena') || (tab === 'forge' && f.id !== 'smithy') || (tab === 'onsen' && !(f.id === 'inn' && typeof onOpen === 'function' && onOpen())) || (tab === 'clara' && !(f.id === 'church' && clOpen()))) tab = 'sell';   // No.233 (作者): 売ると頼まれごとは1つの札に
   if (f.id === 'arena') tab = 'bout';   // No.223 (作者): 闘技場は入ったら賭けだけ(売る・頼まれごとはなし) UI.facTab = tab;
   const T = (k, b, s) => `<button class="stab${tab === k ? ' on' : ''}" data-act="factab" data-v="${k}" role="tab" aria-selected="${tab === k}"><b>${b}</b><small>${s}</small></button>`;
-  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'smithy' ? T('forge', '鍛え直し', '打ち直し・重ね打ち') : ''}${f.id === 'dragon' && typeof rcFacTab === 'function' ? rcFacTab() : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
-  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : tab === 'forge' && f.id === 'smithy' ? rfTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
+  const tabs = f.id === 'arena' ? `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${T('bout', '勝ち抜き戦', arDone() ? '今夜は終わった' : arIsNight() ? '今夜の興行' : '夜だけ')}</div>` : `<div class="subtabs pubswitch" role="tablist" aria-label="${f.n}の中">${facSellTab(f, tab, 'factab')}${f.id === 'inn' && typeof onOpen === 'function' && onOpen() ? T('onsen', '温泉', onDone() ? '今夜は済' : onNight() ? '夜に一度' : '夜だけ') : ''}${f.id === 'smithy' ? T('forge', '鍛え直し', '打ち直し・重ね打ち') : ''}${f.id === 'church' && clOpen() ? T('clara', 'クララ', clDone() ? '今日は済' : '1日に一度') : ''}${f.id === 'dragon' && typeof rcFacTab === 'function' ? rcFacTab() : ''}${f.id === 'arena' && typeof arTabBody === 'function' ? T('bout', '勝ち抜き戦', arDone() && !(G.arenaRun && G.arenaRun.day === G.day) ? '今日は終わった' : '1日1回') : ''}</div>`;
+  const body = tab === 'bout' && f.id === 'arena' ? arTabBody() + `<p class="note" style="font-size:12px">${esc(f.who)}を押すと話ができる。所持金 <span class="price">${fmt(G.gold)}G</span></p>` : tab === 'onsen' && f.id === 'inn' ? onTabBody() : tab === 'clara' && f.id === 'church' ? clTabBody(): tab === 'forge' && f.id === 'smithy' ? rfTabBody() : facSellAll(f);   // No.217 / No.287: 宿屋の温泉: 闘技場の勝ち抜き戦
   return facFrame(f, tab, tabs, body, `${f.who}・得意: ${f.fav}`);
 }
 // No.233 (作者): 「売る・頼まれごと」の札(どの施設も同じ。空いた所に、いずれ施設ごとの色の札を足す)
@@ -27477,11 +27478,11 @@ function facSellAll(f) {
 // No.233: 施設の上の枠(背景と施設の人・ふだんの話)。ギルドのページ(diveui.js の vAdv)も使う
 function facScene(f, tab) {
   if (f.id === 'inn' && tab === 'onsen' && typeof onScene === 'function') { const h = onScene(); if (h) return h; }   // No.287: 湯に入った夜は、場面の枠に湯の人が並ぶ
-  const sp = facSpk(f), q = UI.fcLine && UI.fcLine.fid === f.id ? UI.fcLine : null, cur = q && q.L[q.i], who = cur && cur.who;
-  const [gx, gt] = fcGreet(f, tab), on = !who || who === sp, ex = who === sp ? (cur.ex || 'normal') : gx;
+  const cl = f.id === 'church' && tab === 'clara', sp = cl ? 'clara' : facSpk(f), q = UI.fcLine && UI.fcLine.fid === f.id ? UI.fcLine : null, cur = q && q.L[q.i], who = cur && cur.who;
+  const [gx, gt] = cl ? (clDone() ? ['smile', 'お気をつけて、お帰りください'] : ['normal', '……あ。いらっしゃいませ']) : fcGreet(f, tab), on = !who || who === sp, ex = who === sp ? (cur.ex || 'normal') : gx;
   const pic = spkPic(sp, ex) || spkPic(sp, 'normal') || chibiURL({ ch: f.ch }, 'normal');
-  const fig = `<div class="pg-p goz fc-p${on ? '' : ' dim'}" data-act="fctalk" data-v="${f.id}" role="button" aria-label="${esc(f.who)}と話す">${pic ? `<img src="${pic}" alt="${esc(f.who)}">` : ''}</div>`;
-  const line = fcLineHTML(f.id) || `<div class="msgwin"><div class="nameplate"><b>${esc(f.who)}</b><span>${esc(f.n)}</span></div><p class="say">「${esc(gt)}」</p></div>`;
+  const fig = `<div class="pg-p goz fc-p${on ? '' : ' dim'}" data-act="${cl ? 'cltalk' : 'fctalk'}" data-v="${f.id}" role="button" aria-label="${cl ? 'クララ' : esc(f.who)}と話す">${pic ? `<img src="${pic}" alt="${cl ? 'クララ' : esc(f.who)}">` : ''}</div>`;
+  const line = fcLineHTML(f.id) || `<div class="msgwin"><div class="nameplate"><b>${cl ? 'クララ' : esc(f.who)}</b><span>${esc(f.n)}</span></div><p class="say">「${esc(gt)}」</p></div>`;
   const scene = `<div class="cbox market pubc facc"><div class="ss pgss solo n1"><div class="ss-back fac" style="background:#1c130c url(${imgOf(facBg(f))}) 50% 60% / cover no-repeat"></div><div class="pg-row n1">${fig}</div><div class="pg-win">${line}</div></div></div>`;
   return scene;
 }
@@ -27603,6 +27604,705 @@ function rfAct(act, v) {
 }
 // 読み込んだセーブの +品を IT に戻す(main.js migrate の後)
 function kwRestore() { for (const id in (G.inv || {})) if (id.includes('__p')) kwItem(kwBase(id), kwP(id)); for (const s of (G.shelf || [])) if (s && s.id && s.id.includes('__p')) kwItem(kwBase(s.id), kwP(s.id)); }
+
+// ===== No.385: 教会の「クララと話す」 =====
+// 二人きり(灯り亭・湯はいつも第三者がいる)。1日1回。好感度の数字は出さない。
+// 時間帯(朝=朝市・昼=店・夜=工房)で教会の背景が変わる。話は「その時間の話」か「いつでもの話」から、まだ見ていない順に出る。
+// 出かけた先の場面もある(作者 2026-11-25: 店の外へ出る場面を書かない決まりは、ここだけ例外)。曲は背景に合わせる(story.js の __cl)。
+const clConf = () => typeof notConfessed === 'function' ? notConfessed() : !storySeen('c3_confess');
+const clPre = () => storySeen('c2_clara') && clConf();   // 第2章: 告白の前
+const clN = () => Object.keys(clSt().seen).length;   // 見た話の数(後の方の話は、何本か見てから)
+const CL_GIFT = 20;   // 作者 2026-11-25: 会いに行く理由は献金。毎回20G(ろうそく一本ぶん)
+const clPost = () => storySeen('c3_confess') && !storySeen('c4_square');   // 第3章: 告白の後・名乗る前
+const clK = ids => ids.filter(i => clSt().seen[i]).length;
+const CL3 = ['cl_name', 'cl_bread', 'cl_sea', 'cl_board', 'cl_gift', 'cl_dip', 'cl_lamp', 'cl_quiet'];
+const clNamed = () => storySeen('c4_square') && G.stage < 4;   // 第4章: 王女と名乗った後
+const CL4 = ['cl_decree', 'cl_kids', 'cl_rest', 'cl_hood', 'cl_whistle', 'cl_wall', 'cl_bell'];
+const clQ = () => G.stage >= 4 && !storySeen('c5_confess');   // 第5章: 想いの告白の前
+const clL = () => storySeen('c5_confess');   // 第5章: 想いの告白の後(エンディングの後も)
+const clTod = () => G.act === 'market' ? 'm' : (G.act === 'work' || G.phase === 'night') ? 'n' : 'd';
+// 背景 → 曲(台本に @bgm があればそちら)
+const clBgm = bg => /^bg_shop/.test(bg || '') ? 'shopStory' : /^bg_town_\d_night/.test(bg || '') ? 'night' : bg === '@workshop' || /^bg_workshop/.test(bg || '') ? (G.stage >= 3 ? 'lateWorkshop' : 'night') : /^bg_town_\d_morning/.test(bg || '') ? 'songA' : /^bg_fish_/.test(bg || '') ? 'fishing' : /^bg_market_night/.test(bg || '') ? 'lateMarket' : /^bg_market/.test(bg || '') ? 'songA' : /^bg_port/.test(bg || '') ? 'portStory' : 'churchStory';
+// tod: 'm' 朝 / 'd' 昼 / 'n' 夜 / なし=いつでも
+const CL_TALKS = [
+  // ---- 第2章(告白の前) ----
+  { id: 'cl_candle', c: clPre, t: `
+(祭壇の脇に、ろうそくが一本だけ、ほかと離して立ててあった。まだ一度も、火が付いていない。)
+owner normal 「・・・」
+clara surprise 「あ……それは」(慌てて、祭壇の前に回りこむ)
+clara normal 「祭壇の、予備でございます」
+owner normal 「・・・足りてたのか」
+clara pout 「…………」
+clara pout 「……足りて、おりました。箱に、三十本」
+clara normal 「村長さまが、丘の下のお店は何でも揃う、とおっしゃったので。本当かどうか、見てみたかったのです」
+clara blush 「ろうそくは、口実です。……司祭さまには、内緒にしてください」
+owner normal 「……なら、灯せばいい」
+clara trouble 「もったいなくて。……自分で選んで、自分で買った物は、初めてなのです」
+clara normal 「修道院では、何でも、分けていただいておりましたので」
+owner normal 「・・・」
+(店主は、ろうそくを取って、祭壇の火を移した。)
+clara surprise 「あ……減ってしまいます」
+owner normal 「減ったら、また売る。20Gだ」
+clara smile 「……はい」
+(その日から、祭壇の脇のろうそくは、少しずつ短くなっていった。)` },
+  { id: 'cl_rope', c: clPre, tod: 'd', t: `
+(長椅子に、修道女が腰かけていた。膝の上に、太い綱が山になっている。)
+clara surprise 「あっ……いらっしゃいませ」
+clara blush 「……いえ。ここは、お店ではございませんでした」
+clara normal 「鐘の綱が、ほつれてしまって。司祭さまがお留守のうちに、直しておこうと」
+(綱の先は、三つ編みにも、ただの結び目のかたまりにも見えた。)
+clara trouble 「できます。……できます。髪を編むのと、同じですので」
+owner normal 「……髪は、引っぱらないだろう」
+clara surprise 「…………」(編んだ所を、そっと引いてみる。するりと、ほどけた)
+(店主は隣に腰を下ろし、ほつれた端を三つに分けて、より合わせた。)
+clara normal 「…………」(手もとから、目を離さない)
+(反対の端を渡すと、修道女は、黙って同じようにより合わせた。店主より、少し速かった。)
+owner surprise 「・・・」
+clara smile 「見ているのは、得意なのです」
+(試しに綱を引くと、昼の空に、鐘が一つ鳴った。)
+(丘の下で、村長が立ち止まり、帽子を取った。)
+clara trouble 「……お祈りの時間では、ございません」
+clara trouble 「村長さま、帽子を取ったまま、待っておられます。……続きを」
+owner normal 「・・・」(黙って立ち、もう一度だけ、綱を引いた)
+(鐘が二つ鳴った。村長は満足そうに帽子をかぶり、帰っていった。)
+clara smile 「……司祭さまには、二人で鳴らしたと、申し上げます」` },
+  { id: 'cl_skip', c: clPre, tod: 'm', t: `
+@bg bg_fish_river
+(教会へ上がる前に、川べりを通った。朝靄の向こうに、白いベールが見えた。)
+(ぽちゃん。……ぽちゃん。)
+clara pout 「…………」(足もとの石を拾っては、川へ投げている)
+clara surprise 「あっ……お、おはようございます」
+clara blush 「これは、その。……子どもたちに、頼まれまして」
+clara normal 「石を、水の上で跳ねさせる遊びがあるのですね。シスターもやって、と言われて」
+clara trouble 「やってみせたら、みんなに笑われました。三回投げて、三回とも、沈みましたので」
+clara normal 「ルカさんが、子どもたちに話していたそうです。この川でいちばん跳ねさせたのは、丘の下のお店のご主人だった、と」
+owner normal 「・・・」(平たい石を一つ拾い、指で厚みを確かめる)
+(低く投げた石が、水の上を跳ねていった。五つ、六つ、七つ。向こう岸の葦に、こつんと当たった。)
+clara surprise 「……!」
+clara joy 「もう一度、見せてください! 今度は、よく見ておりますから」
+owner normal 「・・・」(もう一つ、投げる)
+(ぽちゃん。)
+clara surprise 「…………」
+owner normal 「・・・」
+clara smile 「ふ……ふふっ」(こらえきれずに、肩をふるわせる)
+clara blush 「し、失礼いたしました。笑うつもりは、なかったのです」
+owner trouble 「・・・」(目をそらして、手の砂を払う)
+clara smile 「子どもたちには、七つ跳ねた方を、お話ししておきます」
+owner normal 「……二つ目は」
+clara smile 「見ておりません。何も」` },
+  { id: 'cl_stone', c: clPre, tod: 'd', t: `
+(教会へ上がる坂の、ちょうど半ばに、昨日まではなかった平たい石が置いてあった。腰かけるのに、ちょうどいい高さだった。)
+(教会の戸口で、修道女が、桶の水で手を洗っていた。)
+clara surprise 「あっ……」(泥だらけの手を、慌てて後ろに隠す)
+owner normal 「・・・」(修道女の手と、坂の下を見る)
+clara normal 「坂の石、でございますか? ……村長さまのためです」
+clara normal 「毎朝、鐘を聞きに上がっていらっしゃるので。途中で、お休みになれるように」
+owner normal 「・・・」
+clara normal 「村長さまのためです」
+owner normal 「……二度、言った」
+clara pout 「…………大事なことですので」
+owner normal 「村長は、あの坂で休まない」
+clara surprise 「え」
+owner normal 「昔からだ。坂で休むのは年寄りのすることだ、と言ってる」
+clara surprise 「…………」
+clara trouble 「……では。どなたか、ほかの方が、座ってくださればよいのですが」
+owner normal 「・・・」
+(帰り道。店主は、坂の半ばで、一度だけ石に腰を下ろした。)
+(振り返ると、教会の窓から、ベールの端がさっと引っこんだ。)` },
+  { id: 'cl_flower', c: clPre, tod: 'm', t: `
+@bg @town_morning
+(朝。丘の斜面に、白いベールがしゃがみこんでいた。足もとの籠に、野の花が少しずつ増えていく。)
+clara surprise 「あ……おはようございます。祭壇の花を、摘んでおりました」
+clara normal 「これは、ひなげし。こちらは、るりはこべ。……この白いのは、星の涙、と申します」
+owner normal 「・・・」
+clara smile 「子どもの頃、庭の……庭仕事の方に、全部教わりました」
+owner normal 「・・・」(足もとの草を、一本抜く)
+clara surprise 「それは、花ではございませんよ」
+owner normal 「根を煮れば、腹痛に効く」
+clara surprise 「…………」
+owner normal 「こっちは、葉を揉んで傷に貼る。……その白いのは、食うと三日寝こむ」
+clara surprise 「星の涙が!?」(籠から、慌てて白い花をつまみ出す)
+owner normal 「……野営で、覚えた」
+clara normal 「…………」(籠の中を、じっと見る)
+clara smile 「では、花の名前は、私が。効き目は、あなたが」
+(その朝、籠の中は、花と草が半分ずつになった。)` },
+  { id: 'cl_slate', c: clPre, tod: 'd', t: `
+(長椅子に、子どもたちの石板が並んでいた。どれにも、同じ字が書いてある。「{shop}」。)
+clara normal 「子どもたちが、お店の看板の字を、書きたいと申しまして」
+clara trouble 「お手本を書いたのですが、どうも、気に入らないようなのです」
+(石板の一枚に、手本の字があった。流れるような、きれいな字だった。)
+owner normal 「・・・」
+clara normal 「……看板の字は、どなたが」
+owner normal 「俺だ」
+clara smile 「では、一枚、書いていただけませんか。子どもたちに見せたいので」
+(店主は石筆を取り、看板と同じ字を書いた。太くて、角ばっていて、右に少し傾いていた。)
+clara normal 「…………」
+clara smile 「……力の、ある字です」
+owner trouble 「・・・」
+(次の日。長椅子の石板は、どれも、右に少し傾いていた。)
+clara pout 「……私のお手本は、一枚も、ございませんでした」` },
+  { id: 'cl_box', c: () => clPre() && clN() >= 3, t: `
+(修道女が、長椅子の埃を払っていた。袖が揺れた拍子に、銀貨が一枚こぼれ、床を転がって、店主の靴の先で止まった。)
+owner normal 「・・・」(拾い上げる。片面だけ、指の跡でつるつるになっている)
+(店主は、そのまま献金箱の口に落とした。)
+clara surprise 「あっ……!」
+clara surprise 「そ、それは、献金では、ございません……!」
+owner surprise 「・・・」
+clara trouble 「箱の鍵は、司祭さまが……今日は、お留守で……」(献金箱の口を、のぞきこむ)
+owner normal 「・・・」(箱を持ち上げ、逆さにして振る)
+clara surprise 「ば、罰が当たります!」
+(銀貨が、ざらざらと長椅子の上にこぼれた。)
+(修道女は、銀貨の山に手を入れ、迷わず一枚をつまみ上げた。)
+clara normal 「……これです」
+owner normal 「……全部、同じに見える」
+clara normal 「同じでは、ございません」(両手で、包む)
+owner normal 「・・・」(残りの銀貨を、一枚ずつ箱に戻していく)
+(最後に、店主は自分の懐から銀貨を一枚出して、箱の口に落とした。)
+clara surprise 「…………」
+owner normal 「・・・」(箱を、元の場所に戻す)
+clara smile 「……ありがとうございます」(手の中の一枚を、そっと握り直す)` },
+  { id: 'cl_roof', c: clPre, tod: 'n', t: `
+(夜。雨が強くなった。店主は、板と釘の箱を提げて、丘を上がった。)
+(教会の床に、火のついたろうそくが、点々と並んでいた。)
+clara surprise 「……! どうして」
+owner normal 「・・・」(並んだろうそくを、目でたどる)
+clara normal 「雨の落ちる所の横に、一本ずつ立てました。どこから漏れてくるのか、分かるように」
+(ろうそくの列は、梁の下を通って、祭壇の北の角へ、まっすぐ続いていた。)
+owner normal 「……北の角だ」
+clara surprise 「ご存じなのですか」
+owner normal 「昔から、そこが漏る」
+(店主は梯子を立て、梁の継ぎ目に、板を当てた。)
+clara normal 「…………」(梯子の足を、両手で押さえている)
+clara normal 「……教会が閉まる前から、ご存じだったのですね」
+owner normal 「じいさんが、毎年、秋に直してた」
+clara surprise 「…………」
+owner normal 「俺は、下で釘を渡す係だった」
+clara smile 「……では、今夜は、私がその係ですね」(釘の箱を、両手で差し上げる)
+(雨の音の中で、槌の音が、何度か響いた。)
+(その年から、北の角は、雨を漏らさなくなった。)` },
+  { id: 'cl_unsaid', c: () => clPre() && clN() >= 5, tod: 'n', t: `
+(夜。献金箱に銀貨を落とすと、奥の暗がりで、修道女が顔を上げた。)
+clara surprise 「……こんな時間に」
+clara normal 「お祈り、でしょうか。……どうぞ。私は、すぐに」
+owner normal 「・・・」(戸口の近くの長椅子に、腰を下ろす)
+(しばらく、ろうそくの燃える音だけがしていた。)
+clara normal 「…………あの」
+owner normal 「・・・」
+clara trouble 「ずっと、お伝えしなければと、思っていたことが」
+clara trouble 「私は、本当は……」(ベールの縁を、握りしめる)
+(戸の隙間から、夜風が吹きこんだ。祭壇のろうそくが、大きく揺れた。)
+owner normal 「……冷えるな」(立ち上がって、戸を閉める)
+clara surprise 「…………」
+owner normal 「風が入る。……話は、また今度でいい」
+clara trouble 「……はい」
+clara normal 「……また、今度」
+(店主が帰ったあとも、修道女は、閉まった戸を、しばらく見ていた。)` },
+  // ---- 第3章(告白の後・名乗る前) ----
+  { id: 'cl_name', c: clPost, t: `
+(献金箱に銀貨を落とすと、修道女が振り向いた。告白の夜から、初めて二人きりだった。)
+clara normal 「……いらっしゃいませ」
+clara pout 「……今のは、わざとです」
+owner normal 「・・・」
+clara normal 「あの。ひとつだけ、お願いがございます」
+clara trouble 「これからも、王女さま、とは呼ばないでいただきたいのです。ここでは、ただのシスターでいたくて」
+owner normal 「……呼んだことがない」
+clara surprise 「…………」
+clara normal 「……そういえば。王女さま、どころか」
+clara normal 「お名前を呼ばれたことも、一度もございません。お前、とは呼ばれます。……それだけです」
+owner normal 「・・・」(祭壇の脇の、短くなったろうそくに目をやる)
+owner normal 「……クララ」
+clara surprise 「は、はい!」
+owner normal 「ろうそく。もう一本、いるか」
+clara surprise 「…………」
+clara joy 「……はい。いります」` },
+  { id: 'cl_bread', c: clPost, tod: 'm', t: `
+(朝の教会に、焼きたてのパンの匂いがしていた。……長椅子の上のパンは、石のように黒かった。)
+clara smile 「おはようございます。ちょうど、焼けたところです」
+clara normal 「教会の窯を、初めて使ってみました。修道院のパンです」
+clara trouble 「子どもたちは、ひと口かじって、みんな外へ遊びに行ってしまいました」
+clara normal 「どうぞ。お一つ」
+owner normal 「・・・」(受け取って、かじる)
+(固い。)
+owner normal 「・・・」(もう一度、かじる)
+clara normal 「修道院のパンは、三日はもつように焼くのです。冬の間、山の上の庵まで運びますので」
+owner normal 「・・・」(黙って、噛みつづける)
+clara surprise 「あの……無理に、召し上がらなくても」
+owner normal 「……十日はもつ」
+clara pout 「…………三日です」
+(店主は、最後のひとかけまで、黙って食べた。)
+owner normal 「……野営で食ってたパンに、似てる」
+clara surprise 「冒険者の方も、こんなに固いものを?」
+owner normal 「固くないと、帰り道までもたない」
+clara normal 「…………」
+clara smile 「修道院のパンも、同じです。山の上まで、届くように焼くのです」
+(帰りぎわ、店主は、子どもたちが残していったパンを、黙って包んで持っていった。)` },
+  { id: 'cl_sea', c: () => clPost() && !!G.built.port, tod: 'm', t: `
+@bg bg_fish_sea_pier
+(夜明け前。教会へ上がる道の途中で、修道女に会った。海を見に行くのだという。)
+(桟橋の先まで来ると、東の空が、ちょうど白みはじめた。)
+clara normal 「王都は、海から遠うございました。修道院の窓からは、山しか見えませんでしたので」
+clara smile 「港ができてから、ずっと、朝の海を見てみたかったのです」
+(波が、桟橋の下から、ざぶんと上がった。)
+clara surprise 「きゃっ……!」
+(修道服の裾が、膝まで濡れていた。)
+clara surprise 「…………」
+clara smile 「ふふっ……冷たい」
+(修道女は、少し考えてから、靴を脱いだ。)
+clara normal 「……持っていて、いただけますか」
+owner surprise 「・・・」(差し出された靴を、受け取る)
+(修道女は裾を持ち上げて、桟橋の脇の砂浜へ下りていった。)
+clara joy 「城でこんなことをしたら、三日はお説教です!」
+owner normal 「・・・」(靴を持ったまま、立っている)
+clara smile 「日が、すっかり昇るまで。……もう少しだけ、よろしいですか」
+owner normal 「……ああ」
+(その日、{shop}の戸が開いたのは、いつもより少し遅かった。)` },
+  { id: 'cl_board', c: clPost, tod: 'd', t: `
+(長椅子の上に、古い盤と駒が出してあった。前の司祭が残していったものらしい。)
+clara smile 「子どもたちに教えようと思いまして。……一局、お相手いただけますか」
+owner normal 「・・・」(向かいに座る)
+(一局目は、すぐに終わった。)
+owner surprise 「・・・」
+clara smile 「もう一局、いたしますか」
+(二局目も、三局目も、すぐに終わった。)
+clara normal 「あなたは、守る手ばかり、打たれますね」
+owner normal 「……攻めると、負ける」
+clara smile 「守っても、負けておられます」
+owner trouble 「・・・」
+clara normal 「城では、雨の日は、これしかすることがございませんでしたので。手加減は、教わっておりません」
+owner normal 「……もう一回」
+clara joy 「はい。何度でも」
+(結局、五局やって、五局とも負けた。)
+(帰り道、店主は一度だけ立ち止まり、盤の手を思い返していた。)` },
+  { id: 'cl_gift', c: () => clPost() && clK(CL3) >= 2, t: `
+(献金箱に銀貨を落とすと、祭壇の前の修道女が、くすりと笑った。)
+clara smile 「今日も、同じ頃ですね」
+owner normal 「・・・」
+clara normal 「献金箱の銀貨が、一枚ずつ増えていくのです。……いつも、同じ頃に」
+clara normal 「司祭さまは、信心深い方がいらっしゃる、と喜んでおられます」
+clara smile 「私は、最初から、存じておりました」
+owner surprise 「・・・」
+clara smile 「戸の開け方で、分かります。静かに開けて、静かに閉める方は、ほかにおりませんので」
+owner normal 「・・・」
+clara normal 「子どもたちの石板が、新しくなりました。あの銀貨で」
+clara normal 「子どもたちが、お礼を言いたいと申しまして。……どなたに、と聞かれましたので」
+clara smile 「神さまに、と答えておきました」
+owner normal 「……それでいい」
+(修道女は、笑いをこらえるように、うつむいた。)` },
+  { id: 'cl_dip', c: clPost, tod: 'n', t: `
+(献金を済ませて丘を下りると、後ろから、手提げの灯りがついてきた。)
+clara blush 「……お店の工房を、一度、見てみたかったのです。教会のろうそくが、どこで生まれるのか」
+@bg @workshop
+(工房の灯りをつけると、修道女は、戸口で息をのんだ。)
+clara surprise 「……こんなに、たくさんの道具が」
+(店主は、湯せんにかけた蜜蝋に、芯の糸をくぐらせた。引き上げて、冷まして、またくぐらせる。少しずつ、ろうそくが太っていく。)
+clara normal 「…………」(手もとから、目を離さない)
+clara smile 「……やってみても、よろしいですか」
+(修道女の芯は、くぐらせるたびに、少しずつ右へ傾いていった。)
+clara trouble 「まっすぐ、引き上げているはずなのですが」
+owner normal 「・・・」(黙って彼女の手に自分の手を添え、傾きを直す)
+clara surprise 「…………」
+(出来上がったろうそくは、それでも少し曲がっていた。)
+clara pout 「……売り物には、なりませんね」
+owner normal 「・・・」
+(次の日。店の棚の端に、少し曲がったろうそくが一本、値札を付けずに並んでいた。)` },
+  { id: 'cl_lamp', c: clPost, tod: 'n', t: `
+(夜。修道女が、長い棒の先の火で、教会の燭台に一つずつ灯をともしていた。)
+clara smile 「これで、最後の一つです」
+clara normal 「小さい頃、灯り番になりたかったのです」
+owner normal 「・・・」
+clara normal 「日が暮れると、城の窓から、町の通りが見えました。灯り番が、街灯に一つずつ火を入れていくのです」
+clara smile 「あの人は、夜の町のどこへでも行ける。灯りの中を歩ける。……それが、うらやましくて」
+clara normal 「あなたは。小さい頃、何になりたかったのですか」
+owner normal 「……特に、何も」
+clara surprise 「では、どうして冒険者に」
+owner normal 「……じいさんが剣を打つのを見てたら、振ってみたくなった」
+clara surprise 「…………」
+clara smile 「……それは、少し、分かる気がいたします」
+clara smile 「今は、毎晩、ここで灯り番をしております。……町の通りでは、ございませんけれど」
+owner normal 「……ここの灯りも、町から見える」
+clara surprise 「…………」
+clara blush 「……はい」` },
+  { id: 'cl_quiet', c: () => clPost() && clK(CL3) >= 6, t: `
+(献金箱に銀貨を落として、長椅子に腰を下ろした。修道女は、隣の長椅子で、繕い物をしていた。)
+clara smile 「……どうぞ、ごゆっくり」
+(それきり、二人とも、何も言わなかった。)
+(針の音。外の風の音。丘の下から、荷車の音がのぼってくる。)
+(鐘の時間が来て、修道女は立ち上がり、綱を引いた。鐘が一つ鳴った。)
+clara normal 「…………」(戻ってきて、また繕い物を続ける)
+owner normal 「・・・」
+(しばらくして、店主は立ち上がった。)
+clara smile 「今日は、何も、お話ししませんでしたね」
+owner normal 「……ああ」
+clara smile 「でも、よい日でした」
+(店主は、小さくうなずいて、戸を開けた。静かに開けて、静かに閉めた。)` },
+  // ---- 第4章(王女と名乗った後) ----
+  { id: 'cl_decree', c: clNamed, t: `
+(祭壇の脇の机に、紙が何枚も散らばっていた。どれも、ぎっしりと字で埋まっている。)
+clara trouble 「避難してこられた方々への、お知らせなのです。明日、広場に貼り出します」
+clara trouble 「ベルトランに見せたら、長すぎて誰も読まぬ、と」
+(店主は、一枚目を読んだ。二枚目を読んだ。三枚目の途中で、手が止まった。)
+clara normal 「……どこが、いけないのでしょう」
+owner normal 「何を、言いたい」
+clara surprise 「え……」
+clara normal 「それは……食べる物も、眠る所も、ある、と。だから、安心してほしい、と」
+owner normal 「・・・」(新しい紙に、一行だけ書く)
+(『温かい食事と寝床は、用意してあります。安心して下さい。』)
+clara surprise 「…………」
+clara pout 「……私の三枚が、一行に」
+clara smile 「でも、これなら、子どもにも読めますね」
+(次の日。広場に、一行だけの布告が貼り出された。右に少し傾いた字の下に、王女の名前が、小さく添えてあった。)` },
+  { id: 'cl_kids', c: clNamed, tod: 'm', t: `
+(教会の前で、避難してきた子どもたちが、ろうそくの燃えさしで、地面に絵を描いていた。)
+clara smile 「子どもたちが、あなたのことを、何と呼んでいるか、ご存じですか」
+owner normal 「・・・」
+clara smile 「『ろうそくのおじさん』です」
+owner surprise 「・・・」
+clara smile 「毎日、同じ頃に来て、献金箱に何か入れていく人。……子どもは、よく見ております」
+owner normal 「……おじさん」
+clara normal 「はい」
+owner normal 「……まだ、二十五だ」
+clara surprise 「…………」
+clara smile 「ふふっ……では、私から、言っておきます」
+(次の日から、子どもたちは、店主を『ろうそくのおにいさん』と呼ぶようになった。)
+(一人だけ、まだ『おじさん』と呼んでいる。)` },
+  { id: 'cl_rest', c: () => clNamed() && clK(CL4) >= 2, tod: 'd', t: `
+(長椅子に腰を下ろすと、修道女が、じっとこちらの顔を見た。)
+clara normal 「……ゆうべも、眠っておられませんね」
+owner normal 「・・・」
+clara normal 「診療所の包帯が、朝には箱いっぱいになっております。イルマさんは、どこから来たのか知らない、とおっしゃいますけれど」
+clara normal 「目の下が、青うございます」
+owner normal 「……平気だ」
+clara normal 「では、少しだけ、ここで目を閉じていてください。鐘の時間になったら、起こしますので」
+owner normal 「・・・」
+clara pout 「王女の、お願いです」
+owner trouble 「・・・」(しぶしぶ、目を閉じる)
+(ろうそくの燃える音。遠くで、石を積む槌の音。)
+(目を開けると、窓の外は、夕方の色だった。)
+owner surprise 「・・・」
+clara blush 「……鐘の時間を、三つ、聞き逃してしまいました。私も、うとうとしておりましたので」
+clara smile 「王女の、うっかりです」
+(店主の肩には、修道女の肩掛けが、かけてあった。)` },
+  { id: 'cl_hood', c: clNamed, tod: 'n', t: `
+(夜。献金箱に銀貨を落とすと、修道女が、灰色の外套を羽織って待っていた。フードを、深くかぶっている。)
+clara normal 「……少しだけ、お付き合いいただけますか」
+@bg bg_market_night
+(夜の市場は、避難してきた人たちで、昼よりにぎやかだった。)
+clara smile 「広場で名乗ってから、どこへ行っても、皆さんが頭を下げてくださるのです」
+clara trouble 「ありがたいことです。……ありがたいのですが、パン一つ、ゆっくり選べなくて」
+(屋台の串焼きの前で、フードの奥の目が、止まった。)
+clara normal 「……あれは」
+owner normal 「串焼きだ。歩きながら、食う」
+clara surprise 「歩きながら……」
+owner normal 「・・・」(二本買って、一本を渡す)
+clara surprise 「…………」(両手で持って、しばらく眺めている)
+(修道女は、そっとかじった。それから、もうひと口。)
+(屋台の親父が、首をかしげた。「娘さん、どっかで見た顔だな」)
+clara surprise 「…………」
+clara normal 「……いいえ。ただの、シスターです」
+(親父は、それ以上何も言わなかった。)
+clara smile 「……嘘は、申しておりません」(小声で)
+(帰り道。串は、二本とも、彼女が食べた。)` },
+  { id: 'cl_whistle', c: () => clNamed() && !!G.built.knights, tod: 'd', t: `
+(献金を済ませると、店主は懐から小さな笛を出して、修道女の手に置いた。)
+clara normal 「これは……?」
+owner normal 「呼び笛だ。冒険者が、はぐれた時に吹く」
+clara pout 「……私が、はぐれるとお思いですか」
+owner normal 「・・・」
+owner normal 「何かあったら、吹け」
+clara surprise 「…………」
+clara normal 「……吹いたら、来てくださるのですか」
+owner normal 「店は、すぐ下だ」
+clara surprise 「…………」
+clara smile 「……では、試しに」
+(修道女が笛をくわえて吹くと、思ったより、ずっと大きな音がした。)
+(戸が、蹴破られるように開いた。鎧の男が飛びこんでくる。)
+victor surprise 「姫様! ご無事で!?」
+clara surprise 「ヴィ、ヴィクトル……! 今のは、その、試しに」
+victor normal 「……左様で」(店主を見て、剣の柄から手を離す)
+victor normal 「失礼いたしました。外で、見張っております」
+(戸が閉まった。)
+clara blush 「…………」(笛を、そっと袖の中にしまう)
+clara blush 「……次からは、本当に何かあった時だけに、いたします」` },
+  { id: 'cl_wall', c: clNamed, tod: 'n', t: `
+(夜。修道女に誘われて、城壁の上を歩いた。)
+@bg @town_night
+(壁の外の野原に、避難してきた人たちの焚き火が、点々と続いていた。)
+clara normal 「この壁、少しだけ、私も積んだのです。ベルトランに、石の積み方を教わって」
+clara smile 「……ここです。この石」
+(指さした石は、まわりの石より、ほんの少し、外へ出っぱっていた。)
+owner normal 「・・・」
+clara trouble 「……少しだけ、です」
+owner normal 「・・・」(その石に、腰を下ろす)
+clara surprise 「あ……」
+owner normal 「座るのに、ちょうどいい」
+clara pout 「そのために、出っぱらせたのでは、ございません」
+(それでも、修道女は、隣の石に腰を下ろした。)
+(二人で、焚き火の数を数えた。途中で、どちらからともなく、数えるのをやめた。)` },
+  { id: 'cl_bell', c: () => clNamed() && !!G.built.cathedral && !!clSt().seen.cl_stone, tod: 'm', t: `
+(朝。小さな教会の鐘が鳴り終わると、少し遅れて、大聖堂の大きな鐘が鳴りはじめた。)
+clara smile 「この町で一番早い鐘は、まだ、ここの鐘なのです。大聖堂の鐘番さんが、こちらを聞いてから鳴らしてくださるので」
+clara normal 「……今朝、坂の途中で、村長さまにお会いしました」
+clara smile 「あの石に、腰かけておられました」
+owner surprise 「・・・」
+clara smile 「城壁の石運びを手伝ったら、さすがに膝にきた、と。……わしが座ったことは内緒じゃぞ、と」
+owner normal 「・・・」
+clara smile 「ですから、あなたにだけ、申し上げました」
+owner soft 「・・・」(少しだけ、口の端が上がる)` },
+  // ---- 第5章(告白の前) ----
+  { id: 'cl_qdawn', c: clQ, tod: 'm', t: `
+(朝。小さな教会の戸を開けると、祭壇の前で、宰相が祈っていた。その後ろの長椅子に、地味な外套の娘が一人。)
+bertrand normal 「……宰相の務めの前に、ここで祈ることにしております。陛下は、それについてこられる、という名目でございます」
+bertrand trouble 「名目、でございます」(じろりと店主を見て、外へ出ていく)
+clara smile 「……おはようございます」
+clara normal 「毎日、儀式の稽古です。歩き方、礼の角度、杯の持ち方。……覚えることが、山のように」
+clara trouble 「町も、すっかり変わりましたね。通りの名前も、お店の看板も、新しくなって」
+clara normal 「……あの。今、ろうそくは、おいくらでしょう」
+owner normal 「200G」
+clara surprise 「に、二百……!?」
+clara trouble 「王都の値に、なってしまったのですね……」(肩を落とす)
+owner normal 「・・・」
+owner normal 「……冗談だ。20G」
+clara surprise 「…………」
+clara pout 「……あなたが、冗談をおっしゃるなんて。そちらは、変わられましたね」
+owner normal 「……値段は、変える気はない」
+clara smile 「……よかった」
+(戸の外で、宰相が咳ばらいをした。)
+bertrand normal 「陛下。お時間でございます」
+clara pout 「……はい、ただいま」` },
+  { id: 'cl_qmeasure', c: () => clQ() && (G.reg.clara || 0) === 3 && !storySeen('c5_queen'), tod: 'd', t: `
+(献金を済ませると、女王が、細い糸を一本差し出した。)
+clara normal 「冠のために、頭の大きさを測っていただきたいのです。都の宝飾師ではなく、あなたに」
+owner normal 「・・・」(糸を受け取る)
+clara normal 「動かずに、おりますので」(背筋を伸ばし、目を閉じる)
+(糸を、額からぐるりと回す。髪から、蜜蝋の匂いがした。)
+clara normal 「…………」
+owner normal 「・・・」
+clara trouble 「……あの」
+owner normal 「動くな」
+clara trouble 「息を、してもよろしいでしょうか」
+owner surprise 「・・・」
+owner normal 「……していい」
+clara blush 「…………はぁ」(大きく、息をつく)
+(結び目をつけて、糸を外した。)
+(手のひらに載せた輪は、思っていたより、ずっと小さかった。)
+owner normal 「・・・」(輪を、そっと懐にしまう)` },
+  { id: 'cl_qspeech', c: clQ, t: `
+(長椅子の前で、女王が、一人で何かをつぶやいていた。)
+clara normal 「……面を、上げよ。……面を、上げよ」
+clara surprise 「あっ……」
+clara blush 「お、お聞きになりましたか」
+owner normal 「・・・」
+clara trouble 「謁見の言葉の、稽古なのです。ベルトランが、私の声は優しすぎて、命令に聞こえぬ、と」
+clara normal 「……お相手を、お願いできますか。私の前に立って、頭を下げていてください」
+owner normal 「・・・」(前に立つ。頭は、下げない)
+clara normal 「……面を、上げよ」
+owner normal 「……下げてない」
+clara surprise 「…………」
+clara pout 「……下げてくださいと、申し上げました」
+owner normal 「・・・」(ほんの少しだけ、頭を下げる)
+clara normal 「……お、面を、上げよ」
+(店主が顔を上げると、女王は、こらえきれずに吹き出していた。)
+clara joy 「ふふっ……だめです。あなたの前では、どうしても、稽古になりません」` },
+  { id: 'cl_qweight', c: () => clQ() && !storySeen('c5_queen'), tod: 'n', t: `
+(夜。祭壇の前に、女王が一人で座っていた。膝の上に、古い帳面が開いてある。歴代の王の名前が、並んでいる。)
+clara normal 「……父の名前の次に、私の名前が書かれるのです」
+clara normal 「冠は、とても重いのだそうです。父は、戴冠の夜に、首が痛いと笑っていた、とベルトランが」
+clara trouble 「王の務めは、冠よりずっと重い、とも申しました」
+owner normal 「・・・」
+owner normal 「……軽く作る」
+clara surprise 「…………」
+clara smile 「ふふ。……冠の方は、お任せいたします」
+owner normal 「・・・」(何も言わずに、隣に腰を下ろす)
+clara surprise 「…………」
+clara normal 「…………」(帳面に目を落としたまま、少しだけ、肩を寄せる)
+(しばらくして、女王は、帳面を閉じた。)` },
+  // ---- 第5章(告白の後) ----
+  { id: 'cl_lcrown', c: () => clL() && !!clSt().seen.cl_qweight, t: `
+(献金を済ませると、女王が、首を左右にゆっくり傾けてみせた。)
+clara smile 「……痛くなりませんでした」
+owner normal 「・・・」
+clara smile 「一日中、冠を載せておりましたのに。夜になっても、首は、少しも」
+clara normal 「ベルトランが、首をかしげておりました。王家の冠が、こんなに軽いはずがない、と」
+owner normal 「……中を、少し削った」
+clara surprise 「…………」
+clara smile 「やはり」
+clara normal 「……もう一つの重さの方は、まだ、少しだけ」
+owner normal 「・・・」(長椅子の、彼女の隣に腰を下ろす)
+clara smile 「……はい。こちらも、少し、軽くなりました」` },
+  { id: 'cl_lskip', c: () => clL() && !!clSt().seen.cl_skip, tod: 'm', t: `
+@bg bg_fish_river
+(朝。川べりで、外套のフードをかぶった娘が、平たい石を選んでいた。少し離れた木の陰に、鎧の男が立っている。)
+clara smile 「おはようございます。……ヴィクトルには、見なかったことにしてもらっております」
+clara normal 「見ていてください」
+(低く投げた石が、水の上を跳ねた。一つ、二つ、三つ。)
+clara joy 「三つ!」
+owner surprise 「・・・」
+clara smile 「子どもたちに笑われた日から、ずっと、稽古しておりました。女王になってからも、朝だけ、こっそり」
+owner normal 「・・・」(平たい石を拾って、彼女に渡す)
+clara smile 「もう一度、ですか? では」
+(ぽちゃん。)
+clara surprise 「…………」
+owner normal 「・・・」
+clara pout 「…………二つ目は」
+owner soft 「……見てない。何も」
+clara joy 「……ふふっ」` },
+  { id: 'cl_lbread', c: () => clL() && !!clSt().seen.cl_bread, tod: 'm', t: `
+(朝の教会に、焼きたてのパンの匂いがしていた。長椅子の上のパンは、今度は、ふっくらと白かった。)
+clara smile 「おはようございます。焼けたところです。……どうぞ」
+owner normal 「・・・」(受け取って、かじる)
+(柔らかい。)
+owner surprise 「・・・」
+clara smile 「城の料理番に、教わりました」
+clara normal 「このパンは、一日しかもちません」
+owner normal 「……なぜ、変えた」
+clara smile 「遠くまで、運ばなくてよいので」
+owner normal 「・・・」
+(店主は、最後のひとかけまで、黙って食べた。今度は、包んで持ち帰る分は、残らなかった。)` },
+  { id: 'cl_lking', c: clL, tod: 'd', t: `
+(献金を済ませると、女王が、一枚の紙を差し出した。きれいな字で、何か書いてある。)
+clara smile 「王様のお仕事を、書き出してまいりました」
+clara normal 「一つ。朝の鐘を、聞くこと」
+clara normal 「一つ。女王と、お茶を飲むこと」
+clara normal 「一つ。ときどき、謁見の間に立っていること。……黙っていて、結構です。得意でしょう?」
+owner normal 「・・・」
+owner normal 「……店は」
+clara smile 「お店は、続けてくださって結構です。王様のお仕事の、四つ目にいたします」(紙に、書き足す)
+owner trouble 「・・・」
+clara smile 「それで。王様になる気は?」
+owner normal 「・・・」(黙って、紙を折りたたむ)
+clara pout 「……今日も、お返事なしですね」
+(折りたたんだ紙は、店主の懐に入ったまま、返ってこなかった。)` },
+  { id: 'cl_lshop', c: clL, tod: 'd', t: `
+(献金を済ませて丘を下りると、女王がついてきた。今日は、店番をしてみたいのだという。)
+@bg bg_shop_day
+(カウンターの内側に、外套を脱いだ女王が立った。)
+clara normal 「……緊張いたします」
+(戸口の鈴が鳴った。)
+clara smile 「いらっしゃいませ!」
+colette surprise 「…………へ、陛下!?」
+clara smile 「はい。本日は、店番でございます」
+colette surprise 「て、店主さん! 陛下に何させてるんですか!」
+owner normal 「・・・」(帳面から、顔を上げない)
+colette trouble 「……と、とりあえず、塩を一袋」
+clara smile 「はい。ただいま」(棚の前で、迷わず塩の袋を取る)
+colette surprise 「……場所、全部覚えてるんですね」
+clara smile 「どれだけ通ったと、思っておられるのですか」
+(コレットが帰ったあと、女王は、カウンターに両手をついて、小さく息をついた。)
+clara smile 「……やっと、正しい所で、言えました。『いらっしゃいませ』」` },
+  { id: 'cl_llamp', c: () => clL() && !!clSt().seen.cl_lamp, tod: 'n', t: `
+(夜。献金箱に銀貨を落とすと、外套の娘が待っていた。)
+clara normal 「今夜は、お付き合いください。……行きたい所がございます」
+@bg @town_night
+(王都の通りを、灯り番が、街灯に一つずつ火を入れて歩いていた。少し離れて、宰相と騎士が、こそこそとついてくる。)
+clara normal 「……あの、灯り番さん」
+(灯り番の老人は、フードの奥の顔を見て、目を丸くした。それから、黙って、長い棒を差し出した。)
+clara surprise 「…………」
+(女王は、両手で棒を持ち、背伸びをして、街灯の芯に火を入れた。)
+(ぽっ、と、通りの一角が明るくなった。)
+clara joy 「……ともりました」
+owner normal 「・・・」
+clara smile 「城の窓から、ずっと見ていたのです。……今は、灯りの中に立っております」
+owner normal 「……灯り番だな」
+clara joy 「はい。……一つだけですけれど」` },
+  // ---- エンディングの後 ----
+  { id: 'cl_eflame', c: () => !!G.ended && !!clSt().seen.cl_candle, t: `
+(祭壇の脇の、一本だけ離して立ててあったろうそくが、親指ほどの長さになっていた。)
+clara normal 「……とうとう、ここまで短くなりました」
+clara smile 「覚えておられますか。初めて、自分で選んで、自分で買ったろうそくです」
+owner normal 「……ああ」
+clara normal 「毎晩、少しだけ灯して、すぐに消しておりました。もったいなくて」
+clara trouble 「……でも、もう、芯が残っておりません」
+owner normal 「・・・」(新しいろうそくを一本取り、短いろうそくの火に近づける)
+(火が、新しい芯に移った。)
+clara surprise 「…………」
+owner normal 「……同じ火だ」
+clara smile 「……はい」
+(短いろうそくは、その夜のうちに、静かに燃え尽きた。新しいろうそくの火は、同じ色をしていた。)` },
+  { id: 'cl_ecoat', c: () => !!G.ended, tod: 'd', t: `
+(献金を済ませると、女王が、困ったような、うれしいような顔をしていた。)
+clara normal 「……ベルトランが、あなたの上着の寸法を、知りたがっております」
+owner surprise 「・・・」
+clara normal 「念のため、だそうです。何の念のためかは、申しませんでした」
+clara smile 「ゆうべは、王家の衣装の帳面を、遅くまで眺めておりました。……ため息をつきながら」
+owner normal 「・・・」
+clara smile 「それで。王様になる気は?」
+owner normal 「・・・」
+clara smile 「ベルトランは、もう、そのつもりのようですよ」
+owner trouble 「・・・」
+(帰りぎわ。戸の外で、宰相が巻き尺を持って待っていた。)
+bertrand trouble 「……念のため、でございます」` },
+  { id: 'cl_ebell', c: () => !!G.ended && !!clSt().seen.cl_rope, tod: 'm', t: `
+(朝。鐘の綱の前に、女王が立っていた。綱は、あの日二人でより合わせた所だけ、色が少し違っている。)
+clara smile 「今朝は、私が鳴らす番なのです。……ご一緒に、いかがですか」
+(二人で、綱を引いた。鐘が、一つ鳴った。)
+(丘の下で、杖をついた村長が立ち止まり、帽子を取った。)
+clara smile 「村長さま、今日も、帽子を取ってくださいました」
+owner normal 「・・・」
+clara normal 「王都になっても、あの方は、鐘が鳴り終わるまで、ああして待っていてくださるのですね」
+owner normal 「・・・」(もう一度、綱を引く)
+(鐘が二つ鳴った。村長は満足そうに帽子をかぶり、坂の石に、ゆっくり腰を下ろした。)
+clara smile 「……座られました」
+owner soft 「……ああ」` },
+  { id: 'cl_ealways', c: () => !!G.ended, tod: 'n', t: `
+(夜。女王は、祭壇のろうそくを一本ずつ消していた。最後の一本だけ、残す。)
+clara normal 「……お店は、いつまで、続けられるのですか」
+owner normal 「・・・」
+owner normal 「……ずっとだ」
+clara smile 「では、私も、ずっと通います」
+clara normal 「女王でも、そうでなくても。……ろうそくを、一本ずつ」
+owner normal 「・・・」
+owner normal 「……20Gだ」
+clara smile 「存じております」
+(最後に残した一本の灯りを、二人で、しばらく見ていた。)` },
+];
+// 話し終えた後のいつもの(短い)。c: その時期・tod: 時間帯(なし=いつでも)
+const CL_USUAL = [
+  { c: clPre, t: `clara smile 「いらっしゃいませ。……あ。また、言ってしまいました」` },
+  { c: clPre, tod: 'd', t: `(修道女は、子どもたちの石板を拭いていた。)\nclara normal 「少しだけ、お待ちください。……あと、三枚です」` },
+  { c: clPre, tod: 'm', t: `(朝の祈りが済んだところだった。修道女は、長椅子の埃を払っていた。)\nclara normal 「おはようございます。……今朝の鐘は、聞こえましたか」\nowner normal 「・・・」(うなずく)\nclara smile 「よかった」` },
+  { c: clPost, tod: 'm', t: `(修道女は、祭壇の花を替えていた。)\nclara smile 「おはようございます。今朝のは、全部、名前の分かる花です」` },
+  { c: clPost, tod: 'd', t: `clara smile 「ちょうど、お茶をいれたところです。……一杯だけ、いかがですか」\n(二人で、黙って一杯ずつ飲んだ。)` },
+  { c: clPost, tod: 'n', t: `(祭壇のろうそくが、ぜんぶ灯っていた。)\nclara smile 「灯り番の仕事は、もう済みました。……あとは、見ているだけです」` },
+  { c: clNamed, tod: 'm', t: `(修道女は、子どもたちに文字を教えていた。人数が、前の倍になっている。)\nclara smile 「おはようございます。……長椅子が、足りなくなってまいりました」` },
+  { c: clNamed, tod: 'd', t: `clara smile 「少しだけ、座らせてください。……ここでは、王女でなくてよいので」\n(しばらく、二人で長椅子に座っていた。)` },
+  { c: clNamed, tod: 'n', t: `(修道女は、燭台の下で、避難してきた人たちの名前を、帳面に書き写していた。)\nclara normal 「……あと、十二人です。もう少しだけ、そこにいてください」` },
+  { c: clQ, t: `(女王は、外套のフードを下ろして、長椅子に座っていた。)\nclara smile 「……ここに来ると、肩の力が抜けます」` },
+  { c: clL, tod: 'm', t: `(戸の外で、宰相が、懐中時計を見ている。)\nclara smile 「……あと、少しだけ。ベルトランは、待つのも仕事ですので」` },
+  { c: clL, tod: 'd', t: `clara smile 「今日は、お話しすることが、何もございません」\nclara smile 「……それでも、来てくださるのですね」` },
+  { c: clL, tod: 'n', t: `(二人で、祭壇のろうそくが短くなっていくのを、黙って見ていた。)` },
+  { c: clPre, tod: 'n', t: `(祭壇のろうそくが、一本だけ灯っていた。)\nclara surprise 「……こんな時間に」\nclara normal 「お店の灯りが、まだ点いておりましたので。……いえ、何でもございません」` },
+];
+const clOpen = () => storySeen('c2_clara');
+const clSt = () => (G.clTalk = G.clTalk || { day: -1, seen: {} });
+const clDone = () => clSt().day === G.day;
+function clTabBody() {
+  const done = clDone();
+  return `<div class="fo-card on-entry"><div class="fo-in"><div class="t"><b>${storySeen('c5_queen') ? '女王クララ' : G.stage >= 4 || storySeen('c4_square') ? '王女クララ' : 'シスター・クララ'}</b> <span class="sub">${done ? '今日はもう話した' : '1日に一度'}</span></div>` +
+    `<div class="sub">${done ? 'また明日、顔を出すといい。' : clPre() ? '司祭さまは留守のようだ。教会には、ほかに誰もいない。' : '教会には、ほかに誰もいない。'}</div>` +
+    `<div class="fo-bs"><button class="btn pri" data-act="cltalk"${done || G.gold < CL_GIFT ? ' disabled' : ''}><b>献金して話す</b><small>${done ? 'また明日' : G.gold < CL_GIFT ? '献金するお金がない' : CL_GIFT + 'G'}</small></button></div></div></div>`;
+}
+// 場面(背景は教会の今の時間。台本の背景の行で出かけた先へ)
+function clScene(txt, done) {
+  if (!txt || storyOff()) { if (done) done(); return; }
+  const town = n => { const id = `bg_town_${Math.min(5, G.stage + 1)}_${n}`; return BG_FILES.has(id) ? id : `bg_town_${Math.min(5, G.stage + 1)}`; };
+  txt = txt.replace(/@town_(\w+)/g, (m, n) => town(n));   // 町の外の背景は、今の章の町
+  STORY.__cl = { id: '__cl', lines: storyParse(`@bg ${facBg(FAC.church)}\n${txt}`) };
+  storyOpen({ id: '__cl', o: { pub: done || (() => {}) } });
+}
+function clTalk() {
+  if (clDone() || G.gold < CL_GIFT) return;
+  G.gold -= CL_GIFT; FX.push({ t: 'toast', msg: `献金箱に${CL_GIFT}Gを入れた` });
+  const s = clSt(), now = clTod(), fit = x => !x.tod || x.tod === now;
+  const t = CL_TALKS.find(x => !s.seen[x.id] && fit(x) && x.c());
+  let txt;
+  if (t) { s.seen[t.id] = G.day; txt = t.t; }
+  else {
+    const u = CL_USUAL.filter(x => fit(x) && x.c()); s.n = (s.n || 0) + 1;
+    txt = u.length ? u[s.n % u.length].t : `clara smile 「……いらっしゃいませ」`;
+  }
+  s.day = G.day; save();
+  clScene(txt, () => render());
+}
 
 // ---- arena-sprites.js ----
 // No.219/222: 闘技場の闘士のデフォルメ(Work No.218・220・221・18人・192×192・右向き・地面は y=180)
