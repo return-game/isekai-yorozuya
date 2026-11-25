@@ -9005,8 +9005,10 @@ const SHOP_BANDS = {
   night: { n: '夜', who: '仕事帰りの客や騎士・貴族が来る', hot: '料理・装飾品・高級品', cls: { noble: 2.4, royal: 2, knight: 1.6, villager: 1.2, rookie: 0.6, hunter: 0.6 }, cat: { food: 1.5, relic: 1.8, magic: 1.3 }, sub: { '装飾': 2, '宮廷料理': 2 }, sell: 0.6 },
 };
 // ---------- names & portraits ----------
-const NAMES_M = ['アルト', 'カイ', 'フィン', 'ガロ', 'イオ', 'ケイン', 'マルコ', 'オスカー', 'トマ', 'ユーリ', 'ウィル', 'ゼノ', 'ロイ', 'ノア', 'リオ', 'グレン', 'ラウル', 'モーガン', 'ダン', 'セオ'];
-const NAMES_F = ['ベル', 'ダリア', 'エマ', 'ハンナ', 'ジーナ', 'リタ', 'ニナ', 'ピア', 'セラ', 'ソフィ', 'エルザ', 'ティア', 'シエル', 'ヴィオ', 'リリ', 'アンナ', 'マリー', 'ロザ', 'ユナ', 'フラン'];
+// No.386: 住人・闘士と同じ名前・似た名前は入れない(カイ・ゼノ=闘士/ロイ~ロイク/ガロ~ガルド)
+const NAMES_M = ['アルト', 'フィン', 'オリバー', 'イオ', 'ケイン', 'マルコ', 'オスカー', 'トマ', 'ユーリ', 'ウィル', 'クルト', 'ディーン', 'ノア', 'リオ', 'グレン', 'ラウル', 'モーガン', 'ダン', 'セオ', 'ヘンリク'];
+// No.386: ダリア・エマ=住人/セラ=闘士/ニナ・ジーナ~ニーナ/フラン~ブラン/ティア~ティオ/ベル~ベルトラン
+const NAMES_F = ['ナディア', 'グレタ', 'マーサ', 'ハンナ', 'ステラ', 'リタ', 'ヒルダ', 'ピア', 'クロエ', 'ソフィ', 'エルザ', 'アデル', 'シエル', 'ヴィオ', 'リリ', 'アンナ', 'マリー', 'ロザ', 'ユナ', 'ルーシー'];
 // standing pictures: img/ch_<id>_<normal|smile|trouble>.webp (mobs: ch_mob_<job>_<m|f>.webp)
 const MOB_OF = { villager: 'villager', rookie: 'novice', hunter: 'hunter', peddler: 'peddler', warrior: 'warrior', mage: 'mage', dwarf: 'dwarf', knight: 'knight', noble: 'noble', elf: 'elf', hero: 'hero', dragoon: 'dragoon' };   // v52: 王族の絵はクララの両親に使う(客の種類から外した)
 const MOB_SEXES = { villager: 'mf', novice: 'mf', hunter: 'mf', peddler: 'mf', warrior: 'mf', mage: 'mf', dwarf: 'mf', knight: 'mf', noble: 'mf', elf: 'mf', hero: 'mf', dragoon: 'mf', royal: 'mf' };   // v53h: 一般客26人を全部使う(ユーザー 2026-10-15)
