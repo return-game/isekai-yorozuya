@@ -9407,9 +9407,9 @@ function inheritQ(r) {
 // No.379 手慣れ(作者 2026-11-24): 店主の Lv が作り方の Lv より5以上高いと1回で2つ、10以上で3つ。スキル(手慣れ I・II)で要る差が1・2縮む
 const FAM_GAP = 5, FAM_GAP3 = 10;
 const famCut = () => pk('hand') || 0;
-const famRaw = r => { if (!r || r.appraise || r.repair || r.rare || String(r.out).startsWith('lg_')) return 1; const d = (G.lv || 1) - (r.lv || 1) + famCut(); return d >= FAM_GAP3 ? 3 : d >= FAM_GAP ? 2 : 1; };
+const famRaw = r => { if (!r || r.appraise || r.repair || r.rare || String(r.out).startsWith('lg_') || !famCut()) return 1; const d = (G.lv || 1) - (r.lv || 1) + famCut(); return d >= FAM_GAP3 ? 3 : d >= FAM_GAP ? 2 : 1; };
 // No.380 作者 2026-11-25: 何個作るかは選べる(G.famPick[レシピ id]。無ければ上限)
-const famPickN = r => { const m = famRaw(r), k = (G.famPick || {})[r.id]; return k ? Math.max(1, Math.min(k, m)) : m; };
+const famPickN = r => { const m = famRaw(r), k = (G.famPick || {})[r.id]; return k ? Math.max(1, Math.min(k, m)) : 1; };   // No.383 手慣れはスキル(手慣れ I)を取るまで開かない・選んでいなければ1つ
 const famN = r => { let n = famPickN(r); while (n > 1 && !hasInputs(r, n)) n--; return n; };
 const familiar = r => famRaw(r) > 1;
 function doCraft(r, q, auto, crit, pre) {
