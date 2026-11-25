@@ -2216,6 +2216,10 @@ body.practice #app { display: none; }
 #title .tt-slot.on { border-color: var(--brass-hi, #f1d99e); box-shadow: 0 0 0 2px rgba(241,217,158,.45); }
 #title .tt-warn { margin: 0; font-size: 13px; color: var(--ember, #e8885a); }
 #title .tt-note { margin: 6px 0 0; font-size: 13px; line-height: 1.7; opacity: .9; }
+/* No.384: セーブを写す・消す */
+#title .tt-smb { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; align-items: center; }
+#title .tt-smb .btn { flex: 1 1 0; min-width: 0; }
+#title .tt-sm { display: flex; flex-direction: column; gap: 8px; }
 #title .tt-sync { display: grid; gap: 8px; }
 
 /* Re:turn title presentation. Existing data-tt actions and save/sync flow are retained. */
@@ -3121,6 +3125,12 @@ body.practice #app { display: none; }
 .gm2-sp { width: 6px; }
 .gsend-row { display: flex; gap: 8px 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .gsend-row .gsend-est { flex: 1 1 260px; }
+/* No.384: 章を進むかの選び(ぬしの勝ちの報告)・いまの目標のボタン */
+.goal.chgo { border: 2px solid var(--brass, #b8893a); background: rgba(184,137,58,.16); padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; }
+.dvrep .chask { text-align: left; margin-top: 12px; }
+.chask { margin-top: 8px; padding: 10px 12px; border: 2px solid var(--brass, #b8893a); border-radius: 10px; background: rgba(184,137,58,.12); }
+.chask p { margin: 0 0 8px; line-height: 1.6; font-size: 13px; }
+.chask .row { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* No.243 (2026-11-05 作者): スマホは行き先を押すと別窓。見立てと「送り出す」は窓の下に貼りつく */
 .gqsheet .gadvs { margin-top: 10px; }
@@ -9214,18 +9224,23 @@ function checkEnding() {
   // v44: with the story on, the ending sheet follows the ending scene (the morning after the 凱旋門)
   if (!G.ended && G.stage === 4 && BUILDINGS.filter(x => x.st === 4).every(x => G.built[x.id]) && bossCleared(4)) { G.ended = true; if (storyOff() || !STORY.c5_ending) FX.push({ t: 'ending' }); }
 }
-function checkStage() {
+// No.384: 章は自動では進まない。条件(3つ建てた+章のぬしを倒した)がそろったら、プレイヤーが「次の章へ進む」を押した時に進む。
+// 印は保存しない(条件は毎回セーブから数える)。ぬしに勝った報告・いまの目標・街の「次の章へ」から stageGo を呼ぶ
+const chReady = () => !!STAGES[G.stage + 1] && BUILDINGS.filter(b => b.st === G.stage).every(b => G.built[b.id]) && bossCleared(G.stage);
+function checkStage(src) {
   checkEnding();
-  const next = STAGES[G.stage + 1];
-  if (!next) return;
-  const allBuilt = BUILDINGS.filter(b => b.st === G.stage).every(b => G.built[b.id]);
-  if (allBuilt && bossCleared(G.stage)) {
+  if (src === 'built' && chReady()) toast(`<div><b>次の章へ進めるようになった</b><br>ホームの「いまの目標」か、街の「次の章へ」から進める。</div>`);
+}
+function stageGo() {
+  if (!chReady()) return false;
+  {
     storyFlushChapter(G.stage); { const ce = typeof CH_END[G.stage] === 'function' ? CH_END[G.stage]() : CH_END[G.stage]; if (ce) storyPlay(ce); }   // v42: the chapter's end is told first
     G.stage++;
     if (storyOff() && CH_START[G.stage]) storyPlay(CH_START[G.stage]);   // (shown after the 第N章 sheet when scenes are on)
     FX.push({ t: 'stage', stage: G.stage });
     G.newBookStage = G.stage;
   }
+  return true;
 }
 function stageProgress() {
   const next = STAGES[G.stage + 1];
@@ -10196,7 +10211,7 @@ function deliverToBuilding(bid, itemId) {
     storyPlay('bld_' + bid);   // v42: the building's scene comes before the 建設完了
     FX.push({ t: 'built', id: bid });
     gainFame(12 + 6 * b.st);
-    checkStage();
+    checkStage('built');
   }
   return n;
 }
@@ -11565,6 +11580,7 @@ function diveSettle() {
     const best = G.depthBest[a.id] || 0, reach = d.beat ? d.N : d.i;
     if (reach > best) { G.depthBest[a.id] = reach; rep.record = true; }
     if (d.beat) { G.clears = G.clears || {}; G.clears[a.id] = (G.clears[a.id] || 0) + 1; } checkStage();
+    if (d.beat && a.id === CH_BOSS[G.stage] && chReady()) rep.chGo = true;   // No.384: 報告で「次の章へ進む/残る」を選ぶ
   } else {
     rep.atBoss = d.i >= d.N - 1;   // v54j: ぬしの前(最後の部屋)で倒れた
     rep.kept = Object.keys(d.kept || {}); for (const id of rep.kept) give(id, d.kept[id]);
@@ -15940,6 +15956,7 @@ function questLine() {
   }
   const od = G.orders.find(o => orderHave(o) >= o.qty && !holdHolyOrder(o));   // No.371
   if (od) return { t: `「${IT[od.item].name}」の注文を納品しよう`, v: 'main' };
+  if (chReady()) return { t: `次の章「${STAGES[G.stage + 1].n}」へ進める(いまの目標の「次の章へ進む」)`, v: 'main' };   // No.384
   // v39: buildings done (the 凱旋門 aside) and the boss still standing → the next thing is the boss
   { const sp = stageProgress(), bs = sp.boss;
     if (!G.ended && !bs.done && guildOpen() && sp.blds.every(b => G.built[b.id] || b.id === 'gate')) {
@@ -16642,6 +16659,7 @@ function vSideOrders() {
 function vGoals() {
   const sp = stageProgress(), bs = sp.boss;
   let h = `<div class="card goals"><h3>いまの目標</h3>`;
+  if (chReady()) h += `<button class="goal chgo" data-act="stagego"><span class="row between"><b>次の章へ進む</b><span class="num sub">「${esc(STAGES[G.stage + 1].n)}」へ</span></span><span class="sub">建物とぬし、そろった。この章の話をまだ見たい時は、進まずに遊べる。</span></button>`;   // No.384
   const open = sp.blds.filter(b => !G.built[b.id] && !(b.id === 'gate' && gateLocked())).sort((a, b) => (b.id === 'guild') - (a.id === 'guild') || bldProgress(b) - bldProgress(a));
   if (open.length) {
     const b = open[0], d = G.deliv[b.id] || {};
@@ -16651,8 +16669,8 @@ function vGoals() {
   // v39: the chapter's boss is the other half of the goal
   if (!G.ended && (sp.next || bs.last)) h += `<button class="goal" data-act="gotab" data-v="${guildOpen() ? 'adv' : 'town'}"><span class="row between"><b>${bs.last ? '古竜との戦い' : 'ぬしの討伐'}</b><span class="num sub">${bs.done ? '済み' : 'まだ'}</span></span>` +
     `<span class="sub">${bs.area.n}の「${bs.n}」${bs.done ? '' : (bs.last ? 'に挑むと凱旋門を建てられる' : '')}</span></button>`;
-  if (sp.next && sp.allBuilt && !bs.done) h += `<p class="note">建物はそろった。${bs.area.n}の「${bs.n}」を倒すと「${sp.next.n}」へ。</p>`;
-  else if (sp.next && !sp.allBuilt && bs.done) h += `<p class="note">ぬしは倒した。建物がそろうと「${sp.next.n}」へ。</p>`;
+  if (sp.next && sp.allBuilt && !bs.done) h += `<p class="note">建物はそろった。${bs.area.n}の「${bs.n}」を倒すと「${sp.next.n}」へ進めるようになる。</p>`;
+  else if (sp.next && !sp.allBuilt && bs.done) h += `<p class="note">ぬしは倒した。建物がそろうと「${sp.next.n}」へ進めるようになる。</p>`;
   h += (isWide() && UI.tab === 'main' && shopView() === 'work' ? '' : vSideOrders()) + vSideGuild();
   const cp = completion();
   h += `<button class="goal" data-act="gotab" data-v="dex"><span class="row between"><span class="sub">図鑑</span><span class="num sub">${cp.found} / ${cp.total}</span></span><span class="meter"><i style="width:${(cp.pct * 100).toFixed(1)}%"></i></span></button>`;
@@ -16992,7 +17010,7 @@ function vTown() {
     h += `<div class="sec nextch"><h2>次の章へ<span class="aside">第${G.stage + 2}章 ${sp.next.n}</span></h2><div class="cols2">` +
       `<div class="stat2"><div class="row between"><span class="sub">建物</span><span class="num">${sp.built} / ${sp.blds.length}</span></div><div class="meter"><i style="width:${sp.built / sp.blds.length * 100}%"></i></div></div>` +
       `<div class="stat2"><div class="row between"><span class="sub">ぬし</span><span class="num">${bs.done ? (bs.last ? '盟約を結び直した' : '討伐済み') : 'まだ'}</span></div><div class="meter brass"><i style="width:${bs.done ? 100 : 0}%"></i></div><div class="sub">${bs.area.n}の「${bs.n}」</div></div></div>` +
-      `<p class="note">必要な品を納品して建物を建て、冒険者に${bs.area.n}の「${bs.n}」を倒してもらうと、次の章へ進む。ぬしは強いので、武具と回復薬を持たせて挑もう。</p></div>`;
+      `<p class="note">必要な品を納品して建物を建て、冒険者に${bs.area.n}の「${bs.n}」を倒してもらうと、次の章へ進めるようになる(進むのは、ここか「いまの目標」のボタンを押した時)。ぬしは強いので、武具と回復薬を持たせて挑もう。</p>${chReady() ? `<div class="btns"><button class="btn pri big" data-act="stagego">次の章へ進む(「${esc(sp.next.n)}」へ)</button></div>` : ''}</div>`;
   } else if (!G.ended) h += `<p class="note">王都の建物をすべて完成させよう。勇者の凱旋門は、${bs.area.n}の「${bs.n}」との戦いを終えてから建てられる(${bs.done ? '戦いは終わった' : 'まだ'})。</p>`;
   if (G.ended) h += `<div class="card brass"><div class="sec"><h2 style="color:var(--brass-hi)">伝説の万事屋</h2><p class="note">王都の建物がすべて完成し、この店は伝説になった。図鑑のコンプリートを目指して、商売はまだまだ続く。</p></div></div>`;
   const hChap = h; h = hKeep;
@@ -17075,6 +17093,13 @@ const FREE_ASSET_CREDITS = [
   { type: 'BGM', name: 'なぐもりずの音楽室' },
   { type: 'BGM', name: 'フリーBGM・音楽素材MusMus', url: 'https://musmus.main.jp' },
 ];
+// No.384: いまの店を、あいている枠へ写す(ぬしの前などの控えに)。消すのはタイトルでだけ
+function settingsCopy() {
+  if (DEV.on) return '';
+  const empty = [1, 2, 3].filter(k => k !== SAVE.slot && !slotInfo(k)), busy = slotBusy();
+  return `<div class="restart"><div class="rs-t">この店を写す</div><p>いまの店(セーブ${SAVE.slot})を、あいているセーブに写す。写した店は別に遊べる。ぬしの前などに写しておくと、あとで戻れる。消すのはタイトルの「つづきから」で。</p>` +
+    (empty.length ? `<div class="btns">${empty.map(k => `<button class="btn" data-act="slotcopy" data-v="${k}"${busy ? ' disabled' : ''}>セーブ${k}へ写す</button>`).join('')}</div>` : `<p class="note">あいているセーブがない(タイトルで消してから)。</p>`) + `</div>`;
+}
 function settingsSheet(howto) {
   let h = xBtn + (DEV.on ? `<div class="btns" style="margin:0 0 10px"><button class="btn gold" data-act="devmenu">作者用メニュー(練習用の店)</button></div>` : '');   // No.186
   if (howto) { dictSheet(); return; }
@@ -17089,6 +17114,7 @@ function settingsSheet(howto) {
     `<div class="as-row"><button class="tog${AUS.music ? ' on' : ''}" data-act="music" aria-pressed="${AUS.music}"><i></i>音楽</button><input type="range" min="0" max="100" step="5" value="${Math.round(vol.m * 100)}" data-vol="m" aria-label="音楽の音量"></div>` +
     `<div class="as-row"><button class="tog${AUS.sound ? ' on' : ''}" data-act="sound" aria-pressed="${AUS.sound}"><i></i>効果音</button><input type="range" min="0" max="100" step="5" value="${Math.round(vol.s * 100)}" data-vol="s" aria-label="効果音の音量"></div>` +
     `<p class="note" style="font-size:12px;margin:6px 0 0">朝市・店・工房で曲が変わる。画面上の♪ボタンでいつでも消音できる。</p></div>` +
+    settingsCopy() +
     `<div class="restart"><div class="rs-t">タイトルに戻る</div><p>いまの店を保存して、タイトル画面に戻る。セーブの切り替えと、はじめからはタイトルでできる。</p><div class="btns"><button class="btn" data-act="totitle">タイトルに戻る</button></div></div>` +
     `<p class="note" style="font-size:12px">${SAVE.db ? '進行はアカウントに自動保存される。' : '進行はこのブラウザに自動保存される。ログインすると、別の端末でも続きから遊べる(タイトルの設定)。'}</p><p class="note" style="font-size:12px">公開版では、ゲームのページが開かれた回数だけを数えている(GoatCounter)。セーブ・ログイン・端末を見分ける情報は送らず、Cookie も使わない。</p></div>`;
   h += `<div class="sec"><div class="btns"><button class="btn" data-act="dict">仕組みの辞典(遊び方)を開く</button></div></div>`;
@@ -17688,6 +17714,8 @@ function act0(a, d) {
     case 'sleepno': closeSheet(); return;
     case 'recsort': { UI.recSort = REC_SORT.some(x => x[0] === d.v) ? d.v : 'todo'; sfx('tap'); break; }
     case 'slot': slotSwitch(+d.v); return;
+    case 'stagego': { if (UI.sheet) closeSheet(true); if (stageGo()) sfx('level'); render(); return; }   // No.384
+    case 'slotcopy': { const to = +d.v; if (slotCopy(SAVE.slot, to)) { sfx('good'); toast(`<div>いまの店を、セーブ${to}に写しました</div>`); } else toast('<div>写せませんでした</div>'); settingsSheet(); return; }
     case 'totitle': toTitle(); return;
     case 'synclogin': syncLogin(); return;
     case 'synclogout': syncLogout(); return;
@@ -21287,7 +21315,8 @@ function diveReportHtml(rep) {
   const title = ok ? (rep.beat ? (a.id === 'dragon' ? `${MON[DG[a.id].boss].n}との戦いが止まった` : `${MON[DG[a.id].boss].n}を倒した!`) : '無事に帰ってきた') : 'パーティー全滅';
   const kick = `${a.n}・${rep.room >= rep.N ? '最奥' : rep.room + '部屋目'}まで${rep.deep ? `・深さ${rep.deep + 1}` : ''}${rep.record ? '・最高記録を更新' : ''}`;
   return `<div class="dvrep${ok ? '' : ' wiped'}"><canvas class="dvbig" width="384" height="216"></canvas><div class="kicker">${kick}</div><h2>${title}</h2>` + diveReportBody(rep) +
-    `<button class="btn pri big" data-act="dvok" data-focus style="margin-top:12px">${ok ? '受け取る' : 'わかった'}</button></div>`;
+    (rep.chGo && chReady() ? `<div class="chask"><p><b>第${G.stage + 1}章を終えて、「${esc(STAGES[G.stage + 1].n)}」へ進みますか?</b><br>この章の間にしか見られない話は、進むと見られなくなることがあります。残っても、あとで「いまの目標」から進めます。</p><div class="row"><button class="btn" data-act="dvok">まだこの章に残る</button><button class="btn pri" data-act="stagego" data-focus>次の章へ進む</button></div></div>`
+      : `<button class="btn pri big" data-act="dvok" data-focus style="margin-top:12px">${ok ? '受け取る' : 'わかった'}</button>`) + `</div>`;
 }
 // ---------- getting a party ready (replaces the old request sheet) ----------
 const GEAR_WORD = f => f >= 0.22 ? ['頼もしい', 'okc'] : f >= 0.14 ? ['よく効く', 'okc'] : f >= 0.08 ? ['効く', ''] : ['気休め', 'mute'];
@@ -27477,7 +27506,7 @@ const RF_FEE = { iron: 10, copper: 20, silver: 40, gold: 80, mithril: 150, adama
 const RF_EQ = EQ.map(e => e[0]);
 const rfParse = id => { const m = /^([a-z]+)_([a-z]+)$/.exec(String(id || '')); return m && RF_EQ.includes(m[1]) && RF_MT.includes(m[2]) ? { k: m[1], mt: m[2] } : null; };
 const rfIngots = tid => { const r = RC_BY_OUT[tid]; const x = r && r.ins.find(([i]) => i.startsWith('ingot_')); return x ? x[1] : 0; };
-// 行き先: 今より上の金属で、作り方を思いついている物(冒険者の物は、その人が持てる物だけ)
+// 行き先: すぐ上の1段の金属だけ(飛び級はなし。2段上げるなら2回打ち直す)で、作り方を思いついている物(冒険者の物は、その人が持てる物だけ)
 function rfTargets(id, mem) {
   const p = rfParse(id); if (!p) return [];
   return RF_MT.slice(RF_MT.indexOf(p.mt) + 1, RF_MT.indexOf(p.mt) + 2).map(mt => p.k + '_' + mt).filter(t => IT[t] && RC_BY_OUT[t] && recUnlocked(RC_BY_OUT[t]) && (!mem || canWield(mem, IT[t])));
@@ -32313,7 +32342,10 @@ const SYNC = { on: false, ready: false, user: null, st: 'off', fb: null, auth: n
 SYNC.on = !!(FBCFG.apiKey && FBCFG.projectId) && !PRACTICE;
 const SYNC_MAX = 900000;   // Firestore の1文書は約1MB。超える時は送らない
 const syncSlotKey = n => 'manbanya_save_v1' + (n > 1 ? '_s' + n : '');
-const syncDocId = n => 'slot' + n;
+// No.384: 置き場所を新しい名前にした(v2slot)。古い版の端末は前の置き場所(slot)に書くので、写した・消した店を上書きできない。
+// 新しい置き場所がまだ無い時だけ、前の置き場所の中身を一度読んで移す
+const syncDocId = n => 'v2slot' + n;
+const syncDocOld = n => 'slot' + n;
 function syncSet(st, err) { SYNC.st = st; SYNC.err = err || ''; try { if (typeof TITLE !== 'undefined' && TITLE.on) titleRefresh(); else if (UI.sheet && UI.sheet.settings) settingsSheet(); } catch (e) { /* ignore */ } }
 function syncLabel() {
   return { out: 'ログインしていません', ok: '同期済み', wait: '同期中…', unsynced: '未同期(つながったら送ります)', err: '同期できませんでした', off: '' }[SYNC.st] || '';
@@ -32347,6 +32379,7 @@ async function syncLogin() {
 }
 async function syncLogout() { try { if (SYNC.fb && SYNC.auth) await SYNC.fb.auth.signOut(SYNC.auth); } catch (e) { /* ignore */ } SYNC.user = null; syncSet('out'); }
 const syncRef = (n, suffix) => SYNC.fb.fs.doc(SYNC.db, 'users', SYNC.user.uid, 'saves', syncDocId(n) + (suffix || ''));
+const syncRefOld = (n, suffix) => SYNC.fb.fs.doc(SYNC.db, 'users', SYNC.user.uid, 'saves', syncDocOld(n) + (suffix || ''));
 function localRaw(n) { try { return localStorage.getItem(syncSlotKey(n)); } catch (e) { return null; } }
 function metaOf(raw) { try { const g = JSON.parse(raw); return { at: g.lastSaved || 0, day: g.day || 1, gold: g.gold || 0, name: g.name || '' }; } catch (e) { return null; } }
 async function syncPushSlot(n, raw) {
@@ -32357,8 +32390,25 @@ async function syncPushSlot(n, raw) {
   const { fs } = SYNC.fb;
   // 上書きする前に、いまのクラウドの中身を「ひとつ前」として残す
   try { const old = await fs.getDoc(syncRef(n)); if (old.exists() && old.data().save && old.data().save !== raw) await fs.setDoc(syncRef(n, '_prev'), old.data()); } catch (e) { /* 取れなければ続ける */ }
-  await fs.setDoc(syncRef(n), { save: raw, at: m.at, day: m.day, ver: 1 });
+  await fs.setDoc(syncRef(n), { save: raw, at: m.at, day: m.day, ver: 2, gen: slotGen(n) });
   SYNC.lastPushDay[n] = m.day; SYNC.lastBody[n] = syncBody(raw);
+}
+// No.384: 消した枠の「消した印」を送る(前の中身は _prev に1世代残す)
+async function syncPushDel(n) {
+  if (!SYNC.user) return;
+  const { fs } = SYNC.fb;
+  try { const old = await fs.getDoc(syncRef(n)); if (old.exists() && old.data().save) await fs.setDoc(syncRef(n, '_prev'), old.data()); } catch (e) { /* 取れなければ続ける */ }
+  await fs.setDoc(syncRef(n), { save: '', del: 1, at: Date.now(), day: 0, ver: 2, gen: slotGen(n) });
+  SYNC.lastPushDay[n] = 0; SYNC.lastBody[n] = '';
+}
+// No.384: 1つの枠だけ、すぐ同期する(写した・消した直後)
+async function syncOne(n) {
+  if (!SYNC.on || !SYNC.user) return;
+  if (SYNC.busy) { setTimeout(() => syncOne(n), 800); return; }
+  SYNC.busy = true; syncSet('wait');
+  try { await syncSlot(n); syncSet('ok'); SYNC.at = Date.now(); }
+  catch (e) { syncSet(navigator.onLine === false ? 'unsynced' : 'err', 'one'); }
+  SYNC.busy = false;
 }
 // 中身の比べ用(保存した時刻だけ違うのは同じとみなす)。No.175
 const syncBody = raw => (raw || '').replace(/"lastSaved":\d+/, '');
@@ -32373,26 +32423,58 @@ function applyCloudSave(n, raw) {
 // 1つの枠を、手元とクラウドで比べて決める。迷う時(時刻と日数が食い違う)だけ、プレイヤーに選んでもらう
 async function syncSlot(n) {
   const { fs } = SYNC.fb;
-  const lraw = localRaw(n), lm = lraw ? metaOf(lraw) : null;
+  const lraw = localRaw(n), lm = lraw ? metaOf(lraw) : null, lgen = slotGen(n);
   const snap = await fs.getDoc(syncRef(n));
-  const cm = snap.exists() && snap.data().save ? { at: snap.data().at || 0, day: snap.data().day || 1 } : null;
+  let cd = snap.exists() ? snap.data() : null;
+  if (!cd) { try { const o = await fs.getDoc(syncRefOld(n)); if (o.exists() && o.data().save) cd = { save: o.data().save, at: o.data().at || 0, day: o.data().day || 1, gen: 0 }; } catch (e) { /* 前の置き場所が読めなくても続ける */ } }
+  const cgen = cd ? (cd.gen || 0) : 0;
+  // No.384: 作り直しの番号が違う時は、日数より先に番号で決める(新しい方を必ず残す)
+  if (cd && cgen > lgen) {
+    if (lraw && lm && lm.at > (cd.at || 0)) await syncRescue(n, lraw);   // 書き換えの後にこの端末で遊んだ分は、あいている枠へ逃がす
+    if (cd.del || !cd.save) {
+      if (lraw && slotPlaying(n)) { slotGenSet(n, cgen); await syncPushSlot(n, lraw); toast('<div>別の端末で消されたセーブ' + n + 'は、いま遊んでいるので残しました</div>'); return; }
+      if (lraw) { try { localStorage.setItem(syncSlotKey(n) + '_bak', lraw); localStorage.removeItem(syncSlotKey(n)); } catch (e) { /* ignore */ } }
+      slotGenSet(n, cgen); SYNC.lastPushDay[n] = 0; return;
+    }
+    slotGenSet(n, cgen); applyCloudSave(n, cd.save); SYNC.lastPushDay[n] = cd.day || 1; return;
+  }
+  if (lgen > cgen) { if (lraw) await syncPushSlot(n, lraw); else await syncPushDel(n); return; }
+  const cm = cd && cd.save && !cd.del ? { at: cd.at || 0, day: cd.day || 1 } : null;
   if (!lm && !cm) return;
   if (!cm) { await syncPushSlot(n, lraw); return; }
-  if (!lm) { applyCloudSave(n, snap.data().save); SYNC.lastPushDay[n] = cm.day; return; }
+  if (!lm) { applyCloudSave(n, cd.save); SYNC.lastPushDay[n] = cm.day; return; }
   // 1日目のままの手元(別の端末で開いて、自動で始まった店)は、空と同じに扱う
-  if (lm.day <= 1 && cm.day > 1) { applyCloudSave(n, snap.data().save); SYNC.lastPushDay[n] = cm.day; return; }
+  if (lm.day <= 1 && cm.day > 1) { applyCloudSave(n, cd.save); SYNC.lastPushDay[n] = cm.day; return; }
   if (cm.day <= 1 && lm.day > 1) { await syncPushSlot(n, lraw); return; }
   if (lm.at === cm.at) { SYNC.lastPushDay[n] = lm.day; return; }
   const lNewer = lm.at > cm.at;
   const agree = lNewer ? lm.day >= cm.day : cm.day >= lm.day;   // 新しい方が、日数でも負けていない
-  if (agree) { if (lNewer) await syncPushSlot(n, lraw); else applyCloudSave(n, snap.data().save); return; }
+  if (agree) { if (lNewer) await syncPushSlot(n, lraw); else applyCloudSave(n, cd.save); return; }
   // 食い違い: n === 現在の枠 なら選んでもらう。別の枠は日数が多い方を残す(どちらも1世代は控えが残る)
-  if (n !== SAVE.slot) { if (lm.day >= cm.day) await syncPushSlot(n, lraw); else applyCloudSave(n, snap.data().save); return; }
+  if (n !== SAVE.slot) { if (lm.day >= cm.day) await syncPushSlot(n, lraw); else applyCloudSave(n, cd.save); return; }
   await new Promise(res => {
-    SYNC._ask = { res, n, lraw, craw: snap.data().save };
+    SYNC._ask = { res, n, lraw, craw: cd.save };
     openSheet(`<div class="celebrate"><div class="kicker">セーブの同期</div><h2>どちらの店を使いますか?</h2><p style="text-align:left">この端末の店とクラウドの店で、進み具合が食い違っています。選ばなかった方も、ひとつ前の控えとして残ります。</p>` +
       `<button class="btn pri big" data-act="synckeep" data-v="local"${''}>この端末の店(${lm.day}日目・${esc(String(lm.gold))}G)</button><button class="btn big" data-act="synckeep" data-v="cloud">クラウドの店(${cm.day}日目)</button></div>`, { sticky: true });
   });
+}
+// No.384: 書き換えられた枠の、この端末で後から遊んだ分を、あいている枠へ写して残す。
+// あいている=この端末にもクラウドにも店が無い枠だけ(クラウドの店を上書きしない)。無ければ手元の控え _bak
+async function syncRescue(n, raw) {
+  const { fs } = SYNC.fb;
+  let e = 0;
+  for (const k of [1, 2, 3]) {
+    if (k === n || localRaw(k)) continue;
+    try {
+      const d = await fs.getDoc(syncRef(k)), o = d.exists() ? null : await fs.getDoc(syncRefOld(k));
+      const used = d.exists() ? !!(d.data().save && !d.data().del) : !!(o && o.exists() && o.data().save);
+      if (!used) { e = k; break; }
+    } catch (er) { /* 確かめられない枠は使わない */ }
+  }
+  try {
+    if (e) { localStorage.setItem(syncSlotKey(e), raw); slotGenSet(e, Date.now()); setTimeout(() => syncOne(e), 50); toast('<div>セーブ' + n + 'は別の端末で書き換えられていました。この端末で遊んだ分は、セーブ' + e + 'に移しました</div>'); }
+    else { localStorage.setItem(syncSlotKey(n) + '_bak', raw); toast('<div>セーブ' + n + 'は別の端末で書き換えられていました(この端末の分は控えに残しました)</div>'); }
+  } catch (er) { /* ignore */ }
 }
 async function syncKeep(v) {
   const a = SYNC._ask; if (!a) return; SYNC._ask = null;
@@ -32422,7 +32504,7 @@ async function syncPush(force) {
 }
 async function syncDelete() {
   if (!SYNC.user) return;
-  try { const { fs } = SYNC.fb; for (const n of [1, 2, 3]) for (const s of ['', '_prev']) await fs.deleteDoc(syncRef(n, s)); SYNC.lastPushDay = {}; toast('<div>クラウドのセーブを消しました</div>'); }
+  try { const { fs } = SYNC.fb; for (const n of [1, 2, 3]) for (const s of ['', '_prev']) { await fs.deleteDoc(syncRef(n, s)); await fs.deleteDoc(syncRefOld(n, s)); } SYNC.lastPushDay = {}; toast('<div>クラウドのセーブを消しました</div>'); }
   catch (e) { syncSet('err', 'del'); }
   UI.syncDel = false; if (typeof TITLE !== 'undefined' && TITLE.on) titleRefresh(); else settingsSheet();
 }
@@ -32455,7 +32537,7 @@ const TITLE_NAME = 'Re:turn';
 const TITLE_SUB = '辺境の万事屋は、今日も灯りをともす';
 const TITLE_GOLD = [500, 1000, 2000];
 const TITLE_BGM = 'title';   // タイトルの曲「灯のともる場所」(No.194 2026-10-31。TRACKS のキー)
-const TITLE = { on: false, el: null, cv: null, raf: 0, last: 0, view: 'top', pick: 1, newSlot: 0, G: null, done: null };
+const TITLE = { on: false, el: null, cv: null, raf: 0, last: 0, view: 'top', pick: 1, newSlot: 0, G: null, done: null, sm: '' };   // sm: No.384 セーブの写す('copy')・消す('del')
 const TITLE_SKIP = (() => { try { return /notitle/.test(location.hash); } catch (e) { return false; } })();
 // セーブの見本(窓の絵を選ぶための最小限)。セーブが無い枠は「始まりの村(春の夕方)」
 const TITLE_FIRST = { stage: 0, phase: 'evening', act: 'market', day: 1, shop: 0, built: {}, cust: [], ci: 0, sceneOpen: true };
@@ -32494,6 +32576,7 @@ function titleHtml() {
       (DEV_OK ? `<button class="btn ghost" data-tt="dev">作者用メニュー</button>` : '');   // No.186: 公開アドレスでは出ない
   } else if (TITLE.view === 'cont') {
     menu = `<div class="tt-h">つづきから</div><div class="tt-slots">` + [1, 2, 3].map(n => `<button class="btn tt-slot${TITLE.pick === n ? ' on' : ''}" data-tt="pick" data-n="${n}"${has[n - 1] ? '' : ' disabled'}><b>セーブ${n}</b><span>${has[n - 1] ? esc(titleLabel(has[n - 1])) : 'なし'}</span></button>`).join('') + `</div>` +
+      titleSaveMenu(has) +
       `<button class="btn pri big" data-tt="go"${has[TITLE.pick - 1] ? '' : ' disabled'}>この店で遊ぶ</button><button class="btn ghost" data-tt="top">もどる</button>`;
   } else if (TITLE.view === 'new') {
     menu = `<div class="tt-h">はじめから:どのセーブに作りますか?</div><div class="tt-slots">` + [1, 2, 3].map(n => `<button class="btn tt-slot${TITLE.newSlot === n ? ' on' : ''}" data-tt="nslot" data-n="${n}"><b>セーブ${n}</b><span>${has[n - 1] ? esc(titleLabel(has[n - 1])) : 'あき'}</span></button>`).join('') + `</div>` +
@@ -32512,6 +32595,18 @@ function titleHtml() {
       `<button class="btn ghost" data-tt="top">もどる</button>`;
   }
   return `<div class="tt-layout is-${TITLE.view}" style="--tt-background:url('${TITLE_ART.background}')"><header class="tt-brand"><h1><img src="${TITLE_ART.logo}" alt="${esc(TITLE_NAME)}"></h1><div class="tt-reading">リターン</div><div class="tt-sub">${esc(TITLE_SUB)}</div></header><section class="tt-panel" aria-label="タイトルメニュー"><div class="tt-win"><canvas class="tt-cv"></canvas><div class="tt-tag"></div></div><div class="tt-menu">${menu}</div></section></div>`;
+}
+// No.384: 選んだ店を、あいている枠へ写す・消す
+function titleSaveMenu(has) {
+  const n = TITLE.pick, g = has[n - 1]; if (!g) return '';
+  const busy = slotBusy(), nm = esc(g.name || '万事屋') + '・' + esc(titleLabel(g)), empty = [1, 2, 3].filter(k => !has[k - 1]);
+  if (TITLE.sm === 'copy') return `<div class="tt-sm"><div class="tt-h">セーブ${n}(${nm})を、どこへ写しますか?</div>` +
+    (empty.length ? `<div class="tt-slots">${empty.map(k => `<button class="btn tt-slot" data-tt="copyto" data-n="${k}"${busy ? ' disabled' : ''}><b>セーブ${k}</b><span>あき</span></button>`).join('')}</div><p class="tt-note">写した店は、元の店とは別に遊べます。ぬしの前などに写しておくと、あとで戻れます。</p>`
+      : `<p class="tt-warn">あいているセーブがありません。先にどれかを消して下さい。</p>`) +
+    `<button class="btn ghost" data-tt="sm0">やめる</button></div>`;
+  if (TITLE.sm === 'del') return `<div class="tt-sm"><p class="tt-warn">セーブ${n}(${nm})を消します。<b>元に戻せません。</b>${typeof SYNC !== 'undefined' && SYNC.user ? 'ログインしているので、クラウドのセーブ' + n + 'も消えます。' : ''}</p>` +
+    `<div class="tt-smb"><button class="btn" style="border-color:var(--ember);color:var(--ember)" data-tt="delok"${busy ? ' disabled' : ''}>消す</button><button class="btn ghost" data-tt="sm0">やめる</button></div></div>`;
+  return `<div class="tt-smb"><button class="btn" data-tt="smcopy"${busy ? ' disabled' : ''}>この店を写す</button><button class="btn ghost" data-tt="smdel"${busy ? ' disabled' : ''}>この店を消す</button>${busy ? '<span class="tt-note">同期中…</span>' : ''}</div>`;
 }
 function titleRender() {
   const el = TITLE.el;
@@ -32542,10 +32637,13 @@ function titleClick(e) {
   const b = e.target.closest('[data-tt]'); if (!b || b.disabled) return;
   const k = b.dataset.tt;
   try { AU && AU.click && AU.click(); } catch (er) { /* ignore */ }
-  if (k === 'top' || k === 'cont' || k === 'set') { TITLE.view = k; if (k === 'new') TITLE.newSlot = 0; titleRender(); return; }
+  if (k === 'top' || k === 'cont' || k === 'set') { TITLE.view = k; TITLE.sm = ''; if (k === 'new') TITLE.newSlot = 0; titleRender(); return; }
   if (k === 'new') { TITLE.view = 'new'; TITLE.newSlot = 0; titleRender(); return; }
   if (k === 'dev' && DEV_OK) { titleClose(); TITLE.done({ dev: true }); return; }
-  if (k === 'pick') { TITLE.pick = +b.dataset.n; titleRender(); return; }
+  if (k === 'pick') { TITLE.pick = +b.dataset.n; TITLE.sm = ''; titleRender(); return; }
+  if (k === 'smcopy' || k === 'smdel' || k === 'sm0') { TITLE.sm = k === 'smcopy' ? 'copy' : k === 'smdel' ? 'del' : ''; titleRender(); return; }
+  if (k === 'copyto') { const to = +b.dataset.n, from = TITLE.pick; TITLE.sm = ''; if (slotCopy(from, to)) { TITLE.pick = to; toast(`<div>セーブ${from}の店を、セーブ${to}に写しました</div>`); } else toast('<div>写せませんでした</div>'); titleRender(); return; }
+  if (k === 'delok') { const n = TITLE.pick; TITLE.sm = ''; if (slotDelete(n)) { const f = [1, 2, 3].find(x => titleRaw(x)); if (f) TITLE.pick = f; toast(`<div>セーブ${n}を消しました</div>`); } else toast('<div>消せませんでした</div>'); TITLE.view = [1, 2, 3].some(x => titleRaw(x)) ? 'cont' : 'top'; titleRender(); return; }
   if (k === 'go') { titleClose(); TITLE.done({ slot: TITLE.pick }); return; }
   if (k === 'nslot') { TITLE.newSlot = +b.dataset.n; titleRender(); return; }
   if (k === 'gold') { const n = TITLE.newSlot; titleClose(); TITLE.done({ slot: n, fresh: true, gold: +b.dataset.g }); return; }
@@ -32685,6 +32783,47 @@ function saveNow() {
 }
 // what is in a slot (for the settings): null or { day, name }
 function slotInfo(n) { try { const t = localStorage.getItem(slotKey(n)); if (!t) return null; const g = JSON.parse(t); return { day: g.day || 1, name: g.name || '' }; } catch (e) { return null; } }
+// ---------- No.384: セーブを写す・消す ----------
+// 枠ごとに「作り直しの番号」(写した・消した・はじめからにした時刻)を持つ。セーブの中には入れない(写しても番号は写らない)。
+// 同期では日数より先にこの番号を比べ、新しい方を必ず残す(戻した店が、別の端末の進んだ店に上書きされないように)。
+const slotGenKey = n => 'manbanya_gen_' + n;
+function slotGen(n) { try { return +localStorage.getItem(slotGenKey(n)) || 0; } catch (e) { return 0; } }
+function slotGenSet(n, v) { try { localStorage.setItem(slotGenKey(n), String(v)); } catch (e) { /* storage unavailable */ } }
+const slotBusy = () => typeof SYNC !== 'undefined' && SYNC.busy;
+const slotPlaying = n => !!G && n === SAVE.slot && !(typeof TITLE !== 'undefined' && TITLE.on);
+// from の店を、あいている to へ写す(上書きはしない)
+function slotCopy(from, to) {
+  if (from === to || slotInfo(to) || slotBusy() || DEV.on) return false;
+  if (slotPlaying(from)) saveNow();
+  let g; try { g = JSON.parse(localStorage.getItem(slotKey(from)) || 'null'); } catch (e) { g = null; }
+  if (!g) return false;
+  g.lastSaved = Date.now();
+  const s = JSON.stringify(g);
+  try { localStorage.setItem(slotKey(to), s); } catch (e) { return false; }
+  slotGenSet(to, Date.now());
+  slotCloudWrite(to, s, g.day || 1);
+  return true;
+}
+// 枠を消す(遊んでいる店は消さない)。手元には1つだけ控え(_bak)を残す
+function slotDelete(n) {
+  if (!slotInfo(n) || slotBusy() || slotPlaying(n) || DEV.on) return false;
+  try { localStorage.setItem(slotKey(n) + '_bak', localStorage.getItem(slotKey(n)) || ''); localStorage.removeItem(slotKey(n)); } catch (e) { return false; }
+  slotGenSet(n, Date.now());
+  slotCloudWrite(n, '', 0);
+  return true;
+}
+// クラウドへすぐ知らせる(Google の同期・claude.ai の保存)。消した時は中身の空の「消した印」を書く
+function slotCloudWrite(n, s, day) {
+  try { if (typeof SYNC !== 'undefined' && SYNC.user) syncOne(n); } catch (e) { /* つながったら送る */ }
+  (async () => {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const db = SAVE.db || await window.claude.use('db'); if (!db) return;
+      const user = await window.claude.use('user'); const id = user && await user.id(); if (!id) return;
+      await db.doc('data/users/' + id + '/save' + (n > 1 ? '_s' + n : '')).set({ save: s || '', at: Date.now(), day: day || 0 });
+    } catch (e) { /* ignore */ }
+  })();
+}
 function slotSwitch(n) {
   if (n === SAVE.slot) return;
   saveNow();
@@ -32744,6 +32883,14 @@ const NEWS40 = `<p><b>肩書</b>名声が貯まると、店主の肩書が変わ
   `<p><b>折れた剣</b>工房にしまってある「折れた剣」(村長からもらった出世払いの剣)が倉庫に入った。聖剣は、竜の心臓ではなく、この折れた剣を芯に打ち直して作る。聖剣は一振りしか作れないので、凱旋門が建つまでは売れない(失敗しても折れた剣はなくならない)。</p>`;
 const NEWS45 = `<p><b>出世払いの完済と工房</b>村長への出世払い(3000G)を返し終えた夜、村の皆が工房に手を入れてくれる。工房の絵が新しくなり、鍛冶・錬金・調理・筆写の設備がそれぞれ一段上がる(もう返し終えていた店は、すでに新しくなっている)。</p><p><b>肩書でスキルポイント</b>肩書が変わるたびに、スキルポイントが1増える(これまでになった肩書の分も入る)。</p>`;
 const NEWS42 = `<p><b>物語の場面</b>店の物語が、絵と会話の場面で見られるようになった(タップで次へ。「絵を見る」で窓を隠し、「場面を飛ばす」で飛ばせる)。建物の完成・章の始まりと終わり・ぬしの討伐・村長の昔話などで出る。すでに通り過ぎた場面は出ない。</p>`;
+// No.384: 章の進み方とセーブの写す・消す(端末ごとに一度だけ)
+function news384Sheet() {
+  openSheet(`<div class="celebrate"><div class="pop">${portrait({ cls: 'villager', ch: 'guild' }, '', 'smile')}</div><div class="kicker">お知らせ</div><h2>章の進み方と、セーブの写し</h2><div class="howto" style="text-align:left">` +
+    `<p><b>章の進み方</b>章は自動では進まなくなりました。建物とぬしがそろったら、ぬしに勝った報告か、「いまの目標」・街の「次の章へ」にある「次の章へ進む」を押した時に進みます。まだ見たい話がある時は、進まずに遊べます。</p>` +
+    `<p><b>セーブを写す・消す</b>タイトルの「つづきから」で、店をあいているセーブへ写したり、消したりできます。遊びながら写す時は、設定(歯車)から。ぬしの前に写しておくと、あとで戻れます。</p>` +
+    `<p><b>Googleでログインしている方へ</b>ほかの端末も一度開いて、この版にしてから遊んで下さい。古い版のままの端末で遊んだ分は、その端末を更新した時に届きます。</p>` +
+    `</div><button class="btn pri big" data-act="sclose" data-focus>わかった</button></div>`, { sticky: true });
+}
 function news42Sheet() {
   openSheet(`<div class="celebrate"><div class="pop">${portrait({ cls: 'villager', ch: 'guild' }, '', 'smile')}</div><div class="kicker">お知らせ v42</div><h2>物語の場面</h2><div class="howto" style="text-align:left">${NEWS42}${NEWS45}</div><button class="btn pri big" data-act="sclose" data-focus>わかった</button></div>`, { sticky: true });
 }
@@ -32798,7 +32945,7 @@ function start(hot) {
     if (r.dev) { DEV.on = true; newGame(); G.tut = -1; G.name = '作者用の店'; const g = G; boot(g); devSheet(); return; }   // No.186: 練習用の店(保存も同期もしない)
     try { localStorage.setItem('manbanya_slot', String(r.slot)); } catch (e) { /* storage unavailable */ }
     SAVE.slot = r.slot; SAVE.key = slotKey(r.slot); SAVE.ref = null;
-    if (r.fresh) { newGame(); G.gold = r.gold; saveNow(); if (SYNC.user) syncPush(true); boot(null, true); }
+    if (r.fresh) { newGame(); G.gold = r.gold; slotGenSet(r.slot, Date.now()); saveNow(); if (SYNC.user) syncPush(true); boot(null, true); }
     else boot(loadLocal());
   });
 }
@@ -32824,6 +32971,7 @@ function boot(local, fresh) {
   else if (G._ui39) { delete G._ui39; delete G._ui40; delete G._ui42; delete G._n45; news39Sheet(); }
   else if (G._ui40) { delete G._ui40; delete G._ui42; delete G._n45; news40Sheet(); }
   else if (G._ui42) { delete G._ui42; delete G._n45; news42Sheet(); }
+  { let seen = true; try { seen = localStorage.getItem('manbanya_news384') === '1'; localStorage.setItem('manbanya_news384', '1'); } catch (e) { /* ignore */ } if (local && !seen && !UI.sheet && !UI.story) news384Sheet(); }   // No.384: 端末ごとに一度だけ
   storyKick();
   connectCloud();
   if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
@@ -32835,13 +32983,13 @@ function boot(local, fresh) {
   window.__game = {
     skMigrate6, casSt, skSheet, workOk, isSnack, snackOf, bagUseB, fishPrice, arCap, casTableGrace, casXchg, casPrizeCost, onAfterglow, focusN, boldPump, skBoard, skList, SKM,
     get G() { return G; },
-    jobResolve, fishRiverReady, SYNC, syncAll, act, render, sceneDraw, sceneWalkers, SCENE, IT, RC, RC_BY_OUT, RECIPES, ITEMS, BUILDINGS, STAGES, METALS, SHOP_LV, FX, UI,
+    jobResolve, fishRiverReady, SYNC, syncAll, syncOne, act, render, sceneDraw, sceneWalkers, SCENE, IT, RC, RC_BY_OUT, RECIPES, ITEMS, BUILDINGS, STAGES, METALS, SHOP_LV, FX, UI,
     doCraft, batchCraft, makeVignette, hasInputs, maxCraftable, recUnlocked, curCust, deliverToBuilding, deliverOrder, neededRaws, invCount, orderHave,
     recCenter, zones, startGauge, centerTag, recWidth, buyStall, buyBook, autoNeeds, paperCheck, paperState, grantPaper, paperRandom, papersOwned, PAPERS, PAPER, paperSrcMet, paperSrcSt, isWeapon, isArmor, isRing, SKN, SKM, SK_TOTAL, pk, shelfSize, skLearn, skWhy, skReset, skResetCost, skSync, skMigrate, skAutoLearn, spSources, spTotal, spFree, spSpent, graceUse, graceLeft, diveCap, skHas, sellTo, buyFrom, acceptOrder, convertToOrder, openShop, closeShop, sleep, nextCust, upgradeShop, learnSkill, craftTime, completion, xpNeed, autoQuality,
     hotNow, pickHot, ateToday, FACS, FAC, facGoods, facSell, facPrice, facOpen, WORK_BASE, eatGain, EAT_MULT, askCall, diveNotify, closeSheet, failCraft, rollQuality, qualOdds, gaugeHit, orderPick, orderQualMult, orderReward, returnQuests, AREAS, AR, rankMax, guildOpen, questFee, questOdds, expectQty, areaOpen, areaBonus, beginAct, endAct, workMax, custCount, sellBold, boldOdds, haggle, sellHot, hotOdds, hotPrice, HOT_MAX, buyAt, buyOdds, buyPrice, BUY_MIN, BUY_MAX, sellBase, sellQty, sellPrice, fairPrice, mktMult, eat, edibles, staminaOf, dine, buyTonya, tonyaList, shopBand, shopClosed, CLOSE_AT,
     save, invAdd, invTake, advOut, REQ_TIER, GSL, slotsOf, slotN, WPN_OF, gearKey, gearTier, fightOdds, fightLoss, partyHP, FT, wpnVal, armVal, memSpec, pzNew, pzPlay, pzMoves, pzHint, diveSheet, renderDive, diveStatus, beastSprite, BEAST, dvAttach, dvFrame, DV, DTH, sendDive, advRecruit, bagAdd, bagsClean, autoBags, bagPut, bagPull, bagEmpty, advBag, gqState, diveFx, bagSlots, TOOL_FX, diveTurn, diveChoose, diveAuto, diveOptions, diveSettle, diveEstimate, diveCamp, newDive, packList, gearFrac, DG, MON, DIVE_CAP, playerTurn, estWord, ensureRoster, advById, advReady, advHurt, autoEquip, equipAdv, unequipAdv, treatAdv, partyFee, reqTier, partyTier, tierGap, dgRumor, minorPending, bestOwnedQ,
     shelfAuto, shelfPut, shelfClean, makeCustomer, shelfGenre, counterCraft, counterCraftWhy, nightLeft, hotShelfId, onShelf, repay, loanLeft, storyChoose, shoppingList, buyList, reservedNeeds, migrate, fixLoaded, TREND, LOAN_MS,
-    CH_BOSS, bossCleared, chBoss, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
+    CH_BOSS, bossCleared, chBoss, chReady, stageGo, slotCopy, slotDelete, slotGen, slotInfo, news384Sheet, gateLocked, checkStage, stageProgress, news39Sheet, news40Sheet, TITLES, titleNow, titleCheck, holdHoly, shelfOk, sellToStall, catWeight, gainFame,
     FISH, FISH_BY, FISH_SPOTS, mg2End, FS, fishSceneOpen, fsTurn, fsLand, fsHook, ensureRoster, AR, fishGo, fishLeave, fishCatch, fishPool, fishRoll, fishState, fishSell, fishBuyBait, fishGear, completion,
     shopView, openDecision, settingsSheet, pubSheet, TUT, tutUpdate, questLine, guildOpen,
     MG, MGK, mgParams, mgOn, mgStep, mgDown, mgUp, mgEnd, mgJudgeBeat, mgMarkBeat, mgJudgeLevel, mgMarkRing, mgJudgeRing, firePos, startCraftGame, shadowOpts, failAppraise, appraiseNow, helpTips, helpNow, helpOpen, helpGo, helpClose, sellableStock, diveAsks, craftResolve, MG2, mgRand, promoHtml, PUB_MENU, pubToday, pubPrice, pubHeal,
