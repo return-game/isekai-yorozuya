@@ -3854,6 +3854,36 @@ body.btl-open{overflow:hidden}
 .fampick .fp-b.on { border-color: var(--brass-hi); background: rgba(214,170,90,.18); }
 .fampick .fp-b:disabled { opacity: .35; cursor: default; }
 .fampick .fp-note { display: block; font-size: 11.5px; color: var(--ink-2); margin-top: 6px; }
+/* No.387: 餌が0の時の「道具・餌」を光らせる */
+.fsh-bar .fsh-need{animation:fshNeed 1.6s ease-in-out infinite}
+@keyframes fshNeed{0%,100%{box-shadow:0 0 0 0 rgba(255,210,120,0)}50%{box-shadow:0 0 0 4px rgba(255,210,120,.45)}}
+/* No.387: 最初の1匹の指の案内 */
+.fs-tut{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;z-index:6;text-shadow:0 2px 6px rgba(0,0,0,.7)}
+.fs-tut b{font-size:26px;color:#fff;background:rgba(10,14,22,.55);padding:4px 18px;border-radius:999px}
+.fs-tut small{font-size:13px;color:#ffe9c2;background:rgba(10,14,22,.45);padding:2px 12px;border-radius:999px}
+.fs-tut-f{font-size:54px;line-height:1;display:block;transform-origin:50% 100%}
+.fs-tut.t-cast .fs-tut-f{animation:fsTutCast 1.8s ease-in-out infinite}
+.fs-tut.t-rel .fs-tut-f{animation:fsTutRel .7s ease-out infinite}
+.fs-tut.t-tap .fs-tut-f{animation:fsTutTap .45s ease-in-out infinite}
+.fs-tut.t-tap b{color:#ffd36e;font-size:34px}
+.fs-tut.t-hold .fs-tut-f{transform:translateY(10px) scale(.92);filter:drop-shadow(0 0 10px rgba(143,196,255,.9))}
+.fs-tut.t-tick .fs-tut-f{animation:fsTutTap .55s ease-in-out infinite}
+.fs-tut.t-tick b{color:#9be8ad}
+.fs-tut.t-hold b{color:#8fc4ff}
+.fs-tut.t-let .fs-tut-f{transform:translateY(-14px);opacity:.75}
+.fs-tut.t-let b{color:#ff9a86}
+.fs-tut.t-wait .fs-tut-f{opacity:.85}
+@keyframes fsTutCast{0%{transform:translateY(0)}15%,70%{transform:translateY(10px) scale(.92)}85%,100%{transform:translateY(-14px)}}
+@keyframes fsTutRel{0%{transform:translateY(8px)}100%{transform:translateY(-16px);opacity:.6}}
+@keyframes fsTutTap{0%,100%{transform:translateY(-8px)}50%{transform:translateY(8px) scale(.94)}}
+/* No.387: 指は押している間だけ光る */
+.fs-tut .fs-tut-f{filter:drop-shadow(0 0 0 rgba(255,220,120,0))}
+.fs-tut.t-hold .fs-tut-f{filter:drop-shadow(0 0 14px rgba(255,220,120,1)) drop-shadow(0 0 4px #fff)}
+.fs-tut.t-let .fs-tut-f{filter:none}
+.fs-tut.t-cast .fs-tut-f{animation:fsTutCast 1.8s ease-in-out infinite,fsGlowCast 1.8s step-end infinite}
+.fs-tut.t-tap .fs-tut-f,.fs-tut.t-tick .fs-tut-f{animation:fsTutTap .55s ease-in-out infinite,fsGlowTap .55s step-end infinite}
+@keyframes fsGlowCast{0%{filter:none}15%{filter:drop-shadow(0 0 14px rgba(255,220,120,1)) drop-shadow(0 0 4px #fff)}80%,100%{filter:none}}
+@keyframes fsGlowTap{0%{filter:none}35%{filter:drop-shadow(0 0 14px rgba(255,220,120,1)) drop-shadow(0 0 4px #fff)}70%,100%{filter:none}}
 
 </style>
 <div id="app">
@@ -8420,9 +8450,9 @@ const FISH_LINES = {
 };
 // the keeper's words in the hut: the first visit explains; later, a short hello
 const FISH_HELLO = {
-  river: { intro: 'どうじゃった、坊。ここがわしの小屋じゃ。餌はわしが分けてやる、1匹5Gじゃ。釣れたら、わしが買うてやるでな。', hi: ['今日の川は機嫌がええ。', '急がんでええ。川は逃げん。', '大物を狙うなら、奥の淵じゃ。'] },
-  lake: { intro: 'ここがわたしの小屋です! 釣れた子は、わたしが買い取りますね。……お兄さんの釣った子なら、ちょっと高めに、なんて。', hi: ['あっ、お兄さん! 今日は沖が静かですよ。', '図鑑、どこまで埋まりました? ……わたしの方が、まだ詳しいですからね。', '夜の湖には、不思議な子が来るんです。……一緒に見たいなあ、なんて。'] },
-  sea: { intro: 'ここが俺の小屋だ。釣ったら持ってこい、目方で買ってやる! いい竿が欲しけりゃ、稼いで買いな。', hi: ['防波堤の先は大物が来るぞ。', '潮がいい。今日は揚がるぜ。', 'いい竿が欲しけりゃ、稼いで買いな。'] },
+  river: { intro: 'どうじゃった、坊。ここがわしの小屋じゃ。今日の餌は10匹、わしの奢りじゃ。次からは「道具・餌」で買え、1匹5Gじゃ。釣れたら、わしが買うてやるでな。', hi: ['今日の川は機嫌がええ。', '急がんでええ。川は逃げん。', '大物を狙うなら、奥の淵じゃ。'] },
+  lake: { intro: 'ここがわたしの小屋です! 餌、10匹どうぞ。最初だけですよ? 次からは「道具・餌」で買ってくださいね。釣れた子は、わたしが買い取りますね。……お兄さんの釣った子なら、ちょっと高めに、なんて。', hi: ['あっ、お兄さん! 今日は沖が静かですよ。', '図鑑、どこまで埋まりました? ……わたしの方が、まだ詳しいですからね。', '夜の湖には、不思議な子が来るんです。……一緒に見たいなあ、なんて。'] },
+  sea: { intro: 'ここが俺の小屋だ。餌を10匹持ってけ、初回の祝いだ。次からは「道具・餌」で買いな。釣ったら持ってこい、目方で買ってやる!', hi: ['防波堤の先は大物が来るぞ。', '潮がいい。今日は揚がるぜ。', 'いい竿が欲しけりゃ、稼いで買いな。'] },
 };
 const fishWhen = f => (f.sea === -1 ? '' : seaName(f) + 'の') + (f.times ? f.times.map(t => ['朝', '昼', '夜'][t]).join('と') : 'いつでも');
 // the saved state: G.fsh = { pts, dex: {id: {n, max}}, rod, reel, sold: {id: n}, soldDay, earned }
@@ -8474,8 +8504,10 @@ function fishNextOld() {
   return null;
 }
 // No.343(2026-11-17 作者): 釣りはいつでも行ける。時間は進まず、冒険者の探索も進まない。餌は10匹50G(追加は1回の釣りで3回まで)
+const FISH_GIFT = 10;
 function fishTrip(spot, back) {
   const st = fishState(); st.met = st.met || {};
+  if (!st.met[spot]) st.bait = (st.bait || 0) + FISH_GIFT;   // No.387(作者): 初めての釣り場では主が餌を10匹くれる。次からは自分で買う
   G.fishing = { spot, sub: SPOT[spot].subs[0][0], casts: st.bait, buys: 0, bag: [], streak: 0, n: 0, intro: !st.met[spot], hello: Math.floor(Math.random() * 3), back };
   st.met[spot] = 1;
 }
@@ -8572,15 +8604,18 @@ function fishMenu() {
     const shadows = pool.map(f => `<span class="fsh-sh${s.dex[f.id] ? ' got' : ''}" title="${s.dex[f.id] ? f.n : '？？？'}">${s.dex[f.id] ? ico(f.id, 0, { size: 'xs' }) : '<i></i>'}<small>${s.dex[f.id] ? f.n : '影' + SHADOW_N[f.shadow]}</small>${fishLast(f.id) ? FISH_LAST_TAG : ''}</span>`).join('');
     return `<div class="ri fsh-spot${ok ? '' : ' off'}"><div style="min-width:0;flex:1"><div class="row" style="gap:6px"><b>${sp.n}</b><span class="sub">${sp.place}</span></div>` +
       (ok ? `<div class="sub">${nx ? fishSlotN(nx.slot) : fishSlotN(G.slot)}に釣れる魚 ${got}/${pool.length}</div><div class="fsh-shs">${shadows}</div>` : `<div class="sub">${sp.lock}</div>`) + `</div>` +
-      (ok && !at && nx ? `<button class="btn sm gold" data-act="fshgo" data-v="${sp.id}">行く</button>` : '') + `</div>`;
+      (ok && !at && nx ? `<button class="btn sm gold" data-act="fshgo" data-v="${sp.id}">行く</button>` : '') +
+      (ok && at && at.spot !== sp.id ? `<button class="btn sm gold" data-act="fshnextgo" data-v="${sp.id}">ここへ行く</button>` : ok && at ? '<span class="sub">いまここ</span>' : '') + `</div>`;
   }).join('');
   const got = Object.keys(s.dex).length;
+  // No.387(作者): 小屋の「道具・餌」は買う所だけ、「釣り場・図鑑」は釣り場の一覧と図鑑だけ。ホームの「釣り」は全部入り
+  const gearH = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">釣り</div><h2>道具・餌</h2></div></div><p class="note">餌は1匹${BAIT_ONE}G。残りは持ち越します。</p>` + fishGearHtml();
   const h = `${xBtn}<div class="lead"><div style="min-width:0"><div class="sub">釣り</div><h2>釣り場</h2></div></div>` +
     (at ? `<p class="note">いまは${SPOT[at.spot].n}で釣りをしている。</p>` : `<p class="note">釣り場へはいつでも行けます。時間は進まず、冒険者の探索も進みません。体力は使いません。餌は1匹${BAIT_ONE}G。この画面の「道具」で買い、残りは持ち越します。</p>`) +
     `<div class="row" style="gap:12px;margin:6px 0"><span>図鑑 <b>${got}</b>/${FISH.length}</span><span>${RODS[s.rod].n}・${REELS[s.reel].n}</span></div>` +
-    `<div class="chips fsh-tabs"><button class="chip${UI.fshView === 'dex' ? '' : ' on'}" data-act="fshview" data-v="spots">釣り場と道具</button><button class="chip${UI.fshView === 'dex' ? ' on' : ''}" data-act="fshview" data-v="dex">魚の図鑑 <span class="n">${got}/${FISH.length}</span></button></div>` +
-    (UI.fshView === 'dex' ? (typeof achFishLine === 'function' ? achFishLine() : '') + fishDexHtml() : `<div class="rows">${spots}</div>` + fishGearHtml());
-  openSheet(h, { cur: 'fish', crumb: ['釣り'] });
+    `<div class="chips fsh-tabs"><button class="chip${UI.fshView === 'dex' ? '' : ' on'}" data-act="fshview" data-v="spots">${UI.fshMode === 'spots' ? '釣り場' : '釣り場と道具'}</button><button class="chip${UI.fshView === 'dex' ? ' on' : ''}" data-act="fshview" data-v="dex">魚の図鑑 <span class="n">${got}/${FISH.length}</span></button></div>` +
+    (UI.fshView === 'dex' ? (typeof achFishLine === 'function' ? achFishLine() : '') + fishDexHtml() : `<div class="rows">${spots}</div>` + (at && FISH_SPOTS.filter(x => x.open()).length > 1 ? `<p class="note">ほかの釣り場へ移る時、時間は進みません。びくの魚は倉庫に持ち帰り、餌は持ったまま移ります。</p>` : '') + (UI.fshMode === 'spots' ? '' : fishGearHtml()));
+  openSheet(UI.fshMode === 'gear' ? gearH : h, { cur: 'fish', crumb: ['釣り'] });
 }
 // No.185: 魚だけの図鑑(釣りの「図鑑と道具」を作り直した)。場所で絞り、レア度と釣れる条件を見せる
 function fishDexHtml() {
@@ -8623,7 +8658,7 @@ function vFishMain() {
   const nb = fishState(), canBait = true;
   return `<div class="stack"><div class="phead"><div><h1>${fishSlotP(slot)}の${sp.n}・小屋</h1><p>${sp.place}・${SEASONS[season()].n}。${sp.who}が小屋の前で網を繕っている。</p></div></div>` +
     `<div class="fsh-hut${hasBg ? '' : ' nobg'}"${hasBg ? ` style="background-image:url('${IMG_BASE}${hutBg}.webp')"` : ''}>${CH_FILES.has(`ch_${sp.ch}_normal`) ? `<img class="fsh-keeper" src="${chURL(sp.ch, f.intro ? 'smile' : 'normal')}" alt="${sp.who}">` : ''}<div class="fsh-bub"><b>${sp.who}</b>${f.intro ? FISH_HELLO[f.spot].intro : FISH_HELLO[f.spot].hi[f.hello || 0]}</div></div>` +
-    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= fishJiaiN() ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm ghost" data-act="fshmenu">図鑑・道具・餌</button>${subs}<button class="btn sm ghost" data-act="fshnext">ほかの釣り場へ</button></div></div>` +
+    `<div class="card fsh-main"><div class="fsh-bar"><span class="fsh-st">餌 <b>${f.casts}</b>投</span>${f.streak >= fishJiaiN() ? `<span class="okc">時合い! ${f.streak}匹</span>` : ''}<span class="fsh-sp"></span><button class="btn sm${f.casts ? ' ghost' : ' gold fsh-need'}" data-act="fshmenu" data-v="gear">道具・餌</button><button class="btn sm ghost" data-act="fshmenu" data-v="spots">釣り場・図鑑</button>${subs}</div></div>` +
     `<div class="fsh-lower"><div class="card"><h3>びく(${f.bag.length}匹)</h3>${f.bag.length ? `<div class="rows">${bag}</div><div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn pri" data-act="fshsell">${sp.who}に全部売る(+${fmt(bagSum)}G)</button></div><p class="note">売らずに帰ると、倉庫に持ち帰る(冒険者の食事に使える)。同じ魚は売るほど少し安くなる(翌日に戻る)。</p>` : '<p class="note">まだ何も釣れていない。</p>'}</div>` +
     `<div class="card"><h3>いま釣れる魚</h3><div class="fsh-shs">${shadows}</div></div></div></div>`;
 }
@@ -8672,7 +8707,7 @@ function fishEnd(g, hit) {
   setTimeout(() => { const b = foot.querySelector('[data-focus]'); if (b && document.body.contains(b)) b.focus({ preventScroll: true }); }, 450);
 }
 const FISH_ACTS = {
-  fshmenu: () => { fishMenu(); return false; },
+  fshmenu: d => { UI.fshMode = (d && d.v) || ''; if (UI.fshMode === 'spots' && UI.fshView === 'dex') UI.fshView = 'spots'; fishMenu(); return false; },
   fshview: d => { UI.fshView = d.v; fishMenu(); return false; },
   fshdex: d => { UI.fshDex = d.v; fishMenu(); return false; },
   fshgo: d => { if (!d.ok) { closeSheet(true); fishConfirm(d.v); return false; }
@@ -8703,7 +8738,8 @@ const FISH_ACTS = {
     if (G.fishing.intro && STORY['fish_meet_' + d.v]) storyPlay('fish_meet_' + d.v, { spot: d.v });
   },
   fshcast: d => { fishCast(d.v); return false; },
-  fshwater: d => { if (G.fishing && d.v && SPOT[G.fishing.spot].subs.some(x => x[0] === d.v)) G.fishing.sub = d.v; fishSceneOpen(); return false; },
+  fshwater: d => { if (G.fishing && !G.fishing.casts) { UI.fshMode = 'gear'; fishMenu(); return false; }   // No.387: 餌0で出ようとしたら、餌の窓を開く
+ if (G.fishing && d.v && SPOT[G.fishing.spot].subs.some(x => x[0] === d.v)) G.fishing.sub = d.v; fishSceneOpen(); return false; },
   fshup: () => { fishSceneClose(); render(); const f = G.fishing; if (f && f.lordPend) { const sp = f.lordPend; f.lordPend = null; save(); storyPlay('fish_lord_' + sp); } },
   fshagain: d => { const g0 = UI.gauge; if (g0) cancelAnimationFrame(g0.raf); const v = $('#gveil'); if (v) v.remove(); UI.gauge = null; render(); fishCast(d.v); return false; },
   fshback: () => { closeGauge(); return false; },
@@ -16886,7 +16922,7 @@ function casRow() {
 function vFacs() {
   const stOf = id => { const b = BUILDINGS.find(x => x.id === id); return b ? b.st : 99; };
   if (!FACS.some(f => stOf(f.id) <= G.stage)) return '';
-  const unk = () => facCard({ act: 'fac', dis: true, unk: true, ch: '', n: '？？？', who: '', chips: [[0, '物語が進むと現れる']] });
+  const unk = () => '<!--unk-->';
   const fac = id => {
     const f = FAC[id]; if (!f) return '';
     if (stOf(id) > G.stage) return unk();
@@ -16905,6 +16941,10 @@ function vFacs() {
   const fishC = sp => opened.includes(sp.id) ? facCard({ act: 'fshgo', v: sp.id, bg: 'bg_fish_hut_' + sp.id, ch: sp.ch, n: `釣り:${sp.n}`, who: `${sp.place}・${sp.who}`, eye: G.act === 'fish' && G.fishing && G.fishing.spot === sp.id, chips: [[0, G.act === 'fish' && G.fishing && G.fishing.spot === sp.id ? '釣りをしている' : 'いつでも行ける']] }) : unk();
   // No.353(作者): 並びと区切り = 灯り亭・宿屋 | ギルド・診療所・教会・鍛冶通り・闘技場・港のクラブ・騎士団詰所・竜騎士の厩舎 | 釣り 川・湖・海
   const groups = [[pubC, fac('inn')], ['guild', 'clinic', 'church', 'smithy', 'arena'].map(fac).concat([casC], ['knights', 'dragon'].map(fac)), FISH_SPOTS.map(fishC)];
+  // No.387(作者): まだ現れていない「？？？」は、区切りごとに1枚にまとめて後ろに置く(第1章の PC で釣りが下に沈んでいた)
+  const UNK = '<!--unk-->';
+  groups.forEach((g, i) => { const n = g.filter(c => c && c.startsWith(UNK)).length;
+    groups[i] = g.filter(c => c && !c.startsWith(UNK)).concat(n ? [facCard({ act: 'fac', dis: true, unk: true, ch: '', n: '？？？', who: '', chips: [[0, `物語が進むと、あと${n}つ現れる`]] })] : []); });
   return `<div class="sec facsec" data-sec="施設"><h2>施設<span class="aside">売る・頼み事・話す</span></h2>` + groups.map(g => g.filter(Boolean)).filter(g => g.length).map(g => `<div class="faccards">${g.join('')}</div>`).join('<div class="facsep"></div>') + `</div>`;
 }
 function facSheet(fid, tab, keepScroll) {
@@ -20394,7 +20434,7 @@ function fishSceneOpen() {
   el.innerHTML = `<canvas id="fshcv"></canvas>` +
     `<div class="fs-top"><div class="fs-where"><b>${fishSlotP(G.slot)}の${sp.n}・${subN}</b><small>${sp.place}・${SEASONS[season()].n}</small></div><button class="fs-btn" data-act="fshup">竿をしまう</button></div>` +
     `<div class="fs-guide" id="fsguide" hidden>${CH_FILES.has(`ch_${sp.ch}_normal`) ? `<img src="${chURL(sp.ch, 'normal')}" alt="${sp.who}">` : ''}<div><b>${sp.who}</b><p></p></div></div>` +
-    `<div class="fs-stat" id="fsstat"></div><div class="fs-hint" id="fshint"></div><div class="fs-card" id="fscard" hidden></div>`;
+    `<div class="fs-stat" id="fsstat"></div><div class="fs-hint" id="fshint"></div><div class="fs-tut" id="fstut" hidden><span class="fs-tut-f">👆</span><b></b><small></small></div><div class="fs-card" id="fscard" hidden></div>`;
   document.body.appendChild(el);
   const cv = el.querySelector('#fshcv');
   Object.assign(FS, { on: true, el, cv, cx: cv.getContext('2d'), fish: [], bob: null, st: 'idle', hold: false, last: performance.now(), sp, img: null, msg: '', msgT: 0, rip: [], spl: [] });
@@ -20593,6 +20633,7 @@ function fsFrame(t) {
   if (!FS.on) return;
   FS.raf = requestAnimationFrame(fsFrame);
   const dt = Math.min(0.05, (t - FS.last) / 1000); FS.last = t; FS.t = t;
+  fsTut();
   fsStep(dt); fsDraw(); fsAmbient();
 }
 function fsStep(dt) {
@@ -20856,6 +20897,28 @@ function fsPowDraw() {
   c.strokeStyle = 'rgba(0,0,0,.25)'; for (let i = 1; i < 4; i++) { const tx = x + w * i / 4; c.beginPath(); c.moveTo(tx, y + 2); c.lineTo(tx, y + h - 2); c.stroke(); }
   c.font = `500 10px ${F}`; c.fillStyle = 'rgba(200,220,240,.6)'; c.textAlign = 'left'; c.fillText('近く', x, y + h + 9); c.textAlign = 'right'; c.fillText('遠く', x + w, y + h + 9);
   c.restore();
+}
+
+// No.387(作者): 最初の1匹(主がついてくる間)だけ、操作を指の絵で見せる。難しさは変えない
+// 緑の外で緩い=押しっぱなし/緑の中=チョン・チョン/張りすぎ=離す
+function fsTut() {
+  const e = FS.el && FS.el.querySelector('#fstut'); if (!e) return;
+  let k = '';
+  if (FS.guide && !FS.guide.done) {
+    const st = FS.st;
+    if (st === 'idle' && G.fishing && G.fishing.casts > 0) k = 'cast';
+    else if (st === 'charge') k = 'rel';
+    else if (st === 'wait' || st === 'come' || st === 'nib') k = 'wait';
+    else if (st === 'bite') k = 'tap';
+    else if (st === 'fight' && FS.fg) { const g = FS.fg; k = g.inZ ? 'tick' : (g.n == null || g.n < 0.5) ? 'hold' : 'let'; }
+  }
+  if (k === FS.tutK) return; FS.tutK = k;
+  const T = { cast: ['長押し → 離す', '押す長さで、遠くへ飛ぶ'], rel: ['離す!', 'ためたら指を離すと投げる'], wait: ['触らずに待つ', '浮きが沈むまで、押さない'],
+    tap: ['今! タップ', '浮きが沈んだ。すぐに1回押す'], hold: ['押す', '青=緩い。押して張る'], tick: ['緑に留める', '軽く押しては離す'], let: ['離す', '赤=張りすぎ。離して緩める'] };
+  if (!k) { e.hidden = true; return; }
+  e.hidden = false; e.className = 'fs-tut t-' + k;
+  e.querySelector('b').textContent = T[k][0]; e.querySelector('small').textContent = T[k][1];
+  e.querySelector('.fs-tut-f').textContent = k === 'wait' ? '✋' : '👆';
 }
 
 // ---- help.js ----
@@ -22967,7 +23030,9 @@ const spkPic = (k, ex, o) => {
   const s = SPK[k]; return s && s.ch ? chURL(s.ch, ex) : null;
 };
 const spkName = (k, o) => k === 'adv' ? ((o && o.adv && o.adv.n) || '冒険者') : SPK[k].n;
-const storyText = t => esc(t).replace(/\{shop\}/g, esc(G.name || '万事屋'));
+// No.387: {fishway} = 川の釣りへの行き方(PC は施設の札、スマホはホーム)
+const storyFishWay = () => (typeof isWide === 'function' && isWide()) ? '施設の「釣り:川」' : 'ホームの「釣り」';
+const storyText = t => esc(t).replace(/\{shop\}/g, esc(G.name || '万事屋')).replace(/\{fishway\}/g, storyFishWay());
 const imgOf = n => n ? imgU(n) : '';
 function storyOpen(e) {
   const def = STORY[e.id]; if (!def) return;
@@ -23024,7 +23089,7 @@ function storyStep() {
   v.classList.toggle('narr', !L.who);
   v.classList.toggle('fb', !!L.fb);   // v52: 回想は色を褪せさせる
   const full = (L.t ? (L.who ? `「${L.t}」` : L.t) : '') + (L.act ? (L.t ? ' ' : '') + `(${L.act})` : '');
-  S.full = full.replace(/\{shop\}/g, G.name || '万事屋');
+  S.full = full.replace(/\{shop\}/g, G.name || '万事屋').replace(/\{fishway\}/g, storyFishWay());
   v.classList.remove('done');
   if (reduced()) { txtEl.textContent = S.full; v.classList.add('done'); return; }
   let k = 0; txtEl.textContent = '';
@@ -24457,7 +24522,7 @@ chief normal 「店も、だいぶ落ち着いたようじゃのう。たまに�
 chief smile 「川のゼンがな、おまえの顔を見たがっとった。じいさまと、よう竿を並べとった男じゃ」
 chief normal 「暇な時に、寄ってやれ。……わしからも、帰ってきたとは言うてある」
 owner normal 「……ああ」
-(村はずれの川へ行けるようになった。ホームの「釣り」から行ける。)
+(村はずれの川へ行けるようになった。{fishway}から行ける。)
 `);
 S('fish_inv_lake', { when: 'morning', cond: () => G.tut < 0 && SPOT.lake.open() && fishMet('river') && !fishMet('lake') }, `
 @bg bg_shop_day
