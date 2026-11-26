@@ -9497,7 +9497,7 @@ function doCraft(r, q, auto, crit, pre) {
   const first = G.found[out] === undefined;
   invAdd(out, q, n);
   // No.351 会心の二つ取り: 会心で作ると同じ品がもう1つ(一晩に1回。3回では稼ぎが強すぎた・sim3)
-  let twin = 0; if (crit && !auto && !r.appraise && pk('twin') && (G.twinN || 0) < 1 && !String(out).startsWith('lg_')) { invAdd(out, q, n); G.twinN = (G.twinN || 0) + 1; twin = n; }
+  let twin = 0; if (crit && !auto && !r.appraise && pk('twin') && (G.twinN || 0) < 1 && !String(out).startsWith('lg_') && !casDerived(out)) { invAdd(out, q, n); G.twinN = (G.twinN || 0) + 1; twin = n; }
   if (out === 'lg_holy') storyPlay('c5_forge');   // v44: 聖剣を打つ
   gainXp(craftXp(r, q) * (auto ? 0.8 : 1) + (first ? 8 : 0));
   if (!r.appraise && G.made[r.id] === 1) FX.push({ t: 'achp', id: out });   // No.375 実績の進み
@@ -9669,6 +9669,17 @@ function firstCraftHints() {
 }
 function unmetNeeds() { const need = reservedNeeds(); return Object.keys(need).filter(id => invCount(id) < need[id]); }
 // ---------- market pools ----------
+// No.391 作者 2026-11-27「カジノで入手出来るものはカジノでのみ」: カジノ限定の印・cas_ の品・材料にそれが要る作り方しかない品(カジノの一式)
+let CAS_DER = null;
+const casDerived = id => {
+  if (!CAS_DER) {   // No.392: つながりを増えなくなるまでたどる(カジノの品だけで作れる品・その壊れた品も)
+    CAS_DER = new Set(ITEMS.filter(it => it.casOnly || String(it.id).startsWith('cas_')).map(it => it.id));
+    for (let grew = true; grew;) { grew = false;
+      for (const it of ITEMS) { if (CAS_DER.has(it.id)) continue;
+        const rs = RECIPES.filter(r => r.out === it.id && !r.repair && !r.appraise);
+        if ((rs.length && rs.every(r => r.ins.some(([x]) => CAS_DER.has(x)))) || (it.broken && CAS_DER.has(String(it.id).replace(/^broken_/, '')))) { CAS_DER.add(it.id); grew = true; } } } }
+  return CAS_DER.has(id);
+};
 function sellableItems() {
   return ITEMS.filter(it => !it.junk && !it.mystery && it.st <= G.stage);
 }
@@ -9680,7 +9691,7 @@ function makeablePool() {
     if (r.repair || r.appraise || !recUnlocked(r)) continue;
     if (typeof recFishOk === 'function' && !recFishOk(r)) continue;   // No.355: 釣ったことのない区分の魚を使う皿は、注文に出さない
     const it = IT[r.out];
-    if (it.st > G.stage || it.cat === 'mat') continue;
+    if (it.st > G.stage || it.cat === 'mat' || casDerived(it.id)) continue;   // No.391
     out.push(it);
   }
   return out;
@@ -9885,7 +9896,7 @@ function makeSeller(c, cls) {
     const qs = ['q_box', 'q_scroll', 'q_stone'].filter(id => IT[id].st <= G.stage);
     lot.push({ id: pick(qs), n: 1 }); c.line = pick(LINES.sellMystery);
   } else if (r < 0.1 + 0.22 * (1 + SHELF_PULL * (shelfGenre().share.equip || 0) * 0.6)) {
-    const bs = ITEMS.filter(it => it.broken && it.st <= G.stage);
+    const bs = ITEMS.filter(it => it.broken && it.st <= G.stage && !casDerived(it.id));   // No.392
     const b = wpick(bs, it => (it.st === G.stage ? 2 : 1) / (1 + it.v / 40));
     lot.push({ id: b.id, n: Math.random() < 0.25 ? 2 : 1 }); c.line = pick(LINES.sellBroken);
   } else {
@@ -10625,7 +10636,7 @@ function noteBought(id, n) { if (!IT[id] || IT[id].raw) return; G.bgt = G.bgt ||
 // No.212→No.214 (作者): 目の色を変える — 施設ごとに毎朝ランダムで1種類(その施設の得意な品で、いま作れる物)。自分で作った物なら出来は問わず ×1.5・1日3個まで。買った完成品には効かない。ほかは相場どおり(得意な品は ×1.15)
 const FAC_EYE = 1.5, FAC_EYE_MAX = 1;   // No.228 (作者): お目当ては1日1個まで
 function fcWantPool(f) {
-  const ok = it => !it.raw && !it.broken && !it.keep && !it.relic && f.buys(it) && f.isFav(it) && it.st <= G.stage &&
+  const ok = it => !it.raw && !it.broken && !it.keep && !it.relic && !casDerived(it.id) && f.buys(it) && f.isFav(it) && it.st <= G.stage &&
     RECIPES.some(r => r.out === it.id && !r.repair && !r.appraise && !r.hidden && !r.rare && recUnlocked(r) && r.ins.every(([x]) => IT[x] && !IT[x].rare && !IT[x].keep));
   const all = ITEMS.filter(ok), near = all.filter(it => it.st >= G.stage - 1);
   return near.length ? near : all;
@@ -26918,8 +26929,8 @@ function pgMatFor(g, value) {
   let pool = [];
   if (g.adv && G.pgBack && G.pgBack.loot && IT[G.pgBack.loot] && IT[G.pgBack.loot].v > 0) pool = [IT[G.pgBack.loot]];
   else if (g.fish) pool = FISH_TABLE.filter(r => r[2] === g.fish && IT[r[0]]).map(r => IT[r[0]]).filter(it => it.v <= value * 1.5);
-  else pool = ITEMS.filter(it => it.raw && !it.mystery && it.season === undefined && it.st <= G.stage && (g.gift || []).includes(it.sub) && it.v > 0 && it.v <= value * 1.2);
-  if (!pool.length) pool = ITEMS.filter(it => it.raw && !it.mystery && it.season === undefined && it.st <= G.stage && it.v > 0 && it.v <= value * 1.2);
+  else pool = ITEMS.filter(it => it.raw && !it.mystery && !it.casOnly && it.season === undefined && it.st <= G.stage && (g.gift || []).includes(it.sub) && it.v > 0 && it.v <= value * 1.2);
+  if (!pool.length) pool = ITEMS.filter(it => it.raw && !it.mystery && !it.casOnly && it.season === undefined && it.st <= G.stage && it.v > 0 && it.v <= value * 1.2);
   if (!pool.length) return null;
   const it = wpick(pool, x => 1 + x.v / value), n = Math.max(1, Math.min(8, Math.round(value / it.v)));
   return { id: it.id, n };
@@ -27449,7 +27460,7 @@ const DIG_SHOP = { gem: 'ore', ore: 'gear', season: 'acc' };   // セレス=汚�
 const GEMS = () => ITEMS.filter(x => x.raw && x.sub === '宝石' && !x.mystery).sort((a, b) => a.v - b.v);
 function digPool(kind, st) {
   return ITEMS.filter(it => it.cat === 'equip' && !it.broken && !it.keep && it.st === st && !it.id.startsWith('lg_') && (kind === 'acc' ? it.sub === '装飾' : it.sub !== '装飾') &&
-    RECIPES.some(r => r.out === it.id && !r.repair && !r.hidden && !r.rare));
+    !casDerived(it.id) && RECIPES.some(r => r.out === it.id && !r.repair && !r.hidden && !r.rare && !r.book));   // No.391 カジノの品・本で開く品は出さない
 }
 function digGems(st) { const g = GEMS(), top = g.filter(x => x.st <= st).pop() || g[0], nxt = g.find(x => x.st === st + 1) || null; return { top, nxt }; }
 function digPrice(it) {
@@ -28960,8 +28971,8 @@ const casPot = () => Math.floor(casSt().pot);
   ['cas_tidesword', '潮鳴りの剣', 'sword', 'mithril', 'wind', '港の夜の卓で、昔だれかが賭けた剣。振ると遠い潮の音がする。', 2],
   ['cas_starbow', '星降りの弓', 'bow', 'wood3', 'moon', '放った矢が星の尾を引く弓。クラブの奥の箱に眠っていた。', 3],
 ].forEach(([id, n, sh, m, a, d, st]) => addItem(id, n, 'equip', { sh, m, s: 'cloth3', a, fx: ['spark'] }, { st, sub: '伝説', tier: 6, v: 9000, desc: d, gear: true, legend: true }));
-addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 'wind', fx: ['spark'] }, { st: 2, v: 165, raw: true, keep: true, sub: '伝説の素材', desc: '海竜の胸で千年脈打った石。竜の牙二本の代わりに、竜殺しの槍を打てる。' });
-addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 85, raw: true, keep: true, sub: '伝説の素材', desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
+addItem('cas_seaheart', '海竜の心臓石', 'mat', { sh: 'orb', m: 'ruby', a: 'wind', fx: ['spark'] }, { st: 2, v: 165, raw: true, keep: true, casOnly: true, sub: '伝説の素材', desc: '海竜の胸で千年脈打った石。竜の牙二本の代わりに、竜殺しの槍を打てる。' });
+addItem('cas_starsand', '星の砂', 'mat', { sh: 'orb', m: 'diamond', a: 'moon', fx: ['spark'] }, { st: 3, v: 85, raw: true, keep: true, casOnly: true, sub: '伝説の素材', desc: '流れ星が落ちた浜の砂。ダイヤの代わりに、賢者の杖を打てる。' });
 // No.363: 伝説の素材の値は「代わりにする素材の1.5倍」(心臓石=竜の牙2本分・星の砂=ダイヤ1つ分)にして、打つと必ず黒字にする。
 // 売らずに打つための素材なので keep(売り物にしない)。コインの枚数は変えない(手に入れにくい素材の代わりという値打ち)。
 addRec('lg_dragon', [['spear_adamant', 1], ['cas_seaheart', 1], ['crys_fire', 1]], 'smith', 19, 4, { id: 'r_lg_dragon_cas', book: 'b_legend' });
