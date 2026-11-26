@@ -10008,7 +10008,7 @@ function regularToday() {
   if (!rush && G.day > 1 && Math.random() > 0.75) return null;
   const r = rush || (G.day === 1 && cands.some(x => x.k === 'luca') ? REG.luca : pick(cands));
   const i = G.reg[r.k] || 0, s = r.steps[i];
-  return { type: 'regular', reg: r.k, step: i, p: r.p, clsName: s.cls, cls: 'villager', name: r.n, look: r.look, want: s.item, qty: s.qty, days: 8, reward: s.reward, minQ: 0, line: s.line, title: s.title, tol: 1.2, done: false };
+  return { type: 'regular', reg: r.k, step: i, p: r.p, clsName: s.cls, cls: 'villager', name: r.n, look: r.look, want: s.item, qty: s.qty, days: 8, reward: regReward(s.item, s.qty, s.reward), minQ: 0, line: s.line, title: s.title, tol: 1.2, done: false };
 }
 function curCust() { return G.cust[G.ci] || null; }
 const normalOrders = () => G.orders.filter(o => !o.reg && !o.night).length;
@@ -10174,6 +10174,8 @@ function orderHave(o) { let n = 0; for (let q = o.minQ; q < 4; q++) n += invCoun
 // mode (regulars only): 'cheap' | 'fair' | 'high' — how you price their request
 // No.371: 聖剣の注文は、戴冠と告白の次の日まで渡せない(案内でも「納品しよう」と出さない)
 const holdHolyOrder = o => o.reg === 'luca' && o.item === 'lg_holy' && typeof storySeen === 'function' && !storyAfter('c5_confess');
+// No.389: 常連の頼みのお礼は、ふつうの注文と同じ式(相場×1.55+10)。前は段ごとの固定の値で、売値の式(No.363)についてこなかった
+const regReward = (id, qty, base) => Math.max(base || 0, Math.round(IT[id].v * qty * 1.55 + 10));   // 物語のお礼で高い段(クララなど)は下げない
 function deliverOrder(oid, mode) {
   const o = G.orders.find(x => x.id === oid); if (!o) return false;
   if (orderHave(o) < o.qty) return false;
@@ -10181,6 +10183,7 @@ function deliverOrder(oid, mode) {
   if (holdHolyOrder(o)) { FX.push({ t: 'toast', msg: '聖剣を渡すのは、クララの戴冠を見届けてから。' + (typeof claraNextTxt === 'function' ? claraNextTxt() : '') }); return false; }
   const pk = orderPick(o), qm = orderQualMult(o);
   const late = lateDays(o), pm = o.reg ? (mode === 'gift' ? { m: 0, bond: 1 } : REG_PRICE[mode] || REG_PRICE.fair) : null;   // v54o: ルカの最初の剣は、お金を受け取らずに渡す
+  if (o.reg) o.reward = regReward(o.item, o.qty, REG[o.reg].steps[o.step].reward);   // No.389: 前のセーブの注文も今の相場で
   const pay = pm ? Math.round(o.reward * pm.m * qm * (1 + perk('regpay'))) : orderReward(o);
   for (const [q, n] of pk) invTake(o.item, n, q);
   if (o.item === 'lg_holy') { G.holyGiven = 1; G.holyQ = pk[0][0]; }   // v44: the hero's sword
@@ -17608,6 +17611,7 @@ function autoNext(c) {
 }
 function regPriceSheet(oid) {
   const o = G.orders.find(x => x.id === oid); if (!o) return;
+  if (o.reg) o.reward = regReward(o.item, o.qty, REG[o.reg].steps[o.step].reward);   // No.389
   const r = REG[o.reg], s = r.steps[o.step], lines = REG_PRICE_LINES[o.reg];
   openSheet(`${xBtn}<div class="lead">${portrait({ cls: 'villager', reg: r.k, look: r.look, clsName: s.cls })}<div style="min-width:0"><div class="sub">常連・${s.title}</div><h2>${r.n}に渡す</h2><div class="sub">${IT[o.item].name} ×${o.qty}${o.reg === 'luca' && o.step === 0 ? '' : `・お礼の目安 <span class="price">${fmt(o.reward)}G</span>`}</div></div></div>` +
     (o.reg === 'luca' && o.step === 0 ? '' : `<p class="note">値段の付け方は、${r.n}の物語に影響する。</p>`) + `<div class="regprice">` +
@@ -23297,6 +23301,16 @@ owner normal 「・・・」(棚の剣ではなく、工房の方を見る)
 luca surprise 「え……ひょっとして、作ってくれるの!?」
 luca smile 「やった! 待ってる。オレ、ちゃんと待ってるから!」
 `);
+// No.389: ルカの最初の剣を渡す。お金を出そうとするが、店主は受け取らない(理由は言わない・出世払いとも言わない)
+S('new_c1_luca_pay', { ch: 0 }, `
+@bg bg_shop_day
+(できあがった剣をカウンターに置くと、少年は、握りしめていた小袋を差し出した。)
+luca normal 「これ、ずっと貯めてたんだ。足りるかな……」
+owner normal 「・・・」
+(店主は小袋をルカの手に押し戻し、剣を渡した。)
+luca surprise 「え……いいの!?」
+luca smile 「……ありがとう! この剣で、いつか竜だって倒してみせるよ!」
+`);
 S('new_c1_luca_gate', { ch: 0, after: 'bld_guild', past: () => (G.reg.luca || 0) >= 1 }, `
 @bg bg_town_1_night
 (店を閉めて外に出ると、村の入口の柵に、新しい剣を抱えた少年が腰かけていた。)
@@ -24471,7 +24485,7 @@ for (const k in BGM_OF) if (STORY[k]) STORY[k].bgm = BGM_OF[k];
 const CH_END = ['c1_end', () => storySeen('c2_smile_clara') ? 'c2_end' : 'c2_end_b', 'c3_end', 'c4_end'];
 const CH_START = [null, 'c2_start', 'c3_start', 'c4_start', 'c5_start'];
 // a regular's delivery that is told as a scene (the celebration then shows only the reward)
-const REG_STORY = { 'colette:0': () => G.built.inn ? 'new_c1_colette_bread_b' : 'new_c1_colette_bread', 'colette:1': 'c2_smile', 'colette:2': () => storySeen('c4_fall') ? null : 'new_c3_festival', 'luca:3': 'new_c4_luca_knight', 'clara:0': 'reg_clara_0', 'clara:2': 'reg_clara_2', 'clara:3': 'reg_clara_3', 'luca:4': 'c5_hand' };
+const REG_STORY = { 'luca:0': 'new_c1_luca_pay', 'colette:0': () => G.built.inn ? 'new_c1_colette_bread_b' : 'new_c1_colette_bread', 'colette:1': 'c2_smile', 'colette:2': () => storySeen('c4_fall') ? null : 'new_c3_festival', 'luca:3': 'new_c4_luca_knight', 'clara:0': 'reg_clara_0', 'clara:2': 'reg_clara_2', 'clara:3': 'reg_clara_3', 'luca:4': 'c5_hand' };
 // v52x: 値が関数なら、その時に合う場面を選ぶ(null は場面なし)
 const regStory = k => { const v = REG_STORY[k]; return typeof v === 'function' ? v() : v; };
 
