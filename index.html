@@ -3886,6 +3886,14 @@ body.btl-open{overflow:hidden}
 @keyframes fsGlowTap{0%{filter:none}35%{filter:drop-shadow(0 0 14px rgba(255,220,120,1)) drop-shadow(0 0 4px #fff)}70%,100%{filter:none}}
 .fs-tut[hidden]{display:none!important}
 
+/* No.388 盤を広げる(PC) */
+.skbig-ov{position:fixed;inset:0;z-index:90;display:flex;align-items:stretch;background:radial-gradient(55% 60% at 50% 50%,#1a1f2b,#07090d)}
+.skbig-ov .skboard{display:flex;flex:1;max-height:none;height:100vh;border:0;border-radius:0;background:none}
+.skbig-ov .skboard svg{margin:auto}
+.skbig-side{position:absolute;top:18px;left:18px;z-index:2;display:flex;flex-direction:column;gap:6px;padding:14px 16px;min-width:170px;border-radius:14px;background:rgba(15,19,26,.82);border:1px solid var(--hair)}
+.skbig-side .t1{font-weight:800;font-size:18px}
+.skbig-ov .skboard svg{max-height:100vh;width:auto;height:auto}   /* 画面が低い時だけ、足りない分を縮める */
+
 </style>
 <div id="app">
   <div class="side-col">
@@ -12802,13 +12810,14 @@ function skPos(s) {
   return [Math.cos(r) * dd * R - Math.sin(r) * s.l * W, Math.sin(r) * dd * R + Math.cos(r) * s.l * W];
 }
 function skState(s) { const w = skWhy(s); return w === 'learned' ? 'on' : !w ? 'can' : skOpen() && skReachable(s) ? 'near' : 'off'; }
-function skBoard() {
+function skBoard(big) {
   const pts = SKN.map(s => [s, skPos(s)]);
   const lab = Object.entries(SK_BR).filter(([k]) => k !== 'join').map(([k, b]) => { const r = b.a * Math.PI / 180, d = Math.max(...SKN.filter(s => s.br === k).map(s => s.d)) + 2.6; return [k, b, Math.cos(r) * d * 58, Math.sin(r) * d * 58]; });
   const xs = pts.map(p => p[1][0]).concat(lab.map(l => l[2] - 40), lab.map(l => l[2] + 40)), ys = pts.map(p => p[1][1]).concat(lab.map(l => l[3] - 38), lab.map(l => l[3] + 8));
   const Rm = Math.max(...pts.map(p => Math.hypot(p[1][0], p[1][1]))) + 10;   // クラウド: the magic circle under the board, as big as the board (the board grows to show all of it)
   xs.push(-Rm - 56, Rm + 56); ys.push(-Rm - 56, Rm + 56);
-  const pad = 34, x0 = Math.min(...xs) - pad, y0 = Math.min(...ys) - pad, w = Math.max(...xs) - x0 + pad, h = Math.max(...ys) - y0 + pad;
+  const pad = 34; let x0 = Math.min(...xs) - pad, y0 = Math.min(...ys) - pad, w = Math.max(...xs) - x0 + pad, h = Math.max(...ys) - y0 + pad;
+  if (big) { x0 = -Math.max(Rm + 54, ...lab.map(l => Math.abs(l[2]) + 80)); y0 = Math.min(-Rm - 52, Math.min(...lab.map(l => l[3] - 38))); w = -2 * x0; h = Rm + 52 - y0; }   // 2026-11-26 No.388: 広げた盤は魔法陣のまわりの余白を詰める(大きさは同じ)
   let edges = '', nodes = '';
   for (const [s, [x, y]] of pts) for (const q of s.req) { const o = SKM[q], [x2, y2] = skPos(o); const lit = skHas(q) && skHas(s.id); edges += `<line x1="${x2.toFixed(1)}" y1="${y2.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="ske${lit ? ' on' : skHas(q) ? ' half' : ''}"/>`; }
   for (const [s, [x, y]] of pts) {
@@ -12821,7 +12830,7 @@ function skBoard() {
     nodes += `<g class="skn ${st}${UI.skSel === s.id ? ' sel' : ''}" style="--c:${c}" data-act="sknode" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.n}">${shape}${icon}${pips}${badge}</g>`;
   }
   const labels = lab.map(([k, b, x, y]) => `<g class="skl" style="color:${b.c}"><g transform="translate(${(x - 11).toFixed(1)} ${(y - 36).toFixed(1)}) scale(.917)" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${SKI[SKI_ROAD[k]]}</g><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" style="fill:${b.c}">${b.n}</text></g>`).join('');
-  return `<div class="skboard" id="skboard" data-cx="${(-x0).toFixed(0)}" data-cy="${(-y0).toFixed(0)}"><svg viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}" width="${Math.round(w)}" height="${Math.round(h)}">${skMagic(Rm)}${edges}${labels}${nodes}</svg></div>`;
+  return `<div class="skboard" id="skboard"${big ? ' data-big="1"' : ''} data-cx="${(-x0).toFixed(0)}" data-cy="${(-y0).toFixed(0)}"><svg viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}" width="${Math.round(w)}" height="${Math.round(h)}">${skMagic(Rm)}${edges}${labels}${nodes}</svg></div>`;
 }
 // クラウド: the magic circle under the board — rings, stars, spokes, little orbs, ticks and runes (some rings turn slowly)
 function skMagic(Rn) {
@@ -12854,8 +12863,10 @@ function vSkills() {
   if (!skOpen()) return h + `<p class="note">Lv${SK_OPEN_LV}になると、スキル盤が開く。</p></div>`;
   h += `<p class="note" style="font-size:12.5px">真ん中から六つの道がのびている。習得した節のとなりから選べる。◆は鍵の節(探索のレアをひとつ差し出す)、⬢は遊び方が変わる要の節。</p>`;
   const view = UI.skView || 'board';   // v54q: スマホも盤から
-  h += `<div class="chips"><button class="chip${view === 'board' ? ' on' : ''}" data-act="skview" data-v="board">盤で見る</button><button class="chip${view === 'list' ? ' on' : ''}" data-act="skview" data-v="list">道ごとに見る</button><button class="chip" data-act="skpts">ポイントの入り方</button></div>`;
-  h += view === 'board' ? skBoard() + `<p class="note" style="font-size:11.5px">節をタップすると説明と「習得」。</p>` : skList();
+  h += `<div class="chips"><button class="chip${view === 'board' ? ' on' : ''}" data-act="skview" data-v="board">盤で見る</button><button class="chip${view === 'list' ? ' on' : ''}" data-act="skview" data-v="list">道ごとに見る</button><button class="chip" data-act="skpts">ポイントの入り方</button>${view === 'board' && typeof isWide === 'function' && isWide() ? `<button class="chip" data-act="skbig">盤を広げる</button>` : ''}</div>`;
+  const big = view === 'board' && UI.skBig && typeof isWide === 'function' && isWide();   // No.388: PC だけ、画面の全体を盤に使う
+  if (big) h += `<div class="skbig-ov"><div class="skbig-side"><div class="t1">スキル盤</div><div>${got}/${all}節</div><div>残り <b class="price">${free}</b> ポイント</div><p class="note" style="font-size:12px">節を押すと説明と「習得」。</p><button class="btn sm" data-act="skbig">閉じる</button><div class="note" style="font-size:11px">Esc でも閉じる</div></div>${skBoard(true)}</div>`;
+  h += big ? `<p class="note">盤を広げて表示している。</p>` : view === 'board' ? skBoard() + `<p class="note" style="font-size:11.5px">節をタップすると説明と「習得」。</p>` : skList();
   h += `<div class="btns" style="margin-top:6px"><button class="btn sm ghost" data-act="skreset"${got ? '' : ' disabled'}>振り直す${skResetCost() ? `(${fmt(skResetCost())}G)` : '(1回目は無料)'}</button></div>`;
   return h + `</div>`;
 }
@@ -12889,6 +12900,7 @@ function skNotice() {
 // keep the board where the player left it; the first time, put the centre (店主の心得) in the middle
 function skBoardScroll() {
   const el = document.getElementById('skboard'); if (!el) return;
+  if (el.dataset.big) { el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2; el.scrollTop = (el.scrollHeight - el.clientHeight) / 2; return; }
   if (UI.skScroll) { el.scrollLeft = UI.skScroll[0]; el.scrollTop = UI.skScroll[1]; }
   else { el.scrollLeft = +el.dataset.cx - el.clientWidth / 2; el.scrollTop = +el.dataset.cy - el.clientHeight / 2; }
   el.onscroll = () => { UI.skScroll = [el.scrollLeft, el.scrollTop]; };
@@ -12912,6 +12924,8 @@ const perk = k => pk(k);   // for functions that have their own local pk
   const end = () => { if (!drag) return; const d = drag; drag = null; d.b.classList.remove('grabbing'); if (d.moved) { const stop = ev => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', stop, { capture: true }), 50); } };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.skBig && !UI.sheet && document.querySelector('.skbig-ov')) { UI.skBig = false; render(); } });
 
 // ---- dungeon.js ----
 // ===== 遠見の水晶: first-person view of the guild party (Wizardry-style corridor) =====
@@ -17848,6 +17862,7 @@ function act0(a, d) {
     case 'sknode': if (!UI.sheet) UI.sheetHist = []; skSheet(d.id); sfx('tap'); return;
     case 'sklearn': { const s = SKM[d.id]; if (skLearn(d.id)) { sfx('level'); closeSheet(true); toast(`<div><div class="t1">${s.ks ? '要の節を習得した' : '習得した'}</div>${s.n}:${s.t}</div>`, 'lv', 3400); if (s.ks || s.key) confetti(); } break; }
     case 'skview': UI.skView = d.v; sfx('tab'); break;
+    case 'skbig': UI.skBig = !UI.skBig; sfx('tab'); break;
     case 'skpts': skPtsSheet(); sfx('tap'); return;
     case 'achs': achSheet(d.v); sfx('tap'); return;
     case 'skreset': { const c = skResetCost(); if (!UI.skResetAsk) { UI.skResetAsk = 1; toast(`<div><div class="t1">振り直す?</div>習得した節をすべて戻して、ポイントを返す${c ? `(${fmt(c)}G)` : '(1回目は無料)'}。鍵の節は開いたまま。もう一度押すと振り直す</div>`, '', 4200); setTimeout(() => { UI.skResetAsk = 0; }, 4500); return; } UI.skResetAsk = 0; if (skReset()) { sfx('tap'); toast('<div>スキル盤を振り直した。ポイントが戻った</div>'); } else toast('<div>お金が足りない</div>'); break; }
