@@ -3236,6 +3236,7 @@ body.btl-open{overflow:hidden}
 .pubcard.menu { position: relative; }
 .pubcard.menu.favc { border: 2px solid #ffd34a; background: linear-gradient(180deg, rgba(255, 211, 74, .16), rgba(20, 14, 8, .6)); box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), 0 0 16px rgba(255, 211, 74, .25); }
 .pubcard .pc-fav { justify-self: start; display: inline-block; font-size: 12px; font-weight: 900; color: #1c160a; background: #ffd34a; border-radius: 999px; padding: 1px 9px; letter-spacing: .03em; }
+.pubcard .pc-fx i.pc-kn { font-style: normal; color: var(--muted, #a99f8c); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: 0 7px; font-size: 11px; font-weight: 600; }   /* No.395 灯り亭で覚えた皿 */
 .pubcard .pc-face { position: absolute; right: -6px; top: -10px; width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 2px solid #ffd34a; background: #2a2019; box-shadow: 0 2px 6px rgba(0, 0, 0, .5); z-index: 1; }
 .pubcard .pc-face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
 .pub-book .pb-g.pb-fav { color: #ffd34a; font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
@@ -17015,7 +17016,7 @@ function vPubPage() {
     const why = !selfOff ? '' : !night ? '夜に開く' : done ? (isF ? '今夜はもう食べた' : '今夜はもう飲んだ') : G.gold < price ? 'お金が足りない' : '体力が満タン';
     const fk = isF ? favK(x.id) : null, favOf = fk ? `${esc(pgName(PG[fk]))}の好物` : '', fpic = fk ? pgPic(PG[fk], 'smile') || pgPic(PG[fk], 'normal') : null;   // No.201b: 選べない時は理由を出す
     // No.271 (作者「好物を知っても、パッと見て分からない」): 好物の皿は金の枠と、その人の顔
-    return `<button class="pubcard menu${bn ? ' bonus' : ''}${isRec ? ' rec' : ''}${fk ? ' favc' : ''}" data-act="${isF ? 'pubdish' : 'pubeat'}" data-id="${x.id}"${off ? ' disabled' : ''}>${fpic ? `<span class="pc-face"><img src="${fpic}" alt=""></span>` : ''}${pubIcon(x)}<span class="pc-b">${favOf ? `<span class="pc-fav">${favOf}</span>` : isRec ? '<span class="pc-rec">おすすめ・2割引き</span>' : `<span class="pc-cat">${(PUB_CATS.find(c => c[0] === pubCat(x)) || [, ''])[1]}</span>`}<b>${x.n}</b><span class="pc-d">${x.d}</span><span class="pc-fx">${heal ? `<i>体力+${heal}</i>` : ''}${bn ? `<i class="bn" title="${bn.t}">${bn.n}</i>` : ''}${why ? `<i class="pc-why">${why}</i>` : ''}</span></span><span class="price pc-p">${fmt(price)}G</span></button>`; };
+    return `<button class="pubcard menu${bn ? ' bonus' : ''}${isRec ? ' rec' : ''}${fk ? ' favc' : ''}" data-act="${isF ? 'pubdish' : 'pubeat'}" data-id="${x.id}"${off ? ' disabled' : ''}>${fpic ? `<span class="pc-face"><img src="${fpic}" alt=""></span>` : ''}${pubIcon(x)}<span class="pc-b">${favOf ? `<span class="pc-fav">${favOf}</span>` : isRec ? '<span class="pc-rec">おすすめ・2割引き</span>' : `<span class="pc-cat">${(PUB_CATS.find(c => c[0] === pubCat(x)) || [, ''])[1]}</span>`}<b>${x.n}</b><span class="pc-d">${x.d}</span><span class="pc-fx">${heal ? `<i>体力+${heal}</i>` : ''}${bn ? `<i class="bn" title="${bn.t}">${bn.n}</i>` : ''}${isF && RC_BY_OUT[x.id] && pubKnown(x.id) ? '<i class="pc-kn">作り方 覚えた</i>' : ''}${why ? `<i class="pc-why">${why}</i>` : ''}</span></span><span class="price pc-p">${fmt(price)}G</span></button>`; };
   // ゴズの一言
   const line = !night ? '「まだ仕込みの最中だ。夜になったら来な」' : dined && drank ? '「今夜はもう食って飲んだろう。また明日来な」'
     : dined ? '「今夜はもう食ったろう。一杯どうだ」'
