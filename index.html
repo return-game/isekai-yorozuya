@@ -26902,6 +26902,7 @@ function pgTreat(k, id) {
   const g = PG[k], p = pgS(), x = PUB_BY[id];
   if (!g || !x || x.k !== 'food' || !pgSeatOf(k) || !pubTonightAll().includes(x) || pgWhy(g, 'treat', x)) return;
   const one = pgTreatPrice(x), fav = pgIsFavDish(g, x);
+  const learned = typeof pubLearn === 'function' && pubLearn(x.id);   // No.393: 御馳走も、二人で同じ皿を食べる=覚える
   G.gold -= one; p.night.treat = k; p.met[k] = 1;
   const ei = fav ? pgEpNext(g) : -1;
   if (fav) { p.treat[k] = (p.treat[k] || 0) + 1; p.fav[k] = 1; }
@@ -26910,7 +26911,7 @@ function pgTreat(k, id) {
   save();
   const head = `(${pgName(g)}の前に、${x.n}を一皿。)`;
   const t = ei >= 0 ? g.eps[ei].t : (g.thx || (g.adv ? 'adv smile 「ごちそうさん! 次も、帰ってくるぜ」' : ''));
-  pgPlay(head + '\n' + t, g, () => { FX.push({ t: 'toast', msg }); }, true);
+  pgPlay(head + '\n' + t, g, () => { FX.push({ t: 'toast', msg }); if (learned) FX.push({ t: 'toast', msg: `<div>作り方? いいぜ、教えてやる。……工房で「${x.n}」を作れるようになった</div>` }); }, true);
 }
 // 品書きの料理を押した時: 自分で食べるか、座っている人に出すか(客がいる夜だけ)
 function pgDishSheet(id) {
