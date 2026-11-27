@@ -15733,6 +15733,7 @@ const sellableStock = () => { const ids = new Set((G.shelf || []).filter(s => s 
 
 // ---------- render root ----------
 function render() {
+  if (typeof fgMark === 'function') fgMark();
   paperCheck(); achCheck(); skSync(); skNotice(); storyHook('any');
   $('#app').classList.toggle('scene-open', !!G.sceneOpen);
   { const de = document.documentElement; de.dataset.theme = themeNow(); de.classList.toggle('at-home', UI.tab === 'home'); }
@@ -17361,6 +17362,7 @@ function rareSec(id) {
 function dexHint(it) {
   if (RARE[it.id]) { const r = RARE[it.id], a = AR[r.area]; return `${areaOpen(a) ? a.n : 'まだ行けない場所'}の最奥、ぬしの奥の「封印された箱」から出るらしい(${RARE_T[r.t].n})。${r.t === 'c' ? '旅人が持ちこむ謎の品を鑑定すると出ることもある。' : ''}`; }
   if (it.fromRare && G.found[it.fromRare] === undefined) return `探索で見つかるレアを材料に作れるらしい。`;
+  if (it.grp && FG[it.grp]) return FG[it.grp].d + '釣りで手に入る。';   // No.396: 魚の区分(keep の印が付いているので先に)
   if (it.keep) return '常連さんの物語を最後まで見届けると、もらえるらしい。';
   if (it.hidden) { const p = PAPER[it.id], st = paperState(it.id); return st === 'read' ? '秘伝のレシピは読めた。工房で作れる。' : st === 'torn' ? 'レシピの紙は手に入れたが、材料の1つが破れて読めない。影の形の品を探そう。' : '秘伝のレシピの紙に作り方が載っているらしい。' + (paperSrcSt(p) <= G.stage ? paperSrcText(p) + '。' : ''); }
   if (it.season !== undefined) return SEASONS[it.season].n + 'にだけ、朝市や持ち込みで手に入る素材。' + (it.st > G.stage ? '(街の発展後)' : '');
@@ -18438,6 +18440,7 @@ const fgMembers = gid => FISH.filter(f => !f.lord && FG[gid].ok(f)).sort((a, b) 
 for (const gid in FG) { const g = FG[gid], rep = fgMembers(gid)[0]; addItem(gid, g.n, 'mat', IT[rep.id].icon, { v: g.v, st: g.st, keep: true, nodex: true, grp: gid, sub: '魚の区分', desc: g.d, pxKey: 'item_' + rep.id }); }
 // 釣ったことのある区分か(お客の注文・施設の頼み事は、釣ったことのある区分の皿だけ)
 const fgSeen = gid => { const dx = (G.fsh && G.fsh.dex) || {}; return fgMembers(gid).some(f => dx[f.id]); };
+function fgMark() { if (!G || !G.found) return; for (const gid in FG) if (G.found[gid] === undefined && fgSeen(gid)) G.found[gid] = 0; }   // No.396: 中の魚を見つけた区分は、名前と絵を出す
 const recFishOk = r => r.ins.every(([x]) => !(IT[x] && IT[x].grp) || fgSeen(x));
 // ゴズの皿72品: [id, 章(材料に合わせて直した), 材料]。段で作業と数: 軽い 作業1で2つ・普段1・おまけ2・しっかり2・大皿3
 const GOZ_DISH = [
