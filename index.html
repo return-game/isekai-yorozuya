@@ -18210,11 +18210,14 @@ function pubTonight() {
   return out;
 }
 // 今日のおすすめ(今夜の品書きの料理から2皿・日で決まる)
-function pubRecIds() { if (!G) return []; const f = pubTonight().filter(x => x.k === 'food'); if (!f.length) return []; let s = ((G ? G.day : 1) * 2246822519) >>> 0; const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; const a = f.slice(), out = []; while (a.length && out.length < 2) out.push(a.splice(Math.floor(r() * a.length), 1)[0].id); return out; }
+// No.393 (作者): 座っている客の好物は、必ず今日のおすすめに並べる(足りない分はゴズの選んだ皿で2皿まで)
+function pubFavIds() { try { if (!G || typeof pgSeats !== 'function') return []; const s = pgSeats(); return [...new Set(s.ks.filter(k => k !== 'adv' && PG[k] && PUB_BY[PG[k].fav]).map(k => PG[k].fav))]; } catch (e) { return []; } }
+function pubRecIds() { const fv = pubFavIds(), n = pubRecBase(); return fv.concat(n.filter(id => !fv.includes(id))).slice(0, Math.max(2, fv.length)); }
+function pubRecBase() { if (!G) return []; const f = pubTonight().filter(x => x.k === 'food'); if (!f.length) return []; let s = ((G ? G.day : 1) * 2246822519) >>> 0; const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; const a = f.slice(), out = []; while (a.length && out.length < 2) out.push(a.splice(Math.floor(r() * a.length), 1)[0].id); return out; }
 // No.208 (作者): 「ゴズの気まぐれ」はなくした(中身の見えない皿は頼まない)。代わりに、おすすめの皿がたまに「今夜は出来がいい」(回復がたっぷり)
 const PUB_REC_JACK = 0.15;
 // 今夜の品書き+ほかの客の好物(ゴズが一人分だけ仕込む)。おすすめの選び方は pubTonight のまま変えない
-function pubTonightAll() { const t = pubTonight(); try { const g = typeof pgDishGuest === 'function' ? pgDishGuest() : null, x = g && PUB_BY[g.fav]; if (x && !t.includes(x)) return t.concat([x]); } catch (e) { /* 客なし */ } return t; }
+function pubTonightAll() { const t = pubTonight(); return t.concat(pubFavIds().map(id => PUB_BY[id]).filter(x => x && !t.includes(x))); }   // No.393: 座っている客全員の好物
 // Dedicated tavern assets: never resolve these IDs through the inventory registry.
 // Keep procedural icons available for menus without a registered PNG.
 const pubPNGKey = x => 'pub_' + x.id;
@@ -27008,7 +27011,7 @@ function vPgBody() {
   else if (night && !UI.story && !p.night.tie) setTimeout(() => { try { pgTieCheck(); } catch (e) { console.error(e); } }, 0);   // No.271: 縁
   const btn = (g, what, label, price, sub) => { const why = pgWhy(g, what); return `<button class="btn pg-b" data-act="pg${what}" data-v="${g.k}"${why ? ' disabled' : ''}><b>${label}${price ? ` <span class="price">${fmt(price)}G</span>` : ''}</b>${why ? `<small class="pg-why">${why}</small>` : sub ? `<small>${sub}</small>` : ''}</button>`; };
   const card = k => {
-    const g = PG[k], dr = pgDrink(g), fv = pgDish(g), dg = pgDishGuest(), isF = !!dg && dg.k === k && !g.adv, ep = isF && pgEpNext(g) >= 0 && p.fav[k];
+    const g = PG[k], dr = pgDrink(g), fv = pgDish(g), dg = pgDishGuest(), isF = !g.adv && !!fv, ep = isF && pgEpNext(g) >= 0 && p.fav[k];
     const pic = pgPic(g, 'normal');
     return `<div class="pg-card${isF && p.fav[k] ? ' fav' : ''}">${pic ? `<span class="pt md"><img class="ch" src="${pic}" alt=""></span>` : ''}<div class="pg-in"><div class="pg-h"><b>${esc(pgName(g))}</b><span class="sub">${esc(pgSub(g))}</span>${ep ? '<span class="pg-ep">話がありそう</span>' : ''}</div>` +
       `<div class="sub pg-meta">いつもの: ${dr ? dr.n : '—'}${g.adv ? '' : `・好物: ${p.fav[k] && fv ? fv.n : '?'}`}${p.night.treat === k ? '・今夜は御馳走した' : ''}</div>` +
@@ -27026,7 +27029,7 @@ function pgGozLine() {
   if (!night) return '「客が来るのは夜だ。また来な」';
   if (!pgOpen()) return '「客が来るようになるのは、村に冒険者が戻ってからだな」';
   if (!s.ks.length) return '「今夜は静かだな。たまには、こういう夜もいい」';
-  if (dg && dish) return p.fav[dg.k] ? `「今夜は${pgName(dg)}が来てるからな。${dish.n}を品書きに足しといた」` : '「今夜は一皿、品書きに足しといた。……誰のためかは、一杯おごってくれたら教えてやる」';
+  if (dg && dish) return false ? `「今夜は${pgName(dg)}が来てるからな。${dish.n}を品書きに足しといた」` : '「今夜は、座ってる客の好物を、おすすめに並べといた。一杯おごったついでに、ご馳走してやれ。ご馳走した料理のレシピも教えてやる」';
   return `「${pick(PUB.greet)}」`;
 }
 // 客の帳面: No.271 から街の「住人」の画面(別窓にしない・作者)
